@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RINUO - Brand Banner</title>
+<title>RINUO - Interactive Brand Banner</title>
 <style>
 body, html {
   margin: 0;
@@ -12,6 +12,7 @@ body, html {
   font-family: 'Helvetica Neue', Arial, sans-serif;
   overflow-x: hidden;
   background: #0a0a0a;
+  transition: background 10s linear;
 }
 
 /* header */
@@ -27,8 +28,8 @@ header {
   color: white;
 }
 
-/* 背景粒子画布 */
-#particles, #glowParticles {
+/* 粒子画布 */
+#particles, #glowParticles, #trailCanvas {
   position: absolute;
   top: 0; left: 0;
   width: 100%;
@@ -80,6 +81,7 @@ h1 {
   background: linear-gradient(90deg,#fff,#4f9cf9,#fffb7d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  position: relative;
 }
 .slogan:nth-child(1){ animation-delay: 0.3s;}
 .slogan:nth-child(2){ animation-delay: 0.6s;}
@@ -112,6 +114,7 @@ footer {
 <header>
   <canvas id="particles"></canvas>
   <canvas id="glowParticles"></canvas>
+  <canvas id="trailCanvas"></canvas>
   <div class="logo"></div>
   <h1>RINUO</h1>
   <div class="slogans">
@@ -125,14 +128,23 @@ footer {
 <footer>© 2025 RINUO. All rights reserved.</footer>
 
 <script>
-// 粒子背景
+// 背景渐变动态
+let hue = 200;
+setInterval(() => {
+  hue += 0.3;
+  document.body.style.background = `hsl(${hue}, 20%, 5%)`;
+}, 50);
+
+// 粒子
 const canvas = document.getElementById('particles');
 const ctx = canvas.getContext('2d');
 const glowCanvas = document.getElementById('glowParticles');
 const glowCtx = glowCanvas.getContext('2d');
+const trailCanvas = document.getElementById('trailCanvas');
+const trailCtx = trailCanvas.getContext('2d');
 
-let w = canvas.width = glowCanvas.width = window.innerWidth;
-let h = canvas.height = glowCanvas.height = window.innerHeight;
+let w = canvas.width = glowCanvas.width = trailCanvas.width = window.innerWidth;
+let h = canvas.height = glowCanvas.height = trailCanvas.height = window.innerHeight;
 
 const particles = [];
 const numParticles = 120;
@@ -147,36 +159,65 @@ for(let i=0;i<numParticles;i++){
   });
 }
 
+// 鼠标拖尾
+const trail = [];
+document.addEventListener('mousemove', (e)=>{
+  trail.push({x:e.clientX, y:e.clientY, alpha:1});
+});
+
 function animate(){
   ctx.clearRect(0,0,w,h);
   glowCtx.clearRect(0,0,w,h);
+  trailCtx.clearRect(0,0,w,h);
 
+  // 背景粒子
   particles.forEach(p=>{
     p.x += p.speedX;
     p.y += p.speedY;
     if(p.x<0||p.x>w) p.speedX*=-1;
     if(p.y<0||p.y>h) p.speedY*=-1;
 
-    // 背景粒子
     ctx.beginPath();
     ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
     ctx.fillStyle = `rgba(255,255,255,${p.alpha})`;
     ctx.fill();
 
-    // 发光粒子
     glowCtx.beginPath();
     glowCtx.arc(p.x,p.y,p.r*2,0,Math.PI*2);
     glowCtx.fillStyle = `rgba(79,156,249,${p.alpha*0.6})`;
     glowCtx.fill();
   });
 
+  // 鼠标拖尾
+  for(let i=0;i<trail.length;i++){
+    let t = trail[i];
+    trailCtx.beginPath();
+    trailCtx.arc(t.x,t.y,4,0,Math.PI*2);
+    trailCtx.fillStyle = `rgba(255,255,255,${t.alpha})`;
+    trailCtx.fill();
+    t.alpha -= 0.02;
+    if(t.alpha<=0) trail.splice(i,1), i--;
+  }
+
   requestAnimationFrame(animate);
 }
 animate();
 
+// Slogan漂浮
+const slogans = document.querySelectorAll('.slogan');
+let floatOffset = 0;
+function floatText(){
+  floatOffset += 0.03;
+  slogans.forEach((s,i)=>{
+    s.style.transform = `translateY(${Math.sin(floatOffset+i)*5}px)`;
+  });
+  requestAnimationFrame(floatText);
+}
+floatText();
+
 window.addEventListener('resize',()=>{
-  w = canvas.width = glowCanvas.width = window.innerWidth;
-  h = canvas.height = glowCanvas.height = window.innerHeight;
+  w = canvas.width = glowCanvas.width = trailCanvas.width = window.innerWidth;
+  h = canvas.height = glowCanvas.height = trailCanvas.height = window.innerHeight;
 });
 </script>
 </body>
