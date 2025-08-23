@@ -1,80 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vocabulary Page</title>
+<title>Japanese Learning Cards</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<style>
+  .card {
+    transition: all 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+  }
+  .speaker {
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .speaker:hover {
+    color: #3b82f6;
+  }
+  .source-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+</style>
 </head>
-<body class="bg-gray-100 p-4">
-<h1 class="text-3xl font-bold mb-6 text-center">Vocabulary</h1>
-<div id="categories" class="grid gap-8"></div>
+<body class="bg-gray-50 min-h-screen">
+<div class="container mx-auto px-4 py-8">
+  <header class="text-center mb-6">
+    <h1 class="text-4xl font-bold text-indigo-700 mb-2">Japanese Learning Cards</h1>
+    <p class="text-gray-600">Click the speaker icon to hear pronunciation</p>
+  </header>
+
+  <div id="categoryContainer" class="grid gap-6"></div>
+</div>
+
+<footer class="text-center py-6 text-gray-500 text-sm">
+  © 2025 Japanese Learning Tool
+</footer>
 
 <script>
-// 发音函数
-function speak(text) {
-    const utter = new SpeechSynthesisUtterance(text);
-    utter.lang = 'en-US';
-    speechSynthesis.speak(utter);
+const PLACEHOLDER = "https://via.placeholder.com/96?text=?";
+
+// 多图源示例：每个词有10个关键字
+const IMAGE_SOURCES = [
+  (keyword) => `https://source.unsplash.com/160x160/?${keyword}`,
+  (keyword) => `https://loremflickr.com/160/160/${keyword}`,
+  (keyword) => `https://placehold.co/160x160?text=${keyword}`,
+  (keyword) => `https://picsum.photos/seed/${keyword}/160/160`,
+  (keyword) => `https://dummyimage.com/160x160/ccc/000&text=${keyword}`,
+  (keyword) => `https://placekitten.com/160/160`,
+  (keyword) => `https://placebear.com/160/160`,
+  (keyword) => `https://www.fillmurray.com/160/160`,
+  (keyword) => `https://baconmockup.com/160/160`,
+  (keyword) => `https://via.placeholder.com/160?text=${keyword}`
+];
+
+// 延迟加载图片
+function loadImageWithFallback(img, keywords, index = 0) {
+  if (index >= keywords.length) {
+    img.src = PLACEHOLDER;
+    return;
+  }
+  const url = IMAGE_SOURCES[index](keywords[index]);
+  const testImg = new Image();
+  testImg.onload = () => { img.src = url; };
+  testImg.onerror = () => { loadImageWithFallback(img, keywords, index+1); };
+  testImg.src = url;
 }
 
-// 尝试加载图片，多图源轮询
-function loadImage(sources, imgEl, index = 0) {
-    if (index >= sources.length) return;
-    const url = `https://source.unsplash.com/160x160/?${sources[index]}`;
-    const img = new Image();
-    img.src = url;
-    img.onload = () => imgEl.src = url;
-    img.onerror = () => loadImage(sources, imgEl, index + 1);
+// 点击播放日语发音
+function speakJapanese(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'ja-JP';
+  speechSynthesis.speak(utterance);
 }
 
-// 渲染 JSON 数据
-fetch('categories.json')
-.then(res => res.json())
-.then(data => {
-    const container = document.getElementById('categories');
-    Object.keys(data).forEach(category => {
-        const catDiv = document.createElement('div');
-        catDiv.className = "bg-white p-4 rounded shadow";
-        const catTitle = document.createElement('h2');
-        catTitle.textContent = category;
-        catTitle.className = "text-2xl font-semibold mb-4";
-        catDiv.appendChild(catTitle);
-
-        const grid = document.createElement('div');
-        grid.className = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4";
-
-        data[category].forEach(item => {
-            const card = document.createElement('div');
-            card.className = "bg-gray-50 p-2 rounded text-center cursor-pointer hover:shadow-lg transition";
-
-            // 图片
-            const img = document.createElement('img');
-            img.className = "mx-auto mb-2 w-24 h-24 object-cover rounded";
-            img.loading = "lazy";
-            loadImage(item.iconSources, img);
-
-            // 英文
-            const eng = document.createElement('div');
-            eng.textContent = item.english;
-            eng.className = "font-medium";
-            eng.onclick = () => speak(item.english);
-
-            // 日文
-            const jp = document.createElement('div');
-            jp.textContent = item.japanese;
-            jp.className = "text-gray-600";
-
-            card.appendChild(img);
-            card.appendChild(eng);
-            card.appendChild(jp);
-            grid.appendChild(card);
-        });
-
-        catDiv.appendChild(grid);
-        container.appendChild(catDiv);
+// 渲染卡片
+function renderCards(categories) {
+  const container = document.getElementById('categoryContainer');
+  for (const [cat, words] of Object.entries(categories)) {
+    const catDiv = document.createElement('div');
+    catDiv.innerHTML = `<h2 class="text-2xl font-semibold mb-4">${cat}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"></div>`;
+    const grid = catDiv.querySelector('div');
+    words.forEach(word => {
+      const card = document.createElement('div');
+      card.className = "card bg-white p-4 rounded shadow text-center";
+      card.innerHTML = `
+        <img class="mx-auto mb-2 lazy-img rounded" src="${PLACEHOLDER}" alt="${word.japanese}">
+        <div class="font-semibold">${word.japanese}</div>
+        <div class="text-gray-600">${word.name}</div>
+        <div class="mt-2 speaker"><i class="fas fa-volume-up"></i></div>
+      `;
+      // 图片延迟加载
+      const img = card.querySelector('img');
+      const keywords = word.icon; // 可以改成数组
+      loadImageWithFallback(img, Array.isArray(keywords) ? keywords : [keywords]);
+      // 点击发音
+      card.querySelector('.speaker').addEventListener('click', () => speakJapanese(word.japanese));
+      grid.appendChild(card);
     });
-});
+    container.appendChild(catDiv);
+  }
+}
+
+// 读取 JSON 并渲染
+fetch('categories.json')
+  .then(res => res.json())
+  .then(data => renderCards(data))
+  .catch(err => console.error("Error loading JSON:", err));
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
