@@ -5,118 +5,117 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Japanese Learning Cards</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-.card {
-  transition: all 0.3s ease;
-}
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-}
-.icon-wrapper {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 9999px;
-  background: linear-gradient(135deg, #6b7280, #9ca3af);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 1.75rem;
-  margin: 0 auto 0.5rem;
-}
-.speaker {
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.speaker:hover {
-  color: #3b82f6;
-}
+  .card {
+    @apply flex flex-col items-center justify-center bg-white rounded-lg shadow p-4 m-2 w-32 h-32 cursor-pointer transition-transform transform hover:scale-105;
+  }
+  .emoji {
+    @apply text-4xl mb-2;
+  }
+  .name {
+    @apply text-lg font-semibold;
+  }
+  .japanese {
+    @apply text-sm text-gray-600;
+  }
+  .category {
+    @apply text-2xl font-bold text-indigo-700 mt-6 mb-2;
+  }
 </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
-<div class="container mx-auto px-4 py-8">
-  <header class="text-center mb-8">
+<div class="container mx-auto px-4 py-6">
+  <header class="text-center mb-6">
     <h1 class="text-4xl font-bold text-indigo-700 mb-2">Japanese Learning Cards</h1>
-    <p class="text-gray-600">Click the speaker to hear pronunciation</p>
+    <p class="text-gray-600">Click a card to hear pronunciation</p>
   </header>
-  <div id="categories"></div>
+
+  <div id="cardsContainer"></div>
 </div>
 
-<footer class="text-center py-6 text-gray-500 text-sm">
-  <p>© 2025 Japanese Learning Tool</p>
-</footer>
-
 <script>
-// 音频播放
-function speak(text) {
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'ja-JP';
-  speechSynthesis.speak(utterance);
-}
-
-// 图标映射备用 (简单示例，用 Font Awesome 图标代替)
-const iconMap = {
-  cat: "fa-cat",
-  dog: "fa-dog",
-  bear: "fa-paw",
-  rabbit: "fa-rabbit",
-  fox: "fa-fox", 
-  horse: "fa-horse",
-  cow: "fa-cow",
-  pig: "fa-pig",
-  lion: "fa-lion",
-  tiger: "fa-tiger",
-  tree: "fa-tree",
-  flower: "fa-seedling",
-  rice: "fa-bowl-rice",
-  bread: "fa-bread-slice",
-  apple: "fa-apple-alt",
-  banana: "fa-lemon", // 没有香蕉图标，用柠檬代替
-  car: "fa-car",
-  train: "fa-train",
-  airplane: "fa-plane",
-  bicycle: "fa-bicycle",
-  motorbike: "fa-motorcycle",
-  bus: "fa-bus",
-  ship: "fa-ship",
-  head: "fa-head-side",
-  eye: "fa-eye",
-  ear: "fa-ear-listen",
-  mouth: "fa-mouth",
-  hand: "fa-hand",
-  foot: "fa-football-ball"
+// JSON 数据，Emoji 替代图标
+const categories = {
+  "Animals": [
+    { name: "Cat", japanese: "ねこ", emoji: "🐱" },
+    { name: "Dog", japanese: "いぬ", emoji: "🐶" },
+    { name: "Bear", japanese: "くま", emoji: "🐻" },
+    { name: "Rabbit", japanese: "うさぎ", emoji: "🐰" },
+    { name: "Fox", japanese: "きつね", emoji: "🦊" },
+    { name: "Horse", japanese: "うま", emoji: "🐴" },
+    { name: "Cow", japanese: "うし", emoji: "🐮" },
+    { name: "Pig", japanese: "ぶた", emoji: "🐷" },
+    { name: "Lion", japanese: "ライオン", emoji: "🦁" },
+    { name: "Tiger", japanese: "とら", emoji: "🐯" }
+  ],
+  "Colors": [
+    { name: "Red", japanese: "あか", emoji: "🟥" },
+    { name: "Blue", japanese: "あお", emoji: "🟦" },
+    { name: "Yellow", japanese: "きいろ", emoji: "🟨" },
+    { name: "Green", japanese: "みどり", emoji: "🟩" },
+    { name: "Black", japanese: "くろ", emoji: "⬛" },
+    { name: "White", japanese: "しろ", emoji: "⬜" },
+    { name: "Purple", japanese: "むらさき", emoji: "🟪" },
+    { name: "Orange", japanese: "オレンジ", emoji: "🟧" },
+    { name: "Gray", japanese: "はいいろ", emoji: "⬜" },
+    { name: "Pink", japanese: "ピンク", emoji: "🌸" }
+  ],
+  "Food": [
+    { name: "Rice", japanese: "ごはん", emoji: "🍚" },
+    { name: "Bread", japanese: "パン", emoji: "🍞" },
+    { name: "Apple", japanese: "りんご", emoji: "🍎" },
+    { name: "Banana", japanese: "バナナ", emoji: "🍌" },
+    { name: "Fish", japanese: "さかな", emoji: "🐟" },
+    { name: "Meat", japanese: "にく", emoji: "🍖" },
+    { name: "Egg", japanese: "たまご", emoji: "🥚" },
+    { name: "Cheese", japanese: "チーズ", emoji: "🧀" },
+    { name: "Cookie", japanese: "クッキー", emoji: "🍪" },
+    { name: "Soup", japanese: "スープ", emoji: "🍲" }
+  ]
 };
 
-// 加载 JSON 并渲染
-fetch('categories.json')
-  .then(res => res.json())
-  .then(data => {
-    const container = document.getElementById('categories');
-    for (const [category, words] of Object.entries(data)) {
-      const catDiv = document.createElement('div');
-      catDiv.className = 'mb-8';
-      catDiv.innerHTML = `<h2 class="text-2xl font-bold text-indigo-600 mb-4">${category}</h2>`;
-      const grid = document.createElement('div');
-      grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4';
-      words.forEach(word => {
-        const iconClass = iconMap[word.icon] || 'fa-question';
-        const card = document.createElement('div');
-        card.className = 'card bg-white rounded-lg p-4 text-center';
-        card.innerHTML = `
-          <div class="icon-wrapper"><i class="fas ${iconClass}"></i></div>
-          <div class="font-semibold">${word.name}</div>
-          <div class="text-gray-600 mb-2">${word.japanese}</div>
-          <div class="speaker"><i class="fas fa-volume-up"></i></div>
-        `;
-        card.querySelector('.speaker').addEventListener('click', () => speak(word.japanese));
-        grid.appendChild(card);
-      });
-      catDiv.appendChild(grid);
-      container.appendChild(catDiv);
-    }
+// 创建卡片
+const container = document.getElementById('cardsContainer');
+
+for (const [category, items] of Object.entries(categories)) {
+  const catTitle = document.createElement('div');
+  catTitle.className = "category";
+  catTitle.textContent = category;
+  container.appendChild(catTitle);
+
+  const catGrid = document.createElement('div');
+  catGrid.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4";
+  container.appendChild(catGrid);
+
+  items.forEach(item => {
+    const card = document.createElement('div');
+    card.className = "card";
+    
+    const emoji = document.createElement('div');
+    emoji.className = "emoji";
+    emoji.textContent = item.emoji;
+    card.appendChild(emoji);
+
+    const name = document.createElement('div');
+    name.className = "name";
+    name.textContent = item.name;
+    card.appendChild(name);
+
+    const japanese = document.createElement('div');
+    japanese.className = "japanese";
+    japanese.textContent = item.japanese;
+    card.appendChild(japanese);
+
+    // 点击发音
+    card.addEventListener('click', () => {
+      const utter = new SpeechSynthesisUtterance(item.japanese);
+      utter.lang = 'ja-JP';
+      speechSynthesis.speak(utter);
+    });
+
+    catGrid.appendChild(card);
   });
+}
 </script>
 </body>
 </html>
