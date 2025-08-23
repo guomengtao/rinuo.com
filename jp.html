@@ -20,6 +20,11 @@
   .animal-card:hover .speaker-icon {
     color: #3b82f6;
   }
+  .source-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
 </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
@@ -56,17 +61,17 @@ const animals = [
 // 多源图标加载
 async function loadIcon(iconName) {
   const sources = [
-    `https://api.iconify.design/${iconName}.svg`,
-    `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/${iconName}.svg`,
-    `https://cdn.materialdesignicons.com/6.5.95/svg/${iconName}.svg`
+    { url: `https://api.iconify.design/${iconName}.svg`, label: "Iconify API" },
+    { url: `https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir/icons/${iconName}.svg`, label: "Iconoir CDN" },
+    { url: `https://cdn.materialdesignicons.com/6.5.95/svg/${iconName}.svg`, label: "MaterialDesign CDN" }
   ];
-  for (let url of sources) {
+  for (let source of sources) {
     try {
-      const res = await fetch(url);
-      if (res.ok) return url;
+      const res = await fetch(source.url);
+      if (res.ok) return source;
     } catch(e){ continue; }
   }
-  return 'https://cdn.jsdelivr.net/gh/tom-user/placeholder.svg'; // 占位图
+  return { url: 'https://via.placeholder.com/96x96?text=无', label: "未找到图标" };
 }
 
 const container = document.getElementById('animalGrid');
@@ -75,14 +80,15 @@ const container = document.getElementById('animalGrid');
 async function renderAnimals(list) {
   container.innerHTML = '';
   for (let animal of list) {
-    const imgUrl = await loadIcon(animal.icon);
+    const { url, label } = await loadIcon(animal.icon);
     const card = document.createElement('div');
     card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
     card.innerHTML = `
-      <img src="${imgUrl}" alt="${animal.name}" class="mx-auto h-24 w-24 mb-2" onerror="this.src='https://cdn.jsdelivr.net/gh/tom-user/placeholder.svg'">
+      <img src="${url}" alt="${animal.name}" class="mx-auto h-24 w-24 mb-2">
       <h3 class="font-semibold text-lg text-gray-800">${animal.name}</h3>
       <p class="text-indigo-600 mt-1">${animal.japanese}</p>
       <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
+      <div class="source-label">来源: ${label}</div>
     `;
     card.addEventListener('click', () => speakJapanese(animal.japanese));
     container.appendChild(card);
