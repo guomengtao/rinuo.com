@@ -7,133 +7,118 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .animal-card {
-    transition: all 0.3s ease;
-  }
-  .animal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  }
-  .speaker-icon {
-    transition: all 0.2s ease;
-  }
-  .animal-card:hover .speaker-icon {
-    color: #3b82f6;
-  }
-  .source-label {
-    font-size: 12px;
-    color: #888;
-    margin-top: 4px;
-  }
+.card {
+  transition: all 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+.speaker-icon {
+  transition: all 0.2s ease;
+}
+.card:hover .speaker-icon {
+  color: #3b82f6;
+}
+.source-label {
+  font-size: 12px;
+  color: #888;
+  margin-top: 4px;
+}
 </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
 <div class="container mx-auto px-4 py-8">
-
   <header class="text-center mb-6">
     <h1 class="text-4xl font-bold text-indigo-700 mb-2">日语学习卡</h1>
     <p class="text-gray-600">点击图标学习日语发音</p>
   </header>
-
   <div id="categoryContainer"></div>
 </div>
-
 <footer class="text-center py-6 text-gray-500 text-sm">
   <p>© 2025 日语学习工具</p>
 </footer>
 
 <script>
-// 分类数据
-const categories = {
-  "动物": [
-    { name: "猫", japanese: "ねこ", icon: "emojione-v1:cat-face" },
-    { name: "狗", japanese: "いぬ", icon: "emojione-v1:dog-face" },
-    { name: "熊", japanese: "くま", icon: "emojione-v1:bear-face" },
-    { name: "兔", japanese: "うさぎ", icon: "emojione-v1:rabbit-face" },
-    { name: "狐狸", japanese: "きつね", icon: "emojione-v1:fox-face" },
-    { name: "马", japanese: "うま", icon: "emojione-v1:horse-face" },
-    { name: "牛", japanese: "うし", icon: "emojione-v1:cow-face" },
-    { name: "猪", japanese: "ぶた", icon: "emojione-v1:pig-face" },
-    { name: "狮子", japanese: "ライオン", icon: "emojione-v1:lion-face" },
-    { name: "老虎", japanese: "とら", icon: "emojione-v1:tiger-face" }
-  ],
-  "植物": [
-    { name: "花", japanese: "はな", icon: "emojione-v1:cherry-blossom" },
-    { name: "树", japanese: "き", icon: "emojione-v1:deciduous-tree" },
-    { name: "草", japanese: "くさ", icon: "emojione-v1:herb" },
-    { name: "竹子", japanese: "たけ", icon: "emojione-v1:bamboo" },
-    { name: "松树", japanese: "まつ", icon: "emojione-v1:evergreen-tree" },
-    { name: "叶子", japanese: "はっぱ", icon: "emojione-v1:leaf-fluttering-in-wind" },
-    { name: "稻子", japanese: "いね", icon: "emojione-v1:ear-of-rice" },
-    { name: "水果", japanese: "くだもの", icon: "emojione-v1:grapes" },
-    { name: "蘑菇", japanese: "きのこ", icon: "emojione-v1:mushroom" },
-    { name: "仙人掌", japanese: "さぼてん", icon: "emojione-v1:cactus" }
-  ]
-  // 其他分类可以继续补充...
-};
+const PLACEHOLDER = "https://via.placeholder.com/96x96?text=图标";
 
-// 10个图标源
-async function loadIcon(iconName) {
-  const sources = [
-    { url: `https://api.iconify.design/${iconName}.svg`, label: "Iconify API" },
-    { url: `https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir/icons/${iconName}.svg`, label: "Iconoir CDN" },
-    { url: `https://cdn.materialdesignicons.com/6.5.95/svg/${iconName}.svg`, label: "MaterialDesign CDN" },
-    { url: `https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/${iconName}.svg`, label: "Twemoji" },
-    { url: `https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/${iconName}.svg`, label: "Simple Icons" },
-    { url: `https://unpkg.com/@icon-park/svg@latest/icons/${iconName}.svg`, label: "IconPark" },
-    { url: `https://raw.githubusercontent.com/primer/octicons/main/icons/${iconName}.svg`, label: "Octicons" },
-    { url: `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/${iconName}.svg`, label: "FontAwesome" },
-    { url: `https://cdn.jsdelivr.net/gh/feathericons/feather/icons/${iconName}.svg`, label: "Feather Icons" },
-    { url: `https://api.iconhub.io/api/icon/${iconName}.svg`, label: "IconHub" }
-  ];
-  for (let source of sources) {
+// 10个图标来源
+const ICON_SOURCES = [
+  src => `https://api.iconify.design/${src}.svg`,
+  src => `https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir/icons/${src}.svg`,
+  src => `https://cdn.materialdesignicons.com/6.5.95/svg/${src}.svg`,
+  src => `https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/${src}.svg`,
+  src => `https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/${src}.svg`,
+  src => `https://unpkg.com/@icon-park/svg@latest/icons/${src}.svg`,
+  src => `https://raw.githubusercontent.com/primer/octicons/main/icons/${src}.svg`,
+  src => `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/${src}.svg`,
+  src => `https://cdn.jsdelivr.net/gh/feathericons/feather/icons/${src}.svg`,
+  src => `https://api.iconhub.io/api/icon/${src}.svg`
+];
+
+// 延迟加载图片函数
+async function loadImage(srcName) {
+  for (let getUrl of ICON_SOURCES) {
+    const url = getUrl(srcName);
     try {
-      const res = await fetch(source.url);
-      if (res.ok) return source;
-    } catch(e){ continue; }
+      const res = await fetch(url, { method: 'HEAD' });
+      if (res.ok) return url;
+    } catch(e) { continue; }
   }
-  return { url: 'https://via.placeholder.com/96x96?text=无', label: "未找到图标" };
+  return PLACEHOLDER;
 }
 
-const categoryContainer = document.getElementById('categoryContainer');
+// 发音函数
+function speakJapanese(text){
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'ja-JP';
+  utter.rate = 0.8;
+  speechSynthesis.speak(utter);
+}
 
-// 渲染分类和卡片
+// 渲染分类
 async function renderCategories(data) {
-  categoryContainer.innerHTML = '';
-  for (let [category, list] of Object.entries(data)) {
+  const container = document.getElementById('categoryContainer');
+  container.innerHTML = '';
+  for (let [category, items] of Object.entries(data)) {
     const section = document.createElement('section');
     section.className = 'mb-10';
     section.innerHTML = `<h2 class="text-2xl font-bold mb-4 text-indigo-700">${category}</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
+                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
     const grid = section.querySelector('div');
-    for (let item of list) {
-      const { url, label } = await loadIcon(item.icon);
+
+    for (let item of items) {
       const card = document.createElement('div');
-      card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
-      card.innerHTML = `
-        <img src="${url}" alt="${item.name}" class="mx-auto h-24 w-24 mb-2">
-        <h3 class="font-semibold text-lg text-gray-800">${item.name}</h3>
-        <p class="text-indigo-600 mt-1">${item.japanese}</p>
-        <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
-        <div class="source-label">来源: ${label}</div>
-      `;
+      card.className = 'card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
+      const img = document.createElement('img');
+      img.src = PLACEHOLDER;
+      img.alt = item.name;
+      img.className = 'mx-auto h-24 w-24 mb-2';
+      card.appendChild(img);
+      card.innerHTML += `<h3 class="font-semibold text-lg text-gray-800">${item.name}</h3>
+                         <p class="text-indigo-600 mt-1">${item.japanese}</p>
+                         <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
+                         <div class="source-label">来源: 自动</div>`;
+
+      // 点击发音
       card.addEventListener('click', () => speakJapanese(item.japanese));
+
+      // 异步加载图片
+      loadImage(item.icon).then(url => img.src = url);
+
       grid.appendChild(card);
     }
-    categoryContainer.appendChild(section);
+
+    container.appendChild(section);
   }
 }
 
-function speakJapanese(text) {
-  const utterance = new SpeechSynthesisUtterance();
-  utterance.text = text;
-  utterance.lang = 'ja-JP';
-  utterance.rate = 0.8;
-  speechSynthesis.speak(utterance);
-}
+// 载入 JSON 并渲染
+fetch('categories.json')
+  .then(res => res.json())
+  .then(data => renderCategories(data))
+  .catch(err => console.error("加载JSON失败:", err));
 
-// 初始渲染
-renderCategories(categories);
 </script>
 </body>
 </html>
