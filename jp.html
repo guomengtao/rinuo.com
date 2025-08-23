@@ -7,34 +7,44 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-.card {
-  transition: all 0.3s ease;
-}
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
-}
-.speaker-icon {
-  transition: all 0.2s ease;
-}
-.card:hover .speaker-icon {
-  color: #3b82f6;
-}
-.source-label {
-  font-size: 12px;
-  color: #888;
-  margin-top: 4px;
-}
+  .animal-card {
+    transition: all 0.3s ease;
+  }
+  .animal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  .speaker-icon {
+    transition: all 0.2s ease;
+  }
+  .animal-card:hover .speaker-icon {
+    color: #3b82f6;
+  }
+  .source-label {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+  }
+  img.lazy {
+    filter: blur(2px);
+    transition: filter 0.3s;
+  }
+  img.lazy.loaded {
+    filter: blur(0);
+  }
 </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
 <div class="container mx-auto px-4 py-8">
+
   <header class="text-center mb-6">
     <h1 class="text-4xl font-bold text-indigo-700 mb-2">日语学习卡</h1>
     <p class="text-gray-600">点击图标学习日语发音</p>
   </header>
+
   <div id="categoryContainer"></div>
 </div>
+
 <footer class="text-center py-6 text-gray-500 text-sm">
   <p>© 2025 日语学习工具</p>
 </footer>
@@ -42,83 +52,80 @@
 <script>
 const PLACEHOLDER = "https://via.placeholder.com/96x96?text=图标";
 
-// 10个图标来源
-const ICON_SOURCES = [
-  src => `https://api.iconify.design/${src}.svg`,
-  src => `https://cdn.jsdelivr.net/gh/iconoir-icons/iconoir/icons/${src}.svg`,
-  src => `https://cdn.materialdesignicons.com/6.5.95/svg/${src}.svg`,
-  src => `https://raw.githubusercontent.com/twitter/twemoji/master/assets/svg/${src}.svg`,
-  src => `https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/${src}.svg`,
-  src => `https://unpkg.com/@icon-park/svg@latest/icons/${src}.svg`,
-  src => `https://raw.githubusercontent.com/primer/octicons/main/icons/${src}.svg`,
-  src => `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/${src}.svg`,
-  src => `https://cdn.jsdelivr.net/gh/feathericons/feather/icons/${src}.svg`,
-  src => `https://api.iconhub.io/api/icon/${src}.svg`
-];
-
-// 延迟加载图片函数
-async function loadImage(srcName) {
-  for (let getUrl of ICON_SOURCES) {
-    const url = getUrl(srcName);
-    try {
-      const res = await fetch(url, { method: 'HEAD' });
-      if (res.ok) return url;
-    } catch(e) { continue; }
-  }
-  return PLACEHOLDER;
-}
-
-// 发音函数
-function speakJapanese(text){
-  const utter = new SpeechSynthesisUtterance(text);
-  utter.lang = 'ja-JP';
-  utter.rate = 0.8;
-  speechSynthesis.speak(utter);
-}
-
-// 渲染分类
-async function renderCategories(data) {
+// 读取 JSON 并渲染
+async function loadCategories() {
+  const res = await fetch('categories.json');
+  const categories = await res.json();
   const container = document.getElementById('categoryContainer');
   container.innerHTML = '';
-  for (let [category, items] of Object.entries(data)) {
+
+  for (let [cat, items] of Object.entries(categories)) {
     const section = document.createElement('section');
     section.className = 'mb-10';
-    section.innerHTML = `<h2 class="text-2xl font-bold mb-4 text-indigo-700">${category}</h2>
-                         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
+    section.innerHTML = `<h2 class="text-2xl font-bold mb-4 text-indigo-700">${cat}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
     const grid = section.querySelector('div');
 
     for (let item of items) {
       const card = document.createElement('div');
-      card.className = 'card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
-      const img = document.createElement('img');
-      img.src = PLACEHOLDER;
-      img.alt = item.name;
-      img.className = 'mx-auto h-24 w-24 mb-2';
-      card.appendChild(img);
-      card.innerHTML += `<h3 class="font-semibold text-lg text-gray-800">${item.name}</h3>
-                         <p class="text-indigo-600 mt-1">${item.japanese}</p>
-                         <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
-                         <div class="source-label">来源: 自动</div>`;
-
-      // 点击发音
+      card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
+      card.innerHTML = `
+        <img data-src="${item.iconSources[0]}" src="${PLACEHOLDER}" alt="${item.name}" class="mx-auto h-24 w-24 mb-2 lazy">
+        <h3 class="font-semibold text-lg text-gray-800">${item.name}</h3>
+        <p class="text-indigo-600 mt-1">${item.japanese}</p>
+        <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
+        <div class="source-label">来源: ${item.iconSources[0]}</div>
+      `;
       card.addEventListener('click', () => speakJapanese(item.japanese));
-
-      // 异步加载图片
-      loadImage(item.icon).then(url => img.src = url);
-
       grid.appendChild(card);
     }
-
     container.appendChild(section);
   }
+
+  lazyLoadImages();
 }
 
-// 载入 JSON 并渲染
-fetch('categories.json')
-  .then(res => res.json())
-  .then(data => renderCategories(data))
-  .catch(err => console.error("加载JSON失败:", err));
+// 点击发音
+function speakJapanese(text) {
+  const utterance = new SpeechSynthesisUtterance();
+  utterance.text = text;
+  utterance.lang = 'ja-JP';
+  utterance.rate = 0.8;
+  speechSynthesis.speak(utterance);
+}
 
+// 延迟加载图片 + 多源备选
+function lazyLoadImages() {
+  const imgs = document.querySelectorAll('img.lazy');
+  imgs.forEach(img => {
+    const sources = [img.dataset.src]; // 可以扩展成多个备用 URL
+    let index = 0;
+
+    function tryLoad() {
+      img.src = sources[index] || PLACEHOLDER;
+    }
+    img.onload = () => { img.classList.add('loaded'); };
+    img.onerror = () => {
+      index++;
+      if (index < sources.length) tryLoad();
+      else img.src = PLACEHOLDER;
+    };
+
+    // 使用 IntersectionObserver 延迟加载
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          tryLoad();
+          observer.unobserve(img);
+        }
+      });
+    }, { threshold: 0.1 });
+    observer.observe(img);
+  });
+}
+
+// 初始化
+loadCategories();
 </script>
 </body>
 </html>
