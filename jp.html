@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>日语动物学习卡</title>
+<title>日语学习卡 - 多分类</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
@@ -30,19 +30,12 @@
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
 <div class="container mx-auto px-4 py-8">
 
-  <!-- 搜索条 -->
-  <div class="mb-6">
-    <input id="searchInput" type="text" placeholder="搜索动物..." class="w-full p-3 rounded-lg shadow border border-gray-300">
-  </div>
-
   <header class="text-center mb-6">
-    <h1 class="text-4xl font-bold text-indigo-700 mb-2">日语动物学习卡</h1>
-    <p class="text-gray-600">点击动物图标学习日语发音</p>
+    <h1 class="text-4xl font-bold text-indigo-700 mb-2">日语学习卡</h1>
+    <p class="text-gray-600">点击图标学习日语发音</p>
   </header>
 
-  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6" id="animalGrid">
-    <!-- 动物卡片通过JS动态生成 -->
-  </div>
+  <div id="categoryContainer"></div>
 </div>
 
 <footer class="text-center py-6 text-gray-500 text-sm">
@@ -50,13 +43,34 @@
 </footer>
 
 <script>
-const animals = [
-  { name: "猫", japanese: "ねこ", icon: "emojione-v1:cat-face" },
-  { name: "狗", japanese: "いぬ", icon: "emojione-v1:dog-face" },
-  { name: "熊", japanese: "くま", icon: "emojione-v1:bear-face" },
-  { name: "兔", japanese: "うさぎ", icon: "emojione-v1:rabbit-face" },
-  { name: "狐狸", japanese: "きつね", icon: "emojione-v1:fox-face" }
-];
+// 分类数据
+const categories = {
+  "动物": [
+    { name: "猫", japanese: "ねこ", icon: "emojione-v1:cat-face" },
+    { name: "狗", japanese: "いぬ", icon: "emojione-v1:dog-face" },
+    { name: "熊", japanese: "くま", icon: "emojione-v1:bear-face" },
+    { name: "兔", japanese: "うさぎ", icon: "emojione-v1:rabbit-face" },
+    { name: "狐狸", japanese: "きつね", icon: "emojione-v1:fox-face" },
+    { name: "马", japanese: "うま", icon: "emojione-v1:horse-face" },
+    { name: "牛", japanese: "うし", icon: "emojione-v1:cow-face" },
+    { name: "猪", japanese: "ぶた", icon: "emojione-v1:pig-face" },
+    { name: "狮子", japanese: "ライオン", icon: "emojione-v1:lion-face" },
+    { name: "老虎", japanese: "とら", icon: "emojione-v1:tiger-face" }
+  ],
+  "植物": [
+    { name: "花", japanese: "はな", icon: "emojione-v1:cherry-blossom" },
+    { name: "树", japanese: "き", icon: "emojione-v1:deciduous-tree" },
+    { name: "草", japanese: "くさ", icon: "emojione-v1:herb" },
+    { name: "竹子", japanese: "たけ", icon: "emojione-v1:bamboo" },
+    { name: "松树", japanese: "まつ", icon: "emojione-v1:evergreen-tree" },
+    { name: "叶子", japanese: "はっぱ", icon: "emojione-v1:leaf-fluttering-in-wind" },
+    { name: "稻子", japanese: "いね", icon: "emojione-v1:ear-of-rice" },
+    { name: "水果", japanese: "くだもの", icon: "emojione-v1:grapes" },
+    { name: "蘑菇", japanese: "きのこ", icon: "emojione-v1:mushroom" },
+    { name: "仙人掌", japanese: "さぼてん", icon: "emojione-v1:cactus" }
+  ]
+  // 其他分类可以继续补充...
+};
 
 // 10个图标源
 async function loadIcon(iconName) {
@@ -81,38 +95,34 @@ async function loadIcon(iconName) {
   return { url: 'https://via.placeholder.com/96x96?text=无', label: "未找到图标" };
 }
 
-const container = document.getElementById('animalGrid');
+const categoryContainer = document.getElementById('categoryContainer');
 
-// 渲染动物卡
-async function renderAnimals(list) {
-  container.innerHTML = '';
-  for (let animal of list) {
-    const { url, label } = await loadIcon(animal.icon);
-    const card = document.createElement('div');
-    card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
-    card.innerHTML = `
-      <img src="${url}" alt="${animal.name}" class="mx-auto h-24 w-24 mb-2">
-      <h3 class="font-semibold text-lg text-gray-800">${animal.name}</h3>
-      <p class="text-indigo-600 mt-1">${animal.japanese}</p>
-      <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
-      <div class="source-label">来源: ${label}</div>
-    `;
-    card.addEventListener('click', () => speakJapanese(animal.japanese));
-    container.appendChild(card);
+// 渲染分类和卡片
+async function renderCategories(data) {
+  categoryContainer.innerHTML = '';
+  for (let [category, list] of Object.entries(data)) {
+    const section = document.createElement('section');
+    section.className = 'mb-10';
+    section.innerHTML = `<h2 class="text-2xl font-bold mb-4 text-indigo-700">${category}</h2>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6"></div>`;
+    const grid = section.querySelector('div');
+    for (let item of list) {
+      const { url, label } = await loadIcon(item.icon);
+      const card = document.createElement('div');
+      card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
+      card.innerHTML = `
+        <img src="${url}" alt="${item.name}" class="mx-auto h-24 w-24 mb-2">
+        <h3 class="font-semibold text-lg text-gray-800">${item.name}</h3>
+        <p class="text-indigo-600 mt-1">${item.japanese}</p>
+        <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
+        <div class="source-label">来源: ${label}</div>
+      `;
+      card.addEventListener('click', () => speakJapanese(item.japanese));
+      grid.appendChild(card);
+    }
+    categoryContainer.appendChild(section);
   }
 }
-
-// 搜索功能
-const searchInput = document.getElementById('searchInput');
-searchInput.addEventListener('input', () => {
-  const query = searchInput.value.trim();
-  if (!query) {
-    renderAnimals(animals);
-    return;
-  }
-  const filtered = animals.filter(a => a.name.includes(query) || a.japanese.includes(query));
-  renderAnimals(filtered);
-});
 
 function speakJapanese(text) {
   const utterance = new SpeechSynthesisUtterance();
@@ -123,7 +133,7 @@ function speakJapanese(text) {
 }
 
 // 初始渲染
-renderAnimals(animals);
+renderCategories(categories);
 </script>
 </body>
 </html>
