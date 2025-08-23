@@ -5,114 +5,118 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Japanese Learning Cards</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .card {
-    transition: all 0.3s ease;
-  }
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0,0,0,0.1);
-  }
-  .speaker {
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-  .speaker:hover {
-    color: #3b82f6;
-  }
-  .source-label {
-    font-size: 12px;
-    color: #888;
-    margin-top: 4px;
-  }
+.card {
+  transition: all 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+}
+.icon-wrapper {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #6b7280, #9ca3af);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 1.75rem;
+  margin: 0 auto 0.5rem;
+}
+.speaker {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.speaker:hover {
+  color: #3b82f6;
+}
 </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
 <div class="container mx-auto px-4 py-8">
-  <header class="text-center mb-6">
+  <header class="text-center mb-8">
     <h1 class="text-4xl font-bold text-indigo-700 mb-2">Japanese Learning Cards</h1>
-    <p class="text-gray-600">Click the speaker icon to hear pronunciation</p>
+    <p class="text-gray-600">Click the speaker to hear pronunciation</p>
   </header>
-
-  <div id="categoryContainer" class="grid gap-6"></div>
+  <div id="categories"></div>
 </div>
 
 <footer class="text-center py-6 text-gray-500 text-sm">
-  © 2025 Japanese Learning Tool
+  <p>© 2025 Japanese Learning Tool</p>
 </footer>
 
 <script>
-const PLACEHOLDER = "https://via.placeholder.com/96?text=?";
-
-// 多图源示例：每个词有10个关键字
-const IMAGE_SOURCES = [
-  (keyword) => `https://source.unsplash.com/160x160/?${keyword}`,
-  (keyword) => `https://loremflickr.com/160/160/${keyword}`,
-  (keyword) => `https://placehold.co/160x160?text=${keyword}`,
-  (keyword) => `https://picsum.photos/seed/${keyword}/160/160`,
-  (keyword) => `https://dummyimage.com/160x160/ccc/000&text=${keyword}`,
-  (keyword) => `https://placekitten.com/160/160`,
-  (keyword) => `https://placebear.com/160/160`,
-  (keyword) => `https://www.fillmurray.com/160/160`,
-  (keyword) => `https://baconmockup.com/160/160`,
-  (keyword) => `https://via.placeholder.com/160?text=${keyword}`
-];
-
-// 延迟加载图片
-function loadImageWithFallback(img, keywords, index = 0) {
-  if (index >= keywords.length) {
-    img.src = PLACEHOLDER;
-    return;
-  }
-  const url = IMAGE_SOURCES[index](keywords[index]);
-  const testImg = new Image();
-  testImg.onload = () => { img.src = url; };
-  testImg.onerror = () => { loadImageWithFallback(img, keywords, index+1); };
-  testImg.src = url;
-}
-
-// 点击播放日语发音
-function speakJapanese(text) {
+// 音频播放
+function speak(text) {
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'ja-JP';
   speechSynthesis.speak(utterance);
 }
 
-// 渲染卡片
-function renderCards(categories) {
-  const container = document.getElementById('categoryContainer');
-  for (const [cat, words] of Object.entries(categories)) {
-    const catDiv = document.createElement('div');
-    catDiv.innerHTML = `<h2 class="text-2xl font-semibold mb-4">${cat}</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4"></div>`;
-    const grid = catDiv.querySelector('div');
-    words.forEach(word => {
-      const card = document.createElement('div');
-      card.className = "card bg-white p-4 rounded shadow text-center";
-      card.innerHTML = `
-        <img class="mx-auto mb-2 lazy-img rounded" src="${PLACEHOLDER}" alt="${word.japanese}">
-        <div class="font-semibold">${word.japanese}</div>
-        <div class="text-gray-600">${word.name}</div>
-        <div class="mt-2 speaker"><i class="fas fa-volume-up"></i></div>
-      `;
-      // 图片延迟加载
-      const img = card.querySelector('img');
-      const keywords = word.icon; // 可以改成数组
-      loadImageWithFallback(img, Array.isArray(keywords) ? keywords : [keywords]);
-      // 点击发音
-      card.querySelector('.speaker').addEventListener('click', () => speakJapanese(word.japanese));
-      grid.appendChild(card);
-    });
-    container.appendChild(catDiv);
-  }
-}
+// 图标映射备用 (简单示例，用 Font Awesome 图标代替)
+const iconMap = {
+  cat: "fa-cat",
+  dog: "fa-dog",
+  bear: "fa-paw",
+  rabbit: "fa-rabbit",
+  fox: "fa-fox", 
+  horse: "fa-horse",
+  cow: "fa-cow",
+  pig: "fa-pig",
+  lion: "fa-lion",
+  tiger: "fa-tiger",
+  tree: "fa-tree",
+  flower: "fa-seedling",
+  rice: "fa-bowl-rice",
+  bread: "fa-bread-slice",
+  apple: "fa-apple-alt",
+  banana: "fa-lemon", // 没有香蕉图标，用柠檬代替
+  car: "fa-car",
+  train: "fa-train",
+  airplane: "fa-plane",
+  bicycle: "fa-bicycle",
+  motorbike: "fa-motorcycle",
+  bus: "fa-bus",
+  ship: "fa-ship",
+  head: "fa-head-side",
+  eye: "fa-eye",
+  ear: "fa-ear-listen",
+  mouth: "fa-mouth",
+  hand: "fa-hand",
+  foot: "fa-football-ball"
+};
 
-// 读取 JSON 并渲染
+// 加载 JSON 并渲染
 fetch('categories.json')
   .then(res => res.json())
-  .then(data => renderCards(data))
-  .catch(err => console.error("Error loading JSON:", err));
+  .then(data => {
+    const container = document.getElementById('categories');
+    for (const [category, words] of Object.entries(data)) {
+      const catDiv = document.createElement('div');
+      catDiv.className = 'mb-8';
+      catDiv.innerHTML = `<h2 class="text-2xl font-bold text-indigo-600 mb-4">${category}</h2>`;
+      const grid = document.createElement('div');
+      grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4';
+      words.forEach(word => {
+        const iconClass = iconMap[word.icon] || 'fa-question';
+        const card = document.createElement('div');
+        card.className = 'card bg-white rounded-lg p-4 text-center';
+        card.innerHTML = `
+          <div class="icon-wrapper"><i class="fas ${iconClass}"></i></div>
+          <div class="font-semibold">${word.name}</div>
+          <div class="text-gray-600 mb-2">${word.japanese}</div>
+          <div class="speaker"><i class="fas fa-volume-up"></i></div>
+        `;
+        card.querySelector('.speaker').addEventListener('click', () => speak(word.japanese));
+        grid.appendChild(card);
+      });
+      catDiv.appendChild(grid);
+      container.appendChild(catDiv);
+    }
+  });
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
 </body>
 </html>
