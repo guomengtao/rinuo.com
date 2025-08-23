@@ -7,10 +7,10 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
   .card {
-    @apply flex flex-col items-center justify-center bg-white rounded-lg shadow p-4 m-2 w-32 h-32 cursor-pointer transition-transform transform hover:scale-105;
+    @apply flex flex-col items-center justify-center bg-white rounded-lg shadow p-4 m-2 w-40 h-40 cursor-pointer transition-transform transform hover:scale-105;
   }
   .emoji {
-    @apply text-4xl mb-2;
+    @apply text-6xl mb-2;
   }
   .name {
     @apply text-lg font-semibold;
@@ -34,88 +34,65 @@
 </div>
 
 <script>
-// JSON 数据，Emoji 替代图标
-const categories = {
-  "Animals": [
-    { name: "Cat", japanese: "ねこ", emoji: "🐱" },
-    { name: "Dog", japanese: "いぬ", emoji: "🐶" },
-    { name: "Bear", japanese: "くま", emoji: "🐻" },
-    { name: "Rabbit", japanese: "うさぎ", emoji: "🐰" },
-    { name: "Fox", japanese: "きつね", emoji: "🦊" },
-    { name: "Horse", japanese: "うま", emoji: "🐴" },
-    { name: "Cow", japanese: "うし", emoji: "🐮" },
-    { name: "Pig", japanese: "ぶた", emoji: "🐷" },
-    { name: "Lion", japanese: "ライオン", emoji: "🦁" },
-    { name: "Tiger", japanese: "とら", emoji: "🐯" }
-  ],
-  "Colors": [
-    { name: "Red", japanese: "あか", emoji: "🟥" },
-    { name: "Blue", japanese: "あお", emoji: "🟦" },
-    { name: "Yellow", japanese: "きいろ", emoji: "🟨" },
-    { name: "Green", japanese: "みどり", emoji: "🟩" },
-    { name: "Black", japanese: "くろ", emoji: "⬛" },
-    { name: "White", japanese: "しろ", emoji: "⬜" },
-    { name: "Purple", japanese: "むらさき", emoji: "🟪" },
-    { name: "Orange", japanese: "オレンジ", emoji: "🟧" },
-    { name: "Gray", japanese: "はいいろ", emoji: "⬜" },
-    { name: "Pink", japanese: "ピンク", emoji: "🌸" }
-  ],
-  "Food": [
-    { name: "Rice", japanese: "ごはん", emoji: "🍚" },
-    { name: "Bread", japanese: "パン", emoji: "🍞" },
-    { name: "Apple", japanese: "りんご", emoji: "🍎" },
-    { name: "Banana", japanese: "バナナ", emoji: "🍌" },
-    { name: "Fish", japanese: "さかな", emoji: "🐟" },
-    { name: "Meat", japanese: "にく", emoji: "🍖" },
-    { name: "Egg", japanese: "たまご", emoji: "🥚" },
-    { name: "Cheese", japanese: "チーズ", emoji: "🧀" },
-    { name: "Cookie", japanese: "クッキー", emoji: "🍪" },
-    { name: "Soup", japanese: "スープ", emoji: "🍲" }
-  ]
-};
-
-// 创建卡片
-const container = document.getElementById('cardsContainer');
-
-for (const [category, items] of Object.entries(categories)) {
-  const catTitle = document.createElement('div');
-  catTitle.className = "category";
-  catTitle.textContent = category;
-  container.appendChild(catTitle);
-
-  const catGrid = document.createElement('div');
-  catGrid.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4";
-  container.appendChild(catGrid);
-
-  items.forEach(item => {
-    const card = document.createElement('div');
-    card.className = "card";
-    
-    const emoji = document.createElement('div');
-    emoji.className = "emoji";
-    emoji.textContent = item.emoji;
-    card.appendChild(emoji);
-
-    const name = document.createElement('div');
-    name.className = "name";
-    name.textContent = item.name;
-    card.appendChild(name);
-
-    const japanese = document.createElement('div');
-    japanese.className = "japanese";
-    japanese.textContent = item.japanese;
-    card.appendChild(japanese);
-
-    // 点击发音
-    card.addEventListener('click', () => {
-      const utter = new SpeechSynthesisUtterance(item.japanese);
-      utter.lang = 'ja-JP';
-      speechSynthesis.speak(utter);
-    });
-
-    catGrid.appendChild(card);
-  });
+// 异步加载 JSON 数据
+async function loadCategories() {
+  try {
+    const response = await fetch('categories.json'); // 确保 JSON 文件和 HTML 同目录
+    const categories = await response.json();
+    renderCards(categories);
+  } catch (err) {
+    console.error("Failed to load categories.json:", err);
+  }
 }
+
+function renderCards(categories) {
+  const container = document.getElementById('cardsContainer');
+
+  for (const [category, items] of Object.entries(categories)) {
+    // 类别标题
+    const catTitle = document.createElement('div');
+    catTitle.className = "category";
+    catTitle.textContent = category;
+    container.appendChild(catTitle);
+
+    // 网格容器
+    const catGrid = document.createElement('div');
+    catGrid.className = "grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-4";
+    container.appendChild(catGrid);
+
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = "card";
+
+      const emoji = document.createElement('div');
+      emoji.className = "emoji";
+      emoji.textContent = item.emoji || '❓';
+      card.appendChild(emoji);
+
+      const name = document.createElement('div');
+      name.className = "name";
+      name.textContent = item.name;
+      card.appendChild(name);
+
+      const japanese = document.createElement('div');
+      japanese.className = "japanese";
+      japanese.textContent = item.japanese;
+      card.appendChild(japanese);
+
+      // 点击发音
+      card.addEventListener('click', () => {
+        const utter = new SpeechSynthesisUtterance(item.japanese);
+        utter.lang = 'ja-JP';
+        speechSynthesis.speak(utter);
+      });
+
+      catGrid.appendChild(card);
+    });
+  }
+}
+
+// 页面加载后执行
+loadCategories();
 </script>
 </body>
 </html>
