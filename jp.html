@@ -3,89 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>日语动物学习卡 - 图标版</title>
+<title>日语动物学习卡</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  .animal-card { transition: all 0.3s ease; }
-  .animal-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
-  .speaker-icon { transition: all 0.2s ease; }
-  .animal-card:hover .speaker-icon { color: #3b82f6; }
+  .animal-card {
+    transition: all 0.3s ease;
+  }
+  .animal-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  .speaker-icon {
+    transition: all 0.2s ease;
+  }
+  .animal-card:hover .speaker-icon {
+    color: #3b82f6;
+  }
 </style>
 </head>
 <body class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen">
 <div class="container mx-auto px-4 py-8">
+
+  <!-- 搜索条 -->
+  <div class="mb-6">
+    <input id="searchInput" type="text" placeholder="搜索动物..." class="w-full p-3 rounded-lg shadow border border-gray-300">
+  </div>
+
   <header class="text-center mb-6">
     <h1 class="text-4xl font-bold text-indigo-700 mb-2">日语动物学习卡</h1>
-    <input id="searchInput" type="text" placeholder="搜索动物..." class="border rounded px-3 py-2 w-full max-w-md mx-auto mb-4" oninput="onSearch()">
-    <p class="text-gray-600">点击图标学习日语发音</p>
+    <p class="text-gray-600">点击动物图标学习日语发音</p>
   </header>
 
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6" id="animalGrid">
-    <!-- 动物卡片动态生成 -->
+    <!-- 动物卡片通过JS动态生成 -->
   </div>
 </div>
 
 <footer class="text-center py-6 text-gray-500 text-sm">
-  <p>© 2025 日语学习工具 - 点击图标听发音</p>
+  <p>© 2025 日语学习工具</p>
 </footer>
 
 <script>
-  // 初始动物列表（对应日语名称）
-  const defaultAnimals = [
-    { name: "猫", japanese: "ねこ", icon: "fa-solid/cat" },
-    { name: "犬", japanese: "いぬ", icon: "fa-solid/dog" },
-    { name: "熊", japanese: "くま", icon: "fa-solid/bear" },
-    { name: "兔", japanese: "うさぎ", icon: "fa-solid/rabbit" },
-    { name: "狐狸", japanese: "きつね", icon: "fa-solid/fox" },
-    { name: "老虎", japanese: "とら", icon: "fa-solid/tiger" }
+const animals = [
+  { name: "猫", japanese: "ねこ", icon: "emojione-v1:cat-face" },
+  { name: "狗", japanese: "いぬ", icon: "emojione-v1:dog-face" },
+  { name: "熊", japanese: "くま", icon: "emojione-v1:bear-face" },
+  { name: "兔", japanese: "うさぎ", icon: "emojione-v1:rabbit-face" },
+  { name: "狐狸", japanese: "きつね", icon: "emojione-v1:fox-face" }
+];
+
+// 多源图标加载
+async function loadIcon(iconName) {
+  const sources = [
+    `https://api.iconify.design/${iconName}.svg`,
+    `https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/${iconName}.svg`,
+    `https://cdn.materialdesignicons.com/6.5.95/svg/${iconName}.svg`
   ];
-
-  const grid = document.getElementById('animalGrid');
-
-  function renderAnimals(list) {
-    grid.innerHTML = '';
-    list.forEach(animal => {
-      const card = document.createElement('div');
-      card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
-      card.innerHTML = `
-        <div class="relative flex justify-center items-center h-24">
-          <img src="https://api.iconify.design/${animal.icon}.svg?color=%233b82f6&width=80&height=80" alt="${animal.name}" class="w-20 h-20">
-          <div class="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md speaker-icon">
-            <i class="fas fa-volume-up text-gray-400"></i>
-          </div>
-        </div>
-        <h3 class="font-semibold text-lg text-gray-800 mt-2">${animal.name}</h3>
-        <p class="text-indigo-600 mt-1">${animal.japanese}</p>
-      `;
-      card.addEventListener('click', () => speakJapanese(animal.japanese));
-      grid.appendChild(card);
-    });
+  for (let url of sources) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return url;
+    } catch(e){ continue; }
   }
+  return 'https://cdn.jsdelivr.net/gh/tom-user/placeholder.svg'; // 占位图
+}
 
-  function speakJapanese(text) {
-    const utterance = new SpeechSynthesisUtterance();
-    utterance.text = text;
-    utterance.lang = 'ja-JP';
-    utterance.rate = 0.8;
-    speechSynthesis.speak(utterance);
+const container = document.getElementById('animalGrid');
+
+// 渲染动物卡
+async function renderAnimals(list) {
+  container.innerHTML = '';
+  for (let animal of list) {
+    const imgUrl = await loadIcon(animal.icon);
+    const card = document.createElement('div');
+    card.className = 'animal-card bg-white rounded-xl overflow-hidden shadow-md cursor-pointer text-center p-4';
+    card.innerHTML = `
+      <img src="${imgUrl}" alt="${animal.name}" class="mx-auto h-24 w-24 mb-2" onerror="this.src='https://cdn.jsdelivr.net/gh/tom-user/placeholder.svg'">
+      <h3 class="font-semibold text-lg text-gray-800">${animal.name}</h3>
+      <p class="text-indigo-600 mt-1">${animal.japanese}</p>
+      <div class="speaker-icon mt-2"><i class="fas fa-volume-up text-gray-400"></i></div>
+    `;
+    card.addEventListener('click', () => speakJapanese(animal.japanese));
+    container.appendChild(card);
   }
+}
 
-  // 搜索功能，匹配默认列表
-  function onSearch() {
-    const query = document.getElementById('searchInput').value.trim();
-    if (!query) {
-      renderAnimals(defaultAnimals);
-      return;
-    }
-    const filtered = defaultAnimals.filter(a =>
-      a.name.includes(query) || a.japanese.includes(query)
-    );
-    renderAnimals(filtered);
+// 搜索功能
+const searchInput = document.getElementById('searchInput');
+searchInput.addEventListener('input', () => {
+  const query = searchInput.value.trim();
+  if (!query) {
+    renderAnimals(animals);
+    return;
   }
+  const filtered = animals.filter(a => a.name.includes(query) || a.japanese.includes(query));
+  renderAnimals(filtered);
+});
 
-  // 页面初始渲染
-  renderAnimals(defaultAnimals);
+function speakJapanese(text) {
+  const utterance = new SpeechSynthesisUtterance();
+  utterance.text = text;
+  utterance.lang = 'ja-JP';
+  utterance.rate = 0.8;
+  speechSynthesis.speak(utterance);
+}
+
+// 初始渲染
+renderAnimals(animals);
 </script>
 </body>
 </html>
