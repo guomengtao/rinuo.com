@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japanese Learning Cards</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+  @apply bg-gradient-to-br from-purple-100 via-pink-50 to-yellow-50 min-h-screen font-sans;
+}
+
+.container {
+  @apply mx-auto px-6 py-8;
+}
+
+header h1 {
+  @apply text-5xl font-extrabold text-indigo-700 mb-2;
+}
+
+header p {
+  @apply text-gray-600 text-lg;
+}
+
+.category {
+  @apply text-3xl font-bold text-indigo-700 mt-10 mb-6 border-b-2 border-indigo-300 pb-2;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  @apply flex flex-col items-center justify-center bg-white rounded-3xl shadow-xl cursor-pointer transition-all duration-300 ease-in-out p-6;
+  background: linear-gradient(145deg, #ffffff, #f0f0f0);
+  border: 1px solid #e0e0e0;
+}
+
+.card:hover {
+  @apply scale-105 shadow-2xl;
+}
+
+.emoji {
+  font-size: 200px;
+  line-height: 1;
+  margin-bottom: 12px;
+  text-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+}
+
+.japanese {
+  @apply text-2xl font-semibold text-gray-800 text-center;
+}
+
+/* 点击动画仅作用于 emoji */
+@keyframes emoji-bounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.2); }
+  50%  { transform: scale(0.9); }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.emoji.clicked {
+  animation: emoji-bounce 0.4s ease;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header class="text-center mb-6">
+    <h1 class="text-5xl font-bold text-indigo-700 mb-2">Japanese Learning Cards</h1>
+    <p class="text-gray-600 text-lg">Click a card to hear pronunciation</p>
+  </header>
+
+  <div id="cardsContainer"></div>
+</div>
+
+<script>
+// 异步加载 JSON 数据
+async function loadCategories() {
+  try {
+    const response = await fetch('categories.json'); // JSON 文件路径
+    const categories = await response.json();
+    renderCards(categories);
+  } catch (err) {
+    console.error("Failed to load categories.json:", err);
+  }
+}
+
+function renderCards(categories) {
+  const container = document.getElementById('cardsContainer');
+
+  for (const [category, items] of Object.entries(categories)) {
+    const catTitle = document.createElement('div');
+    catTitle.className = "category";
+    catTitle.textContent = category;
+    container.appendChild(catTitle);
+
+    const grid = document.createElement('div');
+    grid.className = "cards-grid";
+    container.appendChild(grid);
+
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = "card";
+
+      const emoji = document.createElement('div');
+      emoji.className = "emoji";
+      emoji.textContent = item.emoji || '❓';
+      card.appendChild(emoji);
+
+      const japanese = document.createElement('div');
+      japanese.className = "japanese";
+      japanese.textContent = item.japanese;
+      card.appendChild(japanese);
+
+      // 点击发音 & emoji 弹跳效果
+      card.addEventListener('click', () => {
+        // 发音
+        const utter = new SpeechSynthesisUtterance(item.japanese);
+        utter.lang = 'ja-JP';
+        speechSynthesis.speak(utter);
+
+        // 仅 emoji 弹跳
+        emoji.classList.remove('clicked'); // 重新触发动画
+        void emoji.offsetWidth; // 强制重绘
+        emoji.classList.add('clicked');
+      });
+
+      grid.appendChild(card);
+    });
+  }
+}
+
+// 页面加载后执行
+loadCategories();
+</script>
+</body>
+</html>
