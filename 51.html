@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Japanese Kana Chart</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body {
+  @apply bg-gradient-to-br from-purple-900 via-indigo-900 to-gray-900 min-h-screen font-sans text-white;
+}
+
+.container {
+  @apply mx-auto px-6 py-10;
+}
+
+header h1 {
+  @apply text-5xl font-extrabold text-yellow-400 mb-2 text-center;
+}
+
+header p {
+  @apply text-gray-300 text-lg text-center;
+}
+
+.row-name {
+  @apply text-xl text-indigo-200 font-semibold text-center mt-6 mb-2;
+}
+
+.row-consonant {
+  @apply text-lg text-gray-300 text-center mb-4;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 每行 5 个 */
+  gap: 20px;
+  justify-items: center;
+}
+
+.card {
+  @apply flex flex-col items-center justify-center backdrop-blur-md bg-white/10 rounded-3xl shadow-2xl cursor-pointer transition-transform duration-300 ease-in-out p-4 relative;
+  border: 1px solid rgba(255,255,255,0.2);
+  perspective: 1000px;
+}
+
+.card:hover {
+  transform: rotateX(2deg) rotateY(2deg) scale(1.05);
+  @apply shadow-3xl;
+}
+
+.emoji {
+  font-size: 70px;
+  line-height: 1;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.4);
+  transition: transform 0.3s ease;
+}
+
+.word {
+  text-align: center;
+}
+
+.word-hiragana {
+  @apply text-2xl font-bold text-yellow-300;
+}
+
+.word-katakana {
+  @apply text-2xl font-bold text-indigo-200 mt-1;
+}
+
+@keyframes emoji-bounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.2); }
+  50%  { transform: scale(0.9); }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.emoji.clicked {
+  animation: emoji-bounce 0.4s ease;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>Japanese Kana Chart</h1>
+    <p>Click a card to hear pronunciation</p>
+  </header>
+
+  <div id="kanaChart"></div>
+</div>
+
+<script>
+// 五十音分组，每行包含平假名、片假名、行名、辅音说明
+const kanaRows = [
+  {row:'あ行', consonant:'元音', kana:[{h:'あ',k:'ア'},{h:'い',k:'イ'},{h:'う',k:'ウ'},{h:'え',k:'エ'},{h:'お',k:'オ'}]},
+  {row:'か行', consonant:'k', kana:[{h:'か',k:'カ'},{h:'き',k:'キ'},{h:'く',k:'ク'},{h:'け',k:'ケ'},{h:'こ',k:'コ'}]},
+  {row:'さ行', consonant:'s', kana:[{h:'さ',k:'サ'},{h:'し',k:'シ'},{h:'す',k:'ス'},{h:'せ',k:'セ'},{h:'そ',k:'ソ'}]},
+  {row:'た行', consonant:'t', kana:[{h:'た',k:'タ'},{h:'ち',k:'チ'},{h:'つ',k:'ツ'},{h:'て',k:'テ'},{h:'と',k:'ト'}]},
+  {row:'な行', consonant:'n', kana:[{h:'な',k:'ナ'},{h:'に',k:'ニ'},{h:'ぬ',k:'ヌ'},{h:'ね',k:'ネ'},{h:'の',k:'ノ'}]},
+  {row:'は行', consonant:'h', kana:[{h:'は',k:'ハ'},{h:'ひ',k:'ヒ'},{h:'ふ',k:'フ'},{h:'へ',k:'ヘ'},{h:'ほ',k:'ホ'}]},
+  {row:'ま行', consonant:'m', kana:[{h:'ま',k:'マ'},{h:'み',k:'ミ'},{h:'む',k:'ム'},{h:'め',k:'メ'},{h:'も',k:'モ'}]},
+  {row:'や行', consonant:'y', kana:[{h:'や',k:'ヤ'},{h:'ゆ',k:'ユ'},{h:'よ',k:'ヨ'}]},
+  {row:'ら行', consonant:'r', kana:[{h:'ら',k:'ラ'},{h:'り',k:'リ'},{h:'る',k:'ル'},{h:'れ',k:'レ'},{h:'ろ',k:'ロ'}]},
+  {row:'わ行', consonant:'w', kana:[{h:'わ',k:'ワ'},{h:'を',k:'ヲ'},{h:'ん',k:'ン'}]}
+];
+
+const container = document.getElementById('kanaChart');
+
+kanaRows.forEach(rowData => {
+  const rowTitle = document.createElement('div');
+  rowTitle.className = 'row-name';
+  rowTitle.textContent = rowData.row;
+  container.appendChild(rowTitle);
+
+  const rowConsonant = document.createElement('div');
+  rowConsonant.className = 'row-consonant';
+  rowConsonant.textContent = `辅音: ${rowData.consonant}`;
+  container.appendChild(rowConsonant);
+
+  const grid = document.createElement('div');
+  grid.className = 'cards-grid';
+  container.appendChild(grid);
+
+  rowData.kana.forEach(kana => {
+    const card = document.createElement('div');
+    card.className = 'card';
+
+    const emoji = document.createElement('div');
+    emoji.className = 'emoji';
+    emoji.textContent = kana.h;
+    card.appendChild(emoji);
+
+    const word = document.createElement('div');
+    word.className = 'word';
+
+    const hiragana = document.createElement('div');
+    hiragana.className = 'word-hiragana';
+    hiragana.textContent = kana.h;
+
+    const katakana = document.createElement('div');
+    katakana.className = 'word-katakana';
+    katakana.textContent = kana.k;
+
+    word.appendChild(hiragana);
+    word.appendChild(katakana);
+    card.appendChild(word);
+
+    card.addEventListener('click', () => {
+      const utter = new SpeechSynthesisUtterance(kana.h);
+      utter.lang = 'ja-JP';
+      speechSynthesis.speak(utter);
+
+      emoji.classList.remove('clicked');
+      void emoji.offsetWidth;
+      emoji.classList.add('clicked');
+    });
+
+    grid.appendChild(card);
+  });
+});
+</script>
+</body>
+</html>
