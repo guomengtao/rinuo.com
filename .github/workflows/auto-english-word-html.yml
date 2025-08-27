@@ -1,0 +1,92 @@
+name: Auto English Word HTML Generator
+
+on:
+  schedule:
+    - cron: '0 * * * *' # 每小时运行一次（UTC时间）
+  workflow_dispatch:
+
+jobs:
+  generate_html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 随机选取单词
+        id: pick_word
+        run: |
+          # 单词、释义和图片链接
+          WORDS=("dog" "cat" "apple")
+          MEANINGS=("一只家养的动物" "一只小型家猫" "一种甜水果")
+          IMAGES_DOG=("https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg"
+                      "https://images.pexels.com/photos/4587996/pexels-photo-4587996.jpeg"
+                      "https://images.pexels.com/photos/1805164/pexels-photo-1805164.jpeg")
+          IMAGES_CAT=("https://images.pexels.com/photos/45201/kitty-cat-kitten-pet-45201.jpeg"
+                      "https://images.pexels.com/photos/320014/pexels-photo-320014.jpeg"
+                      "https://images.pexels.com/photos/127028/pexels-photo-127028.jpeg")
+          IMAGES_APPLE=("https://images.pexels.com/photos/102104/pexels-photo-102104.jpeg"
+                        "https://images.pexels.com/photos/209339/pexels-photo-209339.jpeg"
+                        "https://images.pexels.com/photos/39803/red-apple-fruit-fruits-39803.jpeg")
+          RANDOM_INDEX=$((RANDOM % ${#WORDS[@]}))
+          WORD="${WORDS[$RANDOM_INDEX]}"
+          MEANING="${MEANINGS[$RANDOM_INDEX]}"
+          if [ "$WORD" = "dog" ]; then
+            IMAGE1="${IMAGES_DOG[0]}"
+            IMAGE2="${IMAGES_DOG[1]}"
+            IMAGE3="${IMAGES_DOG[2]}"
+          elif [ "$WORD" = "cat" ]; then
+            IMAGE1="${IMAGES_CAT[0]}"
+            IMAGE2="${IMAGES_CAT[1]}"
+            IMAGE3="${IMAGES_CAT[2]}"
+          else
+            IMAGE1="${IMAGES_APPLE[0]}"
+            IMAGE2="${IMAGES_APPLE[1]}"
+            IMAGE3="${IMAGES_APPLE[2]}"
+          fi
+          echo "word=$WORD" >> $GITHUB_OUTPUT
+          echo "meaning=$MEANING" >> $GITHUB_OUTPUT
+          echo "image1=$IMAGE1" >> $GITHUB_OUTPUT
+          echo "image2=$IMAGE2" >> $GITHUB_OUTPUT
+          echo "image3=$IMAGE3" >> $GITHUB_OUTPUT
+
+      - name: 生成 HTML 文件
+        run: |
+          mkdir -p auto-job
+          FILENAME="auto-job/${{ steps.pick_word.outputs.word }}.html"
+          cat > $FILENAME <<EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>Learn English: ${{ steps.pick_word.outputs.word }}</title>
+            <style>
+              #meaning { display: none; color: blue; font-size: 1.5em; }
+              #teach-btn { display: block; margin-top: 20px; }
+            </style>
+          </head>
+          <body>
+            <h1>Today's English Word: <span id="word">${{ steps.pick_word.outputs.word }}</span></h1>
+            <div>
+              <img src="${{ steps.pick_word.outputs.image1 }}" alt="${{ steps.pick_word.outputs.word }}" width="320" onclick="playAudio()" />
+              <img src="${{ steps.pick_word.outputs.image2 }}" alt="${{ steps.pick_word.outputs.word }}" width="320" onclick="playAudio()" />
+              <img src="${{ steps.pick_word.outputs.image3 }}" alt="${{ steps.pick_word.outputs.word }}" width="320" onclick="playAudio()" />
+            </div>
+            <audio id="audio" src="https://dict.youdao.com/dictvoice?audio=${{ steps.pick_word.outputs.word }}&type=2"></audio>
+            <button id="teach-btn" onclick="document.getElementById('meaning').style.display='block';">教我这个词的意思（像教婴儿一样）</button>
+            <div id="meaning">${{ steps.pick_word.outputs.meaning }}</div>
+            <script>
+              function playAudio() {
+                document.getElementById('audio').play();
+              }
+            </script>
+          </body>
+          </html>
+          EOF
+
+      - name: 提交并推送 HTML 文件
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add auto-job/
+          git commit -m "自动创建英语单词学习HTML：${{ steps.pick_word.outputs.word }}"
+          git push
