@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免费日志 / Logging & Error Tracking Services</title>
+  <!-- 外部资源引入 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#4080FF',
+            dark: '#1D2129',
+            light: '#F2F3F5',
+            muted: '#86909C',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <!-- Logo区域 -->
+      <a href="#" class="flex items-center space-x-2">
+        <i class="fa fa-file-text-o text-primary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-primary">日志服务导航</h1>
+      </a>
+      
+      <!-- 桌面端导航 -->
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="index.html" class="text-dark hover:text-primary transition-colors">首页</a>
+        <a href="categories.html" class="text-dark hover:text-primary transition-colors">资源分类</a>
+        <a href="websocket.html" class="text-dark hover:text-primary transition-colors">WebSocket服务</a>
+        <a href="monitoring.html" class="text-dark hover:text-primary transition-colors">监控服务</a>
+        <a href="#" class="text-primary font-medium">日志服务</a>
+        <a href="tools.html" class="text-dark hover:text-primary transition-colors">开发工具</a>
+      </div>
+      
+      <!-- 移动端菜单按钮 -->
+      <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单（默认隐藏） -->
+    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
+        <a href="categories.html" class="py-2 text-dark hover:text-primary transition-colors">资源分类</a>
+        <a href="websocket.html" class="py-2 text-dark hover:text-primary transition-colors">WebSocket服务</a>
+        <a href="monitoring.html" class="py-2 text-dark hover:text-primary transition-colors">监控服务</a>
+        <a href="#" class="py-2 text-primary font-medium">日志服务</a>
+        <a href="tools.html" class="py-2 text-dark hover:text-primary transition-colors">开发工具</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 页面标题区 -->
+  <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-10 md:py-16">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fa fa-file-text-o text-3xl"></i>
+            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">免费日志与错误跟踪服务</h2>
+          </div>
+          <p class="text-white/90 max-w-2xl">
+            精选 40+ 免费日志收集、分析和错误跟踪服务，包括日志聚合、错误监控、数据分析和可视化仪表盘，每条资源都标注了限制条件和注意事项。
+          </p>
+          
+          <div class="flex flex-wrap gap-3 mt-6">
+            <a href="#resources" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-list-alt mr-2"></i> 浏览服务列表
+            </a>
+            <a href="#" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-download mr-2"></i> 下载服务清单
+            </a>
+          </div>
+        </div>
+        
+        <!-- 数据概览卡片 -->
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">服务总数</span>
+            <span class="font-bold">40+ 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">日志服务</span>
+            <span class="font-bold">25 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">错误跟踪</span>
+            <span class="font-bold">15 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">开源项目</span>
+            <span class="font-bold">9 个</span>
+          </div>
+          <div class="border-t border-white/20 pt-4 mt-2">
+            <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+    <nav class="flex text-sm" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+            <i class="fa fa-home mr-2"></i>首页
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <a href="categories.html" class="text-muted hover:text-primary transition-colors">资源分类</a>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <a href="#" class="text-primary font-medium">日志服务</a>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- 核心内容区 -->
+  <main class="container mx-auto px-4 py-8 flex-grow">
+    <!-- 筛选工具栏 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm overflow-x-auto scrollbar-hide">
+      <h3 class="text-lg font-medium mb-4">快速筛选</h3>
+      <div class="flex flex-wrap gap-2 pb-2">
+        <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="all">
+          <i class="fa fa-th-large mr-1"></i> 全部服务
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="log-aggregation">
+          <i class="fa fa-database mr-1"></i> 日志聚合
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="error-tracking">
+          <i class="fa fa-bug mr-1"></i> 错误跟踪
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="log-analysis">
+          <i class="fa fa-bar-chart mr-1"></i> 日志分析
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="self-hosted">
+          <i class="fa fa-server mr-1"></i> 自建服务
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="free-forever">
+          <i class="fa fa-gift mr-1"></i> 永久免费
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="trial">
+          <i class="fa fa-clock-o mr-1"></i> 试用服务
+        </button>
+      </div>
+    </div>
+
+    <!-- 工具搜索框 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
+      <div class="relative">
+        <input type="text" id="resourceSearch" placeholder="搜索日志服务..." class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors pl-10">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="text-sm text-muted">热门搜索:</span>
+        <a href="#" class="text-sm text-primary hover:underline">免费日志</a>
+        <a href="#" class="text-sm text-primary hover:underline">错误跟踪</a>
+        <a href="#" class="text-sm text-primary hover:underline">ELK Stack</a>
+        <a href="#" class="text-sm text-primary hover:underline">Sentry</a>
+        <a href="#" class="text-sm text-primary hover:underline">日志分析</a>
+      </div>
+    </div>
+
+    <!-- 资源统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-cloud text-primary text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">托管日志服务</p>
+          <p class="text-2xl font-bold">21 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-code-fork text-secondary text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">错误跟踪工具</p>
+          <p class="text-2xl font-bold">15 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mr-4">
+          <i class="fa fa-server text-success text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">开源自建方案</p>
+          <p class="text-2xl font-bold">9 个</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 资源列表 -->
+    <div id="resources" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-gray-100">
+        <h2 class="text-xl font-bold">日志与错误跟踪服务列表</h2>
+        <p class="text-muted text-sm mt-1">按服务质量和受欢迎程度排序</p>
+      </div>
+      
+      <ul class="divide-y divide-gray-100">
+        <!-- 服务项 1 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://papertrailapp.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Papertrail
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">简单易用的日志聚合与搜索工具，支持多种来源的日志收集，提供实时搜索和告警功能。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> 100MB/月日志
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-clock-o mr-1"></i> 7天数据保留
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-bell mr-1"></i> 基础告警
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每月100MB日志容量，数据保留7天，高级功能需付费升级。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 2 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="error-tracking free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://sentry.io/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Sentry
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">错误跟踪</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">广泛使用的错误跟踪与监控工具，支持多语言和框架，提供详细的错误上下文和堆栈跟踪。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-exclamation-triangle mr-1"></i> 5k事件/月
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-user mr-1"></i> 1个用户
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 多语言支持
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每月5000个事件，1个用户，高级集成和分析功能需付费。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 3 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation log-analysis free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://logflare.app/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Logflare
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-info/10 text-info text-xs px-2 py-0.5 rounded-full">日志分析</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">基于Cloudflare和BigQuery的日志收集与分析工具，提供实时日志处理和可视化功能。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> 50k事件/天
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-bar-chart mr-1"></i> 实时分析
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-plug mr-1"></i> 多平台集成
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每天50,000个事件，超出部分需付费，高级查询功能有限制。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 4 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://sematext.com/logs/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Sematext Logs
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">全面的日志管理与告警平台，支持实时日志分析、异常检测和自定义报告。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> 500MB/月日志
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-clock-o mr-1"></i> 7天数据保留
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-bell mr-1"></i> 智能告警
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每月500MB日志，数据保留7天，高级分析功能需付费。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 5 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="error-tracking free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://www.bugsnag.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Bugsnag
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">错误跟踪</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">专注于应用错误监控的服务，提供详细的错误报告、用户影响分析和性能指标。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-exclamation-triangle mr-1"></i> 7k错误/月
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-folder mr-1"></i> 1个项目
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 多框架支持
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每月7000个错误，1个项目，高级协作和集成功能需付费。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 6 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation self-hosted free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://graylog.org/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Graylog Open
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">自建服务</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">功能丰富的开源日志管理平台，支持日志收集、分析、可视化和告警，适合自建部署。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-github mr-1"></i> 开源免费
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-server mr-1"></i> 自托管
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-cogs mr-1"></i> 高度可定制
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>需要自行部署和维护，初始配置复杂，需要一定的服务器资源。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 7 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation log-analysis self-hosted free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://elk.elastic.co/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  ELK Stack
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-info/10 text-info text-xs px-2 py-0.5 rounded-full">日志分析</span>
+                <span class="ml-2 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">自建服务</span>
+              </div>
+              <p class="mt-2 text-muted">由Elasticsearch、Logstash和Kibana组成的开源日志管理套件，行业标准解决方案。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-github mr-1"></i> 完全开源
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> 无限容量
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-bar-chart mr-1"></i> 强大分析
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>自托管需要技术能力，资源消耗大，维护成本高，学习曲线陡峭。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 8 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="error-tracking free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://rollbar.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Rollbar
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">错误跟踪</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">实时错误跟踪和监控工具，支持自动错误检测、诊断和修复建议，集成多种开发工具。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-exclamation-triangle mr-1"></i> 5k事件/月
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-folder mr-1"></i> 1个项目
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 多语言支持
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每月5000个事件，1个项目，高级团队协作功能需付费。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 9 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation log-analysis free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://loki.grafana.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Grafana Loki
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-info/10 text-info text-xs px-2 py-0.5 rounded-full">日志分析</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">轻量级日志聚合系统，与Grafana无缝集成，适合与Prometheus一起构建完整监控解决方案。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> 50GB/月日志
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-bar-chart mr-1"></i> Grafana集成
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 开源核心
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费版每月50GB日志，高级支持和托管服务需付费，配置较复杂。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 10 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="log-aggregation self-hosted free-forever">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://fluentd.org/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Fluentd
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">日志聚合</span>
+                <span class="ml-2 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">自建服务</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">永久免费</span>
+              </div>
+              <p class="mt-2 text-muted">开源数据收集器，专为处理日志设计，支持超过500种集成，适合构建灵活的日志管道。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-github mr-1"></i> 完全开源
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-plug mr-1"></i> 丰富插件
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-server mr-1"></i> 轻量级
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>需要自行部署和配置，需要一定技术能力，无托管仪表盘。</p>
+            </div>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 加载更多按钮 -->
+      <div class="p-6 text-center border-t border-gray-100">
+        <button id="loadMore" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center mx-auto">
+          <i class="fa fa-refresh mr-2"></i> 加载更多服务
+        </button>
+      </div>
+    </div>
+    
+    <!-- 使用建议 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 mt-8 shadow-sm">
+      <h3 class="text-xl font-bold mb-4 flex items-center">
+        <i class="fa fa-lightbulb-o text-warning mr-2"></i> 使用建议
+      </h3>
+      <div class="space-y-4">
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">小型项目和博客</h4>
+            <p class="text-muted mt-1">推荐使用 <strong>Papertrail</strong> 或 <strong>Sentry免费版</strong>，配置简单，足以满足基本的日志收集和错误跟踪需求。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">中小型应用和团队</h4>
+            <p class="text-muted mt-1">建议选择 <strong>Logflare</strong> 或 <strong>Sematext Logs免费版</strong>，提供更全面的日志分析功能和合理的免费额度。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">错误跟踪优先</h4>
+            <p class="text-muted mt-1">优先考虑 <strong>Sentry</strong> 或 <strong>Bugsnag</strong>，专门针对错误监控优化，提供详细的错误上下文和修复建议。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">需要高度定制和控制</h4>
+            <p class="text-muted mt-1">技术团队可以考虑 <strong>ELK Stack</strong> 或 <strong>Graylog</strong> 等开源解决方案，虽然需要自行部署和维护，但可以完全定制。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">与监控系统集成</h4>
+            <p class="text-muted mt-1">如果已使用Prometheus监控，<strong>Grafana Loki</strong> 是理想选择，可与现有监控系统无缝集成，形成完整的可观测性解决方案。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-10 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-file-text-o text-primary text-2xl"></i>
+            <h2 class="text-xl font-bold text-white">日志服务导航</h2>
+          </div>
+          <p class="text-gray-400 text-sm">
+            精选全球优质免费日志与错误跟踪服务，包括日志聚合、错误监控和数据分析工具，帮助开发者和企业快速定位和解决问题。
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">服务分类</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors">日志聚合</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">错误跟踪</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">日志分析</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">自建服务</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">永久免费</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">相关链接</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
+            <li><a href="categories.html" class="hover:text-primary transition-colors">资源分类</a></li>
+            <li><a href="websocket.html" class="hover:text-primary transition-colors">WebSocket服务</a></li>
+            <li><a href="monitoring.html" class="hover:text-primary transition-colors">监控服务</a></li>
+            <li><a href="tools.html" class="hover:text-primary transition-colors">开发工具</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">关注我们</h3>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-linkedin"></i>
+            </a>
+          </div>
+          <p class="text-gray-400 text-sm mt-4">
+            订阅更新，获取最新日志服务信息
+          </p>
+          <div class="mt-2 flex">
+            <input type="email" placeholder="您的邮箱地址" class="px-3 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none">
+            <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors">
+              订阅
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+        <p>© 2025 日志服务导航. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 回到顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // 移动端菜单切换
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // 回到顶部按钮
+    const backToTopBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      // 显示/隐藏回到顶部按钮
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'invisible');
+        backToTopBtn.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'invisible');
+        backToTopBtn.classList.remove('opacity-100', 'visible');
+      }
+
+      // 导航栏滚动效果
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('py-2');
+        header.classList.remove('py-4');
+      } else {
+        header.classList.add('py-4');
+        header.classList.remove('py-2');
+      }
+    });
+
+    // 回到顶部功能
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // 平滑滚动到锚点
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 100,
+            behavior: 'smooth'
+          });
+          
+          // 如果是移动端且菜单打开，则关闭菜单
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+
+    // 服务筛选功能
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const resourceItems = document.querySelectorAll('.resource-item');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 更新按钮状态
+        filterButtons.forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+        filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
+        button.classList.add('bg-primary', 'text-white');
+        button.classList.remove('bg-light', 'hover:bg-gray-200');
+        
+        const filter = button.getAttribute('data-filter');
+        
+        // 筛选服务
+        resourceItems.forEach(item => {
+          if (filter === 'all' || item.getAttribute('data-categories').includes(filter)) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // 服务搜索功能
+    const searchInput = document.getElementById('resourceSearch');
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      
+      if (searchTerm.length === 0) {
+        // 如果搜索为空，显示所有服务
+        resourceItems.forEach(item => {
+          item.style.display = '';
+        });
+        return;
+      }
+      
+      // 否则进行搜索筛选
+      resourceItems.forEach(item => {
+        const name = item.querySelector('a').textContent.toLowerCase();
+        const description = item.querySelector('p').textContent.toLowerCase();
+        
+        if (name.includes(searchTerm) || description.includes(searchTerm)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // 外部链接提示
+    const externalLinks = document.querySelectorAll('a[target="_blank"]');
+    externalLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
+        if (!confirmLeave) {
+          e.preventDefault();
+        }
+      });
+    });
+
+    // 加载更多功能
+    document.getElementById('loadMore').addEventListener('click', function() {
+      // 模拟加载状态
+      this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+      
+      // 2秒后恢复按钮状态（实际应用中这里会异步加载更多服务）
+      setTimeout(() => {
+        this.innerHTML = '<i class="fa fa-refresh mr-2"></i> 加载更多服务';
+        alert('已加载全部服务');
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
+    
