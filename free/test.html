@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免费邮箱服务 - 免费资源站</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            neutral: '#64748B',
+            light: '#F1F5F9',
+            dark: '#1E293B'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+      }
+      .filter-active {
+        @apply bg-primary/10 text-primary border-primary;
+      }
+      .subcategory-active {
+        @apply bg-primary/10 text-primary border-l-4 border-primary pl-3 -ml-4;
+      }
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-dark">
+  <!-- 顶部导航栏 -->
+  <header class="sticky top-0 z-50 bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="/" class="flex items-center space-x-2">
+        <i class="fa fa-gift text-primary text-2xl"></i>
+        <span class="text-xl font-bold text-primary">免费资源站</span>
+      </a>
+      
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="/" class="hover:text-primary transition-colors">首页</a>
+        <a href="/free/" class="font-medium text-primary border-b-2 border-primary pb-1">免费资源</a>
+        <a href="#" class="hover:text-primary transition-colors">最新收录</a>
+        <a href="#" class="hover:text-primary transition-colors">使用教程</a>
+      </div>
+      
+      <div class="flex items-center space-x-4">
+        <div class="relative hidden md:block">
+          <input type="text" placeholder="搜索免费资源..." class="pl-10 pr-4 py-2 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 w-64">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        <button class="md:hidden text-xl">
+          <i class="fa fa-search"></i>
+        </button>
+        <button class="md:hidden text-xl" id="mobileMenuBtn">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 移动端菜单 -->
+  <div id="mobileMenu" class="fixed inset-0 bg-white z-40 transform translate-x-full transition-transform duration-300 md:hidden">
+    <div class="p-4 border-b flex justify-between items-center">
+      <h3 class="font-semibold">邮箱服务分类</h3>
+      <button id="closeMenuBtn" class="text-xl">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+    <div class="p-4" id="mobileFilterContent">
+      <!-- 移动端筛选内容将通过JS动态生成 -->
+    </div>
+  </div>
+
+  <!-- 页面主体内容 -->
+  <main class="container mx-auto px-4 py-8">
+    <!-- 页面标题与路径 -->
+    <div class="mb-8">
+      <div class="text-sm text-neutral mb-2">
+        <a href="/" class="hover:text-primary">首页</a> <i class="fa fa-angle-right inline-block mx-1 text-xs"></i>
+        <a href="/free/" class="hover:text-primary">免费资源</a> <i class="fa fa-angle-right inline-block mx-1 text-xs"></i> 邮箱服务
+      </div>
+      <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold">免费邮箱服务</h1>
+      <p class="text-neutral mt-2 max-w-3xl">精选优质免费邮箱服务，包括个人邮箱、企业邮箱和临时邮箱，支持SMTP发送功能，满足不同场景需求。</p>
+    </div>
+    
+    <!-- 主内容区：左侧筛选 + 右侧资源列表 -->
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧筛选菜单 - 桌面端 -->
+      <aside class="hidden lg:block w-64 shrink-0">
+        <div class="bg-white rounded-xl shadow-sm p-5 sticky top-24">
+          <!-- 子分类导航 -->
+          <div class="mb-6">
+            <h3 class="font-semibold text-lg mb-4">子分类</h3>
+            <ul class="space-y-1" id="subcategoryList">
+              <!-- 子分类将通过JS动态生成 -->
+            </ul>
+          </div>
+          
+          <hr class="my-5">
+          
+          <!-- 地区筛选 -->
+          <div class="mb-6">
+            <h3 class="font-semibold text-lg mb-4">地区</h3>
+            <div class="flex flex-wrap gap-2" id="regionFilter">
+              <!-- 地区筛选选项将通过JS动态生成 -->
+            </div>
+          </div>
+          
+          <hr class="my-5">
+          
+          <!-- 特性筛选 -->
+          <div class="mb-6">
+            <h3 class="font-semibold text-lg mb-4">特性</h3>
+            <div class="flex flex-wrap gap-2" id="featureFilter">
+              <!-- 特性筛选选项将通过JS动态生成 -->
+            </div>
+          </div>
+          
+          <hr class="my-5">
+          
+          <!-- 分类说明 -->
+          <div>
+            <h3 class="font-semibold text-lg mb-4">选择指南</h3>
+            <div class="text-sm text-neutral space-y-2">
+              <p><i class="fa fa-info-circle text-primary mr-1"></i> 个人使用推荐选择Gmail或QQ邮箱</p>
+              <p><i class="fa fa-info-circle text-primary mr-1"></i> 企业需要自定义域名可考虑Zoho Mail</p>
+              <p><i class="fa fa-info-circle text-primary mr-1"></i> 临时注册账号推荐使用临时邮箱</p>
+              <p><i class="fa fa-info-circle text-primary mr-1"></i> 开发需要SMTP功能请查看标签说明</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 右侧资源列表 -->
+      <div class="flex-1">
+        <!-- 移动端筛选器按钮 -->
+        <div class="lg:hidden mb-4">
+          <button id="showFilterBtn" class="w-full flex items-center justify-between bg-white border border-gray-200 rounded-lg p-3 text-sm">
+            <span><i class="fa fa-filter mr-2 text-neutral"></i> 筛选条件</span>
+            <span id="activeFilterCount" class="bg-primary text-white text-xs px-2 py-1 rounded-full">0</span>
+          </button>
+        </div>
+        
+        <!-- 活跃筛选器标签 -->
+        <div class="flex flex-wrap gap-2 mb-6" id="activeFilters">
+          <!-- 活跃筛选器标签将通过JS动态生成 -->
+        </div>
+        
+        <!-- 排序和结果计数 -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+          <p class="text-neutral text-sm mb-3 sm:mb-0"><span id="resourceCount">0</span> 个免费邮箱资源</p>
+          <div class="flex items-center space-x-2">
+            <label for="sort" class="text-sm text-neutral">排序：</label>
+            <select id="sort" class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50">
+              <option value="updatedAt-desc">最新更新</option>
+              <option value="name-asc">名称（A-Z）</option>
+              <option value="name-desc">名称（Z-A）</option>
+            </select>
+          </div>
+        </div>
+        
+        <!-- 资源列表 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="resourceList">
+          <!-- 资源列表将通过JS动态生成 -->
+          <div class="col-span-full py-12 flex flex-col items-center justify-center text-neutral">
+            <i class="fa fa-circle-o-notch fa-spin text-4xl mb-4"></i>
+            <p>加载资源中...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- 相关分类推荐 -->
+    <section class="mt-16">
+      <h2 class="text-xl font-semibold mb-6">你可能也感兴趣的分类</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <a href="/free/api.html" class="block bg-white rounded-xl shadow-sm p-5 card-hover">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-secondary mr-4">
+              <i class="fa fa-code"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold">API接口</h3>
+              <p class="text-sm text-neutral mt-1">28个免费API接口资源，包括天气、地图等服务</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/free/storage.html" class="block bg-white rounded-xl shadow-sm p-5 card-hover">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600 mr-4">
+              <i class="fa fa-cloud-upload"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold">存储服务</h3>
+              <p class="text-sm text-neutral mt-1">18个免费云存储服务，提供不同容量选择</p>
+            </div>
+          </div>
+        </a>
+        
+        <a href="/free/devtools.html" class="block bg-white rounded-xl shadow-sm p-5 card-hover">
+          <div class="flex items-center">
+            <div class="w-10 h-10 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600 mr-4">
+              <i class="fa fa-wrench"></i>
+            </div>
+            <div>
+              <h3 class="font-semibold">开发工具</h3>
+              <p class="text-sm text-neutral mt-1">23个免费开发工具和代码托管平台</p>
+            </div>
+          </div>
+        </a>
+      </div>
+    </section>
+    
+    <!-- 订阅区域 -->
+    <section class="mt-16 bg-primary/5 rounded-2xl p-8 border border-primary/10">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-2xl font-bold mb-3">获取邮箱服务更新</h2>
+        <p class="text-neutral mb-6">订阅我们的通讯，及时获取新的免费邮箱服务和使用技巧</p>
+        <div class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+          <input type="email" placeholder="您的邮箱地址" class="flex-1 px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50">
+          <button class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+            立即订阅
+          </button>
+        </div>
+        <p class="text-xs text-neutral mt-4">我们尊重您的隐私，不会向第三方分享您的信息</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white mt-20">
+    <div class="container mx-auto px-4 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-gift text-primary text-2xl"></i>
+            <span class="text-xl font-bold">免费资源站</span>
+          </div>
+          <p class="text-gray-400 text-sm">收集和整理各类优质免费资源，帮助个人与企业降低成本，提升效率。</p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">资源分类</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="/free/email.html" class="hover:text-primary transition-colors">邮箱服务</a></li>
+            <li><a href="/free/api.html" class="hover:text-primary transition-colors">API接口</a></li>
+            <li><a href="/free/vps.html" class="hover:text-primary transition-colors">云服务器</a></li>
+            <li><a href="/free/database.html" class="hover:text-primary transition-colors">数据库</a></li>
+            <li><a href="/free/icons.html" class="hover:text-primary transition-colors">图标素材</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">快速链接</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors">最新收录</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">使用教程</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">资源提交</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">关于我们</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">联系我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-semibold mb-4">订阅更新</h3>
+          <p class="text-gray-400 text-sm mb-4">获取最新免费资源更新和使用技巧</p>
+          <div class="flex">
+            <input type="email" placeholder="您的邮箱地址" class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-dark">
+            <button class="bg-primary hover:bg-primary/90 transition-colors px-4 py-2 rounded-r-lg">
+              <i class="fa fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-500 text-sm">© 2025 免费资源站. 保留所有权利.</p>
+        <div class="flex space-x-4 mt-4 md:mt-0">
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-github text-xl"></i></a>
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-twitter text-xl"></i></a>
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-weixin text-xl"></i></a>
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors"><i class="fa fa-weibo text-xl"></i></a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 存储数据和筛选状态
+    let emailData = null;
+    let currentSubcategory = 'all';
+    let activeFilters = {
+      region: [],
+      features: []
+    };
+    
+    // DOM 元素引用
+    const subcategoryList = document.getElementById('subcategoryList');
+    const regionFilter = document.getElementById('regionFilter');
+    const featureFilter = document.getElementById('featureFilter');
+    const resourceList = document.getElementById('resourceList');
+    const resourceCount = document.getElementById('resourceCount');
+    const activeFiltersContainer = document.getElementById('activeFilters');
+    const activeFilterCount = document.getElementById('activeFilterCount');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileFilterContent = document.getElementById('mobileFilterContent');
+    const showFilterBtn = document.getElementById('showFilterBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const sortSelect = document.getElementById('sort');
+    
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 加载邮箱数据
+      fetch('/assets/data/email.json')
+        .then(response => response.json())
+        .then(data => {
+          emailData = data;
+          renderPage();
+        })
+        .catch(error => {
+          resourceList.innerHTML = `
+            <div class="col-span-full py-12 flex flex-col items-center justify-center text-neutral">
+              <i class="fa fa-exclamation-circle text-4xl mb-4 text-red-500"></i>
+              <p>加载资源失败，请稍后重试</p>
+            </div>
+          `;
+          console.error('Error loading email data:', error);
+        });
+      
+      // 事件监听
+      showFilterBtn.addEventListener('click', showMobileFilter);
+      closeMenuBtn.addEventListener('click', hideMobileFilter);
+      mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+      sortSelect.addEventListener('change', renderResources);
+    });
+    
+    // 渲染整个页面
+    function renderPage() {
+      renderSubcategories();
+      renderFilters();
+      renderMobileFilters();
+      renderResources();
+    }
+    
+    // 渲染子分类
+    function renderSubcategories() {
+      if (!emailData) return;
+      
+      // 添加"全部"选项
+      const allItem = document.createElement('li');
+      allItem.innerHTML = `
+        <a href="#" class="block py-2 px-1 rounded hover:bg-gray-100 transition-colors ${currentSubcategory === 'all' ? 'subcategory-active' : ''}" 
+           data-subcategory="all">
+          全部邮箱 <span class="text-neutral text-sm">(${getTotalResourceCount()})</span>
+        </a>
+      `;
+      allItem.querySelector('a').addEventListener('click', function(e) {
+        e.preventDefault();
+        currentSubcategory = this.dataset.subcategory;
+        renderSubcategories();
+        renderResources();
+        renderMobileFilters();
+      });
+      subcategoryList.appendChild(allItem);
+      
+      // 添加各子分类
+      emailData.subcategories.forEach(subcategory => {
+        const item = document.createElement('li');
+        item.innerHTML = `
+          <a href="#" class="block py-2 px-1 rounded hover:bg-gray-100 transition-colors ${currentSubcategory === subcategory.slug ? 'subcategory-active' : ''}" 
+             data-subcategory="${subcategory.slug}">
+            ${subcategory.name} <span class="text-neutral text-sm">(${subcategory.items.length})</span>
+          </a>
+        `;
+        item.querySelector('a').addEventListener('click', function(e) {
+          e.preventDefault();
+          currentSubcategory = this.dataset.subcategory;
+          renderSubcategories();
+          renderResources();
+          renderMobileFilters();
+        });
+        subcategoryList.appendChild(item);
+      });
+    }
+    
+    // 渲染筛选器
+    function renderFilters() {
+      if (!emailData) return;
+      
+      // 地区筛选
+      const regions = [
+        { id: 'global', name: '全球可用' },
+        { id: 'cn', name: '国内可用' }
+      ];
+      
+      regions.forEach(region => {
+        const regionItem = document.createElement('button');
+        regionItem.className = `px-3 py-1 rounded-full text-sm border transition-colors ${activeFilters.region.includes(region.id) ? 'filter-active' : 'border-gray-200 hover:border-primary'}`;
+        regionItem.textContent = region.name;
+        regionItem.dataset.region = region.id;
+        
+        regionItem.addEventListener('click', function() {
+          const regionId = this.dataset.region;
+          if (activeFilters.region.includes(regionId)) {
+            activeFilters.region = activeFilters.region.filter(id => id !== regionId);
+          } else {
+            activeFilters.region.push(regionId);
+          }
+          renderFilters();
+          renderResources();
+          renderActiveFilters();
+          renderMobileFilters();
+        });
+        
+        regionFilter.appendChild(regionItem);
+      });
+      
+      // 特性筛选
+      const features = [
+        { id: 'smtp', name: '支持SMTP' },
+        { id: 'free', name: '完全免费' },
+        { id: 'opensource', name: '开源' }
+      ];
+      
+      features.forEach(feature => {
+        const featureItem = document.createElement('button');
+        featureItem.className = `px-3 py-1 rounded-full text-sm border transition-colors ${activeFilters.features.includes(feature.id) ? 'filter-active' : 'border-gray-200 hover:border-primary'}`;
+        featureItem.textContent = feature.name;
+        featureItem.dataset.feature = feature.id;
+        
+        featureItem.addEventListener('click', function() {
+          const featureId = this.dataset.feature;
+          if (activeFilters.features.includes(featureId)) {
+            activeFilters.features = activeFilters.features.filter(id => id !== featureId);
+          } else {
+            activeFilters.features.push(featureId);
+          }
+          renderFilters();
+          renderResources();
+          renderActiveFilters();
+          renderMobileFilters();
+        });
+        
+        featureFilter.appendChild(featureItem);
+      });
+    }
+    
+    // 渲染移动端筛选器
+    function renderMobileFilters() {
+      if (!emailData) return;
+      
+      mobileFilterContent.innerHTML = `
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-4">子分类</h3>
+          <ul class="space-y-1">
+            ${renderMobileSubcategories()}
+          </ul>
+        </div>
+        
+        <hr class="my-5">
+        
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-4">地区</h3>
+          <div class="flex flex-wrap gap-2">
+            ${renderMobileRegions()}
+          </div>
+        </div>
+        
+        <hr class="my-5">
+        
+        <div class="mb-6">
+          <h3 class="font-semibold text-lg mb-4">特性</h3>
+          <div class="flex flex-wrap gap-2">
+            ${renderMobileFeatures()}
+          </div>
+        </div>
+      `;
+      
+      // 为移动端筛选器添加事件监听
+      mobileFilterContent.querySelectorAll('[data-subcategory]').forEach(elem => {
+        elem.addEventListener('click', function(e) {
+          e.preventDefault();
+          currentSubcategory = this.dataset.subcategory;
+          renderSubcategories();
+          renderResources();
+          renderMobileFilters();
+          hideMobileFilter();
+        });
+      });
+      
+      mobileFilterContent.querySelectorAll('[data-region]').forEach(elem => {
+        elem.addEventListener('click', function() {
+          const regionId = this.dataset.region;
+          if (activeFilters.region.includes(regionId)) {
+            activeFilters.region = activeFilters.region.filter(id => id !== regionId);
+          } else {
+            activeFilters.region.push(regionId);
+          }
+          renderFilters();
+          renderResources();
+          renderActiveFilters();
+          renderMobileFilters();
+        });
+      });
+      
+      mobileFilterContent.querySelectorAll('[data-feature]').forEach(elem => {
+        elem.addEventListener('click', function() {
+          const featureId = this.dataset.feature;
+          if (activeFilters.features.includes(featureId)) {
+            activeFilters.features = activeFilters.features.filter(id => id !== featureId);
+          } else {
+            activeFilters.features.push(featureId);
+          }
+          renderFilters();
+          renderResources();
+          renderActiveFilters();
+          renderMobileFilters();
+        });
+      });
+    }
+    
+    // 渲染移动端子分类
+    function renderMobileSubcategories() {
+      let html = `
+        <li>
+          <a href="#" class="block py-2 px-1 rounded hover:bg-gray-100 transition-colors ${currentSubcategory === 'all' ? 'subcategory-active' : ''}" 
+             data-subcategory="all">
+            全部邮箱 <span class="text-neutral text-sm">(${getTotalResourceCount()})</span>
+          </a>
+        </li>
+      `;
+      
+      emailData.subcategories.forEach(subcategory => {
+        html += `
+          <li>
+            <a href="#" class="block py-2 px-1 rounded hover:bg-gray-100 transition-colors ${currentSubcategory === subcategory.slug ? 'subcategory-active' : ''}" 
+               data-subcategory="${subcategory.slug}">
+              ${subcategory.name} <span class="text-neutral text-sm">(${subcategory.items.length})</span>
+            </a>
+          </li>
+        `;
+      });
+      
+      return html;
+    }
+    
+    // 渲染移动端地区筛选
+    function renderMobileRegions() {
+      const regions = [
+        { id: 'global', name: '全球可用' },
+        { id: 'cn', name: '国内可用' }
+      ];
+      
+      let html = '';
+      regions.forEach(region => {
+        html += `
+          <button class="px-3 py-1 rounded-full text-sm border transition-colors ${activeFilters.region.includes(region.id) ? 'filter-active' : 'border-gray-200 hover:border-primary'}"
+                  data-region="${region.id}">
+            ${region.name}
+          </button>
+        `;
+      });
+      
+      return html;
+    }
+    
+    // 渲染移动端特性筛选
+    function renderMobileFeatures() {
+      const features = [
+        { id: 'smtp', name: '支持SMTP' },
+        { id: 'free', name: '完全免费' },
+        { id: 'opensource', name: '开源' }
+      ];
+      
+      let html = '';
+      features.forEach(feature => {
+        html += `
+          <button class="px-3 py-1 rounded-full text-sm border transition-colors ${activeFilters.features.includes(feature.id) ? 'filter-active' : 'border-gray-200 hover:border-primary'}"
+                  data-feature="${feature.id}">
+            ${feature.name}
+          </button>
+        `;
+      });
+      
+      return html;
+    }
+    
+    // 渲染资源列表
+    function renderResources() {
+      if (!emailData) return;
+      
+      // 获取符合条件的资源
+      let filteredResources = getFilteredResources();
+      
+      // 排序
+      filteredResources = sortResources(filteredResources);
+      
+      // 更新资源计数
+      resourceCount.textContent = filteredResources.length;
+      
+      // 渲染资源列表
+      if (filteredResources.length === 0) {
+        resourceList.innerHTML = `
+          <div class="col-span-full py-12 flex flex-col items-center justify-center text-neutral">
+            <i class="fa fa-search text-4xl mb-4"></i>
+            <p>没有找到符合条件的资源</p>
+            <button id="clearAllFilters" class="mt-4 text-primary hover:underline">清除所有筛选条件</button>
+          </div>
+        `;
+        
+        document.getElementById('clearAllFilters').addEventListener('click', function() {
+          currentSubcategory = 'all';
+          activeFilters = { region: [], features: [] };
+          renderSubcategories();
+          renderFilters();
+          renderResources();
+          renderActiveFilters();
+          renderMobileFilters();
+        });
+        
+        return;
+      }
+      
+      // 生成资源HTML
+      let resourcesHtml = '';
+      filteredResources.forEach(resource => {
+        // 生成标签HTML
+        let tagsHtml = '';
+        resource.tags.forEach(tag => {
+          tagsHtml += `<span class="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded">${tag}</span>`;
+        });
+        
+        // 添加免费标签
+        if (resource.isFree) {
+          tagsHtml += `<span class="text-xs bg-green-50 text-green-600 px-2 py-1 rounded">免费</span>`;
+        }
+        
+        // 添加开源标签
+        if (resource.isOpenSource) {
+          tagsHtml += `<span class="text-xs bg-purple-50 text-purple-600 px-2 py-1 rounded">开源</span>`;
+        }
+        
+        // 地区标签
+        const regionName = resource.region === 'cn' ? '国内可用' : '全球可用';
+        const regionColor = resource.region === 'cn' ? 'bg-red-50 text-red-600' : 'bg-gray-50 text-gray-600';
+        
+        resourcesHtml += `
+          <div class="bg-white rounded-xl shadow-sm overflow-hidden card-hover" id="${resource.id}">
+            <div class="p-5">
+              <div class="flex justify-between items-start mb-3">
+                <div class="flex items-center">
+                  <div class="w-8 h-8 rounded bg-blue-100 flex items-center justify-center text-primary mr-2">
+                    <i class="fa fa-envelope-o"></i>
+                  </div>
+                  <span class="text-sm font-medium text-neutral">${getSubcategoryName(resource)}</span>
+                </div>
+                <span class="text-xs ${regionColor} px-2 py-1 rounded-full">${regionName}</span>
+              </div>
+              <h3 class="font-semibold mb-2">${resource.title}</h3>
+              <p class="text-sm text-neutral mb-4">${resource.description}</p>
+              <div class="flex flex-wrap gap-2 mb-4">
+                ${tagsHtml}
+              </div>
+              <div class="flex justify-between items-center">
+                <a href="${resource.url}" target="_blank" rel="noopener noreferrer" class="text-primary text-sm font-medium hover:underline flex items-center">
+                  访问官网 <i class="fa fa-external-link ml-1 text-xs"></i>
+                </a>
+                <span class="text-xs text-neutral">更新于 ${formatDate(resource.updatedAt)}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      });
+      
+      resourceList.innerHTML = resourcesHtml;
+      
+      // 更新活跃筛选器计数
+      updateActiveFilterCount();
+    }
+    
+    // 渲染活跃筛选器标签
+    function renderActiveFilters() {
+      activeFiltersContainer.innerHTML = '';
+      
+      // 子分类筛选标签
+      if (currentSubcategory !== 'all') {
+        const subcategory = emailData.subcategories.find(s => s.slug === currentSubcategory);
+        if (subcategory) {
+          const tag = createFilterTag(subcategory.name, 'subcategory', currentSubcategory);
+          activeFiltersContainer.appendChild(tag);
+        }
+      }
+      
+      // 地区筛选标签
+      const regions = [
+        { id: 'global', name: '全球可用' },
+        { id: 'cn', name: '国内可用' }
+      ];
+      
+      activeFilters.region.forEach(regionId => {
+        const region = regions.find(r => r.id === regionId);
+        if (region) {
+          const tag = createFilterTag(region.name, 'region', regionId);
+          activeFiltersContainer.appendChild(tag);
+        }
+      });
+      
+      // 特性筛选标签
+      const features = [
+        { id: 'smtp', name: '支持SMTP' },
+        { id: 'free', name: '完全免费' },
+        { id: 'opensource', name: '开源' }
+      ];
+      
+      activeFilters.features.forEach(featureId => {
+        const feature = features.find(f => f.id === featureId);
+        if (feature) {
+          const tag = createFilterTag(feature.name, 'feature', featureId);
+          activeFiltersContainer.appendChild(tag);
+        }
+      });
+      
+      // 清除所有筛选器按钮
+      if (currentSubcategory !== 'all' || activeFilters.region.length > 0 || activeFilters.features.length > 0) {
+        const clearAllBtn = document.createElement('button');
+        clearAllBtn.className = 'text-neutral hover:text-red-500 text-sm flex items-center';
+        clearAllBtn.innerHTML = '<i class="fa fa-times-circle mr-1"></i> 清除全部';
+        
+        clearAllBtn.addEventListener('click', function() {
+          currentSubcategory = 'all';
+          activeFilters = { region: [], features: [] };
+          renderSubcategories();
+          renderFilters();
+          renderResources();
+          renderActiveFilters();
+          renderMobileFilters();
+        });
+        
+        activeFiltersContainer.appendChild(clearAllBtn);
+      }
+      
+      // 更新活跃筛选器计数
+      updateActiveFilterCount();
+    }
+    
+    // 创建筛选标签
+    function createFilterTag(name, type, value) {
+      const tag = document.createElement('div');
+      tag.className = 'bg-primary/10 text-primary text-sm px-3 py-1 rounded-full flex items-center gap-1';
+      tag.innerHTML = `
+        ${name}
+        <button class="filter-remove" data-type="${type}" data-value="${value}">
+          <i class="fa fa-times-circle text-xs"></i>
+        </button>
+      `;
+      
+      tag.querySelector('.filter-remove').addEventListener('click', function() {
+        const type = this.dataset.type;
+        const value = this.dataset.value;
+        
+        if (type === 'subcategory') {
+          currentSubcategory = 'all';
+          renderSubcategories();
+        } else if (type === 'region') {
+          activeFilters.region = activeFilters.region.filter(id => id !== value);
+          renderFilters();
+        } else if (type === 'feature') {
+          activeFilters.features = activeFilters.features.filter(id => id !== value);
+          renderFilters();
+        }
+        
+        renderResources();
+        renderActiveFilters();
+        renderMobileFilters();
+      });
+      
+      return tag;
+    }
+    
+    // 获取筛选后的资源
+    function getFilteredResources() {
+      let allResources = [];
+      
+      // 根据子分类筛选
+      if (currentSubcategory === 'all') {
+        // 收集所有子分类的资源
+        emailData.subcategories.forEach(subcategory => {
+          allResources = [...allResources, ...subcategory.items];
+        });
+      } else {
+        // 只获取特定子分类的资源
+        const subcategory = emailData.subcategories.find(s => s.slug === currentSubcategory);
+        if (subcategory) {
+          allResources = subcategory.items;
+        }
+      }
+      
+      // 根据地区筛选
+      if (activeFilters.region.length > 0) {
+        allResources = allResources.filter(resource => 
+          activeFilters.region.includes(resource.region)
+        );
+      }
+      
+      // 根据特性筛选
+      if (activeFilters.features.length > 0) {
+        allResources = allResources.filter(resource => {
+          // 检查每个特性是否匹配
+          return activeFilters.features.every(feature => {
+            if (feature === 'smtp') {
+              // 检查标签中是否包含SMTP
+              return resource.tags && resource.tags.includes('SMTP');
+            } else if (feature === 'free') {
+              // 检查是否免费
+              return resource.isFree;
+            } else if (feature === 'opensource') {
+              // 检查是否开源
+              return resource.isOpenSource;
+            }
+            return true;
+          });
+        });
+      }
+      
+      return allResources;
+    }
+    
+    // 排序资源
+    function sortResources(resources) {
+      const sortType = sortSelect.value;
+      const [field, order] = sortType.split('-');
+      
+      return [...resources].sort((a, b) => {
+        if (field === 'name') {
+          return order === 'asc' 
+            ? a.title.localeCompare(b.title) 
+            : b.title.localeCompare(a.title);
+        } else if (field === 'updatedAt') {
+          return order === 'asc'
+            ? new Date(a.updatedAt) - new Date(b.updatedAt)
+            : new Date(b.updatedAt) - new Date(a.updatedAt);
+        }
+        return 0;
+      });
+    }
+    
+    // 获取资源总数
+    function getTotalResourceCount() {
+      let count = 0;
+      emailData.subcategories.forEach(subcategory => {
+        count += subcategory.items.length;
+      });
+      return count;
+    }
+    
+    // 获取资源所属子分类名称
+    function getSubcategoryName(resource) {
+      for (const subcategory of emailData.subcategories) {
+        if (subcategory.items.some(item => item.id === resource.id)) {
+          return subcategory.name;
+        }
+      }
+      return '';
+    }
+    
+    // 格式化日期
+    function formatDate(dateString) {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('zh-CN');
+    }
+    
+    // 更新活跃筛选器计数
+    function updateActiveFilterCount() {
+      let count = 0;
+      if (currentSubcategory !== 'all') count++;
+      count += activeFilters.region.length;
+      count += activeFilters.features.length;
+      activeFilterCount.textContent = count;
+    }
+    
+    // 显示移动端筛选器
+    function showMobileFilter() {
+      mobileMenu.classList.remove('translate-x-full');
+      mobileMenu.classList.add('translate-x-0');
+    }
+    
+    // 隐藏移动端筛选器
+    function hideMobileFilter() {
+      mobileMenu.classList.remove('translate-x-0');
+      mobileMenu.classList.add('translate-x-full');
+    }
+    
+    // 切换移动端菜单
+    function toggleMobileMenu() {
+      if (mobileMenu.classList.contains('translate-x-full')) {
+        mobileMenu.classList.remove('translate-x-full');
+        mobileMenu.classList.add('translate-x-0');
+      } else {
+        mobileMenu.classList.remove('translate-x-0');
+        mobileMenu.classList.add('translate-x-full');
+      }
+    }
+  </script>
+</body>
+</html>
