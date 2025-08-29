@@ -3,11 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>免费资源导航 | 开发者必备工具与服务</title>
+  <meta name="description" content="开发者免费资源导航 - 精选各类免费开发者资源，助力项目开发与创新">
+  <title>开发者资源导航 | 精选免费工具与服务</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
   
-  <!-- Tailwind 配置 -->
+  <!-- Tailwind 配置 - 专业级色彩系统 -->
   <script>
     tailwind.config = {
       theme: {
@@ -16,12 +18,27 @@
             primary: '#165DFF',
             secondary: '#36CFC9',
             dark: '#1D2129',
-            light: '#F2F3F5',
-            muted: '#86909C'
+            light: '#F7F8FA',
+            muted: '#86909C',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F',
+            // 分类色彩
+            hosting: '#722ED1',
+            database: '#0FC6C2',
+            api: '#7BC616',
+            storage: '#FF7D00',
+            devtools: '#F53F3F',
+            media: '#165DFF',
+            network: '#86909C'
           },
           fontFamily: {
             inter: ['Inter', 'system-ui', 'sans-serif'],
           },
+          boxShadow: {
+            'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+            'card-hover': '0 10px 30px rgba(22, 93, 255, 0.1)',
+          }
         },
       }
     }
@@ -33,326 +50,931 @@
         content-visibility: auto;
       }
       .card-hover {
-        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+        @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
       }
       .text-balance {
         text-wrap: balance;
       }
+      .search-suggestion-active {
+        @apply bg-primary/5 text-primary font-medium;
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      .animate-slide-down {
+        animation: slideDown 0.3s ease-out;
+      }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideDown {
+      from { transform: translateY(-10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
     }
   </style>
 </head>
 
-<body class="font-inter bg-gray-50 text-dark">
+<body class="font-inter bg-light text-dark min-h-screen flex flex-col">
   <!-- 顶部导航栏 -->
   <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <i class="fa fa-compass text-primary text-2xl"></i>
-        <h1 class="text-xl md:text-2xl font-bold text-primary">资源导航</h1>
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <!-- Logo区域 -->
+        <a href="#" class="flex items-center space-x-2 group">
+          <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+            <i class="fa fa-compass text-primary text-xl group-hover:rotate-12 transition-transform duration-300"></i>
+          </div>
+          <h1 class="text-xl md:text-2xl font-bold text-primary">DevResource</h1>
+        </a>
+        
+        <!-- 桌面端导航 -->
+        <nav class="hidden md:flex items-center space-x-8">
+          <a href="#" class="text-primary font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary after:rounded-full">首页</a>
+          <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">资源分类</a>
+          <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">热门资源</a>
+          <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">提交资源</a>
+          <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">关于我们</a>
+        </nav>
+        
+        <!-- 移动端菜单按钮 -->
+        <button class="md:hidden text-dark focus:outline-none" id="mobileMenuBtn">
+          <i class="fa fa-bars text-xl transition-transform duration-300 hover:rotate-90"></i>
+        </button>
       </div>
-      
-      <div class="hidden md:flex items-center space-x-6">
-        <a href="#" class="text-dark hover:text-primary transition-colors">首页</a>
-        <a href="#" class="text-muted hover:text-primary transition-colors">关于</a>
-        <a href="#" class="text-muted hover:text-primary transition-colors">提交资源</a>
-        <a href="#" class="text-muted hover:text-primary transition-colors">联系我们</a>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div class="md:hidden hidden bg-white border-t border-gray-100 animate-fade-in" id="mobileMenu">
+      <div class="container mx-auto px-4 py-3">
+        <nav class="flex flex-col space-y-3 pb-2">
+          <a href="#" class="py-2 px-3 text-primary font-medium bg-primary/5 rounded-lg">首页</a>
+          <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">资源分类</a>
+          <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">热门资源</a>
+          <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">提交资源</a>
+          <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">关于我们</a>
+        </nav>
       </div>
-      
-      <button class="md:hidden text-dark focus:outline-none">
-        <i class="fa fa-bars text-xl"></i>
-      </button>
     </div>
   </header>
 
-  <!-- 主横幅 -->
-  <section class="bg-gradient-to-r from-primary to-secondary text-white py-12 md:py-20">
-    <div class="container mx-auto px-4 text-center">
-      <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-4 text-balance">开发者免费资源导航</h2>
-      <p class="text-white/90 max-w-2xl mx-auto text-[clamp(1rem,2vw,1.2rem)]">
-        精选各类免费开发者资源，助力你的项目开发与创新
-      </p>
-      
-      <!-- 搜索框 -->
-      <div class="mt-8 max-w-2xl mx-auto relative">
-        <input 
-          type="text" 
-          placeholder="搜索资源..." 
-          class="w-full px-5 py-3 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-dark"
-        >
-        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 text-white p-2 rounded-full transition-colors">
-          <i class="fa fa-search"></i>
-        </button>
+  <!-- 主横幅与搜索区 -->
+  <section class="bg-gradient-to-r from-primary to-primary/80 text-white py-12 md:py-20">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center">
+        <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-4 text-balance leading-tight">
+          开发者精选免费资源导航
+        </h2>
+        <p class="text-white/90 text-[clamp(1rem,2vw,1.2rem)] mb-8 leading-relaxed">
+          汇集全球优质免费开发者资源，涵盖API接口、云服务、开发工具等，助力项目开发与创新
+        </p>
+        
+        <!-- 高级搜索框 -->
+        <div class="relative max-w-2xl mx-auto group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i class="fa fa-search text-white/70"></i>
+          </div>
+          <input 
+            type="text" 
+            id="resourceSearch"
+            placeholder="搜索资源（例如：免费API、云服务器、图像处理...）" 
+            class="w-full pl-12 pr-4 py-4 rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-dark transition-all"
+          >
+          <div class="absolute right-3 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-colors backdrop-blur-sm">
+              <i class="fa fa-microphone"></i>
+            </button>
+          </div>
+          
+          <!-- 搜索建议下拉框 -->
+          <div id="searchSuggestions" class="hidden absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-lg overflow-hidden z-50 animate-slide-down max-h-80 overflow-y-auto scrollbar-hide">
+            <!-- 搜索建议内容由JS动态生成 -->
+          </div>
+        </div>
+        
+        <!-- 热门搜索标签 -->
+        <div class="flex flex-wrap justify-center gap-2 mt-6">
+          <span class="text-white/80 text-sm">热门搜索:</span>
+          <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors">免费API</a>
+          <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors">云服务器</a>
+          <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors">图像处理</a>
+          <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors">数据库</a>
+          <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors">地图SDK</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 资源概览统计 -->
+  <section class="py-8 bg-white">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+        <div class="bg-light rounded-xl p-4 text-center">
+          <div class="text-2xl md:text-3xl font-bold text-primary mb-1">20+</div>
+          <div class="text-sm text-muted">资源分类</div>
+        </div>
+        <div class="bg-light rounded-xl p-4 text-center">
+          <div class="text-2xl md:text-3xl font-bold text-primary mb-1">500+</div>
+          <div class="text-sm text-muted">免费资源</div>
+        </div>
+        <div class="bg-light rounded-xl p-4 text-center">
+          <div class="text-2xl md:text-3xl font-bold text-primary mb-1">10k+</div>
+          <div class="text-sm text-muted">月活跃用户</div>
+        </div>
+        <div class="bg-light rounded-xl p-4 text-center">
+          <div class="text-2xl md:text-3xl font-bold text-primary mb-1">32</div>
+          <div class="text-sm text-muted">本月更新</div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- 资源分类区 -->
-  <main class="container mx-auto px-4 py-12">
+  <main class="container mx-auto px-4 py-12 flex-grow">
+    <!-- 资源分布图表 -->
+    <div class="bg-white rounded-xl shadow-card p-5 mb-10">
+      <h3 class="text-xl font-bold mb-5">资源分布概览</h3>
+      <div class="h-64 md:h-72">
+        <canvas id="resourceChart"></canvas>
+      </div>
+    </div>
+    
+    <!-- 分类筛选器 -->
+    <div class="mb-8 overflow-x-auto scrollbar-hide">
+      <div class="flex gap-2 pb-2 min-w-max">
+        <button class="category-filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center" data-category="all">
+          <i class="fa fa-th-large mr-1.5"></i> 全部分类
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="hosting">
+          <i class="fa fa-server mr-1.5"></i> 云服务
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="database">
+          <i class="fa fa-database mr-1.5"></i> 数据库
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="api">
+          <i class="fa fa-code mr-1.5"></i> API接口
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="storage">
+          <i class="fa fa-hdd-o mr-1.5"></i> 存储服务
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="devtools">
+          <i class="fa fa-wrench mr-1.5"></i> 开发工具
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="media">
+          <i class="fa fa-picture-o mr-1.5"></i> 音视频
+        </button>
+        <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="network">
+          <i class="fa fa-cloud mr-1.5"></i> 网络服务
+        </button>
+      </div>
+    </div>
+    
+    <!-- 分类标题 -->
     <div class="mb-8">
-      <h3 class="text-2xl font-bold mb-2">资源分类</h3>
-      <p class="text-muted">共 20 个分类，涵盖开发者常用免费资源</p>
+      <h3 class="text-2xl font-bold mb-2 flex items-center">
+        <span id="categoryTitle">全部资源分类</span>
+        <span class="ml-3 text-sm font-normal text-muted bg-light px-2 py-1 rounded-full">20 个分类</span>
+      </h3>
+      <p class="text-muted">精选全球优质免费开发者资源，按类别整理，方便快速查找</p>
     </div>
     
     <!-- 分类网格 -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <!-- 分类项 -->
-      <a href="free/vps.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-server text-primary text-xl"></i>
+      <!-- 云服务分类 -->
+      <a href="categories/hosting.html" class="block group" data-category="hosting">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-hosting/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-hosting/20 transition-colors">
+            <i class="fa fa-server text-hosting text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费 VPS / 云服务器</h4>
+          <h4 class="font-medium text-lg mb-2">免费 VPS / 云服务器</h4>
+          <p class="text-sm text-muted mb-3">精选提供免费额度的云服务器和VPS服务，适合个人项目和小型应用</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>28 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/domain.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-globe text-primary text-xl"></i>
+      <a href="categories/domain.html" class="block group" data-category="hosting">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-hosting/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-hosting/20 transition-colors">
+            <i class="fa fa-globe text-hosting text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费域名 / 子域名</h4>
+          <h4 class="font-medium text-lg mb-2">免费域名 / 子域名</h4>
+          <p class="text-sm text-muted mb-3">提供免费顶级域名和子域名服务，适合个人网站和测试项目使用</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>15 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/api.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-code text-primary text-xl"></i>
+      <!-- 数据库分类 -->
+      <a href="categories/database.html" class="block group" data-category="database">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-database/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-database/20 transition-colors">
+            <i class="fa fa-database text-database text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费 API 接口</h4>
+          <h4 class="font-medium text-lg mb-2">免费数据库服务</h4>
+          <p class="text-sm text-muted mb-3">提供免费额度的关系型和非关系型数据库服务，支持多种数据模型</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>22 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/database.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-database text-primary text-xl"></i>
+      <!-- API接口分类 -->
+      <a href="categories/api.html" class="block group" data-category="api">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-api/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-api/20 transition-colors">
+            <i class="fa fa-code text-api text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费数据库服务</h4>
+          <h4 class="font-medium text-lg mb-2">免费 API 接口</h4>
+          <p class="text-sm text-muted mb-3">各类免费API接口集合，涵盖数据查询、功能集成等多种用途</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>86 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/cdn.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-cloud-download text-primary text-xl"></i>
+      <a href="categories/weather.html" class="block group" data-category="api">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-api/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-api/20 transition-colors">
+            <i class="fa fa-cloud text-api text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费 CDN / 静态资源托管</h4>
+          <h4 class="font-medium text-lg mb-2">免费天气数据 API</h4>
+          <p class="text-sm text-muted mb-3">提供全球天气数据查询的免费API服务，支持多种数据格式</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>12 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/storage.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-hdd-o text-primary text-xl"></i>
+      <a href="categories/map.html" class="block group" data-category="api">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-api/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-api/20 transition-colors">
+            <i class="fa fa-map-marker text-api text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费存储服务</h4>
+          <h4 class="font-medium text-lg mb-2">地图 / 地理定位 API</h4>
+          <p class="text-sm text-muted mb-3">提供地图显示、地理编码和位置服务的免费API接口</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>9 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/email.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-envelope text-primary text-xl"></i>
+      <!-- 存储服务分类 -->
+      <a href="categories/storage.html" class="block group" data-category="storage">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-storage/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-storage/20 transition-colors">
+            <i class="fa fa-hdd-o text-storage text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费邮件服务</h4>
+          <h4 class="font-medium text-lg mb-2">免费存储服务</h4>
+          <p class="text-sm text-muted mb-3">提供免费存储空间的云存储服务，支持文件存储和管理</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>31 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/sms.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-mobile text-primary text-xl"></i>
+      <a href="categories/cdn.html" class="block group" data-category="storage">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-storage/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-storage/20 transition-colors">
+            <i class="fa fa-cloud-download text-storage text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费短信 / 通知服务</h4>
+          <h4 class="font-medium text-lg mb-2">免费 CDN 服务</h4>
+          <p class="text-sm text-muted mb-3">提供免费静态资源加速的CDN服务，提升网站访问速度</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>18 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/image.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-picture-o text-primary text-xl"></i>
+      <!-- 开发工具分类 -->
+      <a href="categories/devtools.html" class="block group" data-category="devtools">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-devtools/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-devtools/20 transition-colors">
+            <i class="fa fa-wrench text-devtools text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费图像处理 API</h4>
+          <h4 class="font-medium text-lg mb-2">免费开发者工具</h4>
+          <p class="text-sm text-muted mb-3">提升开发效率的免费工具，包括IDE、调试工具和代码分析工具</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>64 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/voice.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-microphone text-primary text-xl"></i>
+      <a href="categories/cicd.html" class="block group" data-category="devtools">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-devtools/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-devtools/20 transition-colors">
+            <i class="fa fa-refresh text-devtools text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费语音识别 / 合成 API</h4>
+          <h4 class="font-medium text-lg mb-2">免费 CI/CD 工具</h4>
+          <p class="text-sm text-muted mb-3">提供持续集成和部署的免费工具，自动化开发流程</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>15 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/payment.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-credit-card text-primary text-xl"></i>
+      <!-- 音视频分类 -->
+      <a href="categories/image.html" class="block group" data-category="media">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-media/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-media/20 transition-colors">
+            <i class="fa fa-picture-o text-media text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费支付接口</h4>
+          <h4 class="font-medium text-lg mb-2">图像处理 API</h4>
+          <p class="text-sm text-muted mb-3">提供图片处理、优化和转换功能的免费API服务</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>27 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/translate.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-language text-primary text-xl"></i>
+      <a href="categories/voice.html" class="block group" data-category="media">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-media/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-media/20 transition-colors">
+            <i class="fa fa-microphone text-media text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费翻译 API</h4>
+          <h4 class="font-medium text-lg mb-2">语音识别 API</h4>
+          <p class="text-sm text-muted mb-3">提供语音转文字和文字转语音功能的免费API服务</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>13 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/weather.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-cloud text-primary text-xl"></i>
+      <!-- 网络服务分类 -->
+      <a href="categories/email.html" class="block group" data-category="network">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-network/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-network/20 transition-colors">
+            <i class="fa fa-envelope text-network text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费天气数据 API</h4>
+          <h4 class="font-medium text-lg mb-2">免费邮件服务</h4>
+          <p class="text-sm text-muted mb-3">提供邮件发送和接收功能的免费服务和API接口</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>21 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/map.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-map-marker text-primary text-xl"></i>
+      <a href="categories/sms.html" class="block group" data-category="network">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-network/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-network/20 transition-colors">
+            <i class="fa fa-mobile text-network text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费地图 / 地理定位 API</h4>
+          <h4 class="font-medium text-lg mb-2">短信 / 通知服务</h4>
+          <p class="text-sm text-muted mb-3">提供短信发送和推送通知功能的免费服务</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>17 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/captcha.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-shield text-primary text-xl"></i>
+      <a href="categories/payment.html" class="block group" data-category="network">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-network/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-network/20 transition-colors">
+            <i class="fa fa-credit-card text-network text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费验证码服务</h4>
+          <h4 class="font-medium text-lg mb-2">免费支付接口</h4>
+          <p class="text-sm text-muted mb-3">适合小型项目使用的免费支付处理和集成接口</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>14 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+          </div>
         </div>
       </a>
       
-      <a href="free/icons.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-paint-brush text-primary text-xl"></i>
+      <a href="categories/translate.html" class="block group" data-category="network">
+        <div class="bg-white rounded-xl p-6 shadow-card card-hover border border-gray-100 h-full">
+          <div class="w-12 h-12 bg-network/10 rounded-lg flex items-center justify-center mb-4 group-hover:bg-network/20 transition-colors">
+            <i class="fa fa-language text-network text-xl"></i>
           </div>
-          <h4 class="font-medium text-lg">免费图标 / 字体资源</h4>
-        </div>
-      </a>
-      
-      <a href="free/devtools.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-wrench text-primary text-xl"></i>
+          <h4 class="font-medium text-lg mb-2">免费翻译 API</h4>
+          <p class="text-sm text-muted mb-3">提供文本翻译功能的免费API服务，支持多种语言</p>
+          <div class="text-xs text-primary flex items-center mt-auto">
+            <span>11 个资源</span>
+            <i class="fa fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
           </div>
-          <h4 class="font-medium text-lg">免费开发者工具</h4>
-        </div>
-      </a>
-      
-      <a href="free/cicd.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-refresh text-primary text-xl"></i>
-          </div>
-          <h4 class="font-medium text-lg">免费 CI/CD 工具</h4>
-        </div>
-      </a>
-      
-      <a href="free/monitor.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-line-chart text-primary text-xl"></i>
-          </div>
-          <h4 class="font-medium text-lg">免费监控 / 日志服务</h4>
-        </div>
-      </a>
-      
-      <a href="free/websocket.html" class="block">
-        <div class="bg-white rounded-xl p-6 shadow-sm card-hover border border-gray-100">
-          <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
-            <i class="fa fa-exchange text-primary text-xl"></i>
-          </div>
-          <h4 class="font-medium text-lg">免费 WebSocket 服务</h4>
         </div>
       </a>
     </div>
+    
+    <!-- 热门资源推荐 -->
+    <div class="mt-16">
+      <h3 class="text-2xl font-bold mb-6">热门资源推荐</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- 热门资源卡片 1 -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden card-hover border border-gray-100">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-primary/10 rounded flex items-center justify-center mr-2">
+                  <i class="fa fa-code text-primary"></i>
+                </div>
+                <h4 class="font-medium">OpenAI API</h4>
+              </div>
+              <span class="bg-success/10 text-success text-xs px-2 py-1 rounded-full">API接口</span>
+            </div>
+            <p class="text-sm text-muted mb-4">提供强大的自然语言处理能力，支持文本生成、问答等多种任务</p>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-muted"><i class="fa fa-star text-warning mr-1"></i> 4.9 (128)</span>
+              <a href="#" class="text-primary hover:underline">查看详情</a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 热门资源卡片 2 -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden card-hover border border-gray-100">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-hosting/10 rounded flex items-center justify-center mr-2">
+                  
+                  <i class="fa fa-server text-hosting"></i>
+                </div>
+                <h4 class="font-medium">Google Cloud 免费层</h4>
+              </div>
+              <span class="bg-success/10 text-success text-xs px-2 py-1 rounded-full">云服务</span>
+            </div>
+            <p class="text-sm text-muted mb-4">提供永久免费的云服务器和多种云服务资源，适合开发测试</p>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-muted"><i class="fa fa-star text-warning mr-1"></i> 4.7 (96)</span>
+              <a href="#" class="text-primary hover:underline">查看详情</a>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 热门资源卡片 3 -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden card-hover border border-gray-100">
+          <div class="p-5">
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center">
+                <div class="w-8 h-8 bg-database/10 rounded flex items-center justify-center mr-2">
+                  <i class="fa fa-database text-database"></i>
+                </div>
+                <h4 class="font-medium">MongoDB Atlas 免费层</h4>
+              </div>
+              <span class="bg-success/10 text-success text-xs px-2 py-1 rounded-full">数据库</span>
+            </div>
+            <p class="text-sm text-muted mb-4">提供免费的MongoDB数据库服务，包含512MB存储空间</p>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-muted"><i class="fa fa-star text-warning mr-1"></i> 4.6 (87)</span>
+              <a href="#" class="text-primary hover:underline">查看详情</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
-  <!-- 页脚 -->
-  <footer class="bg-dark text-white py-12 mt-16">
+  <!-- 订阅区域 -->
+  <section class="bg-primary/5 py-12 mt-12">
     <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="max-w-3xl mx-auto text-center">
+        <h3 class="text-2xl font-bold mb-3">获取最新资源更新</h3>
+        <p class="text-muted mb-6">订阅我们的通讯，第一时间获取新上线的免费资源和独家优惠</p>
+        <div class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+          <input 
+            type="email" 
+            placeholder="输入您的邮箱地址" 
+            class="flex-grow px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+          >
+          <button class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-colors font-medium whitespace-nowrap">
+            立即订阅
+          </button>
+        </div>
+        <p class="text-xs text-muted mt-3">我们尊重您的隐私，不会向第三方分享您的信息</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-12 mt-8">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <div class="flex items-center space-x-2 mb-4">
-            <i class="fa fa-compass text-secondary text-2xl"></i>
-            <h3 class="text-xl font-bold">资源导航</h3>
+            <div class="w-8 h-8 rounded-lg bg-secondary/20 flex items-center justify-center">
+              <i class="fa fa-compass text-secondary"></i>
+            </div>
+            <h3 class="text-xl font-bold">DevResource</h3>
           </div>
-          <p class="text-gray-400 mb-4">
-            为开发者提供精选免费资源导航，助力项目开发与创新
+          <p class="text-gray-400 text-sm mb-4">
+            为开发者精选全球优质免费资源，助力项目开发与创新，降低开发成本
           </p>
           <div class="flex space-x-4">
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-github text-xl"></i>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+              <i class="fa fa-github text-lg"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-twitter text-xl"></i>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+              <i class="fa fa-twitter text-lg"></i>
             </a>
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-linkedin text-xl"></i>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+              <i class="fa fa-linkedin text-lg"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+              <i class="fa fa-discord text-lg"></i>
             </a>
           </div>
         </div>
         
         <div>
-          <h4 class="text-lg font-medium mb-4">快速链接</h4>
-          <ul class="space-y-2">
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">资源提交</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
+          <h4 class="text-lg font-medium mb-4">资源分类</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">API接口</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">云服务</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">数据库</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">开发工具</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">存储服务</a></li>
           </ul>
         </div>
         
         <div>
-          <h4 class="text-lg font-medium mb-4">订阅更新</h4>
-          <p class="text-gray-400 mb-4">获取最新免费资源信息和更新</p>
-          <div class="flex">
-            <input 
-              type="email" 
-              placeholder="你的邮箱地址" 
-              class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-dark"
-            >
-            <button class="bg-secondary hover:bg-secondary/90 text-white px-4 rounded-r-lg transition-colors">
-              订阅
-            </button>
-          </div>
+          <h4 class="text-lg font-medium mb-4">快速链接</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">热门资源</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">最新添加</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">资源提交</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-medium mb-4">联系我们</h4>
+          <ul class="space-y-3 text-sm">
+            
+            <li class="flex items-start">
+              <i class="fa fa-envelope text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">contact@devresource.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-github text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">github.com/devresource</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-twitter text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">@devresource</span>
+            </li>
+          </ul>
         </div>
       </div>
       
-      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
-        <p>&copy; 2023 免费资源导航 | 保留所有权利</p>
+      <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-500 text-sm">&copy; 2023 DevResource. 保留所有权利</p>
+        <div class="flex space-x-6 mt-4 md:mt-0">
+          <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">隐私政策</a>
+          <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">使用条款</a>
+          <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Cookie政策</a>
+        </div>
       </div>
     </div>
   </footer>
 
+  <!-- 回到顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible hover:scale-110 z-40">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
   <script>
+    // 模拟资源数据 - 用于搜索功能
+    const resources = [
+      { name: "OpenAI API", category: "api", description: "强大的自然语言处理API，支持文本生成和理解" },
+      { name: "Google Cloud 免费层", category: "hosting", description: "提供免费的云服务器和多种云服务资源" },
+      { name: "MongoDB Atlas", category: "database", description: "免费的MongoDB数据库服务，512MB存储空间" },
+      { name: "Firebase 免费计划", category: "hosting", description: "提供免费的后端服务，包括数据库、存储和托管" },
+      { name: "GitHub Pages", category: "hosting", description: "免费的静态网站托管服务，与GitHub无缝集成" },
+      { name: "Cloudflare", category: "network", description: "提供免费的CDN和DDoS保护服务" },
+      { name: "Imgur API", category: "media", description: "免费的图片上传和分享API" },
+      { name: "WeatherAPI", category: "api", description: "提供全球天气数据的免费API服务" },
+      { name: "PostgreSQL 免费托管", category: "database", description: "提供免费的PostgreSQL数据库托管服务" },
+      { name: "SendGrid", category: "network", description: "提供免费的邮件发送服务，每月100封免费额度" },
+      { name: "Unsplash API", category: "media", description: "提供高质量免费图片的API服务" },
+      { name: "Heroku 免费层", category: "hosting", description: "提供免费的应用部署和托管服务" },
+      { name: "Redis Labs 免费计划", category: "database", description: "提供免费的Redis缓存服务" },
+      { name: "Mapbox", category: "api", description: "提供地图和地理位置服务的API" },
+      { name: "Stripe 测试模式", category: "network", description: "提供免费的支付处理测试服务" },
+      { name: "Visual Studio Code", category: "devtools", description: "免费的代码编辑器，支持多种编程语言" },
+      { name: "Git", category: "devtools", description: "免费的版本控制系统" },
+      { name: "TensorFlow", category: "devtools", description: "开源的机器学习框架" },
+      { name: "React", category: "devtools", description: "用于构建用户界面的JavaScript库" },
+      { name: "Vue.js", category: "devtools", description: "渐进式JavaScript框架" }
+    ];
+
+    // 移动端菜单切换
+    const menuButton = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    menuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      
+      // 切换图标
+      const icon = menuButton.querySelector('i');
+      if (mobileMenu.classList.contains('hidden')) {
+        icon.classList.remove('fa-times', 'rotate-90');
+        icon.classList.add('fa-bars');
+      } else {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times', 'rotate-90');
+      }
+    });
+
     // 导航栏滚动效果
     window.addEventListener('scroll', function() {
       const header = document.querySelector('header');
       if (window.scrollY > 50) {
-        header.classList.add('py-2');
-        header.classList.remove('py-4');
+        header.classList.add('py-2', 'shadow');
+        header.classList.remove('py-4', 'shadow-sm');
       } else {
-        header.classList.add('py-4');
-        header.classList.remove('py-2');
+        header.classList.add('py-4', 'shadow-sm');
+        header.classList.remove('py-2', 'shadow');
+      }
+      
+      // 回到顶部按钮显示/隐藏
+      const backToTopBtn = document.getElementById('backToTop');
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'invisible');
+        backToTopBtn.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'invisible');
+        backToTopBtn.classList.remove('opacity-100', 'visible');
+      }
+    });
+
+    // 回到顶部功能
+    document.getElementById('backToTop').addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // 搜索功能实现
+    const searchInput = document.getElementById('resourceSearch');
+    const searchSuggestions = document.getElementById('searchSuggestions');
+    
+    // 点击页面其他区域关闭搜索建议
+    document.addEventListener('click', (e) => {
+      if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+        searchSuggestions.classList.add('hidden');
       }
     });
     
-    // 移动端菜单切换
-    const menuButton = document.querySelector('button.md\\:hidden');
-    menuButton.addEventListener('click', function() {
-      // 这里可以添加移动端菜单展开/收起逻辑
-      alert('移动端菜单功能待实现');
+    // 搜索输入处理
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      
+      if (searchTerm.length < 2) {
+        searchSuggestions.classList.add('hidden');
+        return;
+      }
+      
+      // 过滤匹配的资源
+      const matches = resources.filter(resource => 
+        resource.name.toLowerCase().includes(searchTerm) || 
+        resource.description.toLowerCase().includes(searchTerm) ||
+        resource.category.toLowerCase().includes(searchTerm)
+      );
+      
+      // 显示搜索建议
+      if (matches.length > 0) {
+        displaySuggestions(matches, searchTerm);
+        searchSuggestions.classList.remove('hidden');
+      } else {
+        searchSuggestions.innerHTML = `
+          <div class="px-4 py-3 text-muted text-sm">
+            没有找到匹配的资源，请尝试其他关键词
+          </div>
+        `;
+        searchSuggestions.classList.remove('hidden');
+      }
+    });
+    
+    // 显示搜索建议
+    function displaySuggestions(matches, searchTerm) {
+      let html = '';
+      
+      matches.forEach((match, index) => {
+        // 高亮匹配的文本
+        const highlightedName = highlightMatch(match.name, searchTerm);
+        const highlightedDesc = highlightMatch(match.description, searchTerm);
+        
+        html += `
+          <div class="search-suggestion px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors ${index === 0 ? 'search-suggestion-active' : ''}" 
+               data-name="${match.name}">
+            <div class="font-medium text-sm mb-1">${highlightedName}</div>
+            <div class="text-xs text-muted line-clamp-1">${highlightedDesc}</div>
+            <div class="mt-1 text-xs bg-${match.category}/10 text-${match.category} px-2 py-0.5 rounded-full inline-block">
+              ${getCategoryName(match.category)}
+            </div>
+          </div>
+        `;
+      });
+      
+      searchSuggestions.innerHTML = html;
+      
+      // 添加搜索建议点击事件
+      document.querySelectorAll('.search-suggestion').forEach(suggestion => {
+        suggestion.addEventListener('click', () => {
+          searchInput.value = suggestion.getAttribute('data-name');
+          searchSuggestions.classList.add('hidden');
+          // 这里可以添加搜索提交逻辑
+        });
+      });
+      
+      // 添加键盘导航
+      searchInput.addEventListener('keydown', (e) => {
+        const suggestions = document.querySelectorAll('.search-suggestion');
+        if (suggestions.length === 0) return;
+        if (suggestions.length === 0) return;
+        
+        let activeIndex = Array.from(suggestions).findIndex(s => s.classList.contains('search-suggestion-active'));
+        
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          suggestions[activeIndex].classList.remove('search-suggestion-active');
+          activeIndex = (activeIndex + 1) % suggestions.length;
+          suggestions[activeIndex].classList.add('search-suggestion-active');
+          suggestions[activeIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          suggestions[activeIndex].classList.remove('search-suggestion-active');
+          activeIndex = (activeIndex - 1 + suggestions.length) % suggestions.length;
+          suggestions[activeIndex].classList.add('search-suggestion-active');
+          suggestions[activeIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+          e.preventDefault();
+          searchInput.value = suggestions[activeIndex].getAttribute('data-name');
+          searchSuggestions.classList.add('hidden');
+        }
+      });
+    }
+    
+    // 高亮匹配的文本
+    function highlightMatch(text, term) {
+      if (!term) return text;
+      const regex = new RegExp(`(${term})`, 'gi');
+      return text.replace(regex, '<span class="text-primary font-medium">$1</span>');
+    }
+    
+    // 获取分类名称
+    function getCategoryName(category) {
+      const categories = {
+        'hosting': '云服务',
+        'database': '数据库',
+        'api': 'API接口',
+        'storage': '存储服务',
+        'devtools': '开发工具',
+        'media': '音视频',
+        'network': '网络服务'
+      };
+      return categories[category] || category;
+    }
+    
+    // 分类筛选功能
+    const categoryButtons = document.querySelectorAll('.category-filter-btn');
+    const categoryItems = document.querySelectorAll('.grid > a');
+    const categoryTitle = document.getElementById('categoryTitle');
+    
+    categoryButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const category = button.getAttribute('data-category');
+        
+        // 更新按钮状态
+        categoryButtons.forEach(btn => {
+          btn.classList.remove('bg-primary', 'text-white', 'font-medium');
+          btn.classList.add('bg-white', 'hover:bg-gray-100');
+        });
+        button.classList.add('bg-primary', 'text-white', 'font-medium');
+        button.classList.remove('bg-white', 'hover:bg-gray-100');
+        
+        // 更新标题
+        if (category === 'all') {
+          categoryTitle.textContent = '全部资源分类';
+        } else {
+          categoryTitle.textContent = getCategoryName(category) + ' 资源分类';
+        }
+        
+        // 筛选分类项
+        categoryItems.forEach(item => {
+          if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.style.display = '';
+            // 添加淡入动画
+            item.style.opacity = '0';
+            item.style.transform = 'translateY(10px)';
+            item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            
+            setTimeout(() => {
+              item.style.opacity = '1';
+              item.style.transform = 'translateY(0)';
+            }, 50);
+          } else {
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+            
+            setTimeout(() => {
+              item.style.opacity = '0';
+              item.style.transform = 'translateY(10px)';
+              
+              setTimeout(() => {
+                item.style.display = 'none';
+              }, 300);
+            }, 50);
+          }
+        });
+      });
+    });
+    
+    // 资源分布图表
+    const ctx = document.getElementById('resourceChart').getContext('2d');
+    const resourceChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['API接口', '云服务', '数据库', '开发工具', '存储服务', '音视频', '网络服务'],
+        datasets: [{
+          label: '资源数量',
+          data: [86, 43, 22, 64, 49, 40, 62],
+          backgroundColor: [
+            '#7BC616', '#722ED1', '#0FC6C2', '#F53F3F', 
+            '#FF7D00', '#165DFF', '#86909C'
+          ],
+          borderWidth: 0,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            backgroundColor: 'rgba(29, 33, 41, 0.9)',
+            padding: 12,
+            titleFont: {
+              size: 14,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 13
+            },
+            cornerRadius: 8,
+            displayColors: false,
+            callbacks: {
+              label: function(context) {
+                return `资源数量: ${context.raw}`;
+              }
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              precision: 0
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        },
+        animation: {
+          duration: 2000,
+          easing: 'easeOutQuart'
+        }
+      }
+    });
+    
+    // 页面加载动画
+    window.addEventListener('load', () => {
+      document.body.classList.add('opacity-0');
+      setTimeout(() => {
+        document.body.classList.remove('opacity-0');
+        document.body.classList.add('transition-opacity', 'duration-500', 'opacity-100');
+      }, 100);
     });
   </script>
 </body>
