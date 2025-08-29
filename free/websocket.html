@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>免费 WebSocket 服务 / Free WebSocket APIs</title>
+  <!-- 外部资源引入 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#4080FF',
+            dark: '#1D2129',
+            light: '#F2F3F5',
+            muted: '#86909C',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <!-- Logo区域 -->
+      <a href="#" class="flex items-center space-x-2">
+        <i class="fa fa-exchange text-primary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-primary">WebSocket 服务导航</h1>
+      </a>
+      
+      <!-- 桌面端导航 -->
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="index.html" class="text-dark hover:text-primary transition-colors">首页</a>
+        <a href="categories.html" class="text-dark hover:text-primary transition-colors">资源分类</a>
+        <a href="#" class="text-primary font-medium">WebSocket服务</a>
+        <a href="realtime.html" class="text-dark hover:text-primary transition-colors">实时API</a>
+        <a href="tools.html" class="text-dark hover:text-primary transition-colors">开发工具</a>
+      </div>
+      
+      <!-- 移动端菜单按钮 -->
+      <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单（默认隐藏） -->
+    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
+        <a href="categories.html" class="py-2 text-dark hover:text-primary transition-colors">资源分类</a>
+        <a href="#" class="py-2 text-primary font-medium">WebSocket服务</a>
+        <a href="realtime.html" class="py-2 text-dark hover:text-primary transition-colors">实时API</a>
+        <a href="tools.html" class="py-2 text-dark hover:text-primary transition-colors">开发工具</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 页面标题区 -->
+  <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-10 md:py-16">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fa fa-exchange text-3xl"></i>
+            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">免费 WebSocket 服务</h2>
+          </div>
+          <p class="text-white/90 max-w-2xl">
+            精选 50+ 个提供 WebSocket 或实时通信 (real-time communication) 的免费服务，适合开发者测试、学习或小型项目使用。每个服务都标注了限制或缺点，方便选择。
+          </p>
+          
+          <div class="flex flex-wrap gap-3 mt-6">
+            <a href="#resources" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-list-alt mr-2"></i> 浏览服务列表
+            </a>
+            <a href="#" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-download mr-2"></i> 下载服务清单
+            </a>
+          </div>
+        </div>
+        
+        <!-- 数据概览卡片 -->
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">服务总数</span>
+            <span class="font-bold">48+ 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">免费可用</span>
+            <span class="font-bold">42 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">国内可用</span>
+            <span class="font-bold">28 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">开源项目</span>
+            <span class="font-bold">15 个</span>
+          </div>
+          <div class="border-t border-white/20 pt-4 mt-2">
+            <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+    <nav class="flex text-sm" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+            <i class="fa fa-home mr-2"></i>首页
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <a href="categories.html" class="text-muted hover:text-primary transition-colors">资源分类</a>
+          </div>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <a href="#" class="text-primary font-medium">WebSocket服务</a>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  </div>
+
+  <!-- 核心内容区 -->
+  <main class="container mx-auto px-4 py-8 flex-grow">
+    <!-- 筛选工具栏 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm overflow-x-auto scrollbar-hide">
+      <h3 class="text-lg font-medium mb-4">快速筛选</h3>
+      <div class="flex flex-wrap gap-2 pb-2">
+        <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="all">
+          <i class="fa fa-th-large mr-1"></i> 全部服务
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="managed">
+          <i class="fa fa-cloud mr-1"></i> 托管服务
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="self-hosted">
+          <i class="fa fa-server mr-1"></i> 自建服务
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="testing">
+          <i class="fa fa-flask mr-1"></i> 测试工具
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="chat">
+          <i class="fa fa-comments mr-1"></i> 聊天专用
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="iot">
+          <i class="fa fa-microchip mr-1"></i> IoT 专用
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="china">
+          <i class="fa fa-map-marker mr-1"></i> 国内可用
+        </button>
+      </div>
+    </div>
+
+    <!-- 工具搜索框 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
+      <div class="relative">
+        <input type="text" id="resourceSearch" placeholder="搜索WebSocket服务..." class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors pl-10">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="text-sm text-muted">热门搜索:</span>
+        <a href="#" class="text-sm text-primary hover:underline">免费WebSocket</a>
+        <a href="#" class="text-sm text-primary hover:underline">国内可用</a>
+        <a href="#" class="text-sm text-primary hover:underline">聊天API</a>
+        <a href="#" class="text-sm text-primary hover:underline">自托管</a>
+        <a href="#" class="text-sm text-primary hover:underline">测试工具</a>
+      </div>
+    </div>
+
+    <!-- 资源统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-cloud text-primary text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">托管服务</p>
+          <p class="text-2xl font-bold">33 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-server text-secondary text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">开源自建</p>
+          <p class="text-2xl font-bold">15 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mr-4">
+          <i class="fa fa-check-circle text-success text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">国内稳定可用</p>
+          <p class="text-2xl font-bold">28 个</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 资源列表 -->
+    <div id="resources" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-gray-100">
+        <h2 class="text-xl font-bold">WebSocket 服务列表</h2>
+        <p class="text-muted text-sm mt-1">按服务质量和受欢迎程度排序</p>
+      </div>
+      
+      <ul class="divide-y divide-gray-100">
+        <!-- 服务项 1 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="managed china">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://pusher.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Pusher
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">国内可用</span>
+              </div>
+              <p class="mt-2 text-muted">Free plan 200k msgs/月，适合中小型实时应用，文档完善，集成简单。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-envelope-o mr-1"></i> 200k 消息/月
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-users mr-1"></i> 100 并发连接
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-globe mr-1"></i> 全球节点
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>并发连接有限，超出需付费，高级功能需升级。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 2 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="managed">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://ably.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Ably
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+              </div>
+              <p class="mt-2 text-muted">Free 3M msgs/月，高可用性，自动扩展，支持多种实时通信协议。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-envelope-o mr-1"></i> 300万 消息/月
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-users mr-1"></i> 500 并发连接
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-shield mr-1"></i> 99.999% 可用性
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>国内延迟较高，超出计费，部分高级API需付费。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 3 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="managed">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://www.pubnub.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  PubNub
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+              </div>
+              <p class="mt-2 text-muted">Free 200 msgs/秒，全球分布式网络，支持多种实时通信场景。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-envelope-o mr-1"></i> 200 消息/秒
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-globe mr-1"></i> 全球25个区域
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 多语言SDK
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>文档复杂，上手成本高，免费版功能有限。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 4 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="managed self-hosted">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://socket.io/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Socket.IO Cloud
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+                <span class="ml-2 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">自建服务</span>
+              </div>
+              <p class="mt-2 text-muted">Free tier for small apps，流行的实时通信库，支持回退机制。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 开源客户端
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-server mr-1"></i> 可自托管
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-exchange mr-1"></i> 自动降级
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>需自托管或第三方托管，云服务收费较高。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 5 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="self-hosted">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://centrifugal.dev/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Centrifugo
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-secondary/10 text-secondary text-xs px-2 py-0.5 rounded-full">自建服务</span>
+              </div>
+              <p class="mt-2 text-muted">开源实时 server，支持WebSocket和SockJS，高性能，易于部署。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-github mr-1"></i> 开源免费
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-bolt mr-1"></i> 高性能
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-cogs mr-1"></i> 配置简单
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>无官方托管，需自己部署和维护。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 6 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="managed china">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://firebase.google.com/products/realtime-database" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Firebase Realtime DB
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+                <span class="ml-2 category-pill bg-success/10 text-success text-xs px-2 py-0.5 rounded-full">国内可用</span>
+              </div>
+              <p class="mt-2 text-muted">实时监听数据变化，自动同步，适合需要实时更新的应用。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> 1GB 免费存储
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-exchange mr-1"></i> 实时同步
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-mobile mr-1"></i> 多平台支持
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>免费层 1GB 存储，读写操作有限制，国内访问速度一般。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 7 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="managed">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://supabase.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  Supabase Realtime
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+              </div>
+              <p class="mt-2 text-muted">免费实时数据流，基于PostgreSQL，支持订阅表和行级变化。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-database mr-1"></i> PostgreSQL 基础
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-table mr-1"></i> 表级订阅
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 简单API
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>连接数有限，免费层项目数量受限，国内访问延迟高。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 8 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="testing">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://websocket.org/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  WebSocket.org Echo Test
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-warning/10 text-warning text-xs px-2 py-0.5 rounded-full">测试工具</span>
+              </div>
+              <p class="mt-2 text-muted">公共回显服务器，适合测试WebSocket客户端连接和消息发送。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-check-circle mr-1"></i> 无需注册
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-flask mr-1"></i> 测试专用
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-globe mr-1"></i> 全球访问
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>仅用于测试，消息不会持久化，不适合生产环境。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 9 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="iot">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://emqx.com/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  EMQX Cloud
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+                <span class="ml-2 category-pill bg-info/10 text-info text-xs px-2 py-0.5 rounded-full">IoT 专用</span>
+              </div>
+              <p class="mt-2 text-muted">MQTT over WebSocket 免费套餐，专为物联网设备通信设计。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-microchip mr-1"></i> IoT 优化
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-users mr-1"></i> 100 设备连接
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-clock-o mr-1"></i> 永久免费
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>连接数有限，主要支持MQTT协议，HTTP集成有限。</p>
+            </div>
+          </div>
+        </li>
+        
+        <!-- 服务项 10 -->
+        <li class="p-5 hover:bg-gray-50 transition-colors resource-item" data-categories="chat">
+          <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div>
+              <div class="flex items-center">
+                <a href="https://getstream.io/" target="_blank" class="text-lg font-bold text-primary hover:underline flex items-center">
+                  GetStream
+                  <i class="fa fa-external-link ml-2 text-xs text-muted"></i>
+                </a>
+                <span class="ml-3 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">托管服务</span>
+                <span class="ml-2 category-pill bg-purple-100 text-purple-600 text-xs px-2 py-0.5 rounded-full">聊天专用</span>
+              </div>
+              <p class="mt-2 text-muted">免费WebSocket聊天API，支持群聊、私信和实时通知。</p>
+              <div class="mt-3 flex flex-wrap gap-2">
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-comments mr-1"></i> 聊天功能齐全
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-envelope-o mr-1"></i> 10k 消息/月
+                </span>
+                <span class="inline-flex items-center text-sm text-muted">
+                  <i class="fa fa-code mr-1"></i> 多平台SDK
+                </span>
+              </div>
+            </div>
+            
+            <div class="bg-light p-3 rounded-lg max-w-xs w-full">
+              <p class="text-sm"><span class="font-medium">限制：</span>消息数量有限，高级功能如已读回执需付费。</p>
+            </div>
+          </div>
+        </li>
+      </ul>
+      
+      <!-- 加载更多按钮 -->
+      <div class="p-6 text-center border-t border-gray-100">
+        <button id="loadMore" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center mx-auto">
+          <i class="fa fa-refresh mr-2"></i> 加载更多服务
+        </button>
+      </div>
+    </div>
+    
+    <!-- 使用建议 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 mt-8 shadow-sm">
+      <h3 class="text-xl font-bold mb-4 flex items-center">
+        <i class="fa fa-lightbulb-o text-warning mr-2"></i> 使用建议
+      </h3>
+      <div class="space-y-4">
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">开发测试</h4>
+            <p class="text-muted mt-1">开发和测试阶段，推荐使用 <strong>WebSocket.org Echo Test</strong> 或 <strong>ws.ifelse.io</strong> 等免费测试服务，无需注册即可快速验证功能。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">小型项目</h4>
+            <p class="text-muted mt-1">小型项目或个人应用，推荐 <strong>Pusher</strong> 或 <strong>Supabase Realtime</strong>，免费额度足够，集成简单，维护成本低。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">生产环境</h4>
+            <p class="text-muted mt-1">生产环境建议选择 <strong>Ably</strong> 或 <strong>PubNub</strong>，提供更高的可用性和更好的扩展性，根据需求选择合适的付费方案。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">国内应用</h4>
+            <p class="text-muted mt-1">主要面向国内用户的应用，优先选择 <strong>阿里云WebSocket服务</strong> 或 <strong>腾讯云实时通信</strong>，确保低延迟和稳定性。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-10 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-exchange text-primary text-2xl"></i>
+            <h2 class="text-xl font-bold text-white">WebSocket 服务导航</h2>
+          </div>
+          <p class="text-gray-400 text-sm">
+            精选全球优质免费WebSocket服务和实时通信API，帮助开发者快速找到适合的实时解决方案。
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">服务分类</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors">托管服务</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">自建服务</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">测试工具</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">聊天专用</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">IoT 专用</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">相关链接</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
+            <li><a href="categories.html" class="hover:text-primary transition-colors">资源分类</a></li>
+            <li><a href="realtime.html" class="hover:text-primary transition-colors">实时API</a></li>
+            <li><a href="tools.html" class="hover:text-primary transition-colors">开发工具</a></li>
+            <li><a href="about.html" class="hover:text-primary transition-colors">关于我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">关注我们</h3>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-linkedin"></i>
+            </a>
+          </div>
+          <p class="text-gray-400 text-sm mt-4">
+            订阅更新，获取最新WebSocket服务信息
+          </p>
+          <div class="mt-2 flex">
+            <input type="email" placeholder="您的邮箱地址" class="px-3 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none">
+            <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors">
+              订阅
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+        <p>© 2025 WebSocket服务导航. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 回到顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // 移动端菜单切换
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // 回到顶部按钮
+    const backToTopBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      // 显示/隐藏回到顶部按钮
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'invisible');
+        backToTopBtn.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'invisible');
+        backToTopBtn.classList.remove('opacity-100', 'visible');
+      }
+
+      // 导航栏滚动效果
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('py-2');
+        header.classList.remove('py-4');
+      } else {
+        header.classList.add('py-4');
+        header.classList.remove('py-2');
+      }
+    });
+
+    // 回到顶部功能
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // 平滑滚动到锚点
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 100,
+            behavior: 'smooth'
+          });
+          
+          // 如果是移动端且菜单打开，则关闭菜单
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+
+    // 服务筛选功能
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const resourceItems = document.querySelectorAll('.resource-item');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 更新按钮状态
+        filterButtons.forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+        filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
+        button.classList.add('bg-primary', 'text-white');
+        button.classList.remove('bg-light', 'hover:bg-gray-200');
+        
+        const filter = button.getAttribute('data-filter');
+        
+        // 筛选服务
+        resourceItems.forEach(item => {
+          if (filter === 'all' || item.getAttribute('data-categories').includes(filter)) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // 服务搜索功能
+    const searchInput = document.getElementById('resourceSearch');
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      
+      if (searchTerm.length === 0) {
+        // 如果搜索为空，显示所有服务
+        resourceItems.forEach(item => {
+          item.style.display = '';
+        });
+        return;
+      }
+      
+      // 否则进行搜索筛选
+      resourceItems.forEach(item => {
+        const name = item.querySelector('a').textContent.toLowerCase();
+        const description = item.querySelector('p').textContent.toLowerCase();
+        
+        if (name.includes(searchTerm) || description.includes(searchTerm)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // 外部链接提示
+    const externalLinks = document.querySelectorAll('a[target="_blank"]');
+    externalLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
+        if (!confirmLeave) {
+          e.preventDefault();
+        }
+      });
+    });
+
+    // 加载更多功能
+    document.getElementById('loadMore').addEventListener('click', function() {
+      // 模拟加载状态
+      this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+      
+      // 2秒后恢复按钮状态（实际应用中这里会异步加载更多服务）
+      setTimeout(() => {
+        this.innerHTML = '<i class="fa fa-refresh mr-2"></i> 加载更多服务';
+        alert('已加载全部服务');
+      }, 2000);
+    });
+  </script>
+</body>
+</html>
