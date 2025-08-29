@@ -1,844 +1,814 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>免费 VPS / 云服务器 / Free VPS & Cloud Hosting</title>
-    <!-- 外部资源引入 -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    
-    <!-- Tailwind配置 - 建立云服务主题色彩系统 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',      // 主色调：科技蓝（代表云服务与可靠性）
-                        secondary: '#4080FF',    // 辅助色：浅蓝色
-                        dark: '#1D2129',         // 文字深灰
-                        light: '#F2F3F5',        // 背景浅灰
-                        muted: '#86909C',        // 辅助文字灰
-                        success: '#00B42A',      // 成功色：绿色
-                        warning: '#FF7D00',      // 警告色：橙色
-                        danger: '#F53F3F',       // 危险色：红色
-                        // 服务类型颜色
-                        vps: '#0FC6C2',          // VPS：青色
-                        cloud: '#722ED1',        // 云服务器：紫色
-                        hosting: '#FF7D00',      // 虚拟主机：橙色
-                        serverless: '#00B42A',   // Serverless：绿色
-                        trial: '#F53F3F',        // 试用：红色
-                        free: '#165DFF'          // 永久免费：主色
-                    },
-                    fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                },
-            }
-        }
-    </script>
-    
-    <!-- 自定义工具类 -->
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .card-hover {
-                @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
-            }
-            .text-balance {
-                text-wrap: balance;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Weather APIs / 免费天气接口</title>
+  <!-- 外部资源引入 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36BFFA',
+            dark: '#1D2129',
+            light: '#F2F3F5',
+            muted: '#86909C',
+            success: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
 </head>
 <body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
-    <!-- 顶部导航栏 -->
-    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Logo区域 -->
-            <a href="#" class="flex items-center space-x-2">
-                <i class="fa fa-cloud-server text-primary text-2xl"></i>
-                <h1 class="text-xl md:text-2xl font-bold text-primary">云服务资源导航</h1>
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <!-- Logo区域 -->
+      <a href="#" class="flex items-center space-x-2">
+        <i class="fa fa-cloud text-primary text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold text-primary">天气API导航</h1>
+      </a>
+      
+      <!-- 桌面端导航 -->
+      <div class="hidden md:flex items-center space-x-6">
+        <a href="index.html" class="text-dark hover:text-primary transition-colors">首页</a>
+        <a href="ai.html" class="text-dark hover:text-primary transition-colors">AI接口</a>
+        <a href="#weather" class="text-primary font-medium">天气接口</a>
+      </div>
+      
+      <!-- 移动端菜单按钮 -->
+      <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
+        <i class="fa fa-bars text-xl"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单（默认隐藏） -->
+    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
+        <a href="ai.html" class="py-2 text-dark hover:text-primary transition-colors">AI接口</a>
+        <a href="#weather" class="py-2 text-primary font-medium">天气接口</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 页面标题区 -->
+  <section class="bg-gradient-to-r from-primary to-secondary text-white py-10 md:py-16">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+          <div class="flex items-center space-x-3 mb-4">
+            <i class="fa fa-cloud text-3xl"></i>
+            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">免费天气API服务</h2>
+          </div>
+          <p class="text-white/90 max-w-2xl">
+            精选28+免费天气API接口，包括实时天气、预报数据、历史记录和空气质量信息，每条资源都标注了免费额度和使用限制。
+          </p>
+          
+          <div class="flex flex-wrap gap-3 mt-6">
+            <a href="#weather" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-list-alt mr-2"></i> 浏览API列表
             </a>
-            
-            <!-- 桌面端导航 -->
-            <div class="hidden md:flex items-center space-x-6">
-                <a href="index.html" class="text-dark hover:text-primary transition-colors">首页</a>
-                <a href="weather.html" class="text-dark hover:text-primary transition-colors">天气接口</a>
-                <a href="ai.html" class="text-dark hover:text-primary transition-colors">AI接口</a>
-                <a href="icons.html" class="text-dark hover:text-primary transition-colors">图标资源</a>
-                <a href="#" class="text-primary font-medium">免费云服务</a>
-                <a href="https://github.com" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
-                    <i class="fa fa-github mr-1"></i> 贡献资源
-                </a>
-            </div>
-            
-            <!-- 移动端菜单按钮 -->
-            <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
-                <i class="fa fa-bars text-xl"></i>
-            </button>
+            <a href="#" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+              <i class="fa fa-download mr-2"></i> 下载API清单
+            </a>
+          </div>
         </div>
         
-        <!-- 移动端导航菜单（默认隐藏） -->
-        <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
-            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-                <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
-                <a href="weather.html" class="py-2 text-dark hover:text-primary transition-colors">天气接口</a>
-                <a href="ai.html" class="py-2 text-dark hover:text-primary transition-colors">AI接口</a>
-                <a href="icons.html" class="py-2 text-dark hover:text-primary transition-colors">图标资源</a>
-                <a href="#" class="py-2 text-primary font-medium">免费云服务</a>
-                <a href="https://github.com" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
-                    <i class="fa fa-github mr-1"></i> 贡献资源
-                </a>
-            </div>
+        <!-- 数据概览卡片 -->
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">API总数</span>
+            <span class="font-bold">28 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">完全免费</span>
+            <span class="font-bold">5 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">有免费额度</span>
+            <span class="font-bold">23 个</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-white/80">气象数据类型</span>
+            <span class="font-bold">8 类</span>
+          </div>
+          <div class="border-t border-white/20 pt-4 mt-2">
+            <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+          </div>
         </div>
-    </header>
+      </div>
+    </div>
+  </section>
 
-    <!-- 页面标题区 -->
-    <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-10 md:py-16">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div>
-                    <div class="flex items-center space-x-3 mb-4">
-                        <i class="fa fa-server text-3xl"></i>
-                        <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">免费VPS与云服务器</h2>
-                    </div>
-                    <p class="text-white/90 max-w-2xl text-balance">
-                        精选全球优质免费VPS、云服务器和虚拟主机资源，详细对比各平台的免费额度、使用限制和适用场景，帮助开发者和创业者找到适合项目需求的免费云服务解决方案
-                    </p>
-                    
-                    <div class="flex flex-wrap gap-3 mt-6">
-                        <a href="#services" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
-                            <i class="fa fa-list-alt mr-2"></i> 浏览所有服务
-                        </a>
-                        <a href="#" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
-                            <i class="fa fa-download mr-2"></i> 下载对比表
-                        </a>
-                    </div>
-                </div>
-                
-                <!-- 数据概览卡片 -->
-                <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
-                    <div class="flex justify-between items-center">
-                        <span class="text-white/80">收录服务</span>
-                        <span class="font-bold">24+ 项</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-white/80">永久免费服务</span>
-                        <span class="font-bold">8+ 项</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-white/80">服务类型</span>
-                        <span class="font-bold">5 类</span>
-                    </div>
-                    <div class="flex justify-between items-center">
-                        <span class="text-white/80">最高免费额度</span>
-                        <span class="font-bold">$100</span>
-                    </div>
-                    <div class="border-t border-white/20 pt-4 mt-2">
-                        <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- 面包屑导航 -->
+  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+    <nav class="flex text-sm" aria-label="Breadcrumb">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+            <i class="fa fa-home mr-2"></i>首页
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <a href="#" class="text-primary font-medium">天气接口</a>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  </div>
 
-    <!-- 面包屑导航 -->
-    <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
-        <nav class="flex text-sm" aria-label="Breadcrumb">
-            <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                <li class="inline-flex items-center">
-                    <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
-                        <i class="fa fa-home mr-2"></i>首页
-                    </a>
-                </li>
-                <li>
-                    <div class="flex items-center">
-                        <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-                        <a href="#" class="text-primary font-medium">免费VPS与云服务器</a>
-                    </div>
-                </li>
-            </ol>
-        </nav>
+  <!-- 核心内容区 -->
+  <main class="container mx-auto px-4 py-8 flex-grow">
+    <!-- 筛选工具栏 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm overflow-x-auto scrollbar-hide">
+      <h3 class="text-lg font-medium mb-4">快速筛选</h3>
+      <div class="flex flex-wrap gap-2 pb-2">
+        <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="all">
+          <i class="fa fa-th-large mr-1"></i> 全部API
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="realtime">
+          <i class="fa fa-bolt mr-1"></i> 实时天气
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="forecast">
+          <i class="fa fa-calendar mr-1"></i> 天气预报
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="historical">
+          <i class="fa fa-history mr-1"></i> 历史数据
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="air-quality">
+          <i class="fa fa-leaf mr-1"></i> 空气质量
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="marine">
+          <i class="fa fa-ship mr-1"></i> 海洋天气
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-filter="free-forever">
+          <i class="fa fa-gift mr-1"></i> 永久免费
+        </button>
+      </div>
     </div>
 
-    <!-- 核心内容区 -->
-    <main class="container mx-auto px-4 py-8 flex-grow">
-        <!-- 简介卡片 -->
-        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-            <div class="flex items-start">
-                <div class="flex-shrink-0 bg-primary/10 p-3 rounded-lg mr-4">
-                    <i class="fa fa-info-circle text-primary text-xl"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold mb-3">关于免费云服务</h3>
-                    <p class="text-muted mb-4">
-                        免费云服务为开发者提供了低成本学习和测试的机会，包括虚拟专用服务器(VPS)、云服务器、虚拟主机和Serverless平台等多种形式。本页面汇总了全球主流的免费云服务方案，详细对比各平台的免费额度、使用限制、配置参数和适用场景，帮助您根据项目需求选择最合适的免费云服务资源。
-                    </p>
-                    <div class="flex flex-wrap gap-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">虚拟主机</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Serverless</span>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- 工具搜索框 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
+      <div class="relative">
+        <input type="text" id="resourceSearch" placeholder="搜索天气API..." class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors pl-10">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="text-sm text-muted">热门搜索:</span>
+        <a href="#" class="text-sm text-primary hover:underline">OpenWeatherMap</a>
+        <a href="#" class="text-sm text-primary hover:underline">实时天气</a>
+        <a href="#" class="text-sm text-primary hover:underline">天气预报</a>
+        <a href="#" class="text-sm text-primary hover:underline">空气质量</a>
+        <a href="#" class="text-sm text-primary hover:underline">历史数据</a>
+      </div>
+    </div>
 
-        <!-- 筛选工具栏 -->
-        <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
-            <h3 class="text-lg font-medium mb-4">服务资源筛选</h3>
-            <div class="flex flex-wrap gap-2">
-                <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-colors" data-filter="all">
-                    全部服务
-                </button>
-                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="vps">
-                    VPS
-                </button>
-                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="cloud">
-                    云服务器
-                </button>
-                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="hosting">
-                    虚拟主机
-                </button>
-                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="serverless">
-                    Serverless
-                </button>
-                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="trial">
-                    试用服务
-                </button>
-                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="free">
-                    永久免费
-                </button>
-            </div>
+    <!-- 资源统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-bolt text-primary text-xl"></i>
         </div>
+        <div>
+          <p class="text-muted text-sm">实时天气API</p>
+          <p class="text-2xl font-bold">18 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-calendar text-secondary text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">预报API</p>
+          <p class="text-2xl font-bold">15 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mr-4">
+          <i class="fa fa-history text-success text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">历史数据API</p>
+          <p class="text-2xl font-bold">9 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm flex items-center">
+        <div class="w-12 h-12 rounded-full bg-warning/10 flex items-center justify-center mr-4">
+          <i class="fa fa-leaf text-warning text-xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">空气质量API</p>
+          <p class="text-2xl font-bold">6 个</p>
+        </div>
+      </div>
+    </div>
 
-        <!-- 服务比较表格 -->
-        <div id="services" class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-10 shadow-sm">
-            <div class="flex items-center mb-6">
-                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                    <i class="fa fa-server text-primary text-xl"></i>
+    <!-- 资源列表 -->
+    <div id="weather" class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-gray-100">
+        <h2 class="text-xl font-bold">天气API服务列表</h2>
+        <p class="text-muted text-sm mt-1">按API功能和实用性排序</p>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="px-6 py-4 text-left text-sm font-medium text-muted uppercase tracking-wider">API名称</th>
+              <th class="px-6 py-4 text-left text-sm font-medium text-muted uppercase tracking-wider">官网</th>
+              <th class="px-6 py-4 text-left text-sm font-medium text-muted uppercase tracking-wider">免费额度</th>
+              <th class="px-6 py-4 text-left text-sm font-medium text-muted uppercase tracking-wider">特点/限制</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast historical free-forever">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium">OpenWeatherMap API</span>
+                  <span class="ml-2 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">实时天气</span>
                 </div>
-                <h2 class="text-2xl font-bold">免费VPS与云服务列表</h2>
-            </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://openweathermap.org/api" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每分钟 60 次请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                支持实时天气、预报和历史天气；免费额度适合小型项目
+              </td>
+            </tr>
             
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse">
-                    <thead>
-                        <tr class="bg-light">
-                            <th class="py-3 px-4 text-left border-b">服务名称</th>
-                            <th class="py-3 px-4 text-left border-b">官网</th>
-                            <th class="py-3 px-4 text-left border-b">免费额度</th>
-                            <th class="py-3 px-4 text-left border-b">特点与限制</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud free">
-                            <td class="py-3 px-4 border-b font-medium">AWS Free Tier</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://aws.amazon.com/free/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                12个月免费使用多项服务
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                包含EC2、S3等核心服务免费额度，部分服务永久免费；适合学习和小型项目
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud free">
-                            <td class="py-3 px-4 border-b font-medium">Google Cloud Free Tier</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://cloud.google.com/free" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                永久免费额度 + $300 试用金
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                提供永久免费的计算、存储资源，$300试用金有效期12个月；适合开发测试
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud free">
-                            <td class="py-3 px-4 border-b font-medium">Microsoft Azure Free Account</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://azure.microsoft.com/en-us/free/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                $200  credit + 永久免费服务
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                提供多种永久免费服务，$200 credit有效期30天；适合企业用户入门
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud trial">
-                            <td class="py-3 px-4 border-b font-medium">DigitalOcean Free Tier</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.digitalocean.com/free" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                新用户 $200 免费额度
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                适合新手入门，提供简单易用的云服务器；有效期60天
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud trial">
-                            <td class="py-3 px-4 border-b font-medium">Scaleway Free Tier</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.scaleway.com/en/free/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                云服务器免费试用
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                资源有限，部分功能需付费
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps trial">
-                            <td class="py-3 px-4 border-b font-medium">Hetzner Cloud Trial</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.hetzner.com/cloud" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                提供 $20 免费试用额度
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                仅一次性试用，信用卡验证
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps trial">
-                            <td class="py-3 px-4 border-b font-medium">Vultr Free Trial</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.vultr.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                提供 $100 免费额度
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                仅限试用期，信用卡必需
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps trial">
-                            <td class="py-3 px-4 border-b font-medium">UpCloud Trial</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://upcloud.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                提供 $25 免费试用
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                仅限 30 天，信用卡必需
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps free">
-                            <td class="py-3 px-4 border-b font-medium">AlwaysData</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.alwaysdata.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                提供免费 VPS 计划
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                存储和 CPU 限制，适合测试
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="hosting free">
-                            <td class="py-3 px-4 border-b font-medium">InfinityFree</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://infinityfree.net/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                免费虚拟主机 + 子域名
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                CPU/带宽有限，不适合高流量项目
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">虚拟主机</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="hosting free">
-                            <td class="py-3 px-4 border-b font-medium">000WebHost</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.000webhost.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                免费主机 + 子域名
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                每天有睡眠时间限制，资源有限
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">虚拟主机</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="hosting trial">
-                            <td class="py-3 px-4 border-b font-medium">A2 Hosting Free Trial</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.a2hosting.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                30 天免费 VPS / 主机体验
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                仅试用期，信用卡必需
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">虚拟主机</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud trial">
-                            <td class="py-3 px-4 border-b font-medium">Cloudsigma Free Trial</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.cloudsigma.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                灵活云服务器，支持多操作系统
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                试用期资源有限
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="serverless free">
-                            <td class="py-3 px-4 border-b font-medium">Google App Engine</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://cloud.google.com/appengine" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                Serverless 云服务，免费额度
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                免费额度有限，高流量需付费
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Serverless</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="cloud free">
-                            <td class="py-3 px-4 border-b font-medium">IBM Cloud Lite</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.ibm.com/cloud/free" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                提供免费 Lite Plan 云服务
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                资源有限，适合开发测试
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">云服务器</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="serverless free">
-                            <td class="py-3 px-4 border-b font-medium">Glitch</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://glitch.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                免费 Node.js 云开发平台
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                项目有休眠限制，CPU/内存有限
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Serverless</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="serverless free">
-                            <td class="py-3 px-4 border-b font-medium">Heroku Free Tier</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.heroku.com/free" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                免费 Dyno 部署，支持多种语言
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                Dyno 每月免费时长有限，长时间休眠
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Serverless</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="hosting free">
-                            <td class="py-3 px-4 border-b font-medium">PythonAnywhere Free</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://www.pythonanywhere.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                Python Web 托管
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                CPU/存储/流量有限，域名需使用子域名
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">虚拟主机</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps free">
-                            <td class="py-3 px-4 border-b font-medium">Replit Free Plan</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://replit.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                多语言在线 IDE + 免费 VPS
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                资源有限，免费账号有访问速度限制
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps trial">
-                            <td class="py-3 px-4 border-b font-medium">Jelastic Free Trial</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://jelastic.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                多云平台免费试用 VPS
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                试用期 14 天，需注册
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">试用服务</span>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr class="hover:bg-gray-50 transition-colors resource-row" data-category="vps free">
-                            <td class="py-3 px-4 border-b font-medium">FreeVPS</td>
-                            <td class="py-3 px-4 border-b">
-                                <a href="https://freevps.us/" target="_blank" class="text-primary hover:underline flex items-center">
-                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
-                                </a>
-                            </td>
-                            <td class="py-3 px-4 border-b">
-                                提供各类免费 VPS 分享
-                            </td>
-                            <td class="py-3 px-4 border-b text-muted">
-                                稳定性不保证，多为测试账号
-                                <div class="mt-1 flex gap-1">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">VPS</span>
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">永久免费</span>
-                                </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- 服务选择建议 -->
-        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-            <h3 class="text-xl font-bold mb-5 flex items-center">
-                <i class="fa fa-lightbulb-o text-warning mr-2"></i>云服务选择建议
-            </h3>
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast air-quality">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium">Weatherbit API</span>
+                  <span class="ml-2 category-pill bg-primary/10 text-primary text-xs px-2 py-0.5 rounded-full">实时天气</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.weatherbit.io/api" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 150,000 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                支持实时天气、预报和空气质量；注册账户获取 API key
+              </td>
+            </tr>
             
-            <div class="space-y-5">
-                <div>
-                    <h4 class="font-medium mb-2 flex items-center">
-                        <i class="fa fa-check-circle text-success mr-2"></i>根据使用场景选择
-                    </h4>
-                    <ul class="text-muted space-y-2 ml-6 list-disc">
-                        <li>学习和测试：AWS Free Tier、Google Cloud 提供完整的云服务体验，适合学习</li>
-                        <li>小型项目部署：Heroku、PythonAnywhere 提供简单易用的部署方式</li>
-                        <li>长期低成本使用：AlwaysData、Replit 提供永久免费的基础资源</li>
-                        <li>短期开发需求：DigitalOcean、Vultr 的高额试用金适合短期项目</li>
-                    </ul>
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium">WeatherAPI.com</span>
+                  <span class="ml-2 text-xs text-gray-500">(原 WeatherStack)</span>
                 </div>
-                
-                <div>
-                    <h4 class="font-medium mb-2 flex items-center">
-                        <i class="fa fa-exclamation-triangle text-warning mr-2"></i>注意事项
-                    </h4>
-                    <ul class="text-muted space-y-2 ml-6 list-disc">
-                        <li>试用服务：注意试用期时长和额度限制，避免试用期结束后产生意外费用</li>
-                        <li>永久免费：了解资源限制（CPU、内存、流量等），评估是否满足项目需求</li>
-                        <li>信用卡验证：多数云服务需要信用卡验证，但不会自动扣费，注意取消订阅流程</li>
-                        <li>数据备份：免费服务可能存在数据丢失风险，重要数据请做好备份</li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="font-medium mb-2 flex items-center">
-                        <i class="fa fa-line-chart text-primary mr-2"></i>升级路径考量
-                    </h4>
-                    <ul class="text-muted space-y-2 ml-6 list-disc">
-                        <li>选择有清晰升级路径的服务商，方便项目增长时无缝扩展</li>
-                        <li>关注服务商的定价策略和折扣方案，长期使用可选择优惠套餐</li>
-                        <li>企业级项目建议选择 AWS、Azure、Google Cloud 等主流云厂商，稳定性和支持更有保障</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-
-        <!-- 资源贡献区域 -->
-        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-            <h3 class="text-xl font-bold mb-4 flex items-center">
-                <i class="fa fa-github text-primary mr-2"></i>贡献资源
-            </h3>
-            <p class="text-muted mb-4">
-                知道更多优质的免费VPS或云服务资源？欢迎通过GitHub提交补充内容！
-            </p>
-            <a href="https://github.com" target="_blank" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
-                <i class="fa fa-github mr-2"></i> 提交issue
-            </a>
-        </div>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="bg-dark text-white py-10 mt-12">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center space-x-2 mb-4">
-                        <i class="fa fa-cloud-server text-primary text-2xl"></i>
-                        <h2 class="text-xl font-bold text-white">云服务资源导航</h2>
-                    </div>
-                    <p class="text-gray-400 text-sm">
-                        精选全球优质免费VPS、云服务器和虚拟主机资源，详细对比各平台的免费额度、使用限制和适用场景，帮助开发者找到适合的免费云服务解决方案。
-                    </p>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-medium mb-4">服务类型</h3>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="#" class="hover:text-primary transition-colors">VPS</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">云服务器</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">虚拟主机</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">Serverless</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">永久免费服务</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-medium mb-4">相关链接</h3>
-                    <ul class="space-y-2 text-gray-400">
-                        <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
-                        <li><a href="weather.html" class="hover:text-primary transition-colors">天气接口</a></li>
-                        <li><a href="ai.html" class="hover:text-primary transition-colors">AI接口资源</a></li>
-                        <li><a href="icons.html" class="hover:text-primary transition-colors">图标资源</a></li>
-                        <li><a href="https://github.com" target="_blank" class="hover:text-primary transition-colors">提交资源</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h3 class="text-lg font-medium mb-4">关注我们</h3>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-                            <i class="fa fa-github"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-                            <i class="fa fa-twitter"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-                            <i class="fa fa-linkedin"></i>
-                        </a>
-                    </div>
-                    <p class="text-gray-400 text-sm mt-4">
-                        订阅更新，获取最新免费云服务信息
-                    </p>
-                    <div class="mt-2 flex">
-                        <input type="email" placeholder="您的邮箱地址" class="px-3 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none">
-                        <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors">
-                            订阅
-                        </button>
-                    </div>
-                </div>
-            </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.weatherapi.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 1,000 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                支持实时天气和未来 7 天预报；免费额度有限
+              </td>
+            </tr>
             
-            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
-                <p>© 2025 云服务资源导航. 保留所有权利.</p>
-            </div>
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">AccuWeather API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://developer.accuweather.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每日 50 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                提供详细天气数据和灾害警报；免费额度低，适合开发测试
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium">Tomorrow.io API</span>
+                  <span class="ml-2 text-xs text-gray-500">(原 Climacell)</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.tomorrow.io/weather-api/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 500 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                高精度天气数据，分钟级更新；免费额度适合小项目
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="historical free-forever">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">Meteostat API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://meteostat.net/en/api/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span class="text-success font-medium">完全免费</span>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                历史天气数据和气象统计；免费开源，可长期使用
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime historical">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">Visual Crossing Weather API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.visualcrossing.com/weather-api" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 1,000 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                实时天气和历史数据；免费额度有限
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="forecast">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">Weather2020 API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://weather2020.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                有限免费
+              </td>
+              <td class="px-6 py-4 text-sm">
+                基于长期气象模型；免费使用受限制
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast free-forever">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">National Weather Service (US)</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.weather.gov/documentation/services-web-api" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span class="text-success font-medium">完全免费</span>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                提供美国全国天气信息；免费 API，官方数据可靠
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">WeatherAPI.io</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.weatherapi.io/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 1,000 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                支持多功能天气查询；免费额度适合轻量使用
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast free-forever">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">Open-Meteo API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://open-meteo.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span class="text-success font-medium">完全免费</span>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                专注气象预报；无需注册，适合快速测试和开发
+              </td>
+            </tr>
+            
+            <!-- 更多API行... -->
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast historical">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium">APIXU</span>
+                  <span class="ml-2 text-xs text-gray-500">(现 WeatherAPI)</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://www.weatherapi.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 1,000 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                历史天气、实时天气；免费额度有限
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime forecast free-forever">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <span class="font-medium">Met.no</span>
+                  <span class="ml-2 text-xs text-gray-500">(挪威气象研究所)</span>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://api.met.no/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <span class="text-success font-medium">完全免费</span>
+              </td>
+              <td class="px-6 py-4 text-sm">
+                提供全球天气数据；官方 API，免费使用
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="realtime marine">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">Weather Unlocked API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://developer.weatherunlocked.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 500 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                提供全球天气和航空气象数据；免费额度有限
+              </td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="marine">
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="font-medium">StormGlass API</span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="https://stormglass.io/" target="_blank" class="text-primary hover:underline flex items-center">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm">
+                每月 50,000 请求
+              </td>
+              <td class="px-6 py-4 text-sm">
+                海洋和天气数据，适合水上运动和航海；免费额度适中
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 加载更多按钮 -->
+      <div class="p-6 text-center border-t border-gray-100">
+        <button id="loadMore" class="bg-white border border-primary text-primary hover:bg-primary hover:text-white px-6 py-3 rounded-lg transition-colors font-medium flex items-center mx-auto">
+          <i class="fa fa-refresh mr-2"></i> 加载更多API
+        </button>
+      </div>
+    </div>
+    
+    <!-- 使用建议 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-6 mt-8 shadow-sm">
+      <h3 class="text-xl font-bold mb-4 flex items-center">
+        <i class="fa fa-lightbulb-o text-warning mr-2"></i> 选择建议
+      </h3>
+      <div class="space-y-4">
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">全球天气数据需求</h4>
+            <p class="text-muted mt-1">推荐使用 <strong>OpenWeatherMap</strong> 或 <strong>Weatherbit</strong>，免费额度充足，覆盖范围广，文档完善。</p>
+          </div>
         </div>
-    </footer>
-
-    <!-- 回到顶部按钮 -->
-    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
-        <i class="fa fa-chevron-up"></i>
-    </button>
-
-    <!-- JavaScript 交互逻辑 -->
-    <script>
-        // 移动端菜单切换
-        const menuBtn = document.getElementById('menuBtn');
-        const mobileMenu = document.getElementById('mobileMenu');
-        menuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-
-        // 回到顶部按钮
-        const backToTopBtn = document.getElementById('backToTop');
-        window.addEventListener('scroll', () => {
-            // 显示/隐藏回到顶部按钮
-            if (window.scrollY > 300) {
-                backToTopBtn.classList.remove('opacity-0', 'invisible');
-                backToTopBtn.classList.add('opacity-100', 'visible');
-            } else {
-                backToTopBtn.classList.add('opacity-0', 'invisible');
-                backToTopBtn.classList.remove('opacity-100', 'visible');
-            }
-
-            // 导航栏滚动效果
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.classList.add('py-2');
-                header.classList.remove('py-4');
-            } else {
-                header.classList.add('py-4');
-                header.classList.remove('py-2');
-            }
-        });
-
-        // 回到顶部功能
-        backToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        // 平滑滚动到锚点
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    window.scrollTo({
-                        top: targetElement.offsetTop - 100,
-                        behavior: 'smooth'
-                    });
-                    
-                    // 如果是移动端且菜单打开，则关闭菜单
-                    if (!mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
-                    }
-                }
-            });
-        });
-
-        // 服务资源筛选功能
-        const filterButtons = document.querySelectorAll('.filter-btn');
-        const resourceRows = document.querySelectorAll('.resource-row');
         
-        filterButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                // 更新按钮状态
-                filterButtons.forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
-                filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
-                button.classList.add('bg-primary', 'text-white');
-                button.classList.remove('bg-light', 'hover:bg-gray-200');
-                
-                const filter = button.getAttribute('data-filter');
-                
-                // 筛选资源
-                resourceRows.forEach(row => {
-                    if (filter === 'all' || row.getAttribute('data-category').includes(filter)) {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-            });
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">历史天气数据分析</h4>
+            <p class="text-muted mt-1">优先考虑 <strong>Meteostat API</strong> 或 <strong>Visual Crossing</strong>，提供丰富的历史气象数据，适合数据分析项目。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">无需注册快速测试</h4>
+            <p class="text-muted mt-1">推荐 <strong>Open-Meteo API</strong> 或 <strong>Met.no</strong>，无需API密钥即可使用，适合快速原型开发。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">海洋和航海相关应用</h4>
+            <p class="text-muted mt-1">选择 <strong>StormGlass API</strong> 或 <strong>Weatherbit Marine API</strong>，提供专业的海洋气象和潮汐数据。</p>
+          </div>
+        </div>
+        
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <i class="fa fa-check-circle text-success"></i>
+          </div>
+          <div class="ml-3">
+            <h4 class="text-base font-medium">空气质量数据需求</h4>
+            <p class="text-muted mt-1">推荐 <strong>WeatherAPI Air Quality API</strong> 或 <strong>OpenWeatherMap Air Pollution API</strong>，提供详细的空气质量和污染数据。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-10 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <i class="fa fa-cloud text-primary text-2xl"></i>
+            <h2 class="text-xl font-bold text-white">天气API导航</h2>
+          </div>
+          <p class="text-gray-400 text-sm">
+            精选全球优质免费天气API接口，包括实时天气、预报数据、历史记录和空气质量信息，帮助开发者快速集成天气功能。
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">API分类</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors">实时天气</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">天气预报</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">历史数据</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">空气质量</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">海洋天气</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">相关链接</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
+            <li><a href="ai.html" class="hover:text-primary transition-colors">AI接口</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">开发文档</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">使用教程</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">常见问题</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">关注我们</h3>
+          <div class="flex space-x-4">
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-linkedin"></i>
+            </a>
+          </div>
+          <p class="text-gray-400 text-sm mt-4">
+            订阅更新，获取最新API信息
+          </p>
+          <div class="mt-2 flex">
+            <input type="email" placeholder="您的邮箱地址" class="px-3 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none">
+            <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors">
+              订阅
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+        <p>© 2025 天气API导航. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 回到顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // 移动端菜单切换
+    const menuBtn = document.getElementById('menuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // 回到顶部按钮
+    const backToTopBtn = document.getElementById('backToTop');
+    window.addEventListener('scroll', () => {
+      // 显示/隐藏回到顶部按钮
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'invisible');
+        backToTopBtn.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'invisible');
+        backToTopBtn.classList.remove('opacity-100', 'visible');
+      }
+
+      // 导航栏滚动效果
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('py-2');
+        header.classList.remove('py-4');
+      } else {
+        header.classList.add('py-4');
+        header.classList.remove('py-2');
+      }
+    });
+
+    // 回到顶部功能
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // 平滑滚动到锚点
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 100,
+            behavior: 'smooth'
+          });
+          
+          // 如果是移动端且菜单打开，则关闭菜单
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+
+    // 服务筛选功能
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const resourceItems = document.querySelectorAll('.resource-item');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 更新按钮状态
+        filterButtons.forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+        filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
+        button.classList.add('bg-primary', 'text-white');
+        button.classList.remove('bg-light', 'hover:bg-gray-200');
+        
+        const filter = button.getAttribute('data-filter');
+        
+        // 筛选服务
+        resourceItems.forEach(item => {
+          if (filter === 'all' || item.getAttribute('data-categories').includes(filter)) {
+            item.style.display = '';
+          } else {
+            item.style.display = 'none';
+          }
         });
-    </script>
+      });
+    });
+
+    // 服务搜索功能
+    const searchInput = document.getElementById('resourceSearch');
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      
+      if (searchTerm.length === 0) {
+        // 如果搜索为空，显示所有服务
+        resourceItems.forEach(item => {
+          item.style.display = '';
+        });
+        return;
+      }
+      
+      // 否则进行搜索筛选
+      resourceItems.forEach(item => {
+        const name = item.querySelector('td:first-child').textContent.toLowerCase();
+        const description = item.querySelector('td:last-child').textContent.toLowerCase();
+        
+        if (name.includes(searchTerm) || description.includes(searchTerm)) {
+          item.style.display = '';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    });
+
+    // 外部链接提示
+    const externalLinks = document.querySelectorAll('a[target="_blank"]');
+    externalLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
+        if (!confirmLeave) {
+          e.preventDefault();
+        }
+      });
+    });
+
+    // 加载更多功能
+    document.getElementById('loadMore').addEventListener('click', function() {
+      // 模拟加载状态
+      this.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+      
+      // 2秒后恢复按钮状态（实际应用中这里会异步加载更多服务）
+      setTimeout(() => {
+        this.innerHTML = '<i class="fa fa-refresh mr-2"></i> 加载更多API';
+        alert('已加载全部API');
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
-    
