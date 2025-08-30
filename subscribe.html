@@ -154,7 +154,11 @@
                     <!-- 状态提示 -->
                     <div id="successMessage" class="mt-4 p-4 bg-success/10 text-success rounded-lg hidden">
                         <i class="fa fa-check-circle mr-2"></i>
-                        <span>订阅请求已发送，请查收邮件并点击验证链接</span>
+                        <div>
+                            <span class="font-medium">订阅请求已发送！</span>
+                            <p class="mt-1 text-sm">请查收来自 <strong>noreply@free.rinuo.com</strong> 的邮件，并点击验证链接完成订阅</p>
+                            <p class="mt-2 text-sm">如果没有收到邮件，请检查垃圾邮件文件夹</p>
+                        </div>
                     </div>
                     
                     <div id="errorMessage" class="mt-4 p-4 bg-danger/10 text-danger rounded-lg hidden">
@@ -249,9 +253,9 @@
                     <div class="bg-white p-6 rounded-lg card-shadow">
                         <h3 class="font-semibold text-dark flex items-center">
                             <i class="fa fa-question-circle text-primary mr-2"></i>
-                            我的邮箱会被分享给第三方吗？
+                            我没有收到验证邮件怎么办？
                         </h3>
-                        <p class="mt-2 text-neutral">不会。我们尊重您的隐私，您的邮箱仅用于发送资源更新，不会分享给任何第三方。</p>
+                        <p class="mt-2 text-neutral">请检查您的垃圾邮件文件夹，验证邮件通常来自noreply@free.rinuo.com。如果仍然没有收到，可以重新提交订阅请求。</p>
                     </div>
                 </div>
             </div>
@@ -285,14 +289,31 @@
 
     <!-- JavaScript -->
     <script>
- 
-
+        // 控制台调试信息 - 初始化
+        console.log('=== 订阅页面初始化 ===');
+        console.log('当前时间:', new Date().toISOString());
+        
         // 从GitHub Actions Secrets注入的环境变量中获取Supabase配置
-        const SUPABASE_URL = window.SUPABASE_CONFIG.url;
-        const SUPABASE_KEY = window.SUPABASE_CONFIG.key;
+        console.log('尝试从环境变量获取Supabase配置...');
+        const SUPABASE_URL = window.SUPABASE_CONFIG?.url;
+        const SUPABASE_KEY = window.SUPABASE_CONFIG?.key;
+        
+        // 验证配置是否存在
+        if (!SUPABASE_URL || !SUPABASE_KEY) {
+            console.error('❌ Supabase配置缺失:', {
+                hasUrl: !!SUPABASE_URL,
+                hasKey: !!SUPABASE_KEY
+            });
+        } else {
+            console.log('✅ Supabase配置加载成功:', {
+                url: SUPABASE_URL.replace(/https:\/\/(.*?)\.supabase\.co/, 'https://[项目ID].supabase.co'),
+                key: SUPABASE_KEY.substring(0, 6) + '...' + SUPABASE_KEY.substring(SUPABASE_KEY.length - 6)
+            });
+        }
         
         // 初始化Supabase客户端
         const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        console.log('Supabase客户端初始化:', supabase ? '成功' : '失败');
         
         // DOM元素
         const subscribeForm = document.getElementById('subscribeForm');
@@ -301,48 +322,86 @@
         const errorMessage = document.getElementById('errorMessage');
         const errorText = document.getElementById('errorText');
         
+        // 验证DOM元素是否加载
+        console.log('DOM元素加载检查:', {
+            subscribeForm: !!subscribeForm,
+            submitButton: !!submitButton,
+            successMessage: !!successMessage,
+            errorMessage: !!errorMessage
+        });
+        
         // 订阅表单提交处理
         subscribeForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             // 获取表单数据
             const email = e.target.email.value;
+            const privacyAccepted = e.target.privacy.checked;
+            
+            // 控制台输出表单数据
+            console.log('=== 表单提交 ===');
+            console.log('提交时间:', new Date().toISOString());
+            console.log('邮箱地址:', email);
+            console.log('隐私政策同意:', privacyAccepted);
             
             // 显示加载状态
             submitButton.disabled = true;
             submitButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 处理中...';
             successMessage.classList.add('hidden');
             errorMessage.classList.add('hidden');
+            console.log('状态更新: 显示加载中');
             
             try {
                 // 检查Supabase客户端是否初始化
                 if (!supabase) {
+                    console.error('❌ 错误: Supabase客户端未初始化');
                     throw new Error("服务初始化失败，请刷新页面重试");
                 }
                 
                 // 调用边缘函数发送验证邮件
+                console.log('调用边缘函数: send-verification-email');
+                const startTime = performance.now();
+                
                 const { data, error } = await supabase.functions.invoke("send-verification-email", {
                     body: { email }
                 });
                 
+                const endTime = performance.now();
+                console.log(`函数调用完成，耗时: ${(endTime - startTime).toFixed(2)}ms`);
+                
+                // 输出函数调用结果
                 if (error) {
+                    console.error('❌ 函数调用错误:', {
+                        message: error.message,
+                        code: error.code,
+                        details: error.details
+                    });
                     throw new Error(error.message || "订阅请求处理失败");
                 }
+                
+                console.log('✅ 函数调用成功，返回数据:', data);
                 
                 // 显示成功消息
                 successMessage.classList.remove('hidden');
                 subscribeForm.reset();
+                console.log('状态更新: 显示成功消息');
+                console.log('提示用户检查邮箱:', `noreply@free.rinuo.com 发送至 ${email}`);
                 
             } catch (err) {
                 // 显示错误消息
+                console.error('❌ 订阅流程错误:', err);
                 errorText.textContent = err.message || "订阅失败，请稍后重试";
                 errorMessage.classList.remove('hidden');
+                console.log('状态更新: 显示错误消息');
             } finally {
                 // 恢复按钮状态
                 submitButton.disabled = false;
                 submitButton.innerHTML = '<span>立即订阅</span><i class="fa fa-paper-plane ml-2"></i>';
+                console.log('状态更新: 恢复按钮状态');
+                console.log('=== 表单处理完成 ===');
             }
         });
     </script>
 </body>
 </html>
+    
