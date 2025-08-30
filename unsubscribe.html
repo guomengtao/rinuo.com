@@ -1,406 +1,123 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>取消订阅 - Rinuo资源导航</title>
-    <!-- 引入Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入Font Awesome图标 -->
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 引入Supabase客户端库 -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
+// 全局常量 - 自定义API密钥
+const VALID_API_KEY = "test-key-123"; // 与前端保持一致
+
+Deno.serve(async (req) => {
+  // 关键修复：更新CORS配置，明确允许Authorization头
+  const headers = {
+    "Access-Control-Allow-Origin": "https://www.rinuo.com", // 允许你的前端域名
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, X-API-Key, Authorization", // 新增Authorization
+    "Content-Type": "application/json"
+  };
+
+  // 处理预检请求（OPTIONS）
+  if (req.method === "OPTIONS") {
+    return new Response(null, { headers });
+  }
+
+  try {
+    // 1. 验证自定义API密钥
+    const apiKey = req.headers.get("X-API-Key");
+    if (!apiKey || apiKey !== VALID_API_KEY) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "未授权访问"
+      }), { status: 403, headers });
+    }
+
+    // 2. 解析请求数据
+    const { token, email, reason, action } = await req.json().catch(err => {
+      console.error("解析请求体失败:", err);
+      return {};
+    });
     
-    <!-- 配置Tailwind自定义颜色和字体 -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: '#165DFF',
-                        secondary: '#36CFC9',
-                        neutral: '#86909C',
-                        success: '#52C41A',
-                        danger: '#FF4D4F',
-                        light: '#F2F3F5',
-                        dark: '#1D2129'
-                    },
-                    fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
+    // 3. 验证必要参数
+    if (!token || !email) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "退订参数不完整"
+      }), { status: 400, headers });
+    }
+
+    // 4. 初始化Supabase客户端
+    const supabaseUrl = "https://ibwhykivdlzuumcgcssl.supabase.co";
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     
-    <style type="text/tailwindcss">
-        @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
-            .card-shadow {
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
-            }
-            .btn-hover {
-                transition: all 0.3s ease;
-            }
-            .btn-hover:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 12px rgba(255, 77, 79, 0.2);
-            }
-            .radio-hover {
-                transition: all 0.2s ease;
-            }
-            .radio-hover:hover {
-                background-color: rgba(0, 0, 0, 0.03);
-            }
-            .animate-spin {
-                animation: spin 1s linear infinite;
-            }
-            @keyframes spin {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-        }
-    </style>
-</head>
-<body class="font-inter bg-gray-50 min-h-screen">
-    <!-- 顶部导航栏 -->
-    <header class="bg-white border-b border-gray-100 sticky top-0 z-50">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- 网站Logo -->
-                <div class="flex items-center">
-                    <a href="https://www.rinuo.com" class="flex items-center space-x-2">
-                        <span class="text-primary text-2xl"><i class="fa fa-compass"></i></span>
-                        <span class="text-dark font-bold text-lg">Rinuo资源导航</span>
-                    </a>
-                </div>
-                
-                <!-- 帮助链接 -->
-                <div>
-                    <a href="https://www.rinuo.com/help" class="text-neutral hover:text-primary transition-colors text-sm hidden sm:inline-flex items-center">
-                        <i class="fa fa-question-circle mr-1"></i> 帮助中心
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
+    if (!supabaseKey) {
+      console.error("SUPABASE_SERVICE_ROLE_KEY环境变量未配置");
+      return new Response(JSON.stringify({
+        success: false,
+        error: "服务配置错误"
+      }), { status: 500, headers });
+    }
 
-    <!-- 主要内容区 -->
-    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        <div class="max-w-md mx-auto">
-            <!-- 卡片容器 -->
-            <div class="bg-white rounded-xl card-shadow overflow-hidden transform transition-all duration-300 hover:shadow-lg">
-                <!-- 卡片头部 -->
-                <div class="bg-primary p-6 text-center">
-                    <h1 class="text-white text-[clamp(1.5rem,3vw,2rem)] font-bold">取消订阅</h1>
-                </div>
-                
-                <!-- 卡片内容 -->
-                <div class="p-8">
-                    <!-- 加载状态 -->
-                    <div id="loading-state" class="text-center hidden">
-                        <div class="w-16 h-16 border-4 border-light border-t-primary rounded-full animate-spin mx-auto"></div>
-                        <p class="mt-4 text-neutral">正在验证您的退订请求...</p>
-                    </div>
-                    
-                    <!-- 无效链接状态 -->
-                    <div id="invalid-link-state" class="text-center hidden">
-                        <div class="w-20 h-20 bg-danger/10 rounded-full flex items-center justify-center mx-auto">
-                            <i class="fa fa-exclamation-triangle text-3xl text-danger"></i>
-                        </div>
-                        <h2 class="mt-6 text-xl font-bold text-dark">无效的退订链接</h2>
-                        <p class="mt-3 text-neutral">退订链接可能已过期或无效</p>
-                        
-                        <div class="mt-8">
-                            <a href="https://www.rinuo.com/contact" class="block w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-hover text-center">
-                                联系支持
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- 退订表单状态 -->
-                    <div id="form-state" class="hidden">
-                        <h2 class="text-xl font-bold text-dark text-center">确认取消订阅</h2>
-                        <p class="mt-3 text-neutral text-center">您将不再收到我们的资源更新邮件</p>
-                        
-                        <form id="unsubscribe-form" class="mt-8 space-y-6">
-                            <div>
-                                <label class="block text-sm font-medium text-dark mb-3">请告诉我们退订原因（可选）</label>
-                                <div class="space-y-3">
-                                    <label class="flex items-start p-3 border border-gray-200 rounded-lg radio-hover cursor-pointer">
-                                        <input type="radio" name="reason" value="too_frequent" class="mt-1 text-primary focus:ring-primary">
-                                        <span class="ml-3 text-neutral">邮件发送过于频繁</span>
-                                    </label>
-                                    <label class="flex items-start p-3 border border-gray-200 rounded-lg radio-hover cursor-pointer">
-                                        <input type="radio" name="reason" value="not_relevant" class="mt-1 text-primary focus:ring-primary">
-                                        <span class="ml-3 text-neutral">内容与我的需求不相关</span>
-                                    </label>
-                                    <label class="flex items-start p-3 border border-gray-200 rounded-lg radio-hover cursor-pointer">
-                                        <input type="radio" name="reason" value="found_alternative" class="mt-1 text-primary focus:ring-primary">
-                                        <span class="ml-3 text-neutral">已找到替代资源</span>
-                                    </label>
-                                    <label class="flex items-start p-3 border border-gray-200 rounded-lg radio-hover cursor-pointer">
-                                        <input type="radio" name="reason" value="other" class="mt-1 text-primary focus:ring-primary">
-                                        <span class="ml-3 text-neutral">其他原因</span>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <button 
-                                    type="submit" 
-                                    id="unsubscribe-button"
-                                    class="w-full bg-danger hover:bg-danger/90 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-hover text-center flex items-center justify-center"
-                                >
-                                    <span>确认取消订阅</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                    
-                    <!-- 退订成功状态 -->
-                    <div id="success-state" class="text-center hidden">
-                        <div class="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center mx-auto">
-                            <i class="fa fa-check text-3xl text-success"></i>
-                        </div>
-                        <h2 class="mt-6 text-xl font-bold text-dark">已成功取消订阅</h2>
-                        <p class="mt-3 text-neutral">您不会再收到我们的资源更新邮件</p>
-                        
-                        <div class="mt-8 space-y-4">
-                            <div class="bg-light rounded-lg p-4">
-                                <p class="text-neutral text-sm">
-                                    如有需要，您可以随时重新订阅我们的资源更新
-                                </p>
-                            </div>
-                            
-                            <a href="https://www.rinuo.com/subscribe" class="block w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-hover text-center">
-                                重新订阅
-                            </a>
-                            
-                            <a href="https://www.rinuo.com" class="block w-full bg-white border border-gray-300 hover:bg-gray-50 text-dark font-medium py-3 px-4 rounded-lg transition-colors text-center">
-                                返回首页
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- 退订失败状态 -->
-                    <div id="error-state" class="text-center hidden">
-                        <div class="w-20 h-20 bg-danger/10 rounded-full flex items-center justify-center mx-auto">
-                            <i class="fa fa-times text-3xl text-danger"></i>
-                        </div>
-                        <h2 class="mt-6 text-xl font-bold text-dark">操作失败</h2>
-                        <p id="error-message" class="mt-3 text-neutral">退订过程中出现错误，请稍后重试</p>
-                        
-                        <div class="mt-8">
-                            <button id="retry-button" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-hover text-center">
-                                重试
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 帮助信息 -->
-            <div class="mt-8 text-center text-neutral text-sm">
-                <p>如有疑问，请联系 <a href="mailto:support@rinuo.com" class="text-primary hover:underline">support@rinuo.com</a></p>
-            </div>
-        </div>
-    </main>
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    <!-- 页脚 -->
-    <footer class="bg-dark text-white/70 py-12 mt-16">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-6 md:mb-0">
-                    <div class="flex items-center space-x-2">
-                        <span class="text-primary text-2xl"><i class="fa fa-compass"></i></span>
-                        <span class="text-white font-bold text-lg">Rinuo资源导航</span>
-                    </div>
-                    <p class="mt-2 text-sm">精选优质资源，助力创意工作</p>
-                </div>
-                
-                <div class="flex space-x-6">
-                    <a href="#" class="hover:text-primary transition-colors"><i class="fa fa-github text-xl"></i></a>
-                    <a href="#" class="hover:text-primary transition-colors"><i class="fa fa-twitter text-xl"></i></a>
-                    <a href="#" class="hover:text-primary transition-colors"><i class="fa fa-instagram text-xl"></i></a>
-                </div>
-            </div>
-            
-            <div class="border-t border-white/10 mt-8 pt-8 text-sm text-center">
-                <p>&copy; 2023 Rinuo资源导航. 保留所有权利.</p>
-                <div class="mt-2 space-x-4">
-                    <a href="#" class="hover:text-primary transition-colors">隐私政策</a>
-                    <a href="#" class="hover:text-primary transition-colors">服务条款</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    // 5. 如果是验证操作，仅检查记录是否存在
+    if (action === "verify") {
+      const { data, error } = await supabase
+        .from("email_subscriptions")
+        .select("id, is_subscribed")
+        .eq("email", email)
+        .eq("verification_token", token)
+        .single();
 
-    <!-- JavaScript -->
-    <script>
-        // 从URL获取参数
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const email = urlParams.get('email');
-        
-        // DOM元素
-        const loadingState = document.getElementById('loading-state');
-        const invalidLinkState = document.getElementById('invalid-link-state');
-        const formState = document.getElementById('form-state');
-        const successState = document.getElementById('success-state');
-        const errorState = document.getElementById('error-state');
-        const errorMessage = document.getElementById('error-message');
-        const unsubscribeForm = document.getElementById('unsubscribe-form');
-        const unsubscribeButton = document.getElementById('unsubscribe-button');
-        const retryButton = document.getElementById('retry-button');
-        
-        // Supabase配置
-        const SUPABASE_URL = "https://ibwhykivdlzuumcgcssl.supabase.co";
-        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2h5a2l2ZGx6dXVtY2djc3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMzEyOTMsImV4cCI6MjA2OTcwNzI5M30.o7zwqToKgbXnFUEIBxjQYydJkP9peP_Hul-F8xhsE20";
-        const UNSUBSCRIBE_FUNCTION = "unsubscribe";
-        const API_KEY = "test-key-123"; // 与函数中设置的API密钥一致
-        
-        // 初始化Supabase客户端
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-        
-        // 页面加载时验证链接
-        window.addEventListener('load', async () => {
-            // 检查是否有必要的参数
-            if (!token || !email) {
-                showInvalidLink();
-                return;
-            }
-            
-            // 显示加载状态
-            showLoading();
-            
-            // 验证链接是否有效
-            try {
-                // 调用Supabase函数验证链接
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/${UNSUBSCRIBE_FUNCTION}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'X-API-Key': API_KEY
-                    },
-                    body: JSON.stringify({ 
-                        action: "verify",
-                        token, 
-                        email 
-                    })
-                });
-                
-                const result = await response.json();
-                
-                // 如果是验证成功或者已经退订，显示表单
-                if (response.ok || result.message === "已成功取消订阅") {
-                    showForm();
-                } else {
-                    showInvalidLink();
-                }
-            } catch (error) {
-                console.error("验证链接失败:", error);
-                showError("验证链接时发生错误，请重试");
-            }
-        });
-        
-        // 处理退订表单提交
-        unsubscribeForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await processUnsubscribe();
-        });
-        
-        // 重试按钮事件
-        retryButton.addEventListener('click', async () => {
-            await processUnsubscribe();
-        });
-        
-        // 执行退订操作
-        async function processUnsubscribe() {
-            if (!token || !email) {
-                showInvalidLink();
-                return;
-            }
-            
-            try {
-                showLoading();
-                
-                // 获取退订原因
-                const reasonElement = document.querySelector('input[name="reason"]:checked');
-                const reason = reasonElement ? reasonElement.value : null;
-                
-                // 调用退订函数
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/${UNSUBSCRIBE_FUNCTION}`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${SUPABASE_KEY}`,
-                        'Content-Type': 'application/json',
-                        'X-API-Key': API_KEY
-                    },
-                    body: JSON.stringify({ 
-                        token, 
-                        email,
-                        reason 
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(result.error || "退订失败，请稍后重试");
-                }
-                
-                // 显示成功状态
-                showSuccess();
-                
-            } catch (err) {
-                showError(err.message || "退订过程中出现错误");
-            }
-        }
-        
-        // 显示加载状态
-        function showLoading() {
-            [loadingState, invalidLinkState, formState, successState, errorState].forEach(el => {
-                el.classList.add('hidden');
-            });
-            loadingState.classList.remove('hidden');
-        }
-        
-        // 显示无效链接状态
-        function showInvalidLink() {
-            [loadingState, invalidLinkState, formState, successState, errorState].forEach(el => {
-                el.classList.add('hidden');
-            });
-            invalidLinkState.classList.remove('hidden');
-        }
-        
-        // 显示表单状态
-        function showForm() {
-            [loadingState, invalidLinkState, formState, successState, errorState].forEach(el => {
-                el.classList.add('hidden');
-            });
-            formState.classList.remove('hidden');
-        }
-        
-        // 显示成功状态
-        function showSuccess() {
-            [loadingState, invalidLinkState, formState, successState, errorState].forEach(el => {
-                el.classList.add('hidden');
-            });
-            successState.classList.remove('hidden');
-        }
-        
-        // 显示错误状态
-        function showError(message) {
-            errorMessage.textContent = message;
-            [loadingState, invalidLinkState, formState, successState, errorState].forEach(el => {
-                el.classList.add('hidden');
-            });
-            errorState.classList.remove('hidden');
-        }
-    </script>
-</body>
-</html>
+      if (error || !data) {
+        return new Response(JSON.stringify({
+          success: false,
+          error: "退订链接无效或已过期"
+        }), { status: 403, headers });
+      }
+
+      return new Response(JSON.stringify({
+        success: true,
+        isSubscribed: data.is_subscribed
+      }), { status: 200, headers });
+    }
+
+    // 6. 执行退订操作 - 查找匹配的订阅记录
+    const { data: subscriber, error: fetchError } = await supabase
+      .from("email_subscriptions")
+      .select("id")
+      .eq("email", email)
+      .eq("verification_token", token)
+      .single();
+
+    if (fetchError) {
+      console.error("订阅记录验证失败:", fetchError.message);
+      return new Response(JSON.stringify({
+        success: false,
+        error: "退订链接无效或已过期"
+      }), { status: 403, headers });
+    }
+
+    // 7. 更新订阅状态为已退订
+    const { error: updateError } = await supabase
+      .from("email_subscriptions")
+      .update({ 
+        is_subscribed: false,
+        unsubscribed_at: new Date(),
+        unsubscribe_reason: reason || null
+      })
+      .eq("id", subscriber.id);
+
+    if (updateError) {
+      throw new Error(`更新失败: ${updateError.message}`);
+    }
+
+    // 8. 返回成功响应
+    return new Response(JSON.stringify({
+      success: true,
+      message: "已成功取消订阅"
+    }), { status: 200, headers });
+
+  } catch (error) {
+    console.error("退订处理出错:", error);
+    return new Response(JSON.stringify({
+      success: false,
+      error: "处理退订请求时发生错误"
+    }), { status: 500, headers });
+  }
+});
