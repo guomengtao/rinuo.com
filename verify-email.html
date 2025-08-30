@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>邮箱验证 - Rinuo资源导航</title>
-    <!-- 移除env.js依赖，直接配置必要参数 -->
     <!-- 引入Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入Font Awesome图标 -->
@@ -55,6 +54,16 @@
             @keyframes spin {
                 from { transform: rotate(0deg); }
                 to { transform: rotate(360deg); }
+            }
+            .modal-backdrop {
+                backdrop-filter: blur(4px);
+            }
+            .modal-enter {
+                animation: modalIn 0.3s ease-out forwards;
+            }
+            @keyframes modalIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
             }
         }
     </style>
@@ -170,6 +179,60 @@
         </div>
     </main>
 
+    <!-- 重新发送邮件模态框 -->
+    <div id="resend-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-dark/50 modal-backdrop" id="modal-backdrop"></div>
+        <div class="relative bg-white rounded-xl card-shadow w-full max-w-md mx-4 p-6 modal-enter">
+            <button id="close-modal" class="absolute top-4 right-4 text-neutral hover:text-dark transition-colors">
+                <i class="fa fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                    <i class="fa fa-envelope text-2xl text-primary"></i>
+                </div>
+                <h3 class="mt-4 text-xl font-bold text-dark">重新发送验证邮件</h3>
+                <p class="mt-2 text-neutral">请输入您的邮箱地址，我们将重新发送验证链接</p>
+            </div>
+            
+            <form id="resend-form" class="space-y-4">
+                <div>
+                    <label for="resend-email" class="block text-sm font-medium text-dark mb-1">电子邮箱</label>
+                    <input 
+                        type="email" 
+                        id="resend-email" 
+                        name="resend-email" 
+                        placeholder="您的邮箱地址" 
+                        required
+                        class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                    >
+                </div>
+                
+                <div class="pt-2">
+                    <button 
+                        type="submit" 
+                        id="resend-form-button"
+                        class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-colors btn-hover text-center flex items-center justify-center"
+                    >
+                        <span>重新发送</span>
+                        <i class="fa fa-paper-plane ml-2"></i>
+                    </button>
+                </div>
+            </form>
+            
+            <!-- 表单状态提示 -->
+            <div id="resend-success" class="mt-4 p-3 bg-success/10 text-success rounded-lg text-sm hidden text-center">
+                <i class="fa fa-check-circle mr-1"></i>
+                <span>验证邮件已重新发送，请查收</span>
+            </div>
+            
+            <div id="resend-error" class="mt-4 p-3 bg-danger/10 text-danger rounded-lg text-sm hidden text-center">
+                <i class="fa fa-exclamation-circle mr-1"></i>
+                <span id="resend-error-text">发送失败，请稍后重试</span>
+            </div>
+        </div>
+    </div>
+
     <!-- 页脚 -->
     <footer class="bg-dark text-white/70 py-12 mt-16">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -208,21 +271,32 @@
         const errorMessage = document.getElementById('error-message');
         const resendButton = document.getElementById('resend-button');
         
-        // 直接配置Supabase参数（替换为你的实际项目信息）
+        // 模态框元素
+        const resendModal = document.getElementById('resend-modal');
+        const closeModal = document.getElementById('close-modal');
+        const modalBackdrop = document.getElementById('modal-backdrop');
+        const resendForm = document.getElementById('resend-form');
+        const resendFormButton = document.getElementById('resend-form-button');
+        const resendEmailInput = document.getElementById('resend-email');
+        const resendSuccess = document.getElementById('resend-success');
+        const resendError = document.getElementById('resend-error');
+        const resendErrorText = document.getElementById('resend-error-text');
+        
+        // Supabase配置
         const SUPABASE_URL = "https://ibwhykivdlzuumcgcssl.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2h5a2l2ZGx6dXVtY2djc3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMzEyOTMsImV4cCI6MjA2OTcwNzI5M30.o7zwqToKgbXnFUEIBxjQYydJkP9peP_Hul-F8xhsE20";
+        const SEND_FUNCTION = "email-send-4";
+        const VERIFY_FUNCTION = "verify-email";
         
         // 验证邮箱令牌
         async function verifyEmailToken() {
-            // 检查令牌是否存在
             if (!token) {
                 showError("无效的验证链接，请检查您的邮件");
                 return;
             }
             
             try {
-                // 直接调用Supabase函数API，不依赖客户端库
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-email`, {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/${VERIFY_FUNCTION}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -237,7 +311,6 @@
                     throw new Error(result.error || "验证失败");
                 }
                 
-                // 显示成功状态
                 showSuccess();
                 
             } catch (err) {
@@ -246,15 +319,14 @@
         }
         
         // 重新发送验证邮件
-        async function resendVerificationEmail() {
-            const email = prompt("请输入您的邮箱地址，我们将重新发送验证邮件：");
-            if (!email) return;
-            
+        async function resendVerificationEmail(email) {
             try {
-                resendButton.disabled = true;
-                resendButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 发送中...';
+                resendFormButton.disabled = true;
+                resendFormButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 发送中...';
+                resendSuccess.classList.add('hidden');
+                resendError.classList.add('hidden');
                 
-                const response = await fetch(`${SUPABASE_URL}/functions/v1/email-send-1`, {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/${SEND_FUNCTION}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -269,14 +341,40 @@
                     throw new Error(result.error || "发送失败");
                 }
                 
-                alert("验证邮件已重新发送，请查收您的邮箱");
+                // 显示成功消息
+                resendSuccess.classList.remove('hidden');
+                resendEmailInput.value = '';
+                
+                // 3秒后自动关闭模态框
+                setTimeout(() => {
+                    hideModal();
+                }, 3000);
                 
             } catch (err) {
-                alert(err.message || "发送失败，请稍后重试");
+                resendErrorText.textContent = err.message || "发送失败，请稍后重试";
+                resendError.classList.remove('hidden');
             } finally {
-                resendButton.disabled = false;
-                resendButton.innerHTML = "重新发送验证邮件";
+                resendFormButton.disabled = false;
+                resendFormButton.innerHTML = '<span>重新发送</span><i class="fa fa-paper-plane ml-2"></i>';
             }
+        }
+        
+        // 显示模态框
+        function showModal() {
+            resendModal.classList.remove('hidden');
+            // 重置表单状态
+            resendForm.reset();
+            resendSuccess.classList.add('hidden');
+            resendError.classList.add('hidden');
+            // 自动聚焦输入框
+            setTimeout(() => {
+                resendEmailInput.focus();
+            }, 100);
+        }
+        
+        // 隐藏模态框
+        function hideModal() {
+            resendModal.classList.add('hidden');
         }
         
         // 显示成功状态
@@ -293,7 +391,25 @@
         }
         
         // 事件监听
-        resendButton.addEventListener('click', resendVerificationEmail);
+        resendButton.addEventListener('click', showModal);
+        closeModal.addEventListener('click', hideModal);
+        modalBackdrop.addEventListener('click', hideModal);
+        
+        // 表单提交处理
+        resendForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = resendEmailInput.value.trim();
+            if (email) {
+                resendVerificationEmail(email);
+            }
+        });
+        
+        // 按ESC键关闭模态框
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !resendModal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
         
         // 页面加载时执行验证
         window.addEventListener('load', verifyEmailToken);
