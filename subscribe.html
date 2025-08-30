@@ -293,10 +293,11 @@
         console.log('=== 订阅页面初始化 ===');
         console.log('当前时间:', new Date().toISOString());
         
-        // 从GitHub Actions Secrets注入的环境变量中获取Supabase配置
-        console.log('尝试从环境变量获取Supabase配置...');
-        const SUPABASE_URL = window.SUPABASE_CONFIG?.url;
-        const SUPABASE_KEY = window.SUPABASE_CONFIG?.key;
+        // 直接配置Supabase参数（使用最新的项目信息）
+        console.log('使用直接配置的Supabase参数...');
+        const SUPABASE_URL = "https://ibwhykivdlzuumcgcssl.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2h5a2l2ZGx6dXVtY2djc3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMzEyOTMsImV4cCI6MjA2OTcwNzI5M30.o7zwqToKgbXnFUEIBxjQYydJkP9peP_Hul-F8xhsE20";
+        const FUNCTION_NAME = "email-send-4"; // 使用最新的函数名称
         
         // 验证配置是否存在
         if (!SUPABASE_URL || !SUPABASE_KEY) {
@@ -307,13 +308,10 @@
         } else {
             console.log('✅ Supabase配置加载成功:', {
                 url: SUPABASE_URL.replace(/https:\/\/(.*?)\.supabase\.co/, 'https://[项目ID].supabase.co'),
+                function: FUNCTION_NAME,
                 key: SUPABASE_KEY.substring(0, 6) + '...' + SUPABASE_KEY.substring(SUPABASE_KEY.length - 6)
             });
         }
-        
-        // 初始化Supabase客户端
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
-        console.log('Supabase客户端初始化:', supabase ? '成功' : '失败');
         
         // DOM元素
         const subscribeForm = document.getElementById('subscribeForm');
@@ -352,34 +350,36 @@
             console.log('状态更新: 显示加载中');
             
             try {
-                // 检查Supabase客户端是否初始化
-                if (!supabase) {
-                    console.error('❌ 错误: Supabase客户端未初始化');
-                    throw new Error("服务初始化失败，请刷新页面重试");
-                }
-                
-                // 调用边缘函数发送验证邮件
-                console.log('调用边缘函数: send-verification-email');
+                // 直接调用Supabase函数API
+                console.log(`调用边缘函数: ${FUNCTION_NAME}`);
                 const startTime = performance.now();
                 
-                const { data, error } = await supabase.functions.invoke("send-verification-email", {
-                    body: { email }
+                // 使用fetch直接调用最新的函数端点
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/${FUNCTION_NAME}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_KEY}`
+                    },
+                    body: JSON.stringify({ email })
                 });
                 
                 const endTime = performance.now();
                 console.log(`函数调用完成，耗时: ${(endTime - startTime).toFixed(2)}ms`);
                 
+                const result = await response.json();
+                
                 // 输出函数调用结果
-                if (error) {
+                if (!response.ok) {
                     console.error('❌ 函数调用错误:', {
-                        message: error.message,
-                        code: error.code,
-                        details: error.details
+                        status: response.status,
+                        statusText: response.statusText,
+                        error: result.error
                     });
-                    throw new Error(error.message || "订阅请求处理失败");
+                    throw new Error(result.error || "订阅请求处理失败");
                 }
                 
-                console.log('✅ 函数调用成功，返回数据:', data);
+                console.log('✅ 函数调用成功，返回数据:', result);
                 
                 // 显示成功消息
                 successMessage.classList.remove('hidden');
