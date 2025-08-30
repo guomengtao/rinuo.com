@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>邮箱验证 - Rinuo资源导航</title>
-    <!-- 引入环境变量配置（部署时由GitHub Actions生成） -->
-    <script src="/env.js"></script>
+    <!-- 移除env.js依赖，直接配置必要参数 -->
     <!-- 引入Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- 引入Font Awesome图标 -->
@@ -49,6 +48,13 @@
             }
             .btn-hover:hover {
                 transform: translateY(-2px);
+            }
+            .animate-spin {
+                animation: spin 1s linear infinite;
+            }
+            @keyframes spin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
             }
         }
     </style>
@@ -202,12 +208,9 @@
         const errorMessage = document.getElementById('error-message');
         const resendButton = document.getElementById('resend-button');
         
-        // 从GitHub Actions Secrets注入的环境变量中获取Supabase配置
-        const SUPABASE_URL = window.SUPABASE_CONFIG.url;
-        const SUPABASE_KEY = window.SUPABASE_CONFIG.key;
-        
-        // 初始化Supabase客户端
-        const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+        // 直接配置Supabase参数（替换为你的实际项目信息）
+        const SUPABASE_URL = "https://ibwhykivdlzuumcgcssl.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2h5a2l2ZGx6dXVtY2djc3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMzEyOTMsImV4cCI6MjA2OTcwNzI5M30.o7zwqToKgbXnFUEIBxjQYydJkP9peP_Hul-F8xhsE20";
         
         // 验证邮箱令牌
         async function verifyEmailToken() {
@@ -218,21 +221,20 @@
             }
             
             try {
-                // 调用Supabase边缘函数验证令牌
-                if (!supabase) {
-                    throw new Error("Supabase客户端未加载");
-                }
-                
-                const { data, error } = await supabase.functions.invoke("verify-email-token", {
-                    body: { token }
+                // 直接调用Supabase函数API，不依赖客户端库
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/verify-email`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ token })
                 });
                 
-                if (error) {
-                    throw new Error(error.message || "验证过程中发生错误");
-                }
+                const result = await response.json();
                 
-                if (!data.success) {
-                    throw new Error(data.message || "验证失败");
+                if (!response.ok) {
+                    throw new Error(result.error || "验证失败");
                 }
                 
                 // 显示成功状态
@@ -245,23 +247,26 @@
         
         // 重新发送验证邮件
         async function resendVerificationEmail() {
-            // 在实际应用中，这里应该弹出一个输入邮箱的对话框
             const email = prompt("请输入您的邮箱地址，我们将重新发送验证邮件：");
-            
             if (!email) return;
             
             try {
-                // 禁用按钮防止重复提交
                 resendButton.disabled = true;
                 resendButton.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 发送中...';
                 
-                // 调用发送邮件的函数
-                const { data, error } = await supabase.functions.invoke("send-verification-email", {
-                    body: { email }
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/email-send-1`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify({ email })
                 });
                 
-                if (error) {
-                    throw new Error(error.message || "发送失败");
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || "发送失败");
                 }
                 
                 alert("验证邮件已重新发送，请查收您的邮箱");
@@ -269,7 +274,6 @@
             } catch (err) {
                 alert(err.message || "发送失败，请稍后重试");
             } finally {
-                // 恢复按钮状态
                 resendButton.disabled = false;
                 resendButton.innerHTML = "重新发送验证邮件";
             }
