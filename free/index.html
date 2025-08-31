@@ -160,7 +160,7 @@
             <span class="font-bold" id="openSourceCount">0</span>
           </div>
           <div class="border-t border-white/20 pt-4 mt-2">
-            <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+            <span class="text-white/90 text-sm">最后更新：<span id="lastUpdated">--</span></span>
           </div>
         </div>
       </div>
@@ -341,8 +341,8 @@
   </button>
 
   <script>
-    // 清单文件路径
-    const CATEGORIES_MANIFEST = '../assets/data/categories.json';
+    // 清单文件路径 - 仅加载summary.json
+    const SUMMARY_FILE = '../assets/data/summary.json';
     
     const navEl = document.getElementById('sidebarNav');
     const sectionsEl = document.getElementById('sections');
@@ -355,6 +355,7 @@
     const totalCategoriesEl = document.getElementById('totalCategories');
     const permanentFreeEl = document.getElementById('permanentFree');
     const openSourceCountEl = document.getElementById('openSourceCount');
+    const lastUpdatedEl = document.getElementById('lastUpdated');
     const backToTopBtn = document.getElementById('backToTop');
     const subscribeBtn = document.getElementById('subscribeBtn');
     const emailInput = document.getElementById('emailInput');
@@ -476,50 +477,42 @@
       }
     }
 
-    // 1. 加载清单文件
-    async function loadCategoriesManifest() {
+    // 1. 加载summary.json文件
+    async function loadSummaryData() {
       try {
-        const response = await fetch(CATEGORIES_MANIFEST, { cache: 'no-cache' });
-        if (!response.ok) throw new Error('清单文件加载失败');
-        return await response.json();
+        const startTime = performance.now();
+        const response = await fetch(SUMMARY_FILE, { cache: 'no-cache' });
+        if (!response.ok) throw new Error('汇总文件加载失败');
+        
+        const data = await response.json();
+        const endTime = performance.now();
+        console.log(`数据加载完成，耗时: ${(endTime - startTime).toFixed(2)}ms`);
+        
+        return data;
       } catch (error) {
-        console.error('清单文件错误:', error);
+        console.error('汇总文件错误:', error);
         sectionsEl.innerHTML = '<div class="text-center py-4 text-red-500 text-sm">资源加载失败</div>';
-        return [];
+        return null;
       }
     }
 
-    // 2. 批量加载所有JSON数据
-    async function loadAllCategories(allCategoryConfigs) {
-      if (!allCategoryConfigs.length) {
-        sectionsEl.innerHTML = '<div class="text-center py-4 text-gray-500 text-sm">未配置任何资源</div>';
-        return {};
-      }
-
-      const categoryDataMap = {};
-      const loadPromises = allCategoryConfigs.map(async (category) => {
-        try {
-          const response = await fetch(category.jsonUrl, { cache: 'no-cache' });
-          if (!response.ok) throw new Error(`文件不存在`);
-          
-          const data = await response.json();
-          // 合并所有子分类的资源，只保留一级分类
-          const allItems = data.subcategories?.flatMap(sc => sc.items || []) || [];
-          categoryDataMap[category.key] = {
-            ...category,
-            items: allItems
-          };
-        } catch (error) {
-          console.warn(`跳过无效资源 ${category.name}:`, error.message);
+    // 2. 按分类组织服务数据
+    function organizeServicesByCategory(services) {
+      const categorized = {};
+      
+      services.forEach(service => {
+        const category = service.categorySlug;
+        if (!categorized[category]) {
+          categorized[category] = [];
         }
+        categorized[category].push(service);
       });
-
-      await Promise.all(loadPromises);
-      return categoryDataMap;
+      
+      return categorized;
     }
 
-    // 3. 渲染左侧分类导航（仅一级分类）
-    function renderTotalSidebar(categoryDataMap, allCategoryConfigs) {
+    // 3. 渲染左侧分类导航（点击滚动到对应内容）
+    function renderSidebar(categories, categorizedServices) {
       navEl.innerHTML = '';
       const ul = document.createElement('ul');
       ul.className = 'space-y-1';
@@ -529,24 +522,25 @@
       let permanentFreeCount = 0;
       let openSourceTotalCount = 0;
 
-      allCategoryConfigs.forEach((category) => {
-        const categoryData = categoryDataMap[category.key];
-        if (!categoryData || categoryData.items.length === 0) return;
+      // 计算统计数据
+      categories.forEach(category => {
+        const services = categorizedServices[category.slug] || [];
+        if (services.length === 0) return;
         
         validCategoryCount++;
-        totalResourcesCount += categoryData.items.length;
+        totalResourcesCount += services.length;
         
         // 统计永久免费和开源项目总数
-        categoryData.items.forEach(item => {
+        services.forEach(item => {
           if (item.isFree) permanentFreeCount++;
           if (item.isOpenSource) openSourceTotalCount++;
         });
 
         const li = document.createElement('li');
         const a = document.createElement('a');
-        a.href = `${category.key}.html`; // 链接到对应分类的HTML页面
+        a.href = `#${category.slug}`; // 链接到页面内锚点
         a.className = 'block px-2 py-1.5 rounded hover-highlight';
-        a.textContent = `${category.name} (${categoryData.items.length})`;
+        a.textContent = `${category.category} (${services.length})`;
         li.appendChild(a);
         ul.appendChild(li);
       });
@@ -565,28 +559,31 @@
       navEl.appendChild(ul);
     }
 
-    // 4. 渲染资源列表（仅一级分类）
-    function renderTotalSections(categoryDataMap, allCategoryConfigs) {
+    // 4. 渲染资源列表（按分类展示）
+    function renderSections(categories, categorizedServices, summaryData) {
       sectionsEl.innerHTML = '';
+      
+      // 更新最后更新时间
+      lastUpdatedEl.textContent = summaryData.updatedAt || '未知';
 
-      allCategoryConfigs.forEach((category) => {
-        const categoryData = categoryDataMap[category.key];
-        if (!categoryData || categoryData.items.length === 0) return;
+      categories.forEach(category => {
+        const services = categorizedServices[category.slug] || [];
+        if (services.length === 0) return;
 
         // 一级分类区块
         const mainSection = document.createElement('section');
-        mainSection.id = category.key;
+        mainSection.id = category.slug;
         mainSection.className = 'py-6 border-b border-gray-100 last:border-0';
 
-        // 一级分类标题（点击跳转到对应HTML页面）
+        // 一级分类标题
         const mainTitle = document.createElement('h2');
         mainTitle.className = 'text-xl font-semibold mb-4 flex items-baseline gap-2';
         mainTitle.innerHTML = `
-          <a href="${category.key}.html" class="text-dark hover:text-primary transition-colors">
-            ${category.name}
-            <span class="ml-2 text-xs text-muted">${categoryData.items.length}个资源</span>
-          </a>
-          <a href="#${category.key}" class="text-muted hover:text-primary transition-colors">
+          <span class="text-dark">
+            ${category.category}
+            <span class="ml-2 text-xs text-muted">${services.length}个资源</span>
+          </span>
+          <a href="#${category.slug}" class="text-muted hover:text-primary transition-colors">
             <i class="fa fa-link"></i>
           </a>
         `;
@@ -595,7 +592,7 @@
         // 资源列表
         const resourceList = document.createElement('ul');
         resourceList.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3';
-        categoryData.items.forEach(item => resourceList.appendChild(createResourceCard(item)));
+        services.forEach(item => resourceList.appendChild(createResourceCard(item)));
         mainSection.appendChild(resourceList);
 
         sectionsEl.appendChild(mainSection);
@@ -691,8 +688,8 @@
           if (mode === 'alpha') {
             return a.querySelector('a').textContent.localeCompare(b.querySelector('a').textContent);
           }
-          // 热度排序
-          return b.querySelector('a').textContent.length - a.querySelector('a').textContent.length;
+          // 热度排序 - 基于服务描述长度简单模拟
+          return b.querySelector('p').textContent.length - a.querySelector('p').textContent.length;
         });
         
         // 重新排列
@@ -702,7 +699,7 @@
 
     // 7. 滚动监听（导航高亮）
     function setupScrollSpy() {
-      const links = Array.from(document.querySelectorAll('#sidebarNav a[href$=".html"]'));
+      const links = Array.from(document.querySelectorAll('#sidebarNav a[href^="#"]'));
       const targets = Array.from(document.querySelectorAll('main section[id]'));
       
       const observer = new IntersectionObserver(entries => {
@@ -710,7 +707,7 @@
           if (entry.isIntersecting) {
             const targetId = entry.target.id;
             links.forEach(link => {
-              const linkTarget = link.getAttribute('href').replace('.html', '');
+              const linkTarget = link.getAttribute('href').replace('#', '');
               link.classList.toggle('bg-primary/10', linkTarget === targetId);
               link.classList.toggle('text-primary', linkTarget === targetId);
             });
@@ -724,13 +721,15 @@
 
     // 8. 初始化流程
     async function init() {
-      const allCategoryConfigs = await loadCategoriesManifest();
-      if (!allCategoryConfigs.length) return;
+      const summaryData = await loadSummaryData();
+      if (!summaryData) return;
       
-      const categoryDataMap = await loadAllCategories(allCategoryConfigs);
+      // 按分类组织服务
+      const categorizedServices = organizeServicesByCategory(summaryData.services || []);
       
-      renderTotalSidebar(categoryDataMap, allCategoryConfigs);
-      renderTotalSections(categoryDataMap, allCategoryConfigs);
+      // 渲染导航和内容
+      renderSidebar(summaryData.categories || [], categorizedServices);
+      renderSections(summaryData.categories || [], categorizedServices, summaryData);
       setupScrollSpy();
       
       // 绑定筛选事件
