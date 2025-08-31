@@ -28,6 +28,7 @@ fetch('/assets/data/summary.json')
 ### 2. 按分类搜索服务
 
 ```javascript
+// 按英文分类名搜索
 function searchByCategory(categoryName) {
   fetch('/assets/data/summary.json')
     .then(response => response.json())
@@ -42,8 +43,24 @@ function searchByCategory(categoryName) {
     });
 }
 
+// 按中文分类名搜索
+function searchByCategoryName(chineseName) {
+  fetch('/assets/data/summary.json')
+    .then(response => response.json())
+    .then(data => {
+      const categoryIndex = data.searchIndex.byCategoryName[chineseName];
+      if (categoryIndex) {
+        const services = categoryIndex.map(index => data.services[index]);
+        console.log(`${chineseName} 分类下的服务:`, services);
+        return services;
+      }
+      return [];
+    });
+}
+
 // 搜索AI相关服务
-searchByCategory('ai');
+searchByCategory('ai');           // 英文
+searchByCategoryName('人工智能');  // 中文
 ```
 
 ### 3. 按标签搜索服务
