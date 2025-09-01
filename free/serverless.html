@@ -1,234 +1,843 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>免费 Serverless 后端 API 服务推荐</title>
-  <style>
-    :root {
-      --bg: #f9f9f9;
-      --card: #fff;
-      --fg: #333;
-      --muted: #666;
-      --accent: #0066cc;
-    }
-    body { margin:0; padding:20px; background: var(--bg); font-family: Arial, sans-serif; color: var(--fg); }
-    h1 { text-align: center; color: var(--accent); }
-    .card { background: var(--card); border-radius: 8px; padding: 16px; margin: 16px auto; max-width: 800px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .card h2 { margin-top: 0; color: var(--accent); }
-    .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
-    .grid div { background: #f5f5f5; padding: 8px; border-radius: 4px; }
-    .btn { display: inline-block; padding: 6px 12px; background: var(--accent); color: #fff; border-radius: 4px; text-decoration: none; }
-    .btn:hover { opacity: 0.8; }
-    footer { text-align: center; color: var(--muted); margin-top: 40px; font-size: 14px; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>免费 Serverless 后端 API 服务推荐</title>
+    <!-- 外部资源引入 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind配置 - Serverless主题色彩系统 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',       // 主色调：蓝色（代表云服务与技术）
+                        secondary: '#36D399',     // 辅助色：绿色（代表效率与可靠性）
+                        danger: '#F87272',        // 警告红
+                        dark: '#1E293B',          // 文字深灰
+                        light: '#F8FAFC',         // 背景浅灰
+                        muted: '#64748B',         // 辅助文字灰
+                        // 云服务提供商颜色
+                        aws: '#FF9900',           // AWS橙色
+                        cloudflare: '#F38020',    // Cloudflare橙色
+                        netlify: '#00C7B7',       // Netlify青色
+                        vercel: '#0070F3',        // Vercel蓝色
+                        google: '#4285F4',        // Google蓝色
+                        appwrite: '#FD366E',      // Appwrite粉色
+                        nhost: '#3B82F6'          // NHost蓝色
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .feature-badge {
+                @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+            }
+        }
+    </style>
+    
+    <!-- 订阅功能引入 -->
+    <script src="../assets/js/email-subscription.js"></script>
 </head>
-<body>
-  <h1>免费 Serverless 后端 API 服务推荐</h1>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo区域 -->
+            <a href="#" class="flex items-center space-x-2">
+                <i class="fa fa-cloud text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">API服务导航</h1>
+            </a>
+            
+            <!-- 桌面端导航 -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="index.html" class="text-dark hover:text-primary transition-colors">Home / 首页</a>
+                <a href="ai.html" class="text-dark hover:text-primary transition-colors">AI APIs / AI 接口</a>
+                <a href="otp.html" class="text-dark hover:text-primary transition-colors">OTP & 验证码</a>
+                <a href="serverless.html" class="text-primary font-medium">Serverless 服务</a>
+                <a href="https://github.com" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
+                    <i class="fa fa-github mr-1"></i> 贡献资源
+                </a>
+            </div>
+            
+            <!-- 移动端菜单按钮 -->
+            <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单（默认隐藏） -->
+        <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">Home / 首页</a>
+                <a href="ai.html" class="py-2 text-dark hover:text-primary transition-colors">AI APIs / AI 接口</a>
+                <a href="otp.html" class="py-2 text-dark hover:text-primary transition-colors">OTP & 验证码</a>
+                <a href="serverless.html" class="py-2 text-primary font-medium">Serverless 服务</a>
+                <a href="https://github.com" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
+                    <i class="fa fa-github mr-1"></i> 贡献资源
+                </a>
+            </div>
+        </div>
+    </header>
 
-  <!-- AWS Lambda -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>AWS Lambda + API Gateway</h2>
-      <a class="btn" href="https://aws.amazon.com/free/serverless/" target="_blank">访问官网</a>
-    </div>
-    <div class="grid">
-      <div>
-        <strong>免费额度</strong>
-        <ul>
-          <li>每月 1M 请求</li>
-          <li>400K GB-秒 / 3.2M 秒 计算时间</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>需配置 API Gateway，稍有学习成本</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>轻量实时后端 API 服务</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    <!-- 页面标题区 -->
+    <section class="bg-gradient-to-r from-primary to-blue-700 text-white py-10 md:py-16">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i class="fa fa-server text-3xl"></i>
+                        <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">免费 Serverless 后端 API 服务推荐</h2>
+                    </div>
+                    <p class="text-white/90 max-w-2xl">
+                        汇总国内外主流的免费Serverless后端服务，包括云函数、API网关等，详细标注免费额度、限制和适用场景，帮助开发者降低后端开发与运维成本。
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        <a href="#services" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fa fa-th-large mr-2"></i> 浏览所有服务
+                        </a>
+                        <a href="#comparison" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fa fa-table mr-2"></i> 服务对比
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 数据概览卡片 -->
+                <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">收录服务</span>
+                        <span class="font-bold">7+ 个</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">云厂商服务</span>
+                        <span class="font-bold">5 个</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">BaaS 平台</span>
+                        <span class="font-bold">2 个</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">完全免费</span>
+                        <span class="font-bold">2+ 个</span>
+                    </div>
+                    <div class="border-t border-white/20 pt-4 mt-2">
+                        <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-  <!-- Cloudflare Workers -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>Cloudflare Workers</h2>
-      <a class="btn" href="https://workers.cloudflare.com/" target="_blank">访问官网</a>
+    <!-- 面包屑导航 -->
+    <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+        <nav class="flex text-sm" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+                        <i class="fa fa-home mr-2"></i>首页
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+                        <a href="serverless.html" class="text-primary font-medium">免费 Serverless 后端 API 服务</a>
+                    </div>
+                </li>
+            </ol>
+        </nav>
     </div>
-    <div class="grid">
-      <div>
-        <strong>免费额度</strong>
-        <ul>
-          <li>每天 100,000 请求</li>
-          <li>10GB 出站带宽</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>请求量和存储有限</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>边缘部署 API、轻逻辑处理</li>
-        </ul>
-      </div>
-    </div>
-  </div>
 
-  <!-- Netlify Functions -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>Netlify Functions</h2>
-      <a class="btn" href="https://www.netlify.com/" target="_blank">访问官网</a>
-    </div>
-    <div class="grid">
-      <div>
-        <strong>免费额度</strong>
-        <ul>
-          <li>每月 125,000 函数调用</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>仅支持静态 + 函数组合部署</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>JAMstack 架构 API 服务</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+    <!-- 核心内容区 -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <!-- 简介卡片 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0 bg-primary/10 p-3 rounded-lg mr-4">
+                    <i class="fa fa-info-circle text-primary text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">关于 Serverless 后端服务</h3>
+                    <p class="text-muted mb-4">
+                        Serverless（无服务器）架构允许开发者构建和运行应用程序，无需管理底层基础设施。通过使用云厂商提供的函数即服务（FaaS）和API网关，开发者可以专注于代码编写，大幅降低运维成本，同时按使用量付费，非常适合流量波动大或预算有限的项目。
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <i class="fa fa-code mr-1"></i>函数即服务
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <i class="fa fa-random mr-1"></i>API网关
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fa fa-tachometer mr-1"></i>按需计费
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            <i class="fa fa-shield mr-1"></i>自动扩展
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <!-- Vercel Functions -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>Vercel Serverless Functions</h2>
-      <a class="btn" href="https://vercel.com/" target="_blank">访问官网</a>
-    </div>
-    <div class="grid">
-      <div>
-        <strong>免费特点</strong>
-        <ul>
-          <li>支持 Node.js、Go 等</li>
-          <li>自动生成 API URL</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>冷启动时间较高（约 8 秒）</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>与前端项目一起快速开发</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+        <!-- 筛选工具栏 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
+            <h3 class="text-lg font-medium mb-4">服务筛选</h3>
+            <div class="flex flex-wrap gap-2">
+                <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-colors" data-filter="all">
+                    全部服务
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="cloud">
+                    <i class="fa fa-cloud mr-1"></i>云厂商服务
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="baas">
+                    <i class="fa fa-cubes mr-1"></i>BaaS平台
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="free">
+                    <i class="fa fa-gift mr-1"></i>完全免费
+                </button>
+            </div>
+        </div>
 
-  <!-- Google Cloud Functions -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>Google Cloud Functions</h2>
-      <a class="btn" href="https://cloud.google.com/free" target="_blank">访问官网</a>
-    </div>
-    <div class="grid">
-      <div>
-        <strong>免费额度</strong>
-        <ul>
-          <li>每月 2M 调用</li>
-          <li>400K GB-秒</li>
-          <li>5GB 出站流量</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>需注册 GCP，额度耗尽后收费</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>事件驱动或 HTTP API 服务</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+        <!-- Serverless服务卡片 -->
+        <div id="services" class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+            <!-- AWS Lambda -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="cloud">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-aws/10 to-aws/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-aws/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-amazon text-aws text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">AWS Lambda + API Gateway</h3>
+                        </div>
+                        <span class="feature-badge bg-blue-100 text-blue-800">最成熟</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费额度</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 每月 1M 请求</li>
+                                <li>• 400K GB-秒计算</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 需配置API Gateway</li>
+                                <li>• 有学习成本</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 轻量实时后端API</li>
+                                <li>• 事件驱动处理</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://aws.amazon.com/free/serverless/" target="_blank" class="inline-flex items-center bg-aws hover:bg-aws/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
 
-  <!-- Appwrite -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>Appwrite（开源 BaaS）</h2>
-      <a class="btn" href="https://appwrite.io/" target="_blank">访问官网</a>
-    </div>
-    <div class="grid">
-      <div>
-        <strong>免费特点</strong>
-        <ul>
-          <li>自托管且开源，包含函数、Auth、DB</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>需自建服务器，运维成本较高</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>小型项目或完全掌控环境需求</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+            <!-- Cloudflare Workers -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="cloud">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-cloudflare/10 to-cloudflare/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-cloudflare/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-bolt text-cloudflare text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Cloudflare Workers</h3>
+                        </div>
+                        <span class="feature-badge bg-green-100 text-green-800">速度快</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费额度</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 每天 100,000 请求</li>
+                                <li>• 10GB 出站带宽</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 请求量和存储有限</li>
+                                <li>• 执行时间限制短</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 边缘部署API</li>
+                                <li>• 轻逻辑处理</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://workers.cloudflare.com/" target="_blank" class="inline-flex items-center bg-cloudflare hover:bg-cloudflare/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
 
-  <!-- NHost -->
-  <div class="card">
-    <div style="display:flex; justify-content: space-between; align-items: center;">
-      <h2>NHost</h2>
-      <a class="btn" href="https://nhost.io/" target="_blank">访问官网</a>
-    </div>
-    <div class="grid">
-      <div>
-        <strong>免费特点</strong>
-        <ul>
-          <li>提供 Postgres、GraphQL API、Auth、Storage、函数</li>
-        </ul>
-      </div>
-      <div>
-        <strong>限制</strong>
-        <ul>
-          <li>1GB DB 和 5GB 出站流量免费额度</li>
-        </ul>
-      </div>
-      <div>
-        <strong>适用场景</strong>
-        <ul>
-          <li>快速生成后端 MVP</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+            <!-- Netlify Functions -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="cloud">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-netlify/10 to-netlify/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-netlify/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-globe text-netlify text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Netlify Functions</h3>
+                        </div>
+                        <span class="feature-badge bg-purple-100 text-purple-800">易用性高</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费额度</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 每月 125,000 调用</li>
+                                <li>• 包含在免费计划中</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 仅支持静态+函数组合</li>
+                                <li>• 构建时间有限制</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• JAMstack架构API</li>
+                                <li>• 前端项目配套后端</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://www.netlify.com/" target="_blank" class="inline-flex items-center bg-netlify hover:bg-netlify/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
 
-  <footer>
-    <p>整理于 2025-08-29。内容参考自 <a href="https://aws.amazon.com/free/serverless/" target="_blank">AWS 官方</a>, <a href="https://cloud.google.com/free" target="_blank">Google Cloud</a>, <a href="https://www.netlify.com/" target="_blank">Netlify</a>, <a href="https://vercel.com/" target="_blank">Vercel</a>, 及多篇开发者推荐文章</p>
-  </footer>
+            <!-- Vercel Functions -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="cloud">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-vercel/10 to-vercel/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-vercel/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-code text-vercel text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Vercel Serverless Functions</h3>
+                        </div>
+                        <span class="feature-badge bg-blue-100 text-blue-800">开发友好</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费特点</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 支持Node.js、Go等</li>
+                                <li>• 自动生成API URL</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 冷启动时间较高</li>
+                                <li>• 免费计划功能有限</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 与前端项目一起开发</li>
+                                <li>• 快速原型验证</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://vercel.com/" target="_blank" class="inline-flex items-center bg-vercel hover:bg-vercel/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
+
+            <!-- Google Cloud Functions -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="cloud">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-google/10 to-google/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-google/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-google text-google text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Google Cloud Functions</h3>
+                        </div>
+                        <span class="feature-badge bg-green-100 text-green-800">额度高</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费额度</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 每月 2M 调用</li>
+                                <li>• 400K GB-秒计算</li>
+                                <li>• 5GB 出站流量</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 需注册GCP账号</li>
+                                <li>• 额度耗尽后收费</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 事件驱动服务</li>
+                                <li>• HTTP API服务</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://cloud.google.com/free" target="_blank" class="inline-flex items-center bg-google hover:bg-google/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
+
+            <!-- Appwrite -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="baas free">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-appwrite/10 to-appwrite/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-appwrite/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-code-fork text-appwrite text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">Appwrite（开源 BaaS）</h3>
+                        </div>
+                        <span class="feature-badge bg-red-100 text-red-800">完全免费</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费特点</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 自托管且开源</li>
+                                <li>• 包含函数、Auth、DB</li>
+                                <li>• 无使用限制</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 需自建服务器</li>
+                                <li>• 运维成本较高</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 小型项目</li>
+                                <li>• 需完全掌控环境</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://appwrite.io/" target="_blank" class="inline-flex items-center bg-appwrite hover:bg-appwrite/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
+
+            <!-- NHost -->
+            <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm card-hover service-card" data-category="baas">
+                <div class="p-5 border-b border-gray-100 bg-gradient-to-r from-nhost/10 to-nhost/5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-nhost/20 flex items-center justify-center mr-3">
+                                <i class="fa fa-database text-nhost text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-bold">NHost</h3>
+                        </div>
+                        <span class="feature-badge bg-purple-100 text-purple-800">全栈解决方案</span>
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">免费特点</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 提供Postgres</li>
+                                <li>• GraphQL API</li>
+                                <li>• Auth、Storage、函数</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">限制</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 1GB DB存储</li>
+                                <li>• 5GB出站流量</li>
+                            </ul>
+                        </div>
+                        <div class="bg-gray-50 p-3 rounded-lg">
+                            <h4 class="font-medium text-sm text-muted mb-2">适用场景</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• 快速生成后端MVP</li>
+                                <li>• 全栈应用开发</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <a href="https://nhost.io/" target="_blank" class="inline-flex items-center bg-nhost hover:bg-nhost/90 text-white px-4 py-2 rounded-lg transition-colors w-full justify-center">
+                        <i class="fa fa-external-link mr-2"></i> 访问官网
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- 服务对比表格 -->
+        <div id="comparison" class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-10 shadow-sm">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-table text-primary text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">Serverless 服务对比</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-light">
+                            <th class="py-3 px-4 text-left border-b">服务名称</th>
+                            <th class="py-3 px-4 text-left border-b">免费额度</th>
+                            <th class="py-3 px-4 text-left border-b">支持语言</th>
+                            <th class="py-3 px-4 text-left border-b">冷启动时间</th>
+                            <th class="py-3 px-4 text-left border-b">主要优势</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">AWS Lambda</td>
+                            <td class="py-3 px-4 border-b">1M 请求/月，400K GB-秒</td>
+                            <td class="py-3 px-4 border-b">Node.js, Python, Java, Go, C#, Ruby, PowerShell, Custom</td>
+                            <td class="py-3 px-4 border-b">100-500ms</td>
+                            <td class="py-3 px-4 border-b">生态系统完善，集成AWS服务</td>
+                        </tr>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">Cloudflare Workers</td>
+                            <td class="py-3 px-4 border-b">100K 请求/天，10GB 带宽</td>
+                            <td class="py-3 px-4 border-b">JavaScript, TypeScript, WebAssembly</td>
+                            <td class="py-3 px-4 border-b">1-10ms</td>
+                            <td class="py-3 px-4 border-b">全球边缘网络，速度极快</td>
+                        </tr>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">Netlify Functions</td>
+                            <td class="py-3 px-4 border-b">125K 调用/月</td>
+                            <td class="py-3 px-4 border-b">Node.js</td>
+                            <td class="py-3 px-4 border-b">500-1000ms</td>
+                            <td class="py-3 px-4 border-b">与静态网站集成无缝，易用性高</td>
+                        </tr>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">Vercel Functions</td>
+                            <td class="py-3 px-4 border-b">包含在免费计划中</td>
+                            <td class="py-3 px-4 border-b">Node.js, Go, Python, Ruby</td>
+                            <td class="py-3 px-4 border-b">500-8000ms</td>
+                            <td class="py-3 px-4 border-b">与前端框架集成好，开发体验佳</td>
+                        </tr>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">Google Cloud Functions</td>
+                            <td class="py-3 px-4 border-b">2M 调用/月，400K GB-秒</td>
+                            <td class="py-3 px-4 border-b">Node.js, Python, Java, Go, .NET, Ruby</td>
+                            <td class="py-3 px-4 border-b">100-500ms</td>
+                            <td class="py-3 px-4 border-b">与GCP服务集成，免费额度高</td>
+                        </tr>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">Appwrite</td>
+                            <td class="py-3 px-4 border-b">完全免费（自托管）</td>
+                            <td class="py-3 px-4 border-b">多种语言SDK</td>
+                            <td class="py-3 px-4 border-b">取决于自托管环境</td>
+                            <td class="py-3 px-4 border-b">开源免费，完全掌控数据</td>
+                        </tr>
+                        <tr class="table-hover-effect">
+                            <td class="py-3 px-4 border-b font-medium">NHost</td>
+                            <td class="py-3 px-4 border-b">1GB DB，5GB 流量</td>
+                            <td class="py-3 px-4 border-b">GraphQL, JavaScript, TypeScript</td>
+                            <td class="py-3 px-4 border-b">300-800ms</td>
+                            <td class="py-3 px-4 border-b">全栈BaaS，GraphQL优先</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 选择建议 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+            <h3 class="text-xl font-bold mb-5 flex items-center">
+                <i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i>Serverless服务选择建议
+            </h3>
+            
+            <div class="space-y-5">
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="fa fa-check-circle text-primary mr-2"></i>按场景选择
+                    </h4>
+                    <ul class="text-muted space-y-2 ml-6 list-disc">
+                        <li>全球分布式API：优先选择Cloudflare Workers，得益于其全球边缘网络</li>
+                        <li>前端项目配套后端：Netlify或Vercel Functions，与前端部署流程无缝集成</li>
+                        <li>需要丰富生态系统：AWS Lambda或Google Cloud Functions，与云服务深度集成</li>
+                        <li>预算有限或隐私敏感：Appwrite自托管方案，完全免费且数据可控</li>
+                        <li>快速开发全栈应用：NHost提供完整的后端解决方案，包括数据库和认证</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="fa fa-exclamation-triangle text-yellow-500 mr-2"></i>使用注意事项
+                    </h4>
+                    <ul class="text-muted space-y-2 ml-6 list-disc">
+                        <li>注意冷启动时间，对实时性要求高的应用避免冷启动时间长的服务</li>
+                        <li>云厂商服务虽有免费额度，但需注意监控使用量，避免意外收费</li>
+                        <li>自托管方案需要考虑服务器成本和维护精力</li>
+                        <li>不同服务有不同的语言支持和功能限制，评估与项目技术栈的匹配度</li>
+                        <li>考虑长期成本，随着项目增长，部分服务的付费模式可能更经济</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="fa fa-code text-primary mr-2"></i>技术实现建议
+                    </h4>
+                    <ul class="text-muted space-y-2 ml-6 list-disc">
+                        <li>实现服务抽象层，降低未来更换Serverless提供商的成本</li>
+                        <li>设计合理的缓存策略，减少函数调用次数和成本</li>
+                        <li>处理冷启动问题，可采用定时唤醒或选择冷启动时间短的服务</li>
+                        <li>实现完善的日志和监控，便于调试和成本分析</li>
+                        <li>考虑函数粒度设计，避免单函数过大导致性能问题</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 资源贡献区域 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-github text-primary mr-2"></i>贡献资源
+            </h3>
+            <p class="text-muted mb-4">
+                知道更多优质的免费Serverless后端服务？欢迎通过GitHub issues提交补充内容！
+            </p>
+            <a href="https://github.com" target="_blank" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
+                <i class="fa fa-github mr-2"></i> 提交issue
+            </a>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-cloud text-primary text-2xl"></i>
+                        <h2 class="text-xl font-bold text-white">API服务导航</h2>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        汇总各类免费API服务资源，帮助开发者快速找到合适的解决方案，降低开发成本和门槛，提升开发效率。
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">服务分类</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="ai.html" class="hover:text-primary transition-colors">AI文本API</a></li>
+                        <li><a href="otp.html" class="hover:text-primary transition-colors">验证码服务</a></li>
+                        <li><a href="serverless.html" class="hover:text-primary transition-colors">Serverless服务</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">数据存储API</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">支付相关API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">相关链接</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">使用指南</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">常见问题</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">使用条款</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">隐私政策</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">关注我们</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </div>
+                    
+                    <!-- 订阅功能容器 -->
+                    <div id="serverlessPageSubscription" class="mt-6"></div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+                <p>© 2025 API服务导航. 保留所有权利.</p>
+                <p class="mt-1">页面最后更新：2025-08-29</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+        <i class="fa fa-chevron-up"></i>
+    </button>
+
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        // 移动端菜单切换
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 回到顶部按钮
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            // 显示/隐藏回到顶部按钮
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+
+            // 导航栏滚动效果
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2');
+                header.classList.remove('py-4');
+            } else {
+                header.classList.add('py-4');
+                header.classList.remove('py-2');
+            }
+        });
+
+        // 回到顶部功能
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 平滑滚动到锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 如果是移动端且菜单打开，则关闭菜单
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // 服务筛选功能
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const serviceCards = document.querySelectorAll('.service-card');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 更新按钮状态
+                filterButtons.forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+                filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
+                button.classList.add('bg-primary', 'text-white');
+                button.classList.remove('bg-light', 'hover:bg-gray-200');
+                
+                const filter = button.getAttribute('data-filter');
+                
+                // 筛选服务
+                serviceCards.forEach(card => {
+                    if (filter === 'all') {
+                        card.style.display = 'block';
+                    } else {
+                        // 按类别筛选
+                        card.style.display = card.getAttribute('data-category').includes(filter) ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+
+        // 外部链接提示
+        const externalLinks = document.querySelectorAll('a[target="_blank"]');
+        externalLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
+                if (!confirmLeave) {
+                    e.preventDefault();
+                }
+            });
+        });
+
+        // 初始化订阅功能
+        if (typeof initEmailSubscription === "function") {
+            initEmailSubscription("serverlessPageSubscription", {
+                title: "订阅Serverless更新",
+                description: "获取最新后端服务和使用技巧", 
+                buttonText: "订阅",
+                style: "tailwind",
+                successMessage: "订阅请求已发送！\n请查收来自 noreply@free.rinuo.com 的邮件，并点击验证链接完成订阅\n\n如果没有收到邮件，请检查垃圾邮件文件夹",
+                errorMessage: "订阅失败，请稍后重试。"
+            });
+        } else {
+            console.error("邮件订阅组件未加载");
+        }
+    </script>
 </body>
 </html>
+    
