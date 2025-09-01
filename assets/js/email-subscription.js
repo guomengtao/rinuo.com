@@ -16,7 +16,7 @@ class EmailSubscription {
             description: '获取最新免费资源信息',
             placeholder: '您的邮箱地址',
             buttonText: '订阅',
-            successMessage: '订阅成功！我们会定期发送最新资源信息。',
+            successMessage: '订阅请求已发送！\n请查收来自 noreply@free.rinuo.com 的邮件，并点击验证链接完成订阅\n\n如果没有收到邮件，请检查垃圾邮件文件夹',
             errorMessage: '订阅失败，请稍后重试。',
             loadingMessage: '正在订阅中...',
             style: 'default', // 'default', 'tailwind', 'custom'
@@ -64,7 +64,7 @@ class EmailSubscription {
                 title: 'text-sm font-medium text-gray-700 mb-1',
                 description: 'text-xs text-gray-500',
                 form: 'subscription-form',
-                input: 'flex-grow px-3 py-2 text-sm border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
+                input: 'flex-grow px-3 py-2 text-sm border border-gray-300 rounded-l-lg bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent',
                 button: 'bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-r-lg text-sm font-medium transition-colors',
                 message: 'mt-2 text-xs'
             };
@@ -164,6 +164,18 @@ class EmailSubscription {
         
         try {
             this._log(`开始订阅流程，邮箱: ${email}`);
+            // 本地/开发环境下的CORS友好处理：跳过远端调用，仅做成功提示，避免打断页面
+            const isDev = typeof window !== 'undefined' && (
+                window.location.hostname === 'localhost' ||
+                window.location.hostname === '127.0.0.1'
+            );
+            if (isDev) {
+                this._log('检测到本地开发环境，跳过远端调用以避免CORS，并显示激活提示');
+                this.showMessage(messageEl, this.options.successMessage, 'success');
+                emailInput.value = '';
+                setTimeout(() => { messageEl.classList.add('hidden'); }, 5000);
+                return;
+            }
             
             // 调用Supabase函数
             const response = await fetch(`${this.config.url}/functions/v1/${this.config.functionName}`, {
