@@ -1,86 +1,858 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free Sports APIs / 免费体育接口</title>
-<style>
-body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f4f4f4; }
-h1, h2 { color:#333; text-align:center; }
-nav { text-align:center; margin:20px 0; }
-nav a { margin:0 10px; text-decoration:none; color:#007bff; font-weight:bold; }
-nav a:hover { text-decoration:underline; }
-.section { max-width:1200px; margin:30px auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-table { width:100%; border-collapse: collapse; margin-top:20px; }
-th, td { border:1px solid #ddd; padding:10px; text-align:left; vertical-align:top; }
-th { background:#f8f8f8; }
-tr:nth-child(even) { background:#fafafa; }
-a { color:#007bff; text-decoration:none; }
-a:hover { text-decoration:underline; }
-footer { text-align:center; color:#777; margin-top:40px; font-size:14px; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Free Sports APIs / 免费体育接口</title>
+  <!-- 外部资源引入 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind配置 - 专业级色彩系统 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E40AF',      // 深蓝主色调，传达专业和可靠性
+            secondary: '#3B82F6',    // 中蓝辅助色
+            accent: '#60A5FA',       // 浅蓝强调色
+            dark: '#1E293B',         // 深色文本
+            light: '#F8FAFC',        // 浅色背景
+            muted: '#64748B',        // 次要文本
+            success: '#10B981',      // 成功状态（完全免费）
+            warning: '#F59E0B',      // 警告状态（有限免费）
+            danger: '#EF4444',       // 危险状态（试用）
+            open: '#8B5CF6'          // 开源项目
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+            'card-hover': '0 10px 15px -3px rgba(30, 64, 175, 0.1), 0 4px 6px -2px rgba(30, 64, 175, 0.05)',
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .text-balance {
+        text-wrap: balance;
+      }
+      .bg-gradient-blue {
+        background: linear-gradient(135deg, #1E40AF 0%, #3B82F6 100%);
+      }
+      .badge {
+        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+      }
+    }
+  </style>
 </head>
-<body>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col antialiased">
+  <!-- 顶部导航栏 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+      <!-- Logo区域 -->
+      <a href="#" class="flex items-center space-x-2 group">
+        <div class="w-10 h-10 rounded-lg bg-gradient-blue flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
+          <i class="fa fa-trophy text-white text-xl"></i>
+        </div>
+        <h1 class="text-xl font-bold text-primary">API服务导航</h1>
+      </a>
+      
+      <!-- 桌面端导航 -->
+      <div class="hidden md:flex items-center space-x-8">
+        <a href="index.html" class="text-muted hover:text-primary transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full">首页</a>
+        <a href="ai.html" class="text-muted hover:text-primary transition-colors duration-200 relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full">AI接口</a>
+        <a href="#sports" class="text-primary font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary">体育接口</a>
+      </div>
+      
+      <!-- 移动端菜单按钮 -->
+      <button class="md:hidden text-dark focus:outline-none" id="menuBtn" aria-label="打开菜单">
+        <i class="fa fa-bars text-xl transition-transform duration-300" id="menuIcon"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div class="md:hidden hidden bg-white border-t border-gray-100 absolute w-full left-0 shadow-md" id="mobileMenu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="index.html" class="py-2 text-muted hover:text-primary transition-colors">首页</a>
+        <a href="ai.html" class="py-2 text-muted hover:text-primary transition-colors">AI接口</a>
+        <a href="#sports" class="py-2 text-primary font-medium">体育接口</a>
+      </div>
+    </div>
+  </header>
 
-<h1>Free Sports APIs / 免费体育接口</h1>
+  <!-- 页面标题区 -->
+  <section class="bg-gradient-blue text-white py-12 md:py-20 relative overflow-hidden">
+    <!-- 背景装饰元素 -->
+    <div class="absolute inset-0 overflow-hidden opacity-10">
+      <div class="absolute -right-10 -top-10 w-64 h-64 rounded-full bg-white"></div>
+      <div class="absolute left-1/4 bottom-0 w-96 h-96 rounded-full bg-white"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+      <div class="inline-flex items-center space-x-3 mb-4 bg-white/10 backdrop-blur-sm rounded-full px-6 py-2">
+        <i class="fa fa-futbol-o text-xl"></i>
+        <span class="text-white/90">体育数据接口</span>
+      </div>
+      <h1 class="text-[clamp(1.75rem,5vw,3rem)] font-bold leading-tight mb-6">
+        免费体育接口与数据API
+      </h1>
+      <p class="text-white/90 text-lg md:text-xl max-w-3xl mx-auto text-balance">
+        精选 28+ 专业体育数据API，涵盖足球、篮球、网球等多种运动，提供赛事结果、实时比分、球队信息等数据，每条资源都标注了免费额度和使用限制。
+      </p>
+    </div>
+  </section>
 
-<nav>
-<a href="index.html">Home / 首页</a>
-<a href="ai.html">AI APIs / AI 接口</a>
-<a href="#sports">Sports / 体育</a>
-</nav>
+  <!-- 面包屑导航 -->
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 bg-white shadow-sm">
+    <nav class="flex text-sm" aria-label="面包屑导航">
+      <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+          <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+            <i class="fa fa-home mr-2"></i>首页
+          </a>
+        </li>
+        <li>
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <a href="ai.html" class="text-muted hover:text-primary transition-colors">AI接口</a>
+          </div>
+        </li>
+        <li aria-current="page">
+          <div class="flex items-center">
+            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <span class="text-primary font-medium">体育接口</span>
+          </div>
+        </li>
+      </ol>
+    </nav>
+  </div>
 
-<div class="section" id="sports">
-<h2>Sports APIs / 体育接口</h2>
-<table>
-<thead>
-<tr>
-<th>API Name / 服务名称</th>
-<th>Website / 官网</th>
-<th>Free Quota / 免费额度</th>
-<th>Notes / 特点 / 限制</th>
-</tr>
-</thead>
-<tbody>
-<tr><td>TheSportsDB</td><td><a href="https://www.thesportsdb.com/" target="_blank">访问</a></td><td>每天 1,000 请求</td><td>足球、篮球、棒球等多种体育数据；免费额度适合轻量项目</td></tr>
-<tr><td>API-Football</td><td><a href="https://www.api-football.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>足球赛事数据；免费额度低，适合测试与小项目</td></tr>
-<tr><td>SportdataAPI</td><td><a href="https://sportdataapi.com/" target="_blank">访问</a></td><td>每月 50 请求</td><td>足球、篮球、网球、冰球等；免费额度适合开发测试</td></tr>
-<tr><td>ESPN API (非官方)</td><td><a href="https://www.espn.com/apis/devcenter/docs" target="_blank">访问</a></td><td>非官方，限量访问</td><td>综合体育赛事和新闻；免费使用需遵守限制</td></tr>
-<tr><td>Football-Data.org</td><td><a href="https://www.football-data.org/" target="_blank">访问</a></td><td>每分钟 10 请求</td><td>足球联赛、球队、比赛数据；免费额度适合小型应用</td></tr>
-<tr><td>API-Basketball</td><td><a href="https://www.api-basketball.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>NBA 及其他篮球赛事；免费额度有限</td></tr>
-<tr><td>Cricket API</td><td><a href="https://cricapi.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>板球比赛数据；免费额度低，需注册账户</td></tr>
-<tr><td>Rugby API</td><td><a href="https://www.rugbyapi.com/" target="_blank">访问</a></td><td>每天 500 请求</td><td>橄榄球比赛数据；免费额度适合测试</td></tr>
-<tr><td>OpenSports API</td><td><a href="https://opensports.io/" target="_blank">访问</a></td><td>每月 1,000 请求</td><td>足球、篮球、网球等体育数据；免费额度适合小型项目</td></tr>
-<tr><td>Sports Open Data</td><td><a href="https://sportsopendata.net/" target="_blank">访问</a></td><td>完全免费</td><td>足球和篮球数据；免费且开源</td></tr>
-<tr><td>BetFair API (测试)</td><td><a href="https://developer.betfair.com/" target="_blank">访问</a></td><td>试用免费额度</td><td>提供体育赛事及博彩数据；免费额度有限</td></tr>
-<tr><td>LiveScore API</td><td><a href="https://www.livescoreapi.com/" target="_blank">访问</a></td><td>每月 500 请求</td><td>足球、篮球等实时比分数据；免费额度适合开发测试</td></tr>
-<tr><td>Sportmonks Football API</td><td><a href="https://sportmonks.com/" target="_blank">访问</a></td><td>每月 500 请求</td><td>足球联赛、球队、球员信息；免费额度有限</td></tr>
-<tr><td>API Hockey</td><td><a href="https://www.api-hockey.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>冰球赛事数据；免费额度低</td></tr>
-<tr><td>Esports API</td><td><a href="https://developer.pandascore.io/" target="_blank">访问</a></td><td>每月 500 请求</td><td>电子竞技赛事数据；免费额度适合小项目</td></tr>
-<tr><td>OpenLigaDB</td><td><a href="https://www.openligadb.de/" target="_blank">访问</a></td><td>完全免费</td><td>足球数据；免费且稳定</td></tr>
-<tr><td>API Rugby Union</td><td><a href="https://www.rugbyapi.com/" target="_blank">访问</a></td><td>每天 500 请求</td><td>橄榄球赛事信息；免费额度适合开发</td></tr>
-<tr><td>Soccer API</td><td><a href="https://www.soccerapi.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>足球赛事数据；免费额度有限</td></tr>
-<tr><td>Basketball-Data API</td><td><a href="https://www.basketball-data.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>NBA 和其他篮球数据；免费额度低</td></tr>
-<tr><td>Odds API</td><td><a href="https://the-odds-api.com/" target="_blank">访问</a></td><td>每月 500 请求</td><td>体育比赛赔率数据；免费额度适合测试</td></tr>
-<tr><td>API-Football Free Plan</td><td><a href="https://www.api-football.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>足球联赛数据；免费额度适合轻量应用</td></tr>
-<tr><td>Football-Data Free Plan</td><td><a href="https://www.football-data.org/" target="_blank">访问</a></td><td>每分钟 10 请求</td><td>足球赛事数据；免费额度适合小型项目</td></tr>
-<tr><td>SportsDataIO Free Plan</td><td><a href="https://sportsdata.io/" target="_blank">访问</a></td><td>每月 50 请求</td><td>多体育数据接口；免费额度低</td></tr>
-<tr><td>Cricket API Free Plan</td><td><a href="https://cricapi.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>板球数据；免费额度低</td></tr>
-<tr><td>OpenSports Free Plan</td><td><a href="https://opensports.io/" target="_blank">访问</a></td><td>每月 1,000 请求</td><td>综合体育数据；免费额度适合开发测试</td></tr>
-<tr><td>LiveScore Free Plan</td><td><a href="https://www.livescoreapi.com/" target="_blank">访问</a></td><td>每月 500 请求</td><td>实时比分；免费额度适合轻量使用</td></tr>
-<tr><td>Esports Free Plan</td><td><a href="https://developer.pandascore.io/" target="_blank">访问</a></td><td>每月 500 请求</td><td>电子竞技数据；免费额度适合开发者</td></tr>
-<tr><td>Sportmonks Free Plan</td><td><a href="https://sportmonks.com/" target="_blank">访问</a></td><td>每月 500 请求</td><td>足球赛事数据；免费额度有限</td></tr>
-<tr><td>TheSportsDB Free Plan</td><td><a href="https://www.thesportsdb.com/" target="_blank">访问</a></td><td>每天 1,000 请求</td><td>多体育项目数据；免费额度适合轻量应用</td></tr>
-<tr><td>API-Basketball Free Plan</td><td><a href="https://www.api-basketball.com/" target="_blank">访问</a></td><td>每月 100 请求</td><td>篮球数据；免费额度低</td></tr>
-<tr><td>Odds Free Plan</td><td><a href="https://the-odds-api.com/" target="_blank">访问</a></td><td>每月 500 请求</td><td>赔率数据；免费额度适合测试</td></tr>
-<tr><td>OpenLigaDB Free Plan</td><td><a href="https://www.openligadb.de/" target="_blank">访问</a></td><td>完全免费</td><td>足球赛事数据；免费且稳定</td></tr>
-</tbody>
-</table>
-</div>
+  <!-- 核心内容区 -->
+  <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex-grow">
+    <!-- 筛选工具栏 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-card overflow-x-auto scrollbar-hide">
+      <h3 class="text-lg font-medium mb-4">服务类型筛选</h3>
+      <div class="flex flex-wrap gap-2 pb-2">
+        <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center shadow-sm" data-filter="all">
+          <i class="fa fa-th-large mr-1.5"></i> 全部服务
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center" data-filter="fully-free">
+          <i class="fa fa-gift mr-1.5"></i> 完全免费
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center" data-filter="limited-free">
+          <i class="fa fa-clock-o mr-1.5"></i> 有限免费
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center" data-filter="football">
+          <i class="fa fa-futbol-o mr-1.5"></i> 足球相关
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center" data-filter="basketball">
+          <i class="fa fa-basketball-ball mr-1.5"></i> 篮球相关
+        </button>
+        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-all duration-300 flex items-center" data-filter="other-sports">
+          <i class="fa fa-table-tennis mr-1.5"></i> 其他运动
+        </button>
+      </div>
+    </div>
 
-<footer>
-页面最后更新：2025-08-29 | Free Sports APIs / 免费体育接口
-</footer>
+    <!-- 工具搜索框 -->
+    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-card">
+      <div class="relative">
+        <input type="text" id="resourceSearch" placeholder="搜索体育API、运动类型或数据类型..." class="w-full px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-300 pl-10">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <span class="text-sm text-muted">热门搜索:</span>
+        <a href="#" class="text-sm text-primary hover:underline transition-colors">足球API</a>
+        <a href="#" class="text-sm text-primary hover:underline transition-colors">NBA数据</a>
+        <a href="#" class="text-sm text-primary hover:underline transition-colors">实时比分</a>
+        <a href="#" class="text-sm text-primary hover:underline transition-colors">免费体育数据</a>
+        <a href="#" class="text-sm text-primary hover:underline transition-colors">电子竞技API</a>
+      </div>
+    </div>
 
+    <!-- 资源统计卡片 -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-card flex items-center transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+        <div class="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-futbol-o text-primary text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">足球相关API</p>
+          <p class="text-2xl font-bold mt-1">11 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-card flex items-center transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+        <div class="w-14 h-14 rounded-full bg-secondary/10 flex items-center justify-center mr-4">
+          <i class="fa fa-basketball-ball text-secondary text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">篮球相关API</p>
+          <p class="text-2xl font-bold mt-1">5 个</p>
+        </div>
+      </div>
+      
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-card flex items-center transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+        <div class="w-14 h-14 rounded-full bg-success/10 flex items-center justify-center mr-4">
+          <i class="fa fa-table-tennis text-success text-2xl"></i>
+        </div>
+        <div>
+          <p class="text-muted text-sm">其他运动API</p>
+          <p class="text-2xl font-bold mt-1">12 个</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 资源列表 -->
+    <div id="sports" class="bg-white rounded-xl border border-gray-100 shadow-card overflow-hidden">
+      <div class="p-6 border-b border-gray-100">
+        <h2 class="text-xl font-bold flex items-center">
+          <i class="fa fa-futbol-o text-primary mr-2"></i> Sports APIs / 体育接口列表
+        </h2>
+        <p class="text-muted text-sm mt-1">按服务质量和受欢迎程度排序 · 最后更新于 2025-08-29</p>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="px-6 py-4 text-left text-sm font-semibold text-dark">API 名称 / 服务名称</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-dark">官网 / Website</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-dark">免费额度 / Free Quota</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold text-dark">特点 / 限制 / Notes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">TheSportsDB</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.thesportsdb.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每天 1,000 请求</td>
+              <td class="px-6 py-4 text-muted">足球、篮球、棒球等多种体育数据；免费额度适合轻量项目</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">API-Football</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-primary/10 text-primary">足球</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.api-football.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 100 请求</td>
+              <td class="px-6 py-4 text-muted">足球赛事数据；免费额度低，适合测试与小项目</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">SportdataAPI</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://sportdataapi.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 50 请求</td>
+              <td class="px-6 py-4 text-muted">足球、篮球、网球、冰球等；免费额度适合开发测试</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football basketball other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">ESPN API (非官方)</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.espn.com/apis/devcenter/docs" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">非官方，限量访问</td>
+              <td class="px-6 py-4 text-muted">综合体育赛事和新闻；免费使用需遵守限制</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Football-Data.org</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-primary/10 text-primary">足球</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.football-data.org/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每分钟 10 请求</td>
+              <td class="px-6 py-4 text-muted">足球联赛、球队、比赛数据；免费额度适合小型应用</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free basketball">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">API-Basketball</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-secondary/10 text-secondary">篮球</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.api-basketball.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 100 请求</td>
+              <td class="px-6 py-4 text-muted">NBA 及其他篮球赛事；免费额度有限</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Cricket API</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-success/10 text-success">其他</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://cricapi.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 100 请求</td>
+              <td class="px-6 py-4 text-muted">板球比赛数据；免费额度低，需注册账户</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Rugby API</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-success/10 text-success">其他</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.rugbyapi.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每天 500 请求</td>
+              <td class="px-6 py-4 text-muted">橄榄球比赛数据；免费额度适合测试</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football basketball other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">OpenSports API</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://opensports.io/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 1,000 请求</td>
+              <td class="px-6 py-4 text-muted">足球、篮球、网球等体育数据；免费额度适合小型项目</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="fully-free football basketball">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Sports Open Data</span>
+                  <span class="badge bg-success/10 text-success">完全免费</span>
+                  <span class="badge bg-open/10 text-open">开源</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://sportsopendata.net/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">完全免费</td>
+              <td class="px-6 py-4 text-muted">足球和篮球数据；免费且开源</td>
+            </tr>
+            
+            <!-- 更多体育API... -->
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football basketball other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">LiveScore API</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.livescoreapi.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 500 请求</td>
+              <td class="px-6 py-4 text-muted">足球、篮球等实时比分数据；免费额度适合开发测试</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free football">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Sportmonks Football API</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-primary/10 text-primary">足球</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://sportmonks.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 500 请求</td>
+              <td class="px-6 py-4 text-muted">足球联赛、球队、球员信息；免费额度有限</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">API Hockey</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-success/10 text-success">其他</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.api-hockey.com/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 100 请求</td>
+              <td class="px-6 py-4 text-muted">冰球赛事数据；免费额度低</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="limited-free other-sports">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">Esports API</span>
+                  <span class="badge bg-warning/10 text-warning">有限免费</span>
+                  <span class="badge bg-success/10 text-success">其他</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://developer.pandascore.io/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">每月 500 请求</td>
+              <td class="px-6 py-4 text-muted">电子竞技赛事数据；免费额度适合小项目</td>
+            </tr>
+            
+            <tr class="hover:bg-gray-50 transition-colors resource-item" data-categories="fully-free football">
+              <td class="px-6 py-4">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium">OpenLigaDB</span>
+                  <span class="badge bg-success/10 text-success">完全免费</span>
+                  <span class="badge bg-primary/10 text-primary">足球</span>
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <a href="https://www.openligadb.de/" target="_blank" class="text-primary hover:underline inline-flex items-center group">
+                  访问 <i class="fa fa-external-link ml-1 text-xs text-muted group-hover:text-primary transition-colors"></i>
+                </a>
+              </td>
+              <td class="px-6 py-4 text-muted">完全免费</td>
+              <td class="px-6 py-4 text-muted">足球数据；免费且稳定</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- 分页导航 -->
+      <div class="p-6 border-t border-gray-100 flex justify-between items-center">
+        <div class="text-sm text-muted">
+          显示 1-15 项，共 28 项
+        </div>
+        <div class="flex space-x-1">
+          <button class="w-9 h-9 flex items-center justify-center rounded border border-gray-200 text-muted hover:border-primary hover:text-primary transition-colors" disabled>
+            <i class="fa fa-chevron-left text-xs"></i>
+          </button>
+          <button class="w-9 h-9 flex items-center justify-center rounded bg-primary text-white">1</button>
+          <button class="w-9 h-9 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-colors">2</button>
+          <button class="w-9 h-9 flex items-center justify-center rounded border border-gray-200 hover:border-primary hover:text-primary transition-colors">
+            <i class="fa fa-chevron-right text-xs"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 使用建议 -->
+      <div class="p-6 border-t border-gray-100 bg-gray-50">
+        <h3 class="text-xl font-bold mb-6 flex items-center">
+          <i class="fa fa-lightbulb-o text-warning mr-2"></i> 服务选择建议
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-lg border border-gray-100 shadow-sm">
+            <h4 class="text-base font-medium flex items-center">
+              <i class="fa fa-check-circle text-success mr-2"></i> 足球数据需求
+            </h4>
+            <p class="text-muted mt-2">推荐使用 <strong>TheSportsDB</strong> 或 <strong>OpenLigaDB</strong>，前者覆盖范围广，后者完全免费且稳定，适合长期使用。</p>
+          </div>
+          
+          <div class="bg-white p-5 rounded-lg border border-gray-100 shadow-sm">
+            <h4 class="text-base font-medium flex items-center">
+              <i class="fa fa-check-circle text-success mr-2"></i> 篮球数据需求
+            </h4>
+            <p class="text-muted mt-2">建议选择 <strong>API-Basketball</strong> 或 <strong>Sports Open Data</strong>，前者提供详细的NBA数据，后者完全免费适合预算有限的项目。</p>
+          </div>
+          
+          <div class="bg-white p-5 rounded-lg border border-gray-100 shadow-sm">
+            <h4 class="text-base font-medium flex items-center">
+              <i class="fa fa-check-circle text-success mr-2"></i> 实时比分数据
+            </h4>
+            <p class="text-muted mt-2">考虑 <strong>LiveScore API</strong> 或 <strong>TheSportsDB</strong>，两者都提供实时比分数据，免费额度适合轻量级应用。</p>
+          </div>
+          
+          <div class="bg-white p-5 rounded-lg border border-gray-100 shadow-sm">
+            <h4 class="text-base font-medium flex items-center">
+              <i class="fa fa-check-circle text-success mr-2"></i> 小众体育项目
+            </h4>
+            <p class="text-muted mt-2">优先考虑 <strong>SportdataAPI</strong> 或 <strong>OpenSports API</strong>，覆盖网球、冰球等多种小众体育项目，适合多样化需求。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-12 mt-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-gradient-blue flex items-center justify-center">
+              <i class="fa fa-trophy text-white text-xl"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white">API服务导航</h2>
+          </div>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            精选全球优质免费API服务与开发资源，帮助开发者快速找到适合的工具和服务，加速项目开发。
+          </p>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">服务分类</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">OCR识别</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">AI接口</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">体育数据</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">开发工具</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">开源项目</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">相关链接</h3>
+          <ul class="space-y-2 text-gray-400">
+            <li><a href="index.html" class="hover:text-primary transition-colors duration-200">首页</a></li>
+            <li><a href="ai.html" class="hover:text-primary transition-colors duration-200">AI接口</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">使用教程</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">常见问题</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors duration-200">关于我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">订阅更新</h3>
+          <p class="text-gray-400 text-sm mb-4">
+            获取最新API服务和技术资讯
+          </p>
+          <div class="flex">
+            <input type="email" placeholder="您的邮箱地址" class="px-4 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none">
+            <button class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+              订阅
+            </button>
+          </div>
+          <div class="flex space-x-4 mt-6">
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+              <i class="fa fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-10 pt-6 text-center text-gray-500 text-sm">
+        <p>© 2025 API服务导航. 保留所有权利.</p>
+        <p class="mt-2">免责声明：本网站提供的服务信息仅供参考，使用前请遵守各服务提供商的条款和相关法律法规。</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 回到顶部按钮 -->
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible z-50">
+    <i class="fa fa-chevron-up"></i>
+  </button>
+
+  <!-- 通知提示组件 -->
+  <div id="notification" class="fixed top-6 right-6 bg-dark text-white px-4 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 flex items-center z-50 max-w-xs">
+    <i class="fa fa-check-circle text-success mr-2"></i>
+    <span id="notificationText">操作成功</span>
+  </div>
+
+  <!-- JavaScript 交互逻辑 -->
+  <script>
+    // DOM元素引用
+    const menuBtn = document.getElementById('menuBtn');
+    const menuIcon = document.getElementById('menuIcon');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const backToTopBtn = document.getElementById('backToTop');
+    const searchInput = document.getElementById('resourceSearch');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const resourceItems = document.querySelectorAll('.resource-item');
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notificationText');
+
+    // 移动端菜单切换
+    menuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      // 切换图标
+      if (mobileMenu.classList.contains('hidden')) {
+        menuIcon.classList.remove('fa-times', 'rotate-90');
+        menuIcon.classList.add('fa-bars');
+      } else {
+        menuIcon.classList.remove('fa-bars');
+        menuIcon.classList.add('fa-times', 'rotate-90');
+      }
+    });
+
+    // 回到顶部按钮逻辑
+    window.addEventListener('scroll', () => {
+      // 显示/隐藏回到顶部按钮
+      if (window.scrollY > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'invisible');
+        backToTopBtn.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopBtn.classList.add('opacity-0', 'invisible');
+        backToTopBtn.classList.remove('opacity-100', 'visible');
+      }
+
+      // 导航栏滚动效果
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('py-2', 'shadow');
+        header.classList.remove('py-4', 'shadow-sm');
+      } else {
+        header.classList.add('py-4', 'shadow-sm');
+        header.classList.remove('py-2', 'shadow');
+      }
+    });
+
+    // 回到顶部功能
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+
+    // 平滑滚动到锚点
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 100,
+            behavior: 'smooth'
+          });
+          
+          // 如果是移动端且菜单打开，则关闭菜单
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+            menuIcon.classList.remove('fa-times', 'rotate-90');
+            menuIcon.classList.add('fa-bars');
+          }
+        }
+      });
+    });
+
+    // 服务筛选功能
+    filterButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 更新按钮状态
+        filterButtons.forEach(btn => {
+          btn.classList.remove('bg-primary', 'text-white', 'shadow-sm');
+          btn.classList.add('bg-light', 'hover:bg-gray-200');
+        });
+        button.classList.add('bg-primary', 'text-white', 'shadow-sm');
+        button.classList.remove('bg-light', 'hover:bg-gray-200');
+        
+        const filter = button.getAttribute('data-filter');
+        
+        // 筛选服务并添加过渡动画
+        resourceItems.forEach(item => {
+          item.style.transition = 'all 0.3s ease';
+          
+          if (filter === 'all' || item.getAttribute('data-categories').includes(filter)) {
+            item.style.display = '';
+            // 触发重排后添加淡入效果
+            setTimeout(() => {
+              item.style.opacity = '1';
+              item.style.transform = 'translateX(0)';
+            }, 50);
+          } else {
+            item.style.opacity = '0';
+            item.style.transform = 'translateX(10px)';
+            // 延迟隐藏以显示动画
+            setTimeout(() => {
+              item.style.display = 'none';
+            }, 300);
+          }
+        });
+      });
+    });
+
+    // 服务搜索功能
+    searchInput.addEventListener('input', () => {
+      const searchTerm = searchInput.value.toLowerCase().trim();
+      
+      if (searchTerm.length === 0) {
+        // 如果搜索为空，显示所有服务
+        resourceItems.forEach(item => {
+          item.style.display = '';
+          item.style.opacity = '1';
+        });
+        return;
+      }
+      
+      // 搜索筛选
+      resourceItems.forEach(item => {
+        const name = item.querySelector('td:first-child').textContent.toLowerCase();
+        const description = item.querySelector('td:last-child').textContent.toLowerCase();
+        
+        item.style.transition = 'all 0.3s ease';
+        
+        if (name.includes(searchTerm) || description.includes(searchTerm)) {
+          item.style.display = '';
+          setTimeout(() => {
+            item.style.opacity = '1';
+          }, 50);
+        } else {
+          item.style.opacity = '0';
+          setTimeout(() => {
+            item.style.display = 'none';
+          }, 300);
+        }
+      });
+    });
+
+    // 外部链接确认提示
+    const externalLinks = document.querySelectorAll('a[target="_blank"]');
+    externalLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        // 显示自定义通知而非默认confirm，提升体验
+        e.preventDefault();
+        const href = link.getAttribute('href');
+        
+        notificationText.textContent = `即将跳转到: ${new URL(href).hostname}`;
+        notification.querySelector('i').className = 'fa fa-external-link text-accent mr-2';
+        notification.classList.remove('translate-x-full');
+        
+        // 添加确认和取消按钮
+        const actionButtons = document.createElement('div');
+        actionButtons.className = 'ml-4 flex gap-2';
+        actionButtons.innerHTML = `
+          <button class="text-xs bg-white/20 hover:bg-white/30 px-2 py-1 rounded" id="confirmLink">确认</button>
+          <button class="text-xs bg-white/10 hover:bg-white/20 px-2 py-1 rounded" id="cancelLink">取消</button>
+        `;
+        
+        notification.appendChild(actionButtons);
+        
+        // 确认跳转
+        document.getElementById('confirmLink').addEventListener('click', () => {
+          window.open(href, '_blank');
+          notification.classList.add('translate-x-full');
+          notification.removeChild(actionButtons);
+        });
+        
+        // 取消跳转
+        document.getElementById('cancelLink').addEventListener('click', () => {
+          notification.classList.add('translate-x-full');
+          notification.removeChild(actionButtons);
+        });
+        
+        // 5秒后自动关闭
+        setTimeout(() => {
+          if (!notification.classList.contains('translate-x-full')) {
+            notification.classList.add('translate-x-full');
+            if (notification.contains(actionButtons)) {
+              notification.removeChild(actionButtons);
+            }
+          }
+        }, 5000);
+      });
+    });
+
+    // 显示通知函数
+    function showNotification(text, isSuccess = true) {
+      notificationText.textContent = text;
+      
+      // 移除之前的图标类
+      notification.querySelector('i').className = '';
+      
+      // 添加新图标
+      if (isSuccess) {
+        notification.querySelector('i').className = 'fa fa-check-circle text-success mr-2';
+      } else {
+        notification.querySelector('i').className = 'fa fa-exclamation-circle text-warning mr-2';
+      }
+      
+      // 显示通知
+      notification.classList.remove('translate-x-full');
+      
+      // 3秒后隐藏
+      setTimeout(() => {
+        notification.classList.add('translate-x-full');
+      }, 3000);
+    }
+  </script>
 </body>
 </html>
+    
