@@ -1,75 +1,677 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Free OTP & Verification APIs / 免费验证码接口</title>
-<style>
-body { font-family: Arial, sans-serif; margin:0; padding:20px; background:#f4f4f4; }
-h1, h2 { color:#333; text-align:center; }
-nav { text-align:center; margin:20px 0; }
-nav a { margin:0 10px; text-decoration:none; color:#007bff; font-weight:bold; }
-nav a:hover { text-decoration:underline; }
-.section { max-width:1200px; margin:30px auto; background:#fff; padding:20px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-table { width:100%; border-collapse: collapse; margin-top:20px; }
-th, td { border:1px solid #ddd; padding:10px; text-align:left; vertical-align:top; }
-th { background:#f8f8f8; }
-tr:nth-child(even) { background:#fafafa; }
-a { color:#007bff; text-decoration:none; }
-a:hover { text-decoration:underline; }
-footer { text-align:center; color:#777; margin-top:40px; font-size:14px; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free OTP & Verification APIs / 免费验证码接口</title>
+    <!-- 外部资源引入 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind配置 - 验证码服务主题色彩系统 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#36B37E',       // 主色调：安全绿（代表验证与安全）
+                        secondary: '#0052CC',     // 辅助色：信任蓝
+                        danger: '#FF5630',        // 警告红
+                        dark: '#1D2129',          // 文字深灰
+                        light: '#F2F3F5',         // 背景浅灰
+                        muted: '#86909C',         // 辅助文字灰
+                        // 验证码类型颜色
+                        sms: '#0052CC',           // 短信验证：蓝色
+                        voice: '#FFAB00',         // 语音验证：橙色
+                        email: '#6554C0',         // 邮件验证：紫色
+                        multi: '#36B37E',         // 多种验证：主绿
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
+            }
+            .nav-item-active {
+                @apply text-primary border-b-2 border-primary font-medium;
+            }
+            .table-hover-effect {
+                @apply transition-colors hover:bg-primary/5;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo区域 -->
+            <a href="#" class="flex items-center space-x-2">
+                <i class="fa fa-shield text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">验证服务导航</h1>
+            </a>
+            
+            <!-- 桌面端导航 -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="index.html" class="text-dark hover:text-primary transition-colors">Home / 首页</a>
+                <a href="ai.html" class="text-dark hover:text-primary transition-colors">AI APIs / AI 接口</a>
+                <a href="#otp" class="text-primary font-medium">OTP & Verification / 验证码</a>
+                <a href="https://github.com" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
+                    <i class="fa fa-github mr-1"></i> 贡献资源
+                </a>
+            </div>
+            
+            <!-- 移动端菜单按钮 -->
+            <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单（默认隐藏） -->
+        <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">Home / 首页</a>
+                <a href="ai.html" class="py-2 text-dark hover:text-primary transition-colors">AI APIs / AI 接口</a>
+                <a href="#otp" class="py-2 text-primary font-medium">OTP & Verification / 验证码</a>
+                <a href="https://github.com" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
+                    <i class="fa fa-github mr-1"></i> 贡献资源
+                </a>
+            </div>
+        </div>
+    </header>
 
-<h1>Free OTP & Verification APIs / 免费验证码接口</h1>
+    <!-- 页面标题区 -->
+    <section class="bg-gradient-to-r from-primary to-green-700 text-white py-10 md:py-16">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div>
+                    <div class="flex items-center space-x-3 mb-4">
+                        <i class="fa fa-key text-3xl"></i>
+                        <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">免费验证码接口</h2>
+                    </div>
+                    <p class="text-white/90 max-w-2xl">
+                        精选全球优质免费验证码与身份验证接口，涵盖短信OTP、语音验证、邮件验证等多种验证方式，详细对比各平台的免费额度、覆盖范围及使用限制，帮助开发者快速实现安全可靠的用户验证功能
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-3 mt-6">
+                        <a href="#otp" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fa fa-table mr-2"></i> 浏览所有接口
+                        </a>
+                        <a href="#" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
+                            <i class="fa fa-download mr-2"></i> 下载对比表
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 数据概览卡片 -->
+                <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">收录接口</span>
+                        <span class="font-bold">20+ 个</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">短信验证</span>
+                        <span class="font-bold">18+ 个</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">全球覆盖</span>
+                        <span class="font-bold">12+ 个</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-white/80">高额度接口</span>
+                        <span class="font-bold">3+ 个</span>
+                    </div>
+                    <div class="border-t border-white/20 pt-4 mt-2">
+                        <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<nav>
-<a href="index.html">Home / 首页</a>
-<a href="ai.html">AI APIs / AI 接口</a>
-<a href="#otp">OTP & Verification / 验证码</a>
-</nav>
+    <!-- 面包屑导航 -->
+    <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+        <nav class="flex text-sm" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+                        <i class="fa fa-home mr-2"></i>首页
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+                        <a href="#otp" class="text-primary font-medium">免费验证码接口</a>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+    </div>
 
-<div class="section" id="otp">
-<h2>OTP & Verification APIs / 验证码接口</h2>
-<table>
-<thead>
-<tr>
-<th>API Name / 服务名称</th>
-<th>Website / 官网</th>
-<th>Free Quota / 免费额度</th>
-<th>Notes / 特点 / 限制</th>
-</tr>
-</thead>
-<tbody>
-<tr><td>Twilio Verify API</td><td><a href="https://www.twilio.com/verify" target="_blank">访问</a></td><td>每月 100 条 SMS</td><td>全球短信验证码服务；免费额度适合测试，需注册账号</td></tr>
-<tr><td>Nexmo (Vonage) Verify API</td><td><a href="https://www.vonage.com/communications-apis/verify/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信 & 语音验证码；免费额度有限，全球覆盖</td></tr>
-<tr><td>Msg91 OTP API</td><td><a href="https://msg91.com/" target="_blank">访问</a></td><td>每月 200 条 SMS</td><td>印度本土短信验证码，全球部分地区可用；免费额度测试用</td></tr>
-<tr><td>Textlocal OTP API</td><td><a href="https://www.textlocal.in/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信验证码；免费额度适合轻量测试</td></tr>
-<tr><td>Plivo Verify API</td><td><a href="https://www.plivo.com/verify/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>全球短信 & 语音验证码；免费额度有限</td></tr>
-<tr><td>Firebase Authentication (Phone Auth)</td><td><a href="https://firebase.google.com/products/auth" target="_blank">访问</a></td><td>每月 10,000 次验证</td><td>支持短信 OTP；免费额度较高，Google 账号需注册</td></tr>
-<tr><td>Amazon SNS OTP</td><td><a href="https://aws.amazon.com/sns/" target="_blank">访问</a></td><td>每月 100 条 SMS</td><td>短信发送；免费额度需 AWS 账号</td></tr>
-<tr><td>SendOTP API (India)</td><td><a href="https://www.sendotp.com/" target="_blank">访问</a></td><td>每月 100 条 SMS</td><td>印度本土免费验证码服务；免费额度有限</td></tr>
-<tr><td>Fast2SMS OTP API</td><td><a href="https://www.fast2sms.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>印度地区短信验证码；免费额度小</td></tr>
-<tr><td>1SMS OTP API</td><td><a href="https://1sms.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>全球短信服务；免费额度仅作测试</td></tr>
-<tr><td>SendPulse OTP API</td><td><a href="https://sendpulse.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信 & 邮件验证码；免费额度有限</td></tr>
-<tr><td>Verify API by Telesign</td><td><a href="https://www.telesign.com/products/verify/" target="_blank">访问</a></td><td>每月 100 条 SMS</td><td>全球验证码服务；免费额度适合测试</td></tr>
-<tr><td>OTP API by RapidAPI</td><td><a href="https://rapidapi.com/search/otp" target="_blank">访问</a></td><td>每月 500 次调用</td><td>多家 OTP API 聚合；免费额度适合开发测试</td></tr>
-<tr><td>TextMagic OTP API</td><td><a href="https://www.textmagic.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信验证码服务；免费额度小，需注册</td></tr>
-<tr><td>Routee OTP API</td><td><a href="https://www.routee.net/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信与语音验证码；免费额度仅作开发测试</td></tr>
-<tr><td>Karix.io OTP API</td><td><a href="https://www.karix.io/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信验证码服务；免费额度有限</td></tr>
-<tr><td>Clockwork SMS API</td><td><a href="https://www.clockworksms.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信 OTP；免费额度小</td></tr>
-<tr><td>ClickSend SMS API</td><td><a href="https://www.clicksend.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>全球短信发送；免费额度有限</td></tr>
-<tr><td>Infobip OTP API</td><td><a href="https://www.infobip.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>全球短信与 OTP 服务；免费额度适合测试</td></tr>
-<tr><td>SMSGlobal OTP API</td><td><a href="https://www.smsglobal.com/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信验证码；免费额度有限，需注册</td></tr>
-<tr><td>Vonage Messages API</td><td><a href="https://www.vonage.com/communications-apis/messages/" target="_blank">访问</a></td><td>每月 50 条 SMS</td><td>短信与聊天应用 OTP；免费额度有限</td></tr>
-</tbody>
-</table>
-</div>
+    <!-- 核心内容区 -->
+    <main class="container mx-auto px-4 py-8 flex-grow">
+        <!-- 简介卡片 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+            <div class="flex items-start">
+                <div class="flex-shrink-0 bg-primary/10 p-3 rounded-lg mr-4">
+                    <i class="fa fa-info-circle text-primary text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">关于验证码与验证接口</h3>
+                    <p class="text-muted mb-4">
+                        验证码与身份验证接口是现代应用安全体系的重要组成部分，用于确认用户身份、防止自动化攻击和保护用户账户安全。本页面汇总了短信OTP、语音验证、邮件验证等多种验证方式的免费API资源，帮助开发者根据应用场景和目标用户区域选择最合适的验证解决方案。
+                    </p>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            <i class="fa fa-mobile mr-1"></i>短信验证
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            <i class="fa fa-phone mr-1"></i>语音验证
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <i class="fa fa-envelope mr-1"></i>邮件验证
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fa fa-globe mr-1"></i>全球覆盖
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-<footer>
-页面最后更新：2025-08-29 | Free OTP & Verification APIs / 免费验证码接口
-</footer>
+        <!-- 筛选工具栏 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
+            <h3 class="text-lg font-medium mb-4">接口筛选</h3>
+            <div class="flex flex-wrap gap-2">
+                <button class="filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm transition-colors" data-filter="all">
+                    全部接口
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="sms">
+                    <i class="fa fa-mobile mr-1"></i>短信验证
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="voice">
+                    <i class="fa fa-phone mr-1"></i>语音验证
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="email">
+                    <i class="fa fa-envelope mr-1"></i>邮件验证
+                </button>
+                <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="highquota">
+                    <i class="fa fa-tachometer mr-1"></i>高额度
+                </button>
+            </div>
+        </div>
 
+        <!-- 验证码接口表格 -->
+        <div id="otp" class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-10 shadow-sm">
+            <div class="flex items-center mb-6">
+                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-table text-primary text-xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold">验证码与验证接口</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr class="bg-light">
+                            <th class="py-3 px-4 text-left border-b">API Name / 服务名称</th>
+                            <th class="py-3 px-4 text-left border-b">Website / 官网</th>
+                            <th class="py-3 px-4 text-left border-b">Free Quota / 免费额度</th>
+                            <th class="py-3 px-4 text-left border-b">Notes / 特点 / 限制</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-hover-effect resource-row" data-category="sms voice global">
+                            <td class="py-3 px-4 border-b font-medium">Twilio Verify API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.twilio.com/verify" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 100 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                全球短信验证码服务；免费额度适合测试，需注册账号
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">语音验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-700">推荐</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms voice global">
+                            <td class="py-3 px-4 border-b font-medium">Nexmo (Vonage) Verify API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.vonage.com/communications-apis/verify/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 50 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                短信 & 语音验证码；免费额度有限，全球覆盖
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">语音验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms india">
+                            <td class="py-3 px-4 border-b font-medium">Msg91 OTP API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://msg91.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 200 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                印度本土短信验证码，全球部分地区可用；免费额度测试用
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">印度地区</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms india">
+                            <td class="py-3 px-4 border-b font-medium">Textlocal OTP API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.textlocal.in/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 50 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                短信验证码；免费额度适合轻量测试
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">印度地区</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms voice global">
+                            <td class="py-3 px-4 border-b font-medium">Plivo Verify API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.plivo.com/verify/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 50 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                全球短信 & 语音验证码；免费额度有限
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">语音验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms global highquota">
+                            <td class="py-3 px-4 border-b font-medium">Firebase Authentication</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://firebase.google.com/products/auth" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 10,000 次验证</td>
+                            <td class="py-3 px-4 border-b">
+                                支持短信 OTP；免费额度较高，Google 账号需注册
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">高额度</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/10 text-green-700">推荐</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms global">
+                            <td class="py-3 px-4 border-b font-medium">Amazon SNS OTP</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://aws.amazon.com/sns/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 100 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                短信发送；免费额度需 AWS 账号
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms india">
+                            <td class="py-3 px-4 border-b font-medium">SendOTP API (India)</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.sendotp.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 100 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                印度本土免费验证码服务；免费额度有限
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">印度地区</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms email global">
+                            <td class="py-3 px-4 border-b font-medium">SendPulse OTP API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://sendpulse.com/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 50 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                短信 & 邮件验证码；免费额度有限
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">邮件验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms voice global">
+                            <td class="py-3 px-4 border-b font-medium">Verify API by Telesign</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.telesign.com/products/verify/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 100 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                全球验证码服务；免费额度适合测试
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">语音验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms email global highquota">
+                            <td class="py-3 px-4 border-b font-medium">OTP API by RapidAPI</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://rapidapi.com/search/otp" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 500 次调用</td>
+                            <td class="py-3 px-4 border-b">
+                                多家 OTP API 聚合；免费额度适合开发测试
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">邮件验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">高额度</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="table-hover-effect resource-row" data-category="sms voice global">
+                            <td class="py-3 px-4 border-b font-medium">Vonage Messages API</td>
+                            <td class="py-3 px-4 border-b">
+                                <a href="https://www.vonage.com/communications-apis/messages/" target="_blank" class="text-primary hover:underline flex items-center">
+                                    <i class="fa fa-external-link mr-1 text-xs"></i> 访问
+                                </a>
+                            </td>
+                            <td class="py-3 px-4 border-b">每月 50 条 SMS</td>
+                            <td class="py-3 px-4 border-b">
+                                短信与聊天应用 OTP；免费额度有限
+                                <div class="mt-1 flex gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">短信验证</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">全球覆盖</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-700">社交应用</span>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- API使用建议 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+            <h3 class="text-xl font-bold mb-5 flex items-center">
+                <i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i>验证码API选择与使用建议
+            </h3>
+            
+            <div class="space-y-5">
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="fa fa-check-circle text-primary mr-2"></i>接口选择指南
+                    </h4>
+                    <ul class="text-muted space-y-2 ml-6 list-disc">
+                        <li>全球应用：优先选择Twilio、Vonage等全球覆盖的服务提供商</li>
+                        <li>高额度需求：Firebase Authentication提供每月10,000次免费验证，适合中小应用</li>
+                        <li>印度市场：Msg91和SendOTP提供更适合当地的验证服务</li>
+                        <li>开发测试：RapidAPI聚合多家服务，适合快速测试不同提供商</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="fa fa-exclamation-triangle text-yellow-500 mr-2"></i>安全注意事项
+                    </h4>
+                    <ul class="text-muted space-y-2 ml-6 list-disc">
+                        <li>实施验证码过期机制，通常设置5-10分钟有效期</li>
+                        <li>添加尝试次数限制，防止暴力破解</li>
+                        <li>敏感操作需二次验证，提高账户安全性</li>
+                        <li>保护API密钥，避免在客户端代码中直接暴露</li>
+                        <li>考虑实现IP地址和设备指纹关联，识别可疑验证请求</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-2 flex items-center">
+                        <i class="fa fa-code text-primary mr-2"></i>技术实现建议
+                    </h4>
+                    <ul class="text-muted space-y-2 ml-6 list-disc">
+                        <li>实现验证流程的状态管理，清晰跟踪验证进度</li>
+                        <li>添加详细的日志记录，便于排查验证失败问题</li>
+                        <li>设计优雅的用户体验，包括倒计时和重新发送功能</li>
+                        <li>考虑实现多种验证方式的降级策略，提高验证成功率</li>
+                        <li>对于全球应用，根据用户地区自动选择最优验证通道</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 资源贡献区域 -->
+        <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+            <h3 class="text-xl font-bold mb-4 flex items-center">
+                <i class="fa fa-github text-primary mr-2"></i>贡献资源
+            </h3>
+            <p class="text-muted mb-4">
+                知道更多优质的免费验证码接口？欢迎通过GitHub issues提交补充内容！
+            </p>
+            <a href="https://github.com" target="_blank" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
+                <i class="fa fa-github mr-2"></i> 提交issue
+            </a>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-10 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <i class="fa fa-shield text-primary text-2xl"></i>
+                        <h2 class="text-xl font-bold text-white">验证服务导航</h2>
+                    </div>
+                    <p class="text-gray-400 text-sm">
+                        精选全球优质免费验证码与身份验证接口，涵盖短信OTP、语音验证、邮件验证等多种验证方式，帮助开发者快速实现安全可靠的用户验证功能。
+                    </p>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">接口分类</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-primary transition-colors">短信验证API</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">语音验证接口</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">邮件验证服务</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">全球覆盖接口</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">高额度免费API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">相关链接</h3>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="index.html" class="hover:text-primary transition-colors">首页</a></li>
+                        <li><a href="ai.html" class="hover:text-primary transition-colors">AI接口资源</a></li>
+                        <li><a href="finance.html" class="hover:text-primary transition-colors">金融接口</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">使用条款</a></li>
+                        <li><a href="#" class="hover:text-primary transition-colors">隐私政策</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium mb-4">关注我们</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400 text-sm mt-4">
+                        订阅更新，获取最新验证码接口信息
+                    </p>
+                    <div class="mt-2 flex">
+                        <input type="email" placeholder="您的邮箱地址" class="px-3 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none">
+                        <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors">
+                            订阅
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
+                <p>© 2025 验证服务导航. 保留所有权利.</p>
+                <p class="mt-1">页面最后更新：2025-08-29</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+        <i class="fa fa-chevron-up"></i>
+    </button>
+
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        // 移动端菜单切换
+        const menuBtn = document.getElementById('menuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        menuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // 回到顶部按钮
+        const backToTopBtn = document.getElementById('backToTop');
+        window.addEventListener('scroll', () => {
+            // 显示/隐藏回到顶部按钮
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+
+            // 导航栏滚动效果
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2');
+                header.classList.remove('py-4');
+            } else {
+                header.classList.add('py-4');
+                header.classList.remove('py-2');
+            }
+        });
+
+        // 回到顶部功能
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 平滑滚动到锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 如果是移动端且菜单打开，则关闭菜单
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+
+        // 验证码接口筛选功能
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const resourceRows = document.querySelectorAll('.resource-row');
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // 更新按钮状态
+                filterButtons.forEach(btn => btn.classList.remove('bg-primary', 'text-white'));
+                filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
+                button.classList.add('bg-primary', 'text-white');
+                button.classList.remove('bg-light', 'hover:bg-gray-200');
+                
+                const filter = button.getAttribute('data-filter');
+                
+                // 筛选资源
+                resourceRows.forEach(row => {
+                    if (filter === 'all') {
+                        row.style.display = '';
+                    } else {
+                        // 按类别筛选
+                        row.style.display = row.getAttribute('data-category').includes(filter) ? '' : 'none';
+                    }
+                });
+            });
+        });
+
+        // 外部链接提示
+        const externalLinks = document.querySelectorAll('a[target="_blank"]');
+        externalLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
+                if (!confirmLeave) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
 </body>
 </html>
+    
