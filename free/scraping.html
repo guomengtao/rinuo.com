@@ -9,8 +9,6 @@
     <!-- 外部资源引入 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <!-- 订阅功能模块 -->
-    <script src="/assets/js/js/subscription-service.js"></script>
     
     <!-- Tailwind配置 -->
     <script>
@@ -170,7 +168,21 @@
 
         <!-- 网页抓取工具列表 -->
         <section id="list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- 工具卡片将通过JavaScript动态生成 -->
+            <!-- 加载状态指示器 -->
+            <div id="loadingIndicator" class="col-span-full flex flex-col items-center justify-center py-16">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mb-4"></div>
+                <p class="text-muted">正在加载工具数据...</p>
+            </div>
+            
+            <!-- 错误状态指示器 -->
+            <div id="errorIndicator" class="col-span-full hidden flex-col items-center justify-center py-16">
+                <i class="fa fa-exclamation-triangle text-danger text-3xl mb-4"></i>
+                <p class="text-danger mb-2">加载数据时出错</p>
+                <p class="text-muted mb-4">无法加载工具列表，请尝试刷新页面</p>
+                <button id="retryBtn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
+                    重试加载
+                </button>
+            </div>
         </section>
 
         <!-- 工具选择建议卡片 -->
@@ -263,15 +275,6 @@
 
     <!-- 页面交互逻辑 -->
     <script>
-        // 初始化订阅服务
-        const subscriptionService = new SubscriptionService();
-        
-        // 订阅表单事件绑定
-        document.getElementById('footerSubscribeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await subscriptionService.handleFooterSubscription(e);
-        });
-
         // 工具数据 - 包含全部26款工具
         const SCRAPING_TOOLS = [
             {
@@ -675,6 +678,11 @@
         const menuBtn = document.getElementById('menuBtn');
         const mobileMenu = document.getElementById('mobileMenu');
         const backToTopBtn = document.getElementById('backToTop');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const errorIndicator = document.getElementById('errorIndicator');
+        const retryBtn = document.getElementById('retryBtn');
+
+        // 移除了订阅服务相关代码，因为可能是导致错误的原因
 
         // 获取语言对应的颜色类
         function getLanguageColor(language) {
@@ -688,6 +696,10 @@
         // 渲染网页抓取工具列表
         function render(items) {
             try {
+                // 隐藏加载和错误指示器
+                loadingIndicator.classList.add('hidden');
+                errorIndicator.classList.add('hidden');
+                
                 // 清空列表
                 listEl.innerHTML = '';
                 
@@ -762,14 +774,17 @@
                 statsEl.textContent = `共 ${items.length} 款网页抓取工具`;
             } catch (error) {
                 console.error('渲染工具列表时出错:', error);
-                statsEl.textContent = `加载失败，请刷新页面重试`;
-                statsEl.classList.add('text-danger');
+                showErrorState();
             }
         }
 
         // 应用筛选和排序
         function applyFilters() {
             try {
+                // 显示加载状态
+                loadingIndicator.classList.remove('hidden');
+                errorIndicator.classList.add('hidden');
+                
                 const query = qEl.value.trim().toLowerCase();
                 const language = languageEl.value;
                 
@@ -803,13 +818,23 @@
                     }
                 });
                 
-                // 渲染结果
-                render(filtered);
+                // 短暂延迟以展示加载状态
+                setTimeout(() => {
+                    render(filtered);
+                }, 300);
+                
             } catch (error) {
                 console.error('筛选工具时出错:', error);
-                statsEl.textContent = `筛选失败`;
-                statsEl.classList.add('text-danger');
+                showErrorState();
             }
+        }
+
+        // 显示错误状态
+        function showErrorState() {
+            loadingIndicator.classList.add('hidden');
+            errorIndicator.classList.remove('hidden');
+            statsEl.textContent = `加载失败`;
+            statsEl.classList.add('text-danger');
         }
 
         // 移动端菜单切换
@@ -860,6 +885,9 @@
         languageEl.addEventListener('change', applyFilters);
         sortEl.addEventListener('change', applyFilters);
 
+        // 重试按钮事件
+        retryBtn.addEventListener('click', applyFilters);
+
         // 外部链接提示
         document.addEventListener('click', (e) => {
             const link = e.target.closest('a[target="_blank"]');
@@ -871,7 +899,7 @@
             }
         });
 
-        // 修复初始化加载问题
+        // 初始化页面
         function initializePage() {
             try {
                 // 确保DOM完全加载
@@ -883,8 +911,7 @@
                 }
             } catch (error) {
                 console.error('页面初始化失败:', error);
-                statsEl.textContent = `初始化失败，请刷新页面`;
-                statsEl.classList.add('text-danger');
+                showErrorState();
             }
         }
 
