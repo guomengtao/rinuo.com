@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="精选20款Hugging Face免费预训练模型，涵盖NLP、CV、语音、多模态等方向，助力开发者和研究人员快速应用AI模型。">
+    <title>Hugging Face免费预训练模型大全 | AI开发者资源</title>
+    
+    <!-- 外部资源引入 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#722ED1',
+                        dark: '#1D2129',
+                        light: '#F7F8FA',
+                        muted: '#86909C',
+                        success: '#00B42A',
+                        warning: '#FF7D00',
+                        danger: '#F53F3F',
+                        // 模型类别颜色
+                        nlp: '#165DFF',        // NLP模型：蓝色
+                        cv: '#7BC616',         // 计算机视觉：绿色
+                        speech: '#FF7D00',     // 语音模型：橙色
+                        multimodal: '#722ED1', // 多模态模型：紫色
+                        llm: '#F53F3F'         // 大语言模型：红色
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'card': '0 4px 20px rgba(0, 0, 0, 0.05)',
+                        'card-hover': '0 10px 30px rgba(22, 93, 255, 0.1)',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .animate-fade-in {
+                animation: fadeIn 0.4s ease-out forwards;
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(6px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .category-badge {
+                @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo区域 -->
+                <a href="#" class="flex items-center space-x-2 group">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <i class="fa fa-brain text-primary text-xl group-hover:rotate-12 transition-transform duration-300"></i>
+                    </div>
+                    <h1 class="text-xl md:text-2xl font-bold text-primary">AI模型指南</h1>
+                </a>
+                
+                <!-- 桌面端导航 -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">首页</a>
+                    <a href="#" class="text-primary font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary after:rounded-full">预训练模型</a>
+                    <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">模型教程</a>
+                    <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">API接口</a>
+                    <a href="#" class="text-muted hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:rounded-full after:transition-all hover:after:w-full">关于我们</a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button class="md:hidden text-dark focus:outline-none" id="mobileMenuBtn">
+                    <i class="fa fa-bars text-xl transition-transform duration-300 hover:rotate-90"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div class="md:hidden hidden bg-white border-t border-gray-100 animate-fade-in" id="mobileMenu">
+            <div class="container mx-auto px-4 py-3">
+                <nav class="flex flex-col space-y-3 pb-2">
+                    <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">首页</a>
+                    <a href="#" class="py-2 px-3 text-primary font-medium bg-primary/5 rounded-lg">预训练模型</a>
+                    <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">模型教程</a>
+                    <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">API接口</a>
+                    <a href="#" class="py-2 px-3 text-muted hover:text-primary hover:bg-gray-50 rounded-lg transition-colors">关于我们</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主横幅与搜索区 -->
+    <section class="bg-gradient-to-r from-secondary to-primary text-white py-12 md:py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-4 text-balance leading-tight">
+                    Hugging Face免费预训练模型大全
+                </h2>
+                <p class="text-white/90 text-[clamp(1rem,2vw,1.2rem)] mb-8 leading-relaxed">
+                    精选20款高质量免费预训练模型，涵盖NLP、计算机视觉、语音识别和多模态等方向，助力开发者快速应用AI能力
+                </p>
+                
+                <!-- 高级搜索框 -->
+                <div class="relative max-w-2xl mx-auto group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fa fa-search text-white/70"></i>
+                    </div>
+                    <input 
+                        type="text" 
+                        id="resourceSearch"
+                        placeholder="搜索预训练模型（例如：BERT、Stable Diffusion...）" 
+                        class="w-full pl-12 pr-4 py-4 rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-white/30 text-dark transition-all"
+                    >
+                </div>
+                
+                <!-- 热门搜索标签 -->
+                <div class="flex flex-wrap justify-center gap-2 mt-6">
+                    <span class="text-white/80 text-sm">热门分类:</span>
+                    <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors filter-btn" data-filter="nlp">NLP模型</a>
+                    <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors filter-btn" data-filter="cv">计算机视觉</a>
+                    <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors filter-btn" data-filter="speech">语音模型</a>
+                    <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors filter-btn" data-filter="multimodal">多模态</a>
+                    <a href="#" class="text-white/90 hover:text-white text-sm bg-white/10 hover:bg-white/20 px-3 py-1 rounded-full transition-colors filter-btn" data-filter="llm">大语言模型</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 资源概览统计 -->
+    <section class="py-8 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 md:gap-6">
+                <div class="bg-light rounded-xl p-4 text-center">
+                    <div class="text-2xl md:text-3xl font-bold text-primary mb-1">20</div>
+                    <div class="text-sm text-muted">精选模型</div>
+                </div>
+                <div class="bg-light rounded-xl p-4 text-center">
+                    <div class="text-2xl md:text-3xl font-bold text-nlp mb-1">8</div>
+                    <div class="text-sm text-muted">NLP模型</div>
+                </div>
+                <div class="bg-light rounded-xl p-4 text-center">
+                    <div class="text-2xl md:text-3xl font-bold text-cv mb-1">4</div>
+                    <div class="text-sm text-muted">视觉模型</div>
+                </div>
+                <div class="bg-light rounded-xl p-4 text-center">
+                    <div class="text-2xl md:text-3xl font-bold text-speech mb-1">2</div>
+                    <div class="text-sm text-muted">语音模型</div>
+                </div>
+                <div class="bg-light rounded-xl p-4 text-center">
+                    <div class="text-2xl md:text-3xl font-bold text-multimodal mb-1">6</div>
+                    <div class="text-sm text-muted">多模态模型</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 资源分类区 -->
+    <main class="container mx-auto px-4 py-12 flex-grow">
+        <!-- 资源分布图表 -->
+        <div class="bg-white rounded-xl shadow-card p-5 mb-10">
+            <h3 class="text-xl font-bold mb-5">预训练模型分类分布</h3>
+            <div class="h-64 md:h-72">
+                <canvas id="resourceChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- 分类筛选器 -->
+        <div class="mb-8 overflow-x-auto scrollbar-hide">
+            <div class="flex gap-2 pb-2 min-w-max">
+                <button class="category-filter-btn bg-primary text-white px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center" data-category="all">
+                    <i class="fa fa-th-large mr-1.5"></i> 全部分类
+                </button>
+                <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="nlp">
+                    <i class="fa fa-comment mr-1.5"></i> NLP模型
+                </button>
+                <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="cv">
+                    <i class="fa fa-image mr-1.5"></i> 计算机视觉
+                </button>
+                <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="speech">
+                    <i class="fa fa-microphone mr-1.5"></i> 语音模型
+                </button>
+                <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="multimodal">
+                    <i class="fa fa-object-group mr-1.5"></i> 多模态
+                </button>
+                <button class="category-filter-btn bg-white hover:bg-gray-100 px-4 py-2 rounded-full text-sm transition-colors flex items-center" data-category="llm">
+                    <i class="fa fa-brain mr-1.5"></i> 大语言模型
+                </button>
+            </div>
+        </div>
+        
+        <!-- 分类标题 -->
+        <div class="mb-8">
+            <h3 class="text-2xl font-bold mb-2 flex items-center">
+                <span id="categoryTitle">全部预训练模型</span>
+                <span class="ml-3 text-sm font-normal text-muted bg-light px-2 py-1 rounded-full">20 个模型</span>
+            </h3>
+            <p class="text-muted">精选Hugging Face优质免费预训练模型，按类别整理，方便快速查找与应用</p>
+        </div>
+        
+        <!-- 工具列表 -->
+        <section id="toolsList" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 模型卡片将通过JavaScript动态生成 -->
+        </section>
+        
+        <!-- 模型选择指南卡片 -->
+        <div class="mt-12 bg-white rounded-xl p-6 shadow-card border border-gray-100">
+            <h3 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fa fa-book text-primary mr-2"></i> 预训练模型选择指南
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-lg font-medium mb-3 text-dark">按任务类型选择</h4>
+                    <ul class="space-y-2 text-muted">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                            <span>文本分类/NER：BERT、RoBERTa、XLM-R</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                            <span>文本生成：GPT-2、GPT-Neo、LLaMA、Falcon</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                            <span>图像生成：Stable Diffusion、DALL·E Mini、ControlNet</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                            <span>语音识别：Whisper、Wav2Vec2</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-success mt-1 mr-2"></i>
+                            <span>图文理解：CLIP、BLIP-2</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-medium mb-3 text-dark">关键考量因素</h4>
+                    <ul class="space-y-2 text-muted">
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>计算资源：大型模型(如LLaMA)需要更多GPU资源</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>精度需求：根据任务选择基础版或大型版模型</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>部署环境：移动端优先选择轻量级模型(如DistilBERT)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>社区支持：优先选择文档完善、更新活跃的模型</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-info-circle text-primary mt-1 mr-2"></i>
+                            <span>授权许可：商业应用需注意模型的使用许可条款</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 订阅区域 -->
+    <section class="bg-primary/5 py-12 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <h3 class="text-2xl font-bold mb-3">获取AI模型更新</h3>
+                <p class="text-muted mb-6">订阅我们的通讯，第一时间获取新上线的预训练模型和使用教程</p>
+                <div class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                    <input 
+                        type="email" 
+                        placeholder="输入您的邮箱地址" 
+                        class="flex-grow px-4 py-3 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                        required
+                    >
+                    <button class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-colors font-medium whitespace-nowrap">
+                        立即订阅
+                    </button>
+                </div>
+                <p class="text-xs text-muted mt-3">我们尊重您的隐私，不会向第三方分享您的信息</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-12 mt-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-8 h-8 rounded-lg bg-secondary/20 flex items-center justify-center">
+                            <i class="fa fa-brain text-secondary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">AI模型指南</h3>
+                    </div>
+                    <p class="text-gray-400 text-sm mb-4">
+                        为开发者精选全球优质免费预训练模型与资源，助力AI应用开发与创新
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+                            <i class="fa fa-github text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+                            <i class="fa fa-twitter text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+                            <i class="fa fa-linkedin text-lg"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-secondary transition-colors hover:scale-110 transform duration-300">
+                            <i class="fa fa-discord text-lg"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium mb-4">模型分类</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">NLP模型</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">计算机视觉</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">语音模型</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">多模态模型</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">大语言模型</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium mb-4">快速链接</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">热门模型</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">最新添加</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">模型教程</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-medium mb-4">联系我们</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li class="flex items-start">
+                            <i class="fa fa-envelope text-gray-400 mt-1 mr-3"></i>
+                            <span class="text-gray-400">contact@aimodels.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-github text-gray-400 mt-1 mr-3"></i>
+                            <span class="text-gray-400">github.com/ai-models-guide</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-twitter text-gray-400 mt-1 mr-3"></i>
+                            <span class="text-gray-400">@ai_models_guide</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">&copy; 2023 AI模型指南. 保留所有权利</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">隐私政策</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">使用条款</a>
+                    <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Cookie政策</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible hover:scale-110 z-40">
+        <i class="fa fa-chevron-up"></i>
+    </button>
+
+    <script>
+        // 预训练模型数据
+        const PRETRAINED_MODELS = [
+            {
+                id: 1,
+                name: "BERT (bert-base-uncased)",
+                url: "https://huggingface.co/bert-base-uncased",
+                category: "nlp",
+                popularity: 9.5,
+                description: "谷歌提出的经典NLP模型，广泛用于文本分类、NER、问答系统等任务。",
+                缺点: "模型较老，精度不如新模型。",
+                comments: [
+                    "工业界入门首选。",
+                    "推理速度还可以，但参数较大。"
+                ]
+            },
+            {
+                id: 2,
+                name: "DistilBERT",
+                url: "https://huggingface.co/distilbert-base-uncased",
+                category: "nlp",
+                popularity: 9.0,
+                description: "BERT的轻量版，保留95%性能同时体积减少40%，速度提升60%。",
+                缺点: "准确率略低于BERT。",
+                comments: [
+                    "移动端部署很好。",
+                    "精度稍微下降，但够用。"
+                ]
+            },
+            {
+                id: 3,
+                name: "RoBERTa",
+                url: "https://huggingface.co/roberta-base",
+                category: "nlp",
+                popularity: 9.3,
+                description: "Facebook优化版BERT，移除NSP任务，使用更大batch和更多数据训练。",
+                缺点: "计算需求大。",
+                comments: [
+                    "精度很棒。",
+                    "资源消耗高。"
+                ]
+            },
+            {
+                id: 4,
+                name: "GPT-2",
+                url: "https://huggingface.co/gpt2",
+                category: "nlp",
+                popularity: 9.2,
+                description: "OpenAI发布的生成模型，可用于文本生成、续写和摘要等任务。",
+                缺点: "上下文理解有限。",
+                comments: [
+                    "生成效果不错。",
+                    "容易胡说八道。"
+                ]
+            },
+            {
+                id: 5,
+                name: "GPT-Neo (EleutherAI)",
+                url: "https://huggingface.co/EleutherAI/gpt-neo-1.3B",
+                category: "llm",
+                popularity: 9.1,
+                description: "社区开源GPT模型，1.3B参数，性能接近GPT-3的小型号。",
+                缺点: "显存占用大。",
+                comments: [
+                    "自由度高。",
+                    "推理成本不低。"
+                ]
+            },
+            {
+                id: 6,
+                name: "T5",
+                url: "https://huggingface.co/t5-small",
+                category: "nlp",
+                popularity: 9.0,
+                description: "谷歌提出的文本到文本框架，将所有NLP任务统一为文本生成问题。",
+                缺点: "模型庞大，训练资源高。",
+                comments: [
+                    "几乎万能。",
+                    "部署复杂。"
+                ]
+            },
+            {
+                id: 7,
+                name: "mBERT (bert-base-multilingual-cased)",
+                url: "https://huggingface.co/bert-base-multilingual-cased",
+                category: "nlp",
+                popularity: 8.7,
+                description: "多语言BERT，覆盖100多种语言，适合跨语言NLP任务。",
+                缺点: "精度低于单语模型。",
+                comments: [
+                    "多语言任务很方便。",
+                    "部分低资源语言表现一般。"
+                ]
+            },
+            {
+                id: 8,
+                name: "XLM-R",
+                url: "https://huggingface.co/xlm-roberta-base",
+                category: "nlp",
+                popularity: 8.9,
+                description: "Facebook多语言模型，在100种语言上训练，比mBERT性能更强。",
+                缺点: "体积大。",
+                comments: [
+                    "多语言表现顶尖。",
+                    "显存消耗高。"
+                ]
+            },
+            {
+                id: 9,
+                name: "CLIP (OpenAI)",
+                url: "https://huggingface.co/openai/clip-vit-base-patch32",
+                category: "multimodal",
+                popularity: 9.4,
+                description: "多模态模型，能将图像和文本映射到同一向量空间，实现跨模态检索。",
+                缺点: "对长文本支持不足。",
+                comments: [
+                    "图像检索神器。",
+                    "细粒度图像表现差。"
+                ]
+            },
+            {
+                id: 10,
+                name: "DALL·E Mini (Craiyon)",
+                url: "https://huggingface.co/dalle-mini/dalle-mini",
+                category: "multimodal",
+                popularity: 8.5,
+                description: "开源文本生成图像模型，可根据文本描述生成对应图像。",
+                缺点: "生成质量不稳定。",
+                comments: [
+                    "玩具感很强。",
+                    "比商业DALL·E差远。"
+                ]
+            },
+            {
+                id: 11,
+                name: "Whisper (base)",
+                url: "https://huggingface.co/openai/whisper-base",
+                category: "speech",
+                popularity: 9.3,
+                description: "OpenAI开源语音识别模型，支持99种语言的语音转文字。",
+                缺点: "对低音质音频表现较差。",
+                comments: [
+                    "语音识别很准。",
+                    "推理速度慢。"
+                ]
+            },
+            {
+                id: 12,
+                name: "Wav2Vec2 (facebook/wav2vec2-base-960h)",
+                url: "https://huggingface.co/facebook/wav2vec2-base-960h",
+                category: "speech",
+                popularity: 8.8,
+                description: "自监督语音识别预训练模型，在有限标注数据下表现优异。",
+                缺点: "仅限英语。",
+                comments: [
+                    "低资源语音识别很棒。",
+                    "非英语表现差。"
+                ]
+            },
+            {
+                id: 13,
+                name: "MarianMT",
+                url: "https://huggingface.co/Helsinki-NLP/opus-mt-en-fr",
+                category: "nlp",
+                popularity: 8.6,
+                description: "开源神经机器翻译模型，覆盖数千种语言对。",
+                缺点: "翻译质量不如Google Translate。",
+                comments: [
+                    "开源可商用。",
+                    "小语种表现差。"
+                ]
+            },
+            {
+                id: 14,
+                name: "Stable Diffusion",
+                url: "https://huggingface.co/CompVis/stable-diffusion-v1-4",
+                category: "cv",
+                popularity: 9.6,
+                description: "文本生成图像的SOTA模型，可根据文本描述生成高质量图像。",
+                缺点: "显存需求高。",
+                comments: [
+                    "开源神器。",
+                    "显卡吃紧。"
+                ]
+            },
+            {
+                id: 15,
+                name: "ControlNet",
+                url: "https://huggingface.co/lllyasviel/ControlNet",
+                category: "cv",
+                popularity: 9.2,
+                description: "Stable Diffusion的扩展，支持通过线稿、深度图等控制图像生成。",
+                缺点: "需要高算力。",
+                comments: [
+                    "控制生成效果好。",
+                    "配置要求高。"
+                ]
+            },
+            {
+                id: 16,
+                name: "SAM (Segment Anything Model)",
+                url: "https://huggingface.co/facebook/sam-vit-base",
+                category: "cv",
+                popularity: 9.1,
+                description: "Meta AI出品的图像分割模型，可零样本分割任何图像中的物体。",
+                缺点: "对小目标不够精细。",
+                comments: [
+                    "分割神器。",
+                    "大图像推理慢。"
+                ]
+            },
+            {
+                id: 17,
+                name: "YOLOv8",
+                url: "https://huggingface.co/ultralytics/yolov8n",
+                category: "cv",
+                popularity: 9.0,
+                description: "快速准确的目标检测模型，适合实时应用场景。",
+                缺点: "模型偏大。",
+                comments: [
+                    "检测准确率高。",
+                    "移动端不太友好。"
+                ]
+            },
+            {
+                id: 18,
+                name: "BLIP-2",
+                url: "https://huggingface.co/Salesforce/blip2-opt-2.7b",
+                category: "multimodal",
+                popularity: 9.0,
+                description: "先进的图文生成与理解多模态模型，支持图像问答等任务。",
+                缺点: "训练和推理都贵。",
+                comments: [
+                    "问图像答问题很好用。",
+                    "GPU压力山大。"
+                ]
+            },
+            {
+                id: 19,
+                name: "LLaMA (Meta AI)",
+                url: "https://huggingface.co/decapoda-research/llama-7b-hf",
+                category: "llm",
+                popularity: 9.5,
+                description: "Meta发布的大语言模型，参数从7B到65B不等，性能优异。",
+                缺点: "使用限制多。",
+                comments: [
+                    "性能媲美GPT。",
+                    "获取门槛高。"
+                ]
+            },
+            {
+                id: 20,
+                name: "Falcon",
+                url: "https://huggingface.co/tiiuae/falcon-7b",
+                category: "llm",
+                popularity: 9.2,
+                description: "阿布扎比AI实验室开源大语言模型，性能接近LLaMA。",
+                缺点: "中文表现一般。",
+                comments: [
+                    "开源自由。",
+                    "需要大算力。"
+                ]
+            }
+        ];
+
+        // DOM元素引用
+        const toolsListEl = document.getElementById('toolsList');
+        const categoryTitleEl = document.getElementById('categoryTitle');
+        const searchInputEl = document.getElementById('resourceSearch');
+        const categoryFilterBtns = document.querySelectorAll('.category-filter-btn');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const menuButton = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const backToTopBtn = document.getElementById('backToTop');
+
+        // 获取分类对应的颜色类
+        function getCategoryColor(category) {
+            if (category === 'nlp') return 'nlp';
+            if (category === 'cv') return 'cv';
+            if (category === 'speech') return 'speech';
+            if (category === 'multimodal') return 'multimodal';
+            if (category === 'llm') return 'llm';
+            return 'primary';
+        }
+
+        // 获取分类显示名称
+        function getCategoryName(category) {
+            if (category === 'nlp') return 'NLP模型';
+            if (category === 'cv') return '计算机视觉';
+            if (category === 'speech') return '语音模型';
+            if (category === 'multimodal') return '多模态';
+            if (category === 'llm') return '大语言模型';
+            return '其他模型';
+        }
+
+        // 渲染星级评分
+        function renderStars(rating) {
+            let starsHtml = '';
+            for (let i = 1; i <= 10; i++) {
+                if (i <= Math.floor(rating)) {
+                    starsHtml += '<i class="fa fa-star text-warning text-xs"></i>';
+                } else if (i - rating <= 0.5) {
+                    starsHtml += '<i class="fa fa-star-half-o text-warning text-xs"></i>';
+                } else {
+                    starsHtml += '<i class="fa fa-star-o text-warning text-xs"></i>';
+                }
+            }
+            return starsHtml;
+        }
+
+        // 渲染模型列表
+        function renderTools(tools) {
+            toolsListEl.innerHTML = '';
+            
+            tools.forEach((tool, index) => {
+                const categoryColor = getCategoryColor(tool.category);
+                const categoryName = getCategoryName(tool.category);
+                const starsHtml = renderStars(tool.popularity);
+                
+                const toolCard = document.createElement('article');
+                toolCard.className = `bg-white rounded-xl shadow-card overflow-hidden card-hover border border-gray-100 animate-fade-in`;
+                toolCard.style.animationDelay = `${index * 50}ms`;
+                toolCard.dataset.category = tool.category;
+                toolCard.dataset.name = tool.name.toLowerCase();
+                toolCard.dataset.description = tool.description.toLowerCase();
+                
+                toolCard.innerHTML = `
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-${categoryColor}/10 rounded flex items-center justify-center mr-2">
+                                    <i class="fa fa-${getCategoryIcon(tool.category)} text-${categoryColor}"></i>
+                                </div>
+                                <h3 class="font-semibold text-lg">${tool.name}</h3>
+                            </div>
+                            <span class="category-badge bg-${categoryColor}/10 text-${categoryColor}">
+                                ${categoryName}
+                            </span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="text-sm text-muted">${tool.description}</p>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p class="text-danger text-sm"><i class="fa fa-exclamation-circle mr-1"></i> ${tool.缺点}</p>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <h4 class="text-xs font-medium text-dark mb-2">社区评论：</h4>
+                            <ul class="space-y-1.5">
+                                ${tool.comments.map(comment => `
+                                    <li class="text-xs text-muted flex items-start">
+                                        <i class="fa fa-quote-left text-primary/50 mt-0.5 mr-2 text-[8px]"></i>
+                                        <span>${comment}</span>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                            <div class="flex items-center">
+                                <div class="flex mr-2">
+                                    ${starsHtml}
+                                </div>
+                                <span class="text-xs text-muted">${tool.popularity.toFixed(1)}</span>
+                            </div>
+                            <a href="${tool.url}" target="_blank" rel="noopener" class="text-primary hover:text-primary/80 text-sm flex items-center transition-colors">
+                                <span>查看模型</span>
+                                <i class="fa fa-external-link ml-1 text-[8px]"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+                
+                toolsListEl.appendChild(toolCard);
+            });
+        }
+
+        // 获取分类对应的图标
+        function getCategoryIcon(category) {
+            if (category === 'nlp') return 'comment';
+            if (category === 'cv') return 'image';
+            if (category === 'speech') return 'microphone';
+            if (category === 'multimodal') return 'object-group';
+            if (category === 'llm') return 'brain';
+            return 'cube';
+        }
+
+        // 应用筛选
+        function applyFilters() {
+            const activeCategory = document.querySelector('.category-filter-btn.bg-primary').getAttribute('data-category');
+            const searchTerm = searchInputEl.value.toLowerCase().trim();
+            
+            let filteredTools = [...PRETRAINED_MODELS];
+            
+            // 按分类筛选
+            if (activeCategory !== 'all') {
+                filteredTools = filteredTools.filter(tool => tool.category === activeCategory);
+            }
+            
+            // 按搜索词筛选
+            if (searchTerm) {
+                filteredTools = filteredTools.filter(tool => 
+                    tool.name.toLowerCase().includes(searchTerm) ||
+                    tool.description.toLowerCase().includes(searchTerm) ||
+                    tool.缺点.toLowerCase().includes(searchTerm) ||
+                    tool.comments.some(comment => comment.toLowerCase().includes(searchTerm)) ||
+                    getCategoryName(tool.category).toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            // 更新标题
+            if (activeCategory === 'all') {
+                categoryTitleEl.textContent = searchTerm ? `搜索结果: "${searchTerm}"` : '全部预训练模型';
+            } else {
+                categoryTitleEl.textContent = `${getCategoryName(activeCategory)}`;
+            }
+            
+            // 更新计数
+            const countBadge = categoryTitleEl.nextElementSibling;
+            countBadge.textContent = `${filteredTools.length} 个模型`;
+            
+            // 渲染筛选结果
+            renderTools(filteredTools);
+        }
+
+        // 初始化图表
+        function initChart() {
+            const ctx = document.getElementById('resourceChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['NLP模型', '计算机视觉', '语音模型', '多模态', '大语言模型'],
+                    datasets: [{
+                        data: [8, 4, 2, 4, 2],
+                        backgroundColor: [
+                            '#165DFF', '#7BC616', '#FF7D00', '#722ED1', '#F53F3F'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(29, 33, 41, 0.9)',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.label}: ${context.raw} 个模型`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%',
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+        }
+
+        // 移动端菜单切换
+        menuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            
+            // 切换图标
+            const icon = menuButton.querySelector('i');
+            if (mobileMenu.classList.contains('hidden')) {
+                icon.classList.remove('fa-times', 'rotate-90');
+                icon.classList.add('fa-bars');
+            } else {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times', 'rotate-90');
+            }
+        });
+
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4', 'shadow-sm');
+            } else {
+                header.classList.add('py-4', 'shadow-sm');
+                header.classList.remove('py-2', 'shadow');
+            }
+            
+            // 回到顶部按钮显示/隐藏
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+
+        // 回到顶部功能
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 分类筛选按钮事件
+        categoryFilterBtns.forEach(button => {
+            button.addEventListener('click', () => {
+                // 更新按钮状态
+                categoryFilterBtns.forEach(btn => {
+                    btn.classList.remove('bg-primary', 'text-white', 'font-medium');
+                    btn.classList.add('bg-white', 'hover:bg-gray-100');
+                });
+                button.classList.add('bg-primary', 'text-white', 'font-medium');
+                button.classList.remove('bg-white', 'hover:bg-gray-100');
+                
+                applyFilters();
+            });
+        });
+
+        // 顶部快捷筛选按钮
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const filter = btn.getAttribute('data-filter');
+                
+                // 找到对应的分类按钮并点击
+                const targetBtn = document.querySelector(`.category-filter-btn[data-category="${filter}"]`);
+                if (targetBtn) {
+                    targetBtn.click();
+                    
+                    // 滚动到模型列表
+                    toolsListEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // 搜索功能
+        searchInputEl.addEventListener('input', applyFilters);
+
+        // 外部链接点击提示
+        document.addEventListener('click', (e) => {
+            const externalLink = e.target.closest('a[target="_blank"]');
+            if (externalLink) {
+                const confirmLeave = confirm('即将跳转到Hugging Face网站，是否继续？');
+                if (!confirmLeave) {
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // 页面初始化
+        function initializePage() {
+            // 渲染所有模型
+            renderTools(PRETRAINED_MODELS);
+            
+            // 初始化图表
+            initChart();
+        }
+
+        // 启动页面初始化
+        initializePage();
+    </script>
+</body>
+</html>
