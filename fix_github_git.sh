@@ -1,37 +1,32 @@
 #!/bin/bash
+set -e
 
-echo "🔍 检测 GitHub 直连状态..."
-# 测试 SSH 是否能直连 GitHub
-ssh -o ConnectTimeout=5 -T git@github.com &>/dev/null
-if [ $? -eq 1 ]; then
-  echo "✅ GitHub SSH 直连可用，设置为直连模式..."
-  git config --global --unset http.proxy
-  git config --global --unset https.proxy
-  git config --global --unset core.sshCommand
+echo "🔍 检测 GitHub HTTPS 连接状态..."
 
-  mkdir -p ~/.ssh
-  cat > ~/.ssh/config <<EOF
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_rsa
-  ProxyCommand none
-EOF
-  echo "🎉 已切换为直连模式，可以直接 git push"
+# 检查 ClashX 代理端口（7890 / 7891）
+if nc -z 127.0.0.1 7890; then
+    PROXY_PORT=7890
+elif nc -z 127.0.0.1 7891; then
+    PROXY_PORT=7891
 else
-  echo "⚠️ GitHub SSH 直连失败，尝试通过 ClashX 代理连接..."
-  git config --global --unset http.proxy
-  git config --global --unset https.proxy
-
-  mkdir -p ~/.ssh
-  cat > ~/.ssh/config <<EOF
-Host github.com
-  HostName github.com
-  User git
-  IdentityFile ~/.ssh/id_rsa
-  ProxyCommand nc -v -x 127.0.0.1:7890 %h %p
-EOF
-
-  echo "🌐 已配置 GitHub SSH 使用 ClashX 代理 (127.0.0.1:7890)"
-  echo "🎉 现在可以 git push 了"
+    echo "❌ 未检测到 ClashX 代理 (7890/7891)，请确认 ClashX 已运行。"
+    exit 1
 fi
+
+# 测试 GitHub HTTPS 连接
+if curl -s --connect-timeout 5 https://github.com > /dev/null; then
+    echo "✅ GitHub HTTPS 直连可用"
+    # 清理代理，直连
+    git config --global --unset http.proxy || true
+    git config --global --unset https.proxy || true
+else
+    echo "⚠️ GitHub HTTPS 直连失败，启用 ClashX 代理 (127.0.0.1:$PROXY_PORT)"
+    git config --global http.proxy "http://127.0.0.1:$PROXY_PORT"
+    git config --global https.proxy "http://127.0.0.1:$PROXY_PORT"
+fi
+
+# 强制远程 URL 使用 HTTPS
+git remote set-url origin https://github.com/guomengtao/rinuo.com.git
+
+echo "🌐 已配置 GitHub 使用 HTTPS 方式 (ClashX代理端口 $PROXY_PORT)"
+echo "🎉 现在可以尝试 git push 了"
