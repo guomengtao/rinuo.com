@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API接口手册 - 开发者资源导航</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+  <header class="bg-white shadow-sm">
+    <div class="container mx-auto px-4 py-4">
+      <a href="index.html" class="flex items-center space-x-2">
+        <i class="fa fa-compass text-blue-600 text-2xl"></i>
+        <h1 class="text-xl font-bold text-blue-600">资源导航</h1>
+      </a>
+    </div>
+  </header>
+
+  <div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-center mb-8">API接口手册</h1>
+    <p class="text-center text-gray-600 mb-12">完整的开发者API接口集合，涵盖40+分类</p>
+    
+    <div id="apiContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- API分类将通过JavaScript动态加载 -->
+    </div>
+  </div>
+
+  <script>
+    // 简化的API分类数据
+    const apiCategories = [
+      { id: 'weather', name: '天气服务', icon: 'fa-cloud', description: '天气数据、预报等API服务' },
+      { id: 'vps', name: 'VPS服务', icon: 'fa-server', description: '虚拟私有服务器等基础设施服务' },
+      { id: 'ai', name: 'AI服务', icon: 'fa-brain', description: '人工智能、机器学习等API' },
+      { id: 'database', name: '数据库服务', icon: 'fa-database', description: '关系型数据库、NoSQL等' },
+      { id: 'payment', name: '支付服务', icon: 'fa-credit-card', description: '在线支付、数字货币等' },
+      { id: 'email', name: '邮件服务', icon: 'fa-envelope', description: '邮件发送、接收等API' },
+      { id: 'sms', name: '短信服务', icon: 'fa-comment', description: '短信验证码、通知等' },
+      { id: 'storage', name: '存储服务', icon: 'fa-hdd-o', description: '对象存储、文件存储等' },
+      { id: 'cdn', name: 'CDN服务', icon: 'fa-globe', description: '内容分发网络、加速服务等' },
+      { id: 'monitor', name: '监控服务', icon: 'fa-line-chart', description: '系统监控、性能监控等' },
+      { id: 'translate', name: '翻译服务', icon: 'fa-language', description: '多语言翻译、文本识别等' },
+      { id: 'ocr', name: 'OCR服务', icon: 'fa-file-text-o', description: '光学字符识别、文档识别等' },
+      { id: 'blockchain', name: '区块链服务', icon: 'fa-link', description: '区块链API、智能合约等' },
+      { id: 'education', name: '教育服务', icon: 'fa-graduation-cap', description: '在线教育、课程管理等' },
+      { id: 'domain', name: '域名服务', icon: 'fa-globe', description: '域名注册、DNS管理等' },
+      { id: 'serverless', name: 'Serverless服务', icon: 'fa-cloud-upload', description: '无服务器计算、函数计算等' },
+      { id: 'scraping', name: '爬虫服务', icon: 'fa-spider', description: '网页爬取、数据提取等' },
+      { id: 'sport', name: '体育服务', icon: 'fa-futbol-o', description: '体育数据、比赛信息等' },
+      { id: 'map', name: '地图服务', icon: 'fa-map-marker', description: '地图API、地理编码等' },
+      { id: 'push', name: '推送服务', icon: 'fa-bell', description: '推送通知、消息推送等' },
+      { id: 'health', name: '健康服务', icon: 'fa-heartbeat', description: '健康数据、医疗信息等' },
+      { id: 'fonts', name: '字体服务', icon: 'fa-font', description: '字体库、字体识别等' },
+      { id: 'voice', name: '语音服务', icon: 'fa-microphone', description: '语音识别、语音合成等' },
+      { id: 'image', name: '图像服务', icon: 'fa-image', description: '图像处理、图像识别等' },
+      { id: 'stock', name: '股票服务', icon: 'fa-line-chart', description: '股票数据、市场信息等' },
+      { id: 'news', name: '新闻服务', icon: 'fa-newspaper-o', description: '新闻内容、文章聚合等' },
+      { id: 'chart', name: '图表服务', icon: 'fa-bar-chart', description: '数据可视化、图表生成等' },
+      { id: 'waf', name: 'WAF服务', icon: 'fa-shield', description: 'Web应用防火墙、安全防护等' },
+      { id: 'ssl', name: 'SSL服务', icon: 'fa-lock', description: 'SSL证书、HTTPS加密等' },
+      { id: 'devtools', name: '开发工具', icon: 'fa-wrench', description: '代码编辑器、调试工具等' },
+      { id: 'law', name: '法律服务', icon: 'fa-gavel', description: '法律信息、法规查询等' },
+      { id: 'otp', name: 'OTP服务', icon: 'fa-key', description: '一次性密码、双因素认证等' },
+      { id: 'icons', name: '图标服务', icon: 'fa-picture-o', description: '图标库、图标搜索等' },
+      { id: 'sound-effects', name: '音效服务', icon: 'fa-music', description: '音效库、音频素材等' },
+      { id: 'video', name: '视频服务', icon: 'fa-video-camera', description: '视频处理、视频编辑等' },
+      { id: 'nft', name: 'NFT服务', icon: 'fa-diamond', description: 'NFT创建、交易、存储等' },
+      { id: 'docs', name: '文档服务', icon: 'fa-file-text', description: '文档管理、文档转换等' },
+      { id: 'markdown', name: 'Markdown服务', icon: 'fa-code', description: 'Markdown编辑、转换等' },
+      { id: 'websocket', name: 'WebSocket服务', icon: 'fa-exchange', description: '实时通信、双向数据传输等' },
+      { id: 'password-strength', name: '密码强度服务', icon: 'fa-lock', description: '密码强度检测、密码生成等' },
+      { id: 'pentest', name: '渗透测试服务', icon: 'fa-bug', description: '安全扫描、漏洞检测等' }
+    ];
+
+    // 渲染API分类
+    function renderApiCategories() {
+      const container = document.getElementById('apiContent');
+      container.innerHTML = apiCategories.map(category => `
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer" 
+             onclick="showCategoryDetails('${category.id}')">
+          <div class="flex items-center mb-4">
+            <i class="${category.icon} text-2xl text-blue-600 mr-3"></i>
+            <h3 class="text-lg font-semibold text-gray-800">${category.name}</h3>
+          </div>
+          <p class="text-gray-600 text-sm">${category.description}</p>
+          <div class="mt-4 flex justify-between items-center">
+            <span class="text-xs text-gray-500">点击查看详情</span>
+            <i class="fa fa-arrow-right text-blue-600"></i>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // 显示分类详情
+    async function showCategoryDetails(categoryId) {
+      try {
+        const response = await fetch(`assets/data/${categoryId}.json`);
+        if (!response.ok) throw new Error('Failed to fetch data');
+        
+        const data = await response.json();
+        displayCategoryDetails(data);
+      } catch (error) {
+        console.error('Error:', error);
+        alert('加载分类数据失败，请稍后重试');
+      }
+    }
+
+    // 显示分类详情
+    function displayCategoryDetails(data) {
+      const container = document.getElementById('apiContent');
+      
+      let apisHtml = data.apis.map(api => `
+        <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-lg font-semibold text-gray-800">${api.name}</h4>
+            <span class="px-2 py-1 rounded text-xs ${api.is_free ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+              ${api.is_free ? '免费' : '付费'}
+            </span>
+          </div>
+          <p class="text-gray-600 mb-3">${api.description}</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+            <div>
+              <span class="text-sm font-medium text-gray-700">接口地址:</span>
+              <div class="text-sm text-gray-600 font-mono bg-gray-50 p-2 rounded mt-1">${api.endpoint}</div>
+            </div>
+            <div>
+              <span class="text-sm font-medium text-gray-700">请求方法:</span>
+              <div class="text-sm text-gray-600 mt-1">${api.method}</div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <span class="text-sm font-medium text-gray-700">标签:</span>
+            <div class="flex flex-wrap gap-2 mt-1">
+              ${api.tags.map(tag => `<span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">${tag}</span>`).join('')}
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex space-x-3">
+              <a href="${api.documentation}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">
+                <i class="fa fa-book mr-1"></i>文档
+              </a>
+              <a href="${api.website}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm">
+                <i class="fa fa-external-link mr-1"></i>官网
+              </a>
+            </div>
+            <span class="text-xs text-gray-500">速率限制: ${api.rate_limit}</span>
+          </div>
+        </div>
+      `).join('');
+
+      container.innerHTML = `
+        <div class="col-span-full mb-6">
+          <button onclick="renderApiCategories()" class="mb-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+            <i class="fa fa-arrow-left mr-2"></i>返回分类列表
+          </button>
+          <h2 class="text-2xl font-bold text-gray-800 mb-2">${data.category}</h2>
+          <p class="text-gray-600 mb-4">${data.description}</p>
+          <div class="flex space-x-4 text-sm text-gray-500">
+            <span><i class="fa fa-calendar mr-1"></i>版本: ${data.version}</span>
+            <span><i class="fa fa-clock-o mr-1"></i>更新: ${data.last_updated}</span>
+            <span><i class="fa fa-plug mr-1"></i>接口数量: ${data.total_apis}</span>
+          </div>
+        </div>
+        <div class="col-span-full">
+          ${apisHtml}
+        </div>
+      `;
+    }
+
+    // 页面加载完成后渲染分类
+    document.addEventListener('DOMContentLoaded', renderApiCategories);
+  </script>
+</body>
+</html>

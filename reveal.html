@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reveal | 专业英语单词学习</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            word: {
+              primary: '#6366F1', // 靛蓝色，代表知识和智慧
+              secondary: '#EC4899', // 粉红色，用于强调和互动元素
+              accent: '#F59E0B', // 琥珀色，用于重点内容
+              dark: '#1E293B',
+              light: '#F8FAFC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .reveal-card {
+        transition: max-height 0.8s ease, opacity 0.8s ease, padding 0.8s ease;
+        max-height: 1000px;
+        overflow: hidden;
+      }
+      .reveal-card.collapsed {
+        max-height: 60px;
+        opacity: 0.8;
+      }
+      .fade-in {
+        animation: fadeIn 1s ease forwards;
+        opacity: 0;
+      }
+      .word-card {
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+      }
+      .word-card.flipped .front {
+        transform: rotateY(180deg);
+      }
+      .word-card.flipped .back {
+        transform: rotateY(0deg);
+      }
+      .front, .back {
+        backface-visibility: hidden;
+        transition: transform 0.6s;
+      }
+      .back {
+        transform: rotateY(180deg);
+      }
+      .timeline-line {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: dash 2s linear forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes dash {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .dark .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+      .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .dark .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+      }
+      .tag {
+        @apply px-2 py-1 rounded-full text-xs font-medium;
+      }
+      .badge {
+        @apply px-2.5 py-0.5 rounded-full text-xs font-medium;
+      }
+      .content-section {
+        @apply py-6 px-6; /* 为所有内容区域添加统一的内边距 */
+      }
+      .pronunciation-btn {
+        @apply ml-2 text-word-primary hover:text-word-primary/80 cursor-pointer transition-colors;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 nav-shadow transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-word-primary to-word-secondary flex items-center justify-center">
+            <i class="fa fa-book text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">Word Insight</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" id="searchInput" placeholder="Search for a word..." value="reveal" class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-word-primary/50 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-300 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" id="mobileSearchInput" placeholder="Search for a word..." value="reveal" class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#basic-info" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">基本信息</a>
+          <a href="#history" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">历史故事</a>
+          <a href="#derivatives" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">衍生词</a>
+          <a href="#etymology" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">词源拓展</a>
+          <a href="#usage" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">现代用法</a>
+          <a href="#root-comparison" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">词根对比</a>
+          <a href="#culture" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">文化角</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner图 -->
+  <section class="relative h-[40vh] min-h-[300px] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800 opacity-70 z-10"></div>
+    <img src="https://picsum.photos/id/1073/1920/1080" alt="Ancient scrolls revealing knowledge" class="absolute w-full h-full object-cover object-center">
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 max-w-3xl reveal-element" style="animation-delay: 0.2s">Reveal
+        <button class="pronunciation-btn" onclick="speakWord('reveal')">
+          <i class="fa fa-volume-up"></i>
+        </button>
+      </h1>
+      <p class="text-xl text-gray-200 max-w-2xl mb-8 reveal-element" style="animation-delay: 0.4s">/rɪˈviːl/ — to make known or show something that was previously secret or hidden
+        <button class="pronunciation-btn" onclick="speakSentence('to make known or show something that was previously secret or hidden')">
+          <i class="fa fa-volume-up"></i>
+        </button>
+      </p>
+      <div class="flex flex-wrap gap-4 reveal-element" style="animation-delay: 0.6s">
+        <a href="#basic-info" class="bg-white text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+          开始学习
+        </a>
+        <a href="#summary" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-medium hover:bg-white/10 transition-colors">
+          查看总结
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-word-primary dark:text-gray-400 dark:hover:text-word-primary">
+              <i class="fa fa-home mr-1"></i> Home
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-word-primary dark:text-gray-400 dark:hover:text-word-primary">Vocabulary</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">Reveal</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg sidebar-shadow overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#basic-info" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-info-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>基本信息</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history text-word-primary mr-3 w-5 text-center"></i>
+              <span>历史故事</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork text-word-primary mr-3 w-5 text-center"></i>
+              <span>衍生词</span>
+            </a>
+            <a href="#etymology" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-sitemap text-word-primary mr-3 w-5 text-center"></i>
+              <span>词源拓展</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment text-word-primary mr-3 w-5 text-center"></i>
+              <span>现代用法</span>
+            </a>
+            <a href="#root-comparison" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-balance-scale text-word-primary mr-3 w-5 text-center"></i>
+              <span>词根对比</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-globe text-word-primary mr-3 w-5 text-center"></i>
+              <span>文化角</span>
+            </a>
+            <a href="#summary" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-check-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>总结</span>
+            </a>
+          </nav>
+          
+          <!-- 单词学习进度 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-4">学习进度</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-600 dark:text-gray-400">完成度</span>
+                  <span class="text-gray-600 dark:text-gray-400">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-word-primary h-2 rounded-full" style="width: 0%" id="progressBar"></div>
+                </div>
+              </div>
+              
+              <button id="markAsLearned" class="w-full bg-word-primary hover:bg-word-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                标记为已学习
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 1. 基本信息 -->
+        <section id="basic-info" class="mb-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg card-hover">
+          <div class="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white">基本信息</h2>
+            <span class="badge bg-word-primary/10 text-word-primary dark:bg-word-primary/20">基础词汇</span>
+          </div>
+          
+          <div class="content-section">
+            <div class="word-card relative h-64 w-full">
+              <div class="front absolute w-full h-full backface-visibility-hidden bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 flex flex-col justify-center items-center transition-all duration-500">
+                <h3 class="text-5xl font-bold text-word-primary mb-4">Reveal
+                  <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                    <i class="fa fa-volume-up"></i>
+                  </button>
+                </h3>
+                <p class="text-xl text-gray-600 dark:text-gray-400 italic mb-6">/rɪˈviːl/</p>
+                <p class="text-center text-gray-700 dark:text-gray-300 max-w-md">点击卡片查看更多信息</p>
+                <i class="fa fa-refresh text-gray-400 absolute bottom-4 animate-spin-slow"></i>
+              </div>
+              <div class="back absolute w-full h-full backface-visibility-hidden bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 transition-all duration-500">
+                <div class="space-y-4">
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">单词</h4>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-white">Reveal
+                      <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">音标</h4>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 italic">/rɪˈviːl/</p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">词根</h4>
+                    <p class="text-lg text-gray-700 dark:text-gray-300">拉丁语 revelare（"去掉盖子，揭开"）
+                      <button class="pronunciation-btn" onclick="speakWord('revelare')">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">核心含义</h4>
+                    <p class="text-lg text-gray-700 dark:text-gray-300">揭开 → 展示、透露</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-verb text-word-primary mr-2"></i> 词性
+                </h4>
+                <ul class="space-y-2">
+                  <li class="flex items-center">
+                    <span class="badge bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 mr-2">动词</span>
+                    <span class="text-gray-700 dark:text-gray-300">揭示、透露、展示</span>
+                  </li>
+                  <li class="flex items-center">
+                    <span class="badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 mr-2">名词</span>
+                    <span class="text-gray-700 dark:text-gray-300">被揭露的事物（尤指戏剧、电影等的结局）</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-star text-word-primary mr-2"></i> 常见程度
+                </h4>
+                <div class="flex items-center mb-2">
+                  <div class="flex">
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star-half-o text-yellow-400"></i>
+                  </div>
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">高级常用词汇</span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">在学术写作、新闻报道和日常对话中频繁出现</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 2. 历史故事 -->
+        <section id="history" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">历史故事</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+            </div>
+            <div class="content-section">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 opacity-10">
+                  <i class="fa fa-book text-6xl text-word-primary"></i>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 mb-4 reveal-element" style="animation-delay: 0.1s">
+                  在拉丁语中 <span class="font-medium text-word-primary">velum</span>
+                  <button class="pronunciation-btn" onclick="speakWord('velum')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  意为"布幕、帷幕"，加上前缀 <span class="font-medium text-word-primary">re-</span>
+                  <button class="pronunciation-btn" onclick="speakWord('re-')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  （向后、去掉），就形成 <span class="font-medium text-word-primary">revelare</span>
+                  <button class="pronunciation-btn" onclick="speakWord('revelare')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  → "拉开帷幕"。
+                </p>
+                <p class="text-gray-700 dark:text-gray-300 reveal-element" style="animation-delay: 0.3s">
+                  古代剧场演出前会揭开帷幕，观众才能看到舞台，这就是 <span class="font-medium">reveal</span>
+                  <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  的最初意象。这个词通过古法语进入英语，最初保留了"揭开帷幕"的含义，后来逐渐扩展为"揭示、展示"等更广泛的意义。
+                </p>
+                
+                <div class="mt-6 p-4 bg-word-primary/5 rounded-lg border border-word-primary/20">
+                  <p class="text-sm text-gray-700 dark:text-gray-300 italic reveal-element" style="animation-delay: 0.5s">
+                    "The word 'reveal' carries with it the dramatic imagery of a curtain being drawn back to expose what was previously hidden from view."
+                    <button class="pronunciation-btn" onclick="speakSentence('The word reveal carries with it the dramatic imagery of a curtain being drawn back to expose what was previously hidden from view.')">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </p>
+                </div>
+              </div>
+              
+              <div class="mt-6 flex justify-center">
+                <div class="relative w-full max-w-lg h-48 bg-gray-100 dark:bg-gray-700 rounded-lg overflow-hidden">
+                  <!-- 古代剧场帷幕动画 -->
+                  <div class="absolute inset-0 flex">
+                    <div class="w-1/2 h-full bg-word-primary/80 curtain left-curtain"></div>
+                    <div class="w-1/2 h-full bg-word-primary/80 curtain right-curtain"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center justify-center opacity-0" id="stageContent">
+                    <i class="fa fa-theater-masks text-6xl text-white"></i>
+                  </div>
+                  <button id="curtainBtn" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white dark:bg-gray-800 text-gray-800 dark:text-white px-4 py-2 rounded-lg text-sm font-medium shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    拉开帷幕
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 3. 常见衍生词 -->
+        <section id="derivatives" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">常见衍生词</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+            </div>
+            <div class="content-section">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">单词</th>
+                      <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">含义</th>
+                      <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">小故事/联想</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.1s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">reveal
+                          <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">揭露、透露</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">拉开布帘展示</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.2s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">revelation
+                          <button class="pronunciation-btn" onclick="speakWord('revelation')">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">启示、揭示</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">突然"展现出来"的真相</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.3s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">revel
+                          <button class="pronunciation-btn" onclick="speakWord('revel')">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">狂欢、纵情</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">拉开遮掩，放纵享乐</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.4s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">veil
+                          <button class="pronunciation-btn" onclick="speakWord('veil')">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">面纱</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">与 reveal 对比（盖上 vs. 揭开）</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">词缀规律</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    添加后缀 <span class="font-medium text-word-primary">-ation</span>
+                    <button class="pronunciation-btn" onclick="speakWord('-ation')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    形成名词 <span class="font-medium">revelation</span>
+                    <button class="pronunciation-btn" onclick="speakWord('revelation')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    ，表示"揭示的行为或被揭示的事物"。
+                  </p>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.6s">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">记忆技巧</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    将 <span class="font-medium">reveal</span>
+                    <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    与 <span class="font-medium">veil</span>
+                    <button class="pronunciation-btn" onclick="speakWord('veil')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    对比记忆，一个是"揭开面纱"，一个是"面纱"本身。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 4. 词源拓展图 -->
+        <section id="etymology" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">词源拓展图</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+            </div>
+            <div class="content-section">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 h-80 flex items-center justify-center">
+                <svg width="100%" height="100%" viewBox="0 0 600 300" class="max-w-3xl mx-auto">
+                  <!-- 连接线 -->
+                  <path d="M300,150 L300,80" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" />
+                  <path d="M300,150 L180,220" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" style="animation-delay: 0.3s" />
+                  <path d="M300,150 L420,220" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" style="animation-delay: 0.6s" />
+                  <path d="M180,80 L300,80" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" style="animation-delay: 0.9s" />
+                  
+                  <!-- 文字标签 -->
+                  <g transform="translate(300,150)" class="reveal-element" style="animation-delay: 0.1s">
+                    <circle cx="0" cy="0" r="40" fill="white" stroke="currentColor" stroke-width="2" class="text-word-primary dark:stroke-word-primary" />
+                    <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-word-primary">reveal</text>
+                  </g>
+                  
+                  <g transform="translate(300,80)" class="reveal-element" style="animation-delay: 0.4s">
+                    <circle cx="0" cy="0" r="35" fill="white" stroke="currentColor" stroke-width="2" class="text-word-secondary dark:stroke-word-secondary" />
+                    <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-secondary">revelation</text>
+                  </g>
+                  
+                  <g transform="translate(180,220)" class="reveal-element" style="animation-delay: 0.7s">
+                    <circle cx="0" cy="0" r="30" fill="white" stroke="currentColor" stroke-width="2" class="text-word-accent dark:stroke-word-accent" />
+                    <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-accent">revel</text>
+                  </g>
+                  
+                  <g transform="translate(180,80)" class="reveal-element" style="animation-delay: 1.0s">
+                    <circle cx="0" cy="0" r="30" fill="white" stroke="currentColor" stroke-width="2" class="text-gray-600 dark:text-gray-400" />
+                    <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-gray-600 dark:text-gray-400">veil</text>
+                  </g>
+                  
+                  <!-- 关系标签 -->
+                  <text x="300" y="110" text-anchor="middle" fill="currentColor" class="text-xs text-gray-500 dark:text-gray-400 reveal-element" style="animation-delay: 0.5s">→ 启示</text>
+                  <text x="230" y="190" text-anchor="middle" fill="currentColor" class="text-xs text-gray-500 dark:text-gray-400 reveal-element" style="animation-delay: 0.8s">→ 狂欢</text>
+                  <text x="240" y="80" text-anchor="middle" fill="currentColor" class="text-xs text-gray-500 dark:text-gray-400 reveal-element" style="animation-delay: 1.1s">← 覆盖</text>
+                </svg>
+              </div>
+              
+              <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 class="font-medium text-gray-800 dark:text-white mb-3">词源解析</h4>
+                <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                  所有这些词都源自拉丁语 <span class="font-medium text-word-primary">velum</span>
+                  <button class="pronunciation-btn" onclick="speakWord('velum')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  （"布幕、遮盖物"），通过不同的词缀变化形成了意义相关但又各具特色的词汇。
+                </p>
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                  <span class="font-medium">veil</span>
+                  <button class="pronunciation-btn" onclick="speakWord('veil')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  直接保留了"遮盖"的含义，而 <span class="font-medium">reveal</span>
+                  <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  则通过添加前缀 <span class="font-medium">re-</span>
+                  <button class="pronunciation-btn" onclick="speakWord('re-')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  形成了相反的"揭开"含义，进一步衍生出 <span class="font-medium">revelation</span>
+                  <button class="pronunciation-btn" onclick="speakWord('revelation')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  （揭示的事物）和 <span class="font-medium">revel</span>
+                  <button class="pronunciation-btn" onclick="speakWord('revel')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  （揭开束缚后的狂欢）。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 5. 现代用法 & 例句 -->
+        <section id="usage" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">现代用法 & 例句</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+            </div>
+            <div class="content-section">
+              <div class="space-y-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.1s">
+                  <div class="flex items-start mb-3">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-word-primary/20 flex items-center justify-center mt-0.5">
+                      <span class="text-word-primary font-medium text-sm">1</span>
+                    </div>
+                    <h4 class="ml-3 text-lg font-medium text-gray-800 dark:text-white">表示"公开、发布"</h4>
+                  </div>
+                  <div class="ml-9">
+                    <p class="text-gray-900 dark:text-white font-medium mb-2">The company will reveal its new product tomorrow.
+                      <button class="pronunciation-btn" onclick="speakSentence('The company will reveal its new product tomorrow.')">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 italic">公司将在明天发布新产品。</p>
+                    <div class="mt-3 p-3 bg-gray-100 dark:bg-gray-600/50 rounded text-sm text-gray-700 dark:text-gray-300">
+                      <span class="font-medium">用法说明：</span>常用于产品发布、新闻公布等正式场合。
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.3s">
+                  <div class="flex items-start mb-3">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-word-primary/20 flex items-center justify-center mt-0.5">
+                      <span class="text-word-primary font-medium text-sm">2</span>
+                    </div>
+                    <h4 class="ml-3 text-lg font-medium text-gray-800 dark:text-white">表示"揭示、揭露"</h4>
+                  </div>
+                  <div class="ml-9">
+                    <p class="text-gray-900 dark:text-white font-medium mb-2">The magician revealed the secret behind his trick.
+                      <button class="pronunciation-btn" onclick="speakSentence('The magician revealed the secret behind his trick.')">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 italic">魔术师揭示了魔术背后的秘密。</p>
+                    <div class="mt-3 p-3 bg-gray-100 dark:bg-gray-600/50 rounded text-sm text-gray-700 dark:text-gray-300">
+                      <span class="font-medium">用法说明：</span>用于揭示之前保密或未知的信息、秘密等。
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                  <div class="flex items-start mb-3">
+                    <div class="flex-shrink-0 h-6 w-6 rounded-full bg-word-primary/20 flex items-center justify-center mt-0.5">
+                      <span class="text-word-primary font-medium text-sm">3</span>
+                    </div>
+                    <h4 class="ml-3 text-lg font-medium text-gray-800 dark:text-white">名词用法："被揭示的事物"</h4>
+                  </div>
+                  <div class="ml-9">
+                    <p class="text-gray-900 dark:text-white font-medium mb-2">The book is full of surprising revelations.
+                      <button class="pronunciation-btn" onclick="speakSentence('The book is full of surprising revelations.')">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-400 italic">这本书充满了令人惊讶的揭示。</p>
+                    <div class="mt-3 p-3 bg-gray-100 dark:bg-gray-600/50 rounded text-sm text-gray-700 dark:text-gray-300">
+                      <span class="font-medium">用法说明：</span>作为名词时，常用复数形式表示"一系列揭示的事实或信息"。
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.7s">
+                  <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-4">常见搭配</h4>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="flex items-center">
+                      <span class="badge bg-word-primary/10 text-word-primary mr-2">reveal + 名词</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">secret, identity, truth</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="badge bg-word-primary/10 text-word-primary mr-2">形容词 + reveal</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">shocking, surprising, sudden</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="badge bg-word-primary/10 text-word-primary mr-2">固定短语</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">reveal itself, reveal all</span>
+                    </div>
+                    <div class="flex items-center">
+                      <span class="badge bg-word-primary/10 text-word-primary mr-2">名词短语</span>
+                      <span class="text-sm text-gray-600 dark:text-gray-400">big reveal, final reveal</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 6. 相关词根对比 -->
+        <section id="root-comparison" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">相关词根对比</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+            </div>
+            <div class="content-section">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.1s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">vel- / veil- (覆盖)</h3>
+                  <ul class="space-y-4">
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">veil
+                        <button class="pronunciation-btn" onclick="speakWord('veil')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">面纱、遮盖物</p>
+                    </li>
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">envelop
+                        <button class="pronunciation-btn" onclick="speakWord('envelop')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">包裹、信封</p>
+                    </li>
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">velvet
+                        <button class="pronunciation-btn" onclick="speakWord('velvet')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">天鹅绒（原指"被遮盖的织物"）</p>
+                    </li>
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">revel
+                        <button class="pronunciation-btn" onclick="speakWord('revel')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">狂欢（揭开遮盖，放纵自己）</p>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.3s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">cap- (抓取)</h3>
+                  <ul class="space-y-4">
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">capture
+                        <button class="pronunciation-btn" onclick="speakWord('capture')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">捕获、夺取</p>
+                    </li>
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">escape
+                        <button class="pronunciation-btn" onclick="speakWord('escape')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">逃跑、逃脱</p>
+                    </li>
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">capable
+                        <button class="pronunciation-btn" onclick="speakWord('capable')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">有能力的（能够抓住机会的）</p>
+                    </li>
+                    <li>
+                      <div class="font-medium text-gray-900 dark:text-white">caption
+                        <button class="pronunciation-btn" onclick="speakWord('caption')">
+                          <i class="fa fa-volume-up"></i>
+                        </button>
+                      </div>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">标题、字幕（抓住主要内容）</p>
+                    </li>
+                  </ul>
+                  <div class="mt-4 p-3 bg-word-primary/5 rounded-lg text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-medium">对比说明：</span>与"揭开"相对，这些词表达"抓取、控制"的概念，形成了意义上的对比。
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-6 p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3">词根记忆法</h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">
+                  记住 <span class="font-medium text-word-primary">vel-</span>
+                  <button class="pronunciation-btn" onclick="speakWord('vel-')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  表示"覆盖"，就可以将相关词汇串联起来记忆。<span class="font-medium">reveal</span>
+                  <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  是"揭开覆盖物"，<span class="font-medium">veil</span>
+                  <button class="pronunciation-btn" onclick="speakWord('veil')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  是"覆盖物"本身，<span class="font-medium">envelop</span>
+                  <button class="pronunciation-btn" onclick="speakWord('envelop')">
+                    <i class="fa fa-volume-up"></i>
+                  </button> 
+                  是"完全覆盖"。这种联想记忆法可以大大提高词汇记忆效率。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 7. 趣味文化角 -->
+        <section id="culture" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">趣味文化角</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300"></i>
+            </div>
+            <div class="content-section">
+              <div class="space-y-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.1s">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                      <i class="fa fa-history text-word-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">宗教与启示</h3>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    在中世纪欧洲，宗教场景中"神的启示"常用 <span class="font-medium text-word-primary">revelation</span>
+                    <button class="pronunciation-btn" onclick="speakWord('revelation')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    来表达，意味着"揭开神秘的面纱"，让凡人得以窥见神圣真理。《圣经》中的《启示录》(Revelation)
+                    <button class="pronunciation-btn" onclick="speakWord('Revelation')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    就是这一用法的著名例子。
+                  </p>
+                  <div class="flex justify-center">
+                    <img src="https://picsum.photos/id/1050/600/300" alt="Medieval painting depicting divine revelation" class="rounded-lg shadow-md max-w-full h-auto">
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.3s">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                      <i class="fa fa-film text-word-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">影视中的"大揭秘"</h3>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    英语里 <span class="font-medium text-word-primary">"big reveal"</span>
+                    <button class="pronunciation-btn" onclick="speakWord('big reveal')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    常用在影视/娱乐领域，指高潮时刻的"真相大白"。在悬疑剧和侦探故事中，这通常是整个剧情的转折点，所有线索汇集，谜团被揭开。
+                  </p>
+                  <div class="p-4 bg-gray-100 dark:bg-gray-600/50 rounded-lg">
+                    <p class="text-sm text-gray-700 dark:text-gray-300 italic">
+                      "The movie's big reveal at the end left the entire audience gasping in surprise."
+                      <button class="pronunciation-btn" onclick="speakSentence('The movie\'s big reveal at the end left the entire audience gasping in surprise.')">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      电影结尾的大揭秘让所有观众都惊讶得喘不过气来。
+                    </p>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">日常用法趣闻</h3>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">
+                    在时尚界，<span class="font-medium">reveal</span>
+                    <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    常用来描述时装秀上新品的发布，保留了"揭开帷幕"的原始含义。设计师们常说 "We're excited to reveal our new collection"
+                    <button class="pronunciation-btn" onclick="speakSentence('We\'re excited to reveal our new collection')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    （我们很兴奋地展示我们的新系列）。
+                  </p>
+                  <p class="text-gray-600 dark:text-gray-300">
+                    在科技领域，产品发布会也常用这个词，如 "Apple will reveal its latest iPhone next month"
+                    <button class="pronunciation-btn" onclick="speakSentence('Apple will reveal its latest iPhone next month')">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 
+                    （苹果公司将于下月发布最新款iPhone）。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 总结 -->
+        <section id="summary" class="mb-10 bg-gradient-to-r from-word-primary/10 to-word-secondary/10 dark:from-word-primary/20 dark:to-word-secondary/20 rounded-xl shadow-lg">
+          <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+            <h2 class="text-3xl font-bold mb-0 text-gray-800 dark:text-white">总结</h2>
+          </div>
+          
+          <div class="content-section">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+              <p class="text-xl text-gray-800 dark:text-white font-medium">
+                <span class="text-word-primary font-bold">reveal</span>
+                <button class="pronunciation-btn" onclick="speakWord('reveal')">
+                  <i class="fa fa-volume-up"></i>
+                </button> 
+                = 拉开帷幕 → 展现真相，和它的"对立面" <span class="text-word-secondary font-bold">veil</span>
+                <button class="pronunciation-btn" onclick="speakWord('veil')">
+                  <i class="fa fa-volume-up"></i>
+                </button> 
+                一起记，联想特别牢。
+              </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                <h3 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-lightbulb-o text-word-primary mr-2"></i> 核心记忆点
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 源自拉丁语"拉开帷幕"</li>
+                  <li>• 与"veil"(面纱) 对比记忆</li>
+                  <li>• 核心含义：揭示、展示</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                <h3 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-sign-language text-word-primary mr-2"></i> 常见搭配
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• reveal a secret</li>
+                  <li>• surprising revelation</li>
+                  <li>• the big reveal</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                <h3 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-graduation-cap text-word-primary mr-2"></i> 学习建议
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 掌握词源拓展图</li>
+                  <li>• 对比学习衍生词</li>
+                  <li>• 注意名词用法</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+              <button id="reviewQuizBtn" class="bg-word-primary hover:bg-word-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+                <i class="fa fa-question-circle mr-2"></i> 开始复习测验
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 测验模态框 -->
+  <div id="quizModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" id="quizOverlay"></div>
+      
+      <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-auto transform transition-all" id="quizContent">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="quizTitle">Reveal 复习测验</h3>
+          <button id="closeQuiz" class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="p-6" id="quizBody">
+          <!-- 测验内容将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700 space-x-3">
+          <button id="checkAnswersBtn" class="px-4 py-2 bg-word-primary hover:bg-word-primary/90 text-white rounded-lg transition-colors">
+            检查答案
+          </button>
+          <button id="closeQuizBtn" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            关闭
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-900 text-white py-16 mt-16">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-word-primary to-word-secondary flex items-center justify-center">
+              <i class="fa fa-book text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold">Word Insight</span>
+          </div>
+          <p class="text-gray-400 mb-6">专业的英语单词学习平台，通过词源、文化和用法全方位解析单词，让学习更高效。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-word-primary hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-word-primary hover:text-white transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-word-primary hover:text-white transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">单词分类</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">基础词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学术词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">商务词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">日常表达</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">词根词缀</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">学习资源</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学习方法</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">记忆技巧</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">词汇测验</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见错误</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学习计划</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">联系我们</h4>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fa fa-envelope-o text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">contact@wordinsight.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-globe text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">wordinsight.com</span>
+            </li>
+          </ul>
+          
+          <div class="mt-6">
+            <h5 class="text-sm font-medium mb-3 text-gray-300">订阅单词学习技巧</h5>
+            <form class="flex">
+              <input type="email" placeholder="Your email" class="px-4 py-2 rounded-l-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-word-primary text-sm w-full">
+              <button type="submit" class="bg-word-primary hover:bg-word-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2025 Word Insight. All rights reserved.</p>
+          <div class="flex space-x-6">
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Privacy Policy</a>
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Terms of Service</a>
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Cookie Policy</a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 回到顶部按钮 -->
+      <button id="backToTop" class="fixed bottom-8 right-8 bg-word-primary hover:bg-word-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 invisible">
+        <i class="fa fa-chevron-up"></i>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // 发音功能
+    function speakWord(word) {
+      // 使用浏览器内置的语音合成API
+      const utterance = new SpeechSynthesisUtterance(word);
+      // 设置为美式英语
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+    }
+    
+    function speakSentence(sentence) {
+      const utterance = new SpeechSynthesisUtterance(sentence);
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化模式设置
+      initMode();
+      
+      // 初始化卡片折叠功能
+      initRevealCards();
+      
+      // 初始化单词卡片翻转功能
+      initWordCardFlip();
+      
+      // 初始化帷幕动画
+      initCurtainAnimation();
+      
+      // 初始化滚动动画
+      initScrollAnimations();
+      
+      // 绑定事件处理
+      bindEventHandlers();
+      
+      // 初始化测验模态框
+      initQuizModal();
+    });
+    
+    // 初始化模式设置
+    function initMode() {
+      // 检查本地存储中的用户偏好
+      const userPreference = localStorage.getItem('modePreference');
+      
+      if (userPreference) {
+        // 应用用户偏好
+        if (userPreference === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else {
+        // 默认设置为light模式
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    
+    // 初始化卡片折叠功能
+    function initRevealCards() {
+      const revealHeaders = document.querySelectorAll('.reveal-header');
+      
+      revealHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const card = this.closest('.reveal-card');
+          const icon = this.querySelector('i');
+          
+          card.classList.toggle('collapsed');
+          if (card.classList.contains('collapsed')) {
+            icon.style.transform = 'rotate(0deg)';
+          } else {
+            icon.style.transform = 'rotate(180deg)';
+            // 触发动画
+            triggerRevealAnimations(card);
+          }
+        });
+      });
+      
+      // 默认折叠所有卡片
+      const revealCards = document.querySelectorAll('.reveal-card');
+      revealCards.forEach(card => {
+        card.classList.add('collapsed');
+        const icon = card.querySelector('.reveal-header i');
+        icon.style.transform = 'rotate(0deg)';
+      });
+    }
+    
+    // 触发揭示动画
+    function triggerRevealAnimations(container) {
+      const elements = container.querySelectorAll('.reveal-element');
+      elements.forEach(el => {
+        el.style.animation = 'none';
+        // 触发重排
+        el.offsetHeight;
+        el.style.animation = '';
+      });
+    }
+    
+    // 初始化单词卡片翻转功能
+    function initWordCardFlip() {
+      const wordCard = document.querySelector('.word-card');
+      
+      wordCard.addEventListener('click', function() {
+        this.classList.toggle('flipped');
+      });
+    }
+    
+    // 初始化帷幕动画
+    function initCurtainAnimation() {
+      const curtainBtn = document.getElementById('curtainBtn');
+      const leftCurtain = document.querySelector('.left-curtain');
+      const rightCurtain = document.querySelector('.right-curtain');
+      const stageContent = document.getElementById('stageContent');
+      let curtainOpen = false;
+      
+      curtainBtn.addEventListener('click', function() {
+        if (!curtainOpen) {
+          // 打开帷幕
+          leftCurtain.style.transform = 'translateX(-100%)';
+          leftCurtain.style.transition = 'transform 1.5s ease';
+          rightCurtain.style.transform = 'translateX(100%)';
+          rightCurtain.style.transition = 'transform 1.5s ease';
+          
+          // 显示舞台内容
+          setTimeout(() => {
+            stageContent.style.opacity = '1';
+            stageContent.style.transition = 'opacity 1s ease';
+          }, 1000);
+          
+          curtainBtn.textContent = '关闭帷幕';
+        } else {
+          // 关闭帷幕
+          leftCurtain.style.transform = 'translateX(0)';
+          rightCurtain.style.transform = 'translateX(0)';
+          stageContent.style.opacity = '0';
+          curtainBtn.textContent = '拉开帷幕';
+        }
+        
+        curtainOpen = !curtainOpen;
+      });
+    }
+    
+    // 初始化滚动动画
+    function initScrollAnimations() {
+      // 初始显示的元素
+      const initialElements = document.querySelectorAll('.reveal-element');
+      initialElements.forEach(el => {
+        el.classList.add('fade-in');
+      });
+      
+      // 监听滚动事件
+      window.addEventListener('scroll', function() {
+        const elements = document.querySelectorAll('.reveal-element:not(.fade-in)');
+        elements.forEach(el => {
+          const elementTop = el.getBoundingClientRect().top;
+          const elementVisible = 150;
+          
+          if (elementTop < window.innerHeight - elementVisible) {
+            el.classList.add('fade-in');
+          }
+        });
+        
+        // 更新学习进度
+        updateLearningProgress();
+      });
+    }
+    
+    // 更新学习进度
+    function updateLearningProgress() {
+      const sections = [
+        '#basic-info',
+        '#history',
+        '#derivatives',
+        '#etymology',
+        '#usage',
+        '#root-comparison',
+        '#culture',
+        '#summary'
+      ];
+      
+      let completedSections = 0;
+      
+      sections.forEach(section => {
+        const element = document.querySelector(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          // 如果元素顶部进入视口
+          if (rect.top < window.innerHeight * 0.75) {
+            completedSections++;
+          }
+        }
+      });
+      
+      const progress = (completedSections / sections.length) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+      document.querySelector('#progressBar').nextElementSibling.textContent = `${Math.round(progress)}%`;
+    }
+    
+    // 初始化测验模态框
+    function initQuizModal() {
+      const quizBody = document.getElementById('quizBody');
+      
+      // 测验题目
+      const questions = [
+        {
+          id: 1,
+          question: "What is the basic meaning of 'reveal'?",
+          options: [
+            "To hide something",
+            "To make something known that was hidden",
+            "To destroy something",
+            "To create something new"
+          ],
+          correct: 1
+        },
+        {
+          id: 2,
+          question: "Which word is derived from the same Latin root as 'reveal'?",
+          options: [
+            "Capture",
+            "Veil",
+            "Escape",
+            "Create"
+          ],
+          correct: 1
+        },
+        {
+          id: 3,
+          question: "What does 'revelation' mean?",
+          options: [
+            "A type of celebration",
+            "A sudden realization or disclosure",
+            "A type of clothing",
+            "A mathematical formula"
+          ],
+          correct: 1
+        },
+        {
+          id: 4,
+          question: "In which context is 'big reveal' commonly used?",
+          options: [
+            "Cooking",
+            "Automobile repair",
+            "Entertainment and storytelling",
+            "Agriculture"
+          ],
+          correct: 2
+        }
+      ];
+      
+      // 生成测验HTML
+      let quizHtml = '';
+      questions.forEach(question => {
+        quizHtml += `
+          <div class="mb-6 question" data-id="${question.id}">
+            <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-3">${question.id}. ${question.question}</h4>
+            <div class="space-y-2">
+              ${question.options.map((option, index) => `
+                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                  <input type="radio" name="question-${question.id}" value="${index}" class="text-word-primary focus:ring-word-primary mr-3">
+                  <span class="text-gray-700 dark:text-gray-300">${option}</span>
+                </label>
+              `).join('')}
+            </div>
+            <div class="mt-2 hidden feedback"></div>
+          </div>
+        `;
+      });
+      
+      quizBody.innerHTML = quizHtml;
+      
+      // 存储正确答案
+      quizBody.dataset.correctAnswers = JSON.stringify(
+        questions.reduce((acc, question) => {
+          acc[question.id] = question.correct;
+          return acc;
+        }, {})
+      );
+    }
+    
+    // 绑定事件处理函数
+    function bindEventHandlers() {
+      // 全局模式切换
+      const globalToggle = document.getElementById('globalToggle');
+      globalToggle.addEventListener('click', function() {
+        document.documentElement.classList.toggle('dark');
+        // 保存用户偏好到本地存储
+        const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('modePreference', mode);
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        // 如果搜索框是打开的，则关闭
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.classList.add('hidden');
+        }
+      });
+      
+      // 移动端搜索框切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        // 如果菜单是打开的，则关闭
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 回到顶部按钮
+      const backToTopBtn = document.getElementById('backToTop');
+      
+      window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.remove('opacity-0', 'invisible');
+          backToTopBtn.classList.add('opacity-100', 'visible');
+        } else {
+          backToTopBtn.classList.remove('opacity-100', 'visible');
+          backToTopBtn.classList.add('opacity-0', 'invisible');
+        }
+      });
+      
+      backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80, // 考虑导航栏高度
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+            
+            // 展开对应的卡片
+            const revealCard = targetElement.closest('.reveal-card');
+            if (revealCard && revealCard.classList.contains('collapsed')) {
+              revealCard.classList.remove('collapsed');
+              const icon = revealCard.querySelector('.reveal-header i');
+              icon.style.transform = 'rotate(180deg)';
+              // 触发动画
+              setTimeout(() => {
+                triggerRevealAnimations(revealCard);
+              }, 300);
+            }
+          }
+        });
+      });
+      
+      // 标记为已学习按钮
+      document.getElementById('markAsLearned').addEventListener('click', function() {
+        this.textContent = '已标记为学习';
+        this.classList.add('bg-green-600', 'hover:bg-green-700');
+        this.classList.remove('bg-word-primary', 'hover:bg-word-primary/90');
+        
+        // 更新进度为100%
+        document.getElementById('progressBar').style.width = '100%';
+        document.querySelector('#progressBar').nextElementSibling.textContent = '100%';
+        
+        // 显示提示
+        alert('恭喜！你已完成 "reveal" 这个单词的学习。');
+      });
+      
+      // 测验模态框
+      const quizModal = document.getElementById('quizModal');
+      const quizOverlay = document.getElementById('quizOverlay');
+      const closeQuiz = document.getElementById('closeQuiz');
+      const closeQuizBtn = document.getElementById('closeQuizBtn');
+      const reviewQuizBtn = document.getElementById('reviewQuizBtn');
+      const checkAnswersBtn = document.getElementById('checkAnswersBtn');
+      
+      // 打开测验
+      reviewQuizBtn.addEventListener('click', function() {
+        quizModal.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+      });
+      
+      // 关闭测验
+      function closeQuizModal() {
+        quizModal.classList.add('hidden');
+        document.body.style.overflow = '';
+      }
+      
+      closeQuiz.addEventListener('click', closeQuizModal);
+      closeQuizBtn.addEventListener('click', closeQuizModal);
+      quizOverlay.addEventListener('click', closeQuizModal);
+      
+      // 检查答案
+      checkAnswersBtn.addEventListener('click', function() {
+        const correctAnswers = JSON.parse(document.getElementById('quizBody').dataset.correctAnswers);
+        let score = 0;
+        let total = 0;
+        
+        // 检查每个问题
+        document.querySelectorAll('.question').forEach(question => {
+          const questionId = question.dataset.id;
+          const selectedOption = question.querySelector(`input[name="question-${questionId}"]:checked`);
+          const feedback = question.querySelector('.feedback');
+          
+          total++;
+          feedback.classList.remove('hidden', 'text-green-600', 'text-red-600', 'bg-green-50', 'bg-red-50', 'p-2', 'rounded');
+          
+          if (selectedOption) {
+            if (parseInt(selectedOption.value) === correctAnswers[questionId]) {
+              // 正确答案
+              feedback.classList.add('text-green-600', 'bg-green-50', 'p-2', 'rounded');
+              feedback.textContent = '正确！做得好。';
+              score++;
+            } else {
+              // 错误答案
+              feedback.classList.add('text-red-600', 'bg-red-50', 'p-2', 'rounded');
+              feedback.textContent = `错误。正确答案是: ${question.querySelectorAll('label')[correctAnswers[questionId]].querySelector('span').textContent}`;
+            }
+          } else {
+            // 未回答
+            feedback.classList.add('text-orange-600', 'bg-orange-50', 'p-2', 'rounded');
+            feedback.textContent = '请选择一个答案。';
+          }
+          
+          feedback.classList.add('block');
+        });
+        
+        // 显示总分
+        let scoreHtml = document.querySelector('.score-feedback');
+        if (!scoreHtml) {
+          scoreHtml = document.createElement('div');
+          scoreHtml.className = 'score-feedback mt-6 p-4 rounded-lg';
+          document.getElementById('quizBody').appendChild(scoreHtml);
+        }
+        
+        scoreHtml.textContent = `你的得分: ${score}/${total}`;
+        
+        if (score === total) {
+          scoreHtml.classList.add('bg-green-50', 'text-green-700');
+          scoreHtml.classList.remove('bg-yellow-50', 'text-yellow-700', 'bg-red-50', 'text-red-700');
+        } else if (score > 0) {
+          scoreHtml.classList.add('bg-yellow-50', 'text-yellow-700');
+          scoreHtml.classList.remove('bg-green-50', 'text-green-700', 'bg-red-50', 'text-red-700');
+        } else {
+          scoreHtml.classList.add('bg-red-50', 'text-red-700');
+          scoreHtml.classList.remove('bg-green-50', 'text-green-700', 'bg-yellow-50', 'text-yellow-700');
+        }
+      });
+      
+      // 按ESC键关闭模态框
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !quizModal.classList.contains('hidden')) {
+          closeQuizModal();
+        }
+      });
+    }
+  </script>
+</body>
+</html>
