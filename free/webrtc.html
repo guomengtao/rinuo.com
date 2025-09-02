@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebRTC服务API目录 | 开源与托管实时音视频解决方案</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            webrtc: {
+              primary: '#3B82F6',
+              secondary: '#10B981',
+              accent: '#F59E0B',
+              dark: '#1E293B',
+              light: '#EFF6FF'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .pulse-effect {
+        animation: pulse 2s infinite;
+      }
+      .float-effect {
+        animation: float 3s ease-in-out infinite;
+      }
+      .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .dark .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+      .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .dark .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.3);
+      }
+      .tag {
+        @apply px-2 py-1 rounded-full text-xs font-medium;
+      }
+      .badge {
+        @apply px-2.5 py-0.5 rounded-full text-xs font-medium;
+      }
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+      }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+        100% { transform: translateY(0px); }
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 nav-shadow transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-webrtc-primary to-webrtc-secondary flex items-center justify-center">
+            <i class="fa fa-video-camera text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">WebRTC Directory</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" id="searchInput" placeholder="搜索WebRTC服务或API..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-webrtc-primary/50 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-300 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" id="mobileSearchInput" placeholder="搜索WebRTC服务或API..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#overview" class="text-gray-600 hover:text-webrtc-primary dark:text-gray-300 dark:hover:text-webrtc-primary transition-colors py-2">概述</a>
+          <a href="#apis" class="text-gray-600 hover:text-webrtc-primary dark:text-gray-300 dark:hover:text-webrtc-primary transition-colors py-2">API列表</a>
+          <a href="#categories" class="text-gray-600 hover:text-webrtc-primary dark:text-gray-300 dark:hover:text-webrtc-primary transition-colors py-2">分类浏览</a>
+          <a href="#comparison" class="text-gray-600 hover:text-webrtc-primary dark:text-gray-300 dark:hover:text-webrtc-primary transition-colors py-2">服务对比</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner图 -->
+  <section class="relative h-[40vh] min-h-[300px] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800 opacity-70 z-10"></div>
+    <img src="https://picsum.photos/id/160/1920/1080" alt="WebRTC实时音视频通信概念图" class="absolute w-full h-full object-cover object-center">
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 max-w-3xl">WebRTC服务与API目录</h1>
+      <p class="text-xl text-gray-200 max-w-2xl mb-8">收集常见开源与托管WebRTC API/SDK，提供实时音视频通信能力</p>
+      <div class="flex flex-wrap gap-4">
+        <a href="#apis" class="bg-white text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+          浏览所有API
+        </a>
+        <a href="#categories" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-medium hover:bg-white/10 transition-colors">
+          按分类查看
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-webrtc-primary dark:text-gray-400 dark:hover:text-webrtc-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-webrtc-primary dark:text-gray-400 dark:hover:text-webrtc-primary">开发者资源</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">WebRTC服务目录</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg sidebar-shadow overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">目录导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#overview" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-dashboard text-webrtc-primary mr-3 w-5 text-center"></i>
+              <span>概述</span>
+            </a>
+            <a href="#apis" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-list-alt text-webrtc-primary mr-3 w-5 text-center"></i>
+              <span>API列表</span>
+            </a>
+            <a href="#categories" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-tags text-webrtc-primary mr-3 w-5 text-center"></i>
+              <span>分类浏览</span>
+            </a>
+            <a href="#comparison" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-balance-scale text-webrtc-primary mr-3 w-5 text-center"></i>
+              <span>服务对比</span>
+            </a>
+          </nav>
+          
+          <!-- 筛选面板 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-4">筛选条件</h3>
+            
+            <!-- 免费/付费筛选 -->
+            <div class="mb-6">
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">服务类型</h4>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" id="filter-free" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">免费服务</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" id="filter-paid" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">付费服务</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" id="filter-open-source" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">开源项目</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" id="filter-hosted" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">托管服务</span>
+                </label>
+              </div>
+            </div>
+            
+            <!-- 技术类型筛选 -->
+            <div class="mb-6">
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">技术类型</h4>
+              <div class="space-y-2">
+                <label class="flex items-center">
+                  <input type="checkbox" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600" value="SFU">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">SFU</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600" value="MCU">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">MCU</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600" value="P2P">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">P2P</span>
+                </label>
+                <label class="flex items-center">
+                  <input type="checkbox" class="rounded text-webrtc-primary focus:ring-webrtc-primary bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600" value="信令服务器">
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">信令服务器</span>
+                </label>
+              </div>
+            </div>
+            
+            <button id="filterButton" class="w-full bg-webrtc-primary hover:bg-webrtc-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+              应用筛选
+            </button>
+            <button id="resetFilterButton" class="w-full mt-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+              重置筛选
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 概述部分 -->
+        <section id="overview" class="mb-16 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h2 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">WebRTC服务概述</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-webrtc-light dark:bg-webrtc-dark/50 rounded-lg p-5 border border-webrtc-primary/10">
+              <div class="text-webrtc-primary mb-2">
+                <i class="fa fa-database text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">30+ 服务</h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm">收集各类WebRTC相关API与服务</p>
+            </div>
+            
+            <div class="bg-webrtc-light dark:bg-webrtc-dark/50 rounded-lg p-5 border border-webrtc-primary/10">
+              <div class="text-webrtc-secondary mb-2">
+                <i class="fa fa-code-fork text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">开源优先</h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm">精选高质量开源WebRTC解决方案</p>
+            </div>
+            
+            <div class="bg-webrtc-light dark:bg-webrtc-dark/50 rounded-lg p-5 border border-webrtc-primary/10">
+              <div class="text-webrtc-accent mb-2">
+                <i class="fa fa-refresh text-2xl"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-1 text-gray-800 dark:text-white">持续更新</h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm">最后更新: 2025-09-02 (版本 1.0.0)</p>
+            </div>
+          </div>
+          
+          <p class="text-gray-600 dark:text-gray-300 mb-6">
+            本目录收集了常见的开源与托管WebRTC API/SDK，提供实时音视频通信能力。WebRTC (Web Real-Time Communication) 是一项实时通讯技术，它允许网络应用或者站点，在不借助中间媒介的情况下，建立浏览器之间点对点（Peer-to-Peer）的连接，实现视频流和（或）音频流或者其他任意数据的传输。
+          </p>
+          
+          <div class="h-64 mb-6">
+            <canvas id="webrtcChart"></canvas>
+          </div>
+          
+          <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-3">什么是WebRTC？</h3>
+            <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+              WebRTC是一个免费、开放项目，通过简单的API为浏览器和移动应用提供实时通信（RTC）能力。它在2011年6月1日开源并在Google、Mozilla、Opera支持下被纳入万维网联盟的W3C推荐标准。
+            </p>
+            <a href="https://webrtc.org/" target="_blank" class="text-webrtc-primary dark:text-webrtc-primary hover:underline text-sm font-medium flex items-center">
+              了解更多关于WebRTC <i class="fa fa-external-link ml-1 text-xs"></i>
+            </a>
+          </div>
+        </section>
+        
+        <!-- API列表部分 -->
+        <section id="apis" class="mb-16">
+          <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white">WebRTC服务与API</h2>
+            <div class="mt-4 md:mt-0 flex items-center space-x-2">
+              <label for="sortSelect" class="text-sm text-gray-600 dark:text-gray-400">排序方式:</label>
+              <select id="sortSelect" class="bg-gray-100 dark:bg-gray-700 border-0 rounded-lg px-3 py-2 text-sm text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-webrtc-primary/50">
+                <option value="name">按名称</option>
+                <option value="free">免费优先</option>
+                <option value="open-source">开源优先</option>
+              </select>
+            </div>
+          </div>
+          
+          <!-- API卡片列表 -->
+          <div id="apiList" class="grid grid-cols-1 gap-6">
+            <!-- 卡片将通过JavaScript动态生成 -->
+          </div>
+          
+          <!-- 分页控件 -->
+          <div class="flex justify-center mt-10">
+            <nav class="inline-flex items-center space-x-1" aria-label="分页">
+              <a href="#" class="px-3 py-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa fa-angle-left"></i>
+              </a>
+              <a href="#" aria-current="page" class="px-4 py-2 rounded-md bg-webrtc-primary text-white font-medium">
+                1
+              </a>
+              <a href="#" class="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                2
+              </a>
+              <a href="#" class="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                3
+              </a>
+              <span class="px-2 py-2 text-gray-500 dark:text-gray-500">
+                ...
+              </span>
+              <a href="#" class="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                3
+              </a>
+              <a href="#" class="px-3 py-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa fa-angle-right"></i>
+              </a>
+            </nav>
+          </div>
+        </section>
+        
+        <!-- 分类浏览部分 -->
+        <section id="categories" class="mb-16 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h2 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">按分类浏览</h2>
+          
+          <div class="flex flex-wrap gap-3 mb-8" id="tagCloud">
+            <!-- 标签将通过JavaScript动态生成 -->
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fa fa-code text-webrtc-primary mr-2"></i> 开源解决方案
+              </h3>
+              <ul class="space-y-3" id="openSourceList">
+                <!-- 开源项目将通过JavaScript动态生成 -->
+              </ul>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fa fa-cloud text-webrtc-accent mr-2"></i> 托管服务
+              </h3>
+              <ul class="space-y-3" id="hostedServicesList">
+                <!-- 托管服务将通过JavaScript动态生成 -->
+              </ul>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 服务对比部分 -->
+        <section id="comparison" class="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+          <h2 class="text-3xl font-bold mb-6 text-gray-800 dark:text-white">WebRTC服务对比</h2>
+          
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead>
+                <tr>
+                  <th class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">服务名称</th>
+                  <th class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">类型</th>
+                  <th class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">免费</th>
+                  <th class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">架构</th>
+                  <th class="px-4 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">主要特点</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700" id="comparisonTable">
+                <!-- 对比数据将通过JavaScript动态生成 -->
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 详情模态框 -->
+  <div id="apiModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <div class="fixed inset-0 bg-black bg-opacity-50 transition-opacity" id="modalOverlay"></div>
+      
+      <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-3xl w-full mx-auto transform transition-all" id="modalContent">
+        <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
+          <h3 class="text-xl font-semibold text-gray-800 dark:text-white" id="modalTitle">API详情</h3>
+          <button id="closeModal" class="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="p-6 max-h-[70vh] overflow-y-auto" id="modalBody">
+          <!-- 详情内容将通过JavaScript动态生成 -->
+        </div>
+        
+        <div class="flex justify-end p-6 border-t border-gray-200 dark:border-gray-700 space-x-3">
+          <a id="modalDocumentationLink" href="#" target="_blank" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            查看文档
+          </a>
+          <a id="modalWebsiteLink" href="#" target="_blank" class="px-4 py-2 bg-webrtc-primary hover:bg-webrtc-primary/90 text-white rounded-lg transition-colors">
+            访问官网
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-900 text-white py-16 mt-16">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-webrtc-primary to-webrtc-secondary flex items-center justify-center">
+              <i class="fa fa-video-camera text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold">WebRTC Directory</span>
+          </div>
+          <p class="text-gray-400 mb-6">收集常见开源与托管WebRTC API/SDK，提供实时音视频通信能力的专业目录。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-webrtc-primary hover:text-white transition-colors">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-webrtc-primary hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-webrtc-primary hover:text-white transition-colors">
+              <i class="fa fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">快速链接</h4>
+          <ul class="space-y-3">
+            <li><a href="#overview" class="text-gray-400 hover:text-white transition-colors">概述</a></li>
+            <li><a href="#apis" class="text-gray-400 hover:text-white transition-colors">API列表</a></li>
+            <li><a href="#categories" class="text-gray-400 hover:text-white transition-colors">分类浏览</a></li>
+            <li><a href="#comparison" class="text-gray-400 hover:text-white transition-colors">服务对比</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">相关资源</h4>
+          <ul class="space-y-3">
+            <li><a href="https://webrtc.org/" target="_blank" class="text-gray-400 hover:text-white transition-colors">WebRTC官方网站</a></li>
+            <li><a href="https://github.com/webrtc/samples" target="_blank" class="text-gray-400 hover:text-white transition-colors">WebRTC示例</a></li>
+            <li><a href="https://developer.mozilla.org/zh-CN/docs/Web/API/WebRTC_API" target="_blank" class="text-gray-400 hover:text-white transition-colors">MDN WebRTC文档</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">WebRTC教程</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见问题</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">联系我们</h4>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fa fa-envelope-o text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">contact@webrtcdirectory.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-github text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">github.com/webrtc-directory</span>
+            </li>
+          </ul>
+          
+          <div class="mt-6">
+            <h5 class="text-sm font-medium mb-3 text-gray-300">订阅更新</h5>
+            <form class="flex">
+              <input type="email" placeholder="您的邮箱" class="px-4 py-2 rounded-l-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-webrtc-primary text-sm w-full">
+              <button type="submit" class="bg-webrtc-primary hover:bg-webrtc-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2025 WebRTC Directory. 保留所有权利.</p>
+          <div class="flex space-x-6">
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">隐私政策</a>
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">使用条款</a>
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Cookie 政策</a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 回到顶部按钮 -->
+      <button id="backToTop" class="fixed bottom-8 right-8 bg-webrtc-primary hover:bg-webrtc-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 invisible">
+        <i class="fa fa-chevron-up"></i>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // WebRTC服务数据
+    const webrtcData = {
+      "category": "WebRTC服务",
+      "description": "收集常见开源与托管WebRTC API/SDK，提供实时音视频通信能力",
+      "version": "1.0.0",
+      "last_updated": "2025-09-02",
+      "total_apis": 30,
+      "apis": [
+        {
+          "id": "webrtc-001",
+          "name": "Jitsi Meet",
+          "description": "开源WebRTC视频会议解决方案，支持自建与官方托管服务",
+          "endpoint": "https://meet.jit.si/external_api.js",
+          "method": "JavaScript API",
+          "parameters": {"roomName":"房间名","width":"iframe宽度","height":"iframe高度","parentNode":"容器DOM"},
+          "response_format": "JS对象",
+          "rate_limit": "受限于托管节点性能",
+          "is_free": true,
+          "documentation": "https://jitsi.github.io/handbook/docs/dev-guide/dev-guide-iframe",
+          "website": "https://jitsi.org",
+          "tags": ["开源","视频会议","嵌入式"]
+        },
+        {
+          "id": "webrtc-002",
+          "name": "Janus Gateway",
+          "description": "模块化WebRTC网关，支持SFU/MCU/录制/转码等插件",
+          "endpoint": "http://localhost:8088/janus",
+          "method": "POST / WebSocket",
+          "parameters": {"janus":"消息类型","transaction":"事务ID","session_id":"会话ID"},
+          "response_format": "JSON",
+          "rate_limit": "取决于服务器配置",
+          "is_free": true,
+          "documentation": "https://janus.conf.meetecho.com/docs/",
+          "website": "https://janus.conf.meetecho.com",
+          "tags": ["开源","SFU","插件化"]
+        },
+        {
+          "id": "webrtc-003",
+          "name": "Daily.co",
+          "description": "托管WebRTC服务，提供房间API与嵌入式视频SDK",
+          "endpoint": "https://api.daily.co/v1/rooms",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","name":"房间名","properties":"房间配置对象"},
+          "response_format": "JSON",
+          "rate_limit": "免费计划受限",
+          "is_free": true,
+          "documentation": "https://docs.daily.co/reference/rest-api/rooms",
+          "website": "https://www.daily.co",
+          "tags": ["托管服务","快速集成","REST API"]
+        },
+        {
+          "id": "webrtc-004",
+          "name": "Twilio Video",
+          "description": "Twilio 提供的托管 WebRTC API，支持跨平台实时视频和数据通道",
+          "endpoint": "https://video.twilio.com/v1/Rooms",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","UniqueName":"房间名","Type":"房间类型 (group, peer-to-peer)"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐限制",
+          "is_free": false,
+          "documentation": "https://www.twilio.com/docs/video",
+          "website": "https://www.twilio.com/video",
+          "tags": ["商业服务","REST API","跨平台"]
+        },
+        {
+          "id": "webrtc-005",
+          "name": "Agora.io",
+          "description": "声网实时音视频 SDK，提供WebRTC兼容的API接口",
+          "endpoint": "https://api.agora.io/v1/apps/{app_id}/cloud_recording",
+          "method": "POST",
+          "parameters": {"Authorization":"Basic {api_key}","cname":"频道名","uid":"用户ID"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐限制",
+          "is_free": false,
+          "documentation": "https://docs.agora.io/en",
+          "website": "https://www.agora.io",
+          "tags": ["商业服务","音视频","跨平台"]
+        },
+        {
+          "id": "webrtc-006",
+          "name": "100ms Live",
+          "description": "托管WebRTC视频会议 API，提供 SDK 与 REST 接口",
+          "endpoint": "https://api.100ms.live/v2/rooms",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","name":"房间名","description":"房间描述"},
+          "response_format": "JSON",
+          "rate_limit": "免费计划受限",
+          "is_free": true,
+          "documentation": "https://www.100ms.live/docs/server-side/v2/introduction",
+          "website": "https://www.100ms.live",
+          "tags": ["托管服务","视频会议","SDK"]
+        },
+        {
+          "id": "webrtc-007",
+          "name": "Mediasoup",
+          "description": "Node.js WebRTC SFU 库，用于构建自定义实时通信平台",
+          "endpoint": "本地运行",
+          "method": "Node.js API",
+          "parameters": {"rtpCapabilities":"客户端RTP能力","transportOptions":"传输配置"},
+          "response_format": "JS对象",
+          "rate_limit": "取决于服务器性能",
+          "is_free": true,
+          "documentation": "https://mediasoup.org/documentation/v3/",
+          "website": "https://mediasoup.org",
+          "tags": ["开源","SFU","Node.js"]
+        },
+        {
+          "id": "webrtc-008",
+          "name": "Pion WebRTC",
+          "description": "Go语言实现的WebRTC库，支持构建原生实时应用",
+          "endpoint": "本地运行",
+          "method": "Go API",
+          "parameters": {"ICEServers":"ICE配置","MediaEngine":"媒体引擎配置"},
+          "response_format": "Go结构体",
+          "rate_limit": "取决于服务器性能",
+          "is_free": true,
+          "documentation": "https://github.com/pion/webrtc",
+          "website": "https://pion.ly",
+          "tags": ["开源","Go语言","WebRTC库"]
+        },
+        {
+          "id": "webrtc-009",
+          "name": "OpenVidu",
+          "description": "WebRTC平台，支持多人会议、录制和直播功能",
+          "endpoint": "https://YOUR_OPENVIDU_SERVER:4443/api/sessions",
+          "method": "POST",
+          "parameters": {"Authorization":"Basic {api_key}","customSessionId":"会话ID"},
+          "response_format": "JSON",
+          "rate_limit": "自建服务器限制",
+          "is_free": true,
+          "documentation": "https://docs.openvidu.io/en/stable/",
+          "website": "https://openvidu.io",
+          "tags": ["开源","多人会议","录制"]
+        },
+        {
+          "id": "webrtc-010",
+          "name": "Kurento",
+          "description": "WebRTC媒体服务器，支持SFU/MCU/流媒体处理和录制",
+          "endpoint": "http://localhost:8888/kurento",
+          "method": "REST/WebSocket",
+          "parameters": {"jsonrpc":"消息格式","id":"事务ID"},
+          "response_format": "JSON",
+          "rate_limit": "取决于服务器",
+          "is_free": true,
+          "documentation": "https://doc-kurento.readthedocs.io/en/stable/",
+          "website": "https://www.kurento.org",
+          "tags": ["开源","媒体服务器","SFU/MCU"]
+        },
+        {
+          "id": "webrtc-011",
+          "name": "Ant Media Server",
+          "description": "低延迟WebRTC流媒体服务器，支持直播和互动",
+          "endpoint": "http://localhost:5080/LiveApp",
+          "method": "REST/WebSocket",
+          "parameters": {"app":"应用名","streamId":"流ID"},
+          "response_format": "JSON",
+          "rate_limit": "自建服务器限制",
+          "is_free": true,
+          "documentation": "https://antmedia.io/docs/",
+          "website": "https://antmedia.io",
+          "tags": ["开源","低延迟","直播"]
+        },
+        {
+          "id": "webrtc-012",
+          "name": "Mux Video",
+          "description": "托管低延迟视频流服务，提供WebRTC API",
+          "endpoint": "https://api.mux.com/video/v1/live-streams",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","playback_policy":"public/private"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://docs.mux.com/docs",
+          "website": "https://mux.com",
+          "tags": ["托管服务","低延迟","直播"]
+        },
+        {
+          "id": "webrtc-013",
+          "name": "Vonage Video API",
+          "description": "前身OpenTok，提供WebRTC视频通话和会议SDK",
+          "endpoint": "https://api.opentok.com/session/create",
+          "method": "POST",
+          "parameters": {"X-OPENTOK-AUTH":"api_key","mediaMode":"routed/p2p"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://developer.vonage.com/video",
+          "website": "https://www.vonage.com/video/",
+          "tags": ["商业服务","视频通话","WebRTC"]
+        },
+        {
+          "id": "webrtc-014",
+          "name": "LiveSwitch",
+          "description": "实时音视频SDK，支持SFU和MCU架构",
+          "endpoint": "https://api.liveswitch.io",
+          "method": "REST/SDK",
+          "parameters": {"AppId":"应用ID","UserId":"用户ID"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://www.liveswitch.io/docs/",
+          "website": "https://www.liveswitch.io",
+          "tags": ["托管服务","音视频","SFU/MCU"]
+        },
+        {
+          "id": "webrtc-015",
+          "name": "Daily API v2",
+          "description": "Daily.co 最新版本API，支持低延迟视频房间和屏幕共享",
+          "endpoint": "https://api.daily.co/v2/rooms",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","name":"房间名"},
+          "response_format": "JSON",
+          "rate_limit": "免费计划受限",
+          "is_free": true,
+          "documentation": "https://docs.daily.co/reference/rest-api/rooms",
+          "website": "https://www.daily.co",
+          "tags": ["托管服务","视频会议","屏幕共享"]
+        },
+        {
+          "id": "webrtc-016",
+          "name": "Scalelite",
+          "description": "BigBlueButton负载均衡器，用于WebRTC会议分发",
+          "endpoint": "https://your-scalelite-server/api",
+          "method": "POST/GET",
+          "parameters": {"token":"认证Token","meeting_id":"会议ID"},
+          "response_format": "JSON",
+          "rate_limit": "自建服务器限制",
+          "is_free": true,
+          "documentation": "https://github.com/blindsidenetworks/scalelite",
+          "website": "https://blindsidenetworks.github.io/scalelite/",
+          "tags": ["开源","负载均衡","会议分发"]
+        },
+        {
+          "id": "webrtc-017",
+          "name": "OpenVidu Pro",
+          "description": "OpenVidu商业版，支持高级功能与扩展",
+          "endpoint": "https://YOUR_OPENVIDU_SERVER:4443/api/sessions",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","customSessionId":"会话ID"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://docs.openvidu.io/",
+          "website": "https://openvidu.io",
+          "tags": ["商业服务","高级功能","录制"]
+        },
+        {
+          "id": "webrtc-018",
+          "name": "PeerJS Server",
+          "description": "WebRTC P2P库，提供轻量级信令服务器",
+          "endpoint": "https://peerjs.com/peers",
+          "method": "WebSocket",
+          "parameters": {"key":"API Key","peerId":"客户端ID"},
+          "response_format": "JSON",
+          "rate_limit": "取决于服务器配置",
+          "is_free": true,
+          "documentation": "https://peerjs.com/docs.html",
+          "website": "https://peerjs.com",
+          "tags": ["开源","P2P","信令"]
+        },
+        {
+          "id": "webrtc-019",
+          "name": "Twilio P2P",
+          "description": "Twilio P2P视频通话API，支持WebRTC端到端连接",
+          "endpoint": "https://video.twilio.com/v1/PeerConnections",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://www.twilio.com/docs/video",
+          "website": "https://www.twilio.com/video",
+          "tags": ["商业服务","P2P","视频通话"]
+        },
+        {
+          "id": "webrtc-020",
+          "name": "Pion SFU",
+          "description": "Pion WebRTC 的 SFU 示例，实现多用户音视频转发",
+          "endpoint": "本地运行",
+          "method": "Go API",
+          "parameters": {"ICEServers":"ICE配置","SFU配置":"多用户路由"},
+          "response_format": "Go结构体",
+          "rate_limit": "取决于服务器性能",
+          "is_free": true,
+          "documentation": "https://github.com/pion/sfu",
+          "website": "https://pion.ly",
+          "tags": ["开源","SFU","Go语言"]
+        },
+        {
+          "id": "webrtc-021",
+          "name": "MediaSoup SFU",
+          "description": "Mediasoup SFU插件化示例，支持多人房间",
+          "endpoint": "本地运行",
+          "method": "Node.js API",
+          "parameters": {"rtpCapabilities":"客户端RTP能力","transportOptions":"传输配置"},
+          "response_format": "JS对象",
+          "rate_limit": "取决于服务器性能",
+          "is_free": true,
+          "documentation": "https://mediasoup.org/documentation/v3/",
+          "website": "https://mediasoup.org",
+          "tags": ["开源","SFU","Node.js"]
+        },
+        {
+          "id": "webrtc-022",
+          "name": "Ant Media Cluster",
+          "description": "Ant Media商业版集群，支持WebRTC大规模直播",
+          "endpoint": "https://antmedia.io/api",
+          "method": "POST",
+          "parameters": {"app":"应用名","streamId":"流ID"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://antmedia.io/docs/",
+          "website": "https://antmedia.io",
+          "tags": ["商业服务","低延迟","直播"]
+        },
+        {
+          "id": "webrtc-023",
+          "name": "TokBox OpenTok",
+          "description": "托管WebRTC视频API，支持多人视频与屏幕共享",
+          "endpoint": "https://api.opentok.com/session/create",
+          "method": "POST",
+          "parameters": {"X-OPENTOK-AUTH":"api_key","mediaMode":"routed/p2p"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://developer.vonage.com/video",
+          "website": "https://www.vonage.com/video/",
+          "tags": ["商业服务","视频会议","屏幕共享"]
+        },
+        {
+          "id": "webrtc-024",
+          "name": "Zoom Video SDK",
+          "description": "Zoom提供的WebRTC SDK，用于自定义应用内视频通信",
+          "endpoint": "https://api.zoom.us/v2/users/me/meetings",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}","topic":"会议主题"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://marketplace.zoom.us/docs/sdk/video",
+          "website": "https://zoom.us",
+          "tags": ["商业服务","SDK","视频通信"]
+        },
+        {
+          "id": "webrtc-025",
+          "name": "Vonage P2P",
+          "description": "Vonage P2P API，支持低延迟音视频通信",
+          "endpoint": "https://api.opentok.com/peerconnections",
+          "method": "POST",
+          "parameters": {"Authorization":"Bearer {api_key}"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://developer.vonage.com/video",
+          "website": "https://www.vonage.com/video/",
+          "tags": ["商业服务","P2P","低延迟"]
+        },
+        {
+          "id": "webrtc-026",
+          "name": "Red5 Pro",
+          "description": "低延迟WebRTC流媒体服务器，支持直播与互动",
+          "endpoint": "https://api.red5pro.com",
+          "method": "REST",
+          "parameters": {"app":"应用名","streamId":"流ID"},
+          "response_format": "JSON",
+          "rate_limit": "按套餐",
+          "is_free": false,
+          "documentation": "https://www.red5pro.com/docs/",
+          "website": "https://www.red5pro.com",
+          "tags": ["商业服务","流媒体","低延迟"]
+        },
+        {
+          "id": "webrtc-027",
+          "name": "BigBlueButton",
+          "description": "开源在线课堂WebRTC平台，支持共享与录制",
+          "endpoint": "https://demo.bigbluebutton.org/bigbluebutton/api",
+          "method": "POST",
+          "parameters": {"meetingID":"会议ID","password":"会议密码"},
+          "response_format": "XML/JSON",
+          "rate_limit": "自建服务器限制",
+          "is_free": true,
+          "documentation": "https://docs.bigbluebutton.org/",
+          "website": "https://bigbluebutton.org",
+          "tags": ["开源","在线课堂","录制"]
+        },
+        {
+          "id": "webrtc-028",
+          "name": "WebRTC Experiments",
+          "description": "WebRTC实验项目集合，提供多种示例和API接口",
+          "endpoint": "https://webrtc.github.io/samples/",
+          "method": "JavaScript示例",
+          "parameters": {},
+          "response_format": "JS对象",
+          "rate_limit": "无限制",
+          "is_free": true,
+          "documentation": "https://webrtc.github.io/samples/",
+          "website": "https://webrtc.github.io",
+          "tags": ["开源","示例","学习"]
+        },
+        {
+          "id": "webrtc-029",
+          "name": "SimpleWebRTC",
+          "description": "开源WebRTC库，提供简化的P2P音视频接口",
+          "endpoint": "https://simplewebrtc.com",
+          "method": "JavaScript API",
+          "parameters": {"localVideo":"本地视频DOM","remoteVideos":"远程视频容器"},
+          "response_format": "JS对象",
+          "rate_limit": "无限制",
+          "is_free": true,
+          "documentation": "https://simplewebrtc.com/docs/",
+          "website": "https://simplewebrtc.com",
+          "tags": ["开源","P2P","简化API"]
+        },
+        {
+          "id": "webrtc-030",
+          "name": "Ant Media Community",
+          "description": "Ant Media开源社区版WebRTC服务器，支持直播与互动",
+          "endpoint": "http://localhost:5080/LiveApp",
+          "method": "REST/WebSocket",
+          "parameters": {"app":"应用名","streamId":"流ID"},
+          "response_format": "JSON",
+          "rate_limit": "自建服务器限制",
+          "is_free": true,
+          "documentation": "https://antmedia.io/docs/",
+          "website": "https://antmedia.io",
+          "tags": ["开源","低延迟","直播"]
+        }
+      ]
+    };
+
+    // 初始化页面数据
+    document.addEventListener('DOMContentLoaded', function() {
+      // 初始化模式设置
+      initMode();
+      
+      // 渲染API列表
+      renderApiList(webrtcData.apis);
+      
+      // 渲染标签云
+      renderTagCloud(webrtcData.apis);
+      
+      // 渲染分类列表
+      renderCategoryLists(webrtcData.apis);
+      
+      // 渲染对比表格
+      renderComparisonTable(webrtcData.apis.slice(0, 10)); // 只显示前10个进行对比
+      
+      // 初始化图表
+      initChart();
+      
+      // 绑定事件处理
+      bindEventHandlers();
+    });
+    
+    // 初始化模式设置
+    function initMode() {
+      // 检查本地存储中的用户偏好
+      const userPreference = localStorage.getItem('modePreference');
+      
+      if (userPreference) {
+        // 应用用户偏好
+        if (userPreference === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else {
+        // 默认设置为light模式
+        document.documentElement.classList.remove('dark');
+      }
+    }
+    
+    // 渲染API列表
+    function renderApiList(apis) {
+      const apiListContainer = document.getElementById('apiList');
+      apiListContainer.innerHTML = '';
+      
+      apis.forEach(api => {
+        const apiCard = document.createElement('div');
+        apiCard.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-md card-hover border border-gray-100 dark:border-gray-700 overflow-hidden';
+        apiCard.setAttribute('data-id', api.id);
+        
+        // 生成标签HTML
+        const tagsHtml = api.tags.map(tag => `
+          <span class="tag bg-webrtc-primary/10 text-webrtc-primary dark:bg-webrtc-primary/20">${tag}</span>
+        `).join('');
+        
+        apiCard.innerHTML = `
+          <div class="p-6">
+            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+              <div>
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-1">${api.name}</h3>
+                <p class="text-gray-600 dark:text-gray-300 text-sm">${api.description}</p>
+              </div>
+              <div class="mt-3 md:mt-0 flex items-center">
+                ${api.is_free ? 
+                  '<span class="badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 mr-2">免费</span>' : 
+                  '<span class="badge bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300 mr-2">付费</span>'}
+                <span class="badge bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">${api.method}</span>
+              </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-2 mb-4">
+              ${tagsHtml}
+            </div>
+            
+            <div class="pt-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+              <div class="text-sm text-gray-500 dark:text-gray-400 mb-3 sm:mb-0">
+                <span class="block sm:inline mr-4"><i class="fa fa-link mr-1"></i> ${api.endpoint.length > 50 ? api.endpoint.substring(0, 50) + '...' : api.endpoint}</span>
+              </div>
+              <button class="view-details-btn px-4 py-2 bg-webrtc-primary hover:bg-webrtc-primary/90 text-white rounded-lg transition-colors text-sm font-medium" data-id="${api.id}">
+                查看详情
+              </button>
+            </div>
+          </div>
+        `;
+        
+        apiListContainer.appendChild(apiCard);
+      });
+      
+      // 绑定详情按钮事件
+      document.querySelectorAll('.view-details-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const apiId = this.getAttribute('data-id');
+          showApiDetails(apiId);
+        });
+      });
+    }
+    
+    // 渲染标签云
+    function renderTagCloud(apis) {
+      const tagCloudContainer = document.getElementById('tagCloud');
+      const tags = new Set();
+      
+      // 收集所有标签
+      apis.forEach(api => {
+        api.tags.forEach(tag => tags.add(tag));
+      });
+      
+      // 生成标签HTML
+      tags.forEach(tag => {
+        const tagElement = document.createElement('a');
+        tagElement.href = '#';
+        tagElement.className = 'tag bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 hover:bg-webrtc-primary hover:text-white dark:hover:bg-webrtc-primary transition-colors';
+        tagElement.textContent = tag;
+        tagCloudContainer.appendChild(tagElement);
+      });
+    }
+    
+    // 渲染分类列表
+    function renderCategoryLists(apis) {
+      const openSourceList = document.getElementById('openSourceList');
+      const hostedServicesList = document.getElementById('hostedServicesList');
+      
+      // 筛选开源项目和托管服务
+      const openSourceProjects = apis.filter(api => api.tags.includes('开源')).slice(0, 5);
+      const hostedServices = apis.filter(api => api.tags.includes('托管服务')).slice(0, 5);
+      
+      // 渲染开源项目
+      openSourceProjects.forEach(api => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-webrtc-primary dark:hover:text-webrtc-primary transition-colors flex justify-between items-center view-details-link" data-id="${api.id}">
+            <span>${api.name}</span>
+            <i class="fa fa-angle-right text-gray-400"></i>
+          </a>
+        `;
+        openSourceList.appendChild(listItem);
+      });
+      
+      // 渲染托管服务
+      hostedServices.forEach(api => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `
+          <a href="#" class="text-gray-700 dark:text-gray-300 hover:text-webrtc-primary dark:hover:text-webrtc-primary transition-colors flex justify-between items-center view-details-link" data-id="${api.id}">
+            <span>${api.name}</span>
+            <i class="fa fa-angle-right text-gray-400"></i>
+          </a>
+        `;
+        hostedServicesList.appendChild(listItem);
+      });
+      
+      // 绑定详情链接事件
+      document.querySelectorAll('.view-details-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const apiId = this.getAttribute('data-id');
+          showApiDetails(apiId);
+        });
+      });
+    }
+    
+    // 渲染对比表格
+    function renderComparisonTable(apis) {
+      const tableBody = document.getElementById('comparisonTable');
+      tableBody.innerHTML = '';
+      
+      apis.forEach(api => {
+        // 确定架构类型
+        let architecture = '未知';
+        if (api.tags.includes('SFU')) architecture = 'SFU';
+        else if (api.tags.includes('MCU')) architecture = 'MCU';
+        else if (api.tags.includes('P2P')) architecture = 'P2P';
+        
+        // 确定服务类型
+        let type = [];
+        if (api.tags.includes('开源')) type.push('开源');
+        if (api.tags.includes('托管服务')) type.push('托管');
+        if (api.tags.includes('商业服务')) type.push('商业');
+        if (type.length === 0) type.push('其他');
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td class="px-4 py-4 whitespace-nowrap">
+            <div class="font-medium text-gray-900 dark:text-white view-details-link" data-id="${api.id}">${api.name}</div>
+          </td>
+          <td class="px-4 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600 dark:text-gray-400">${type.join(', ')}</div>
+          </td>
+          <td class="px-4 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600 dark:text-gray-400">${api.is_free ? '是' : '否'}</div>
+          </td>
+          <td class="px-4 py-4 whitespace-nowrap">
+            <div class="text-sm text-gray-600 dark:text-gray-400">${architecture}</div>
+          </td>
+          <td class="px-4 py-4">
+            <div class="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">${api.description}</div>
+          </td>
+        `;
+        tableBody.appendChild(row);
+      });
+      
+      // 绑定表格中的详情链接事件
+      document.querySelectorAll('#comparisonTable .view-details-link').forEach(link => {
+        link.addEventListener('click', function() {
+          const apiId = this.getAttribute('data-id');
+          showApiDetails(apiId);
+        });
+      });
+    }
+    
+    // 显示API详情
+    function showApiDetails(apiId) {
+      const api = webrtcData.apis.find(item => item.id === apiId);
+      if (!api) return;
+      
+      // 生成参数HTML
+      let parametersHtml = '<ul class="space-y-2">';
+      if (Object.keys(api.parameters).length > 0) {
+        for (const [key, value] of Object.entries(api.parameters)) {
+          parametersHtml += `
+            <li class="flex">
+              <span class="font-medium text-gray-900 dark:text-white mr-2">${key}:</span>
+              <span class="text-gray-600 dark:text-gray-400">${value}</span>
+            </li>
+          `;
+        }
+      } else {
+        parametersHtml += '<li class="text-gray-600 dark:text-gray-400">无参数</li>';
+      }
+      parametersHtml += '</ul>';
+      
+      // 生成标签HTML
+      const tagsHtml = api.tags.map(tag => `
+        <span class="tag bg-webrtc-primary/10 text-webrtc-primary dark:bg-webrtc-primary/20 mr-2 mb-2 inline-block">${tag}</span>
+      `).join('');
+      
+      // 更新模态框内容
+      document.getElementById('modalTitle').textContent = api.name;
+      document.getElementById('modalBody').innerHTML = `
+        <div class="mb-6">
+          <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">描述</h4>
+          <p class="text-gray-600 dark:text-gray-300">${api.description}</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">端点</h4>
+            <p class="text-gray-600 dark:text-gray-300 font-mono text-sm bg-gray-100 dark:bg-gray-700 p-3 rounded-lg overflow-x-auto">${api.endpoint}</p>
+          </div>
+          
+          <div>
+            <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">方法</h4>
+            <p class="text-gray-600 dark:text-gray-300">${api.method}</p>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">参数</h4>
+          ${parametersHtml}
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">响应格式</h4>
+            <p class="text-gray-600 dark:text-gray-300">${api.response_format}</p>
+          </div>
+          
+          <div>
+            <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">速率限制</h4>
+            <p class="text-gray-600 dark:text-gray-300">${api.rate_limit}</p>
+          </div>
+        </div>
+        
+        <div class="mb-6">
+          <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">标签</h4>
+          <div>
+            ${tagsHtml}
+          </div>
+        </div>
+      `;
+      
+      // 更新按钮链接
+      document.getElementById('modalDocumentationLink').href = api.documentation;
+      document.getElementById('modalWebsiteLink').href = api.website;
+      
+      // 显示模态框
+      document.getElementById('apiModal').classList.remove('hidden');
+      document.body.style.overflow = 'hidden'; // 防止背景滚动
+    }
+    
+    // 初始化图表
+    function initChart() {
+      const ctx = document.getElementById('webrtcChart').getContext('2d');
+      
+      // 统计数据
+      const openSourceCount = webrtcData.apis.filter(api => api.tags.includes('开源')).length;
+      const hostedCount = webrtcData.apis.filter(api => api.tags.includes('托管服务')).length;
+      const commercialCount = webrtcData.apis.filter(api => api.tags.includes('商业服务')).length;
+      const freeCount = webrtcData.apis.filter(api => api.is_free).length;
+      const paidCount = webrtcData.apis.total_apis - freeCount;
+      
+      // 检测暗黑模式
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const textColor = isDarkMode ? '#e5e7eb' : '#4b5563';
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['开源项目', '托管服务', '商业服务', '免费服务', '付费服务'],
+          datasets: [{
+            label: '服务数量',
+            data: [openSourceCount, hostedCount, commercialCount, freeCount, paidCount],
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.7)', // 绿色 - 开源
+              'rgba(59, 130, 246, 0.7)', // 蓝色 - 托管
+              'rgba(245, 158, 11, 0.7)', // 黄色 - 商业
+              'rgba(79, 70, 229, 0.7)',  // 紫色 - 免费
+              'rgba(239, 68, 68, 0.7)'   // 红色 - 付费
+            ],
+            borderColor: [
+              'rgb(16, 185, 129)',
+              'rgb(59, 130, 246)',
+              'rgb(245, 158, 11)',
+              'rgb(79, 70, 229)',
+              'rgb(239, 68, 68)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                precision: 0,
+                color: textColor
+              },
+              grid: {
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+              }
+            },
+            x: {
+              ticks: {
+                color: textColor
+              },
+              grid: {
+                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              display: false
+            }
+          }
+        }
+      });
+    }
+    
+    // 绑定事件处理函数
+    function bindEventHandlers() {
+      // 全局模式切换
+      const globalToggle = document.getElementById('globalToggle');
+      globalToggle.addEventListener('click', function() {
+        document.documentElement.classList.toggle('dark');
+        // 保存用户偏好到本地存储
+        const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('modePreference', mode);
+        // 更新图表颜色
+        initChart();
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        // 如果搜索框是打开的，则关闭
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.classList.add('hidden');
+        }
+      });
+      
+      // 移动端搜索框切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        // 如果菜单是打开的，则关闭
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 关闭模态框
+      document.getElementById('closeModal').addEventListener('click', closeModal);
+      document.getElementById('modalOverlay').addEventListener('click', closeModal);
+      
+      // 搜索功能
+      const searchInput = document.getElementById('searchInput');
+      const mobileSearchInput = document.getElementById('mobileSearchInput');
+      
+      [searchInput, mobileSearchInput].forEach(input => {
+        input.addEventListener('input', function() {
+          const searchTerm = this.value.toLowerCase().trim();
+          const filteredApis = webrtcData.apis.filter(api => 
+            api.name.toLowerCase().includes(searchTerm) || 
+            api.description.toLowerCase().includes(searchTerm) ||
+            api.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+          );
+          renderApiList(filteredApis);
+        });
+      });
+      
+      // 筛选按钮
+      document.getElementById('filterButton').addEventListener('click', function() {
+        const isFree = document.getElementById('filter-free').checked;
+        const isPaid = document.getElementById('filter-paid').checked;
+        const isOpenSource = document.getElementById('filter-open-source').checked;
+        const isHosted = document.getElementById('filter-hosted').checked;
+        
+        let filteredApis = [...webrtcData.apis];
+        
+        // 应用免费/付费筛选
+        if (isFree && !isPaid) {
+          filteredApis = filteredApis.filter(api => api.is_free);
+        } else if (!isFree && isPaid) {
+          filteredApis = filteredApis.filter(api => !api.is_free);
+        }
+        
+        // 应用开源/托管筛选
+        if (isOpenSource && !isHosted) {
+          filteredApis = filteredApis.filter(api => api.tags.includes('开源'));
+        } else if (!isOpenSource && isHosted) {
+          filteredApis = filteredApis.filter(api => api.tags.includes('托管服务'));
+        }
+        
+        renderApiList(filteredApis);
+      });
+      
+      // 重置筛选按钮
+      document.getElementById('resetFilterButton').addEventListener('click', function() {
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+          checkbox.checked = false;
+        });
+        renderApiList(webrtcData.apis);
+      });
+      
+      // 排序功能
+      document.getElementById('sortSelect').addEventListener('change', function() {
+        const sortBy = this.value;
+        let sortedApis = [...webrtcData.apis];
+        
+        switch (sortBy) {
+          case 'name':
+            sortedApis.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+          case 'free':
+            sortedApis.sort((a, b) => (b.is_free ? 1 : 0) - (a.is_free ? 1 : 0));
+            break;
+          case 'open-source':
+            sortedApis.sort((a, b) => {
+              const aHasTag = a.tags.includes('开源') ? 1 : 0;
+              const bHasTag = b.tags.includes('开源') ? 1 : 0;
+              return bHasTag - aHasTag;
+            });
+            break;
+        }
+        
+        renderApiList(sortedApis);
+      });
+      
+      // 回到顶部按钮
+      const backToTopBtn = document.getElementById('backToTop');
+      
+      window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.remove('opacity-0', 'invisible');
+          backToTopBtn.classList.add('opacity-100', 'visible');
+        } else {
+          backToTopBtn.classList.remove('opacity-100', 'visible');
+          backToTopBtn.classList.add('opacity-0', 'invisible');
+        }
+      });
+      
+      backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80, // 考虑导航栏高度
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+          }
+        });
+      });
+    }
+    
+    // 关闭模态框
+    function closeModal() {
+      document.getElementById('apiModal').classList.add('hidden');
+      document.body.style.overflow = ''; // 恢复背景滚动
+    }
+    
+    // 按ESC键关闭模态框
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !document.getElementById('apiModal').classList.contains('hidden')) {
+        closeModal();
+      }
+    });
+  </script>
+</body>
+</html>
+    
