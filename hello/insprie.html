@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Inspire | 专业英语单词学习</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            word: {
+              primary: '#6366F1', // 靛蓝色，代表知识和智慧
+              secondary: '#EC4899', // 粉红色，用于强调和互动元素
+              accent: '#F59E0B', // 琥珀色，用于重点内容
+              dark: '#1E293B',
+              light: '#F8FAFC'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .reveal-card {
+        transition: max-height 0.8s ease, opacity 0.8s ease, padding 0.8s ease;
+        max-height: 1000px;
+        overflow: hidden;
+      }
+      .reveal-card.collapsed {
+        max-height: 80px;
+        opacity: 0.8;
+      }
+      .fade-in {
+        animation: fadeIn 1s ease forwards;
+        opacity: 0;
+      }
+      .word-card {
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        perspective: 1000px;
+      }
+      .word-card.flipped .front {
+        transform: rotateY(180deg);
+      }
+      .word-card.flipped .back {
+        transform: rotateY(0deg);
+      }
+      .front, .back {
+        backface-visibility: hidden;
+        transition: transform 0.6s;
+      }
+      .back {
+        transform: rotateY(180deg);
+      }
+      .timeline-line {
+        stroke-dasharray: 1000;
+        stroke-dashoffset: 1000;
+        animation: dash 2s linear forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes dash {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .dark .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+      .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .dark .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+      }
+      .tag {
+        @apply px-2 py-1 rounded-full text-xs font-medium;
+      }
+      .badge {
+        @apply px-2.5 py-0.5 rounded-full text-xs font-medium;
+      }
+      .content-section {
+        @apply py-6 px-6;
+      }
+      .pronunciation-btn {
+        @apply ml-2 text-word-primary hover:text-word-primary/80 cursor-not-allowed transition-colors;
+      }
+      
+      /* 针对inspire的动画效果 */
+      @keyframes breathe {
+        0%, 100% { transform: scale(1); opacity: 0.6; }
+        50% { transform: scale(1.05); opacity: 1; }
+      }
+      
+      .spir-root {
+        display: inline-block;
+        animation: breathe 2s infinite ease-in-out;
+        color: #6366F1;
+        font-weight: bold;
+        position: relative;
+      }
+      
+      .spir-root::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 120%;
+        height: 120%;
+        background: rgba(99, 102, 241, 0.2);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        z-index: -1;
+        animation: pulse 2s infinite ease-in-out;
+      }
+      
+      @keyframes pulse {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+        50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.3; }
+      }
+      
+      @keyframes inhale {
+        from { transform: translateX(-50px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+      }
+      
+      .prefix-in {
+        display: inline-block;
+        animation: inhale 1s ease-out forwards;
+      }
+      
+      @keyframes spark {
+        0%, 100% { opacity: 0; transform: scale(0.5); }
+        50% { opacity: 1; transform: scale(1.2); }
+      }
+      
+      .inspire-spark {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #F59E0B;
+        border-radius: 50%;
+        animation: spark 1s infinite ease-in-out;
+        pointer-events: none;
+      }
+      
+      @keyframes glow {
+        from { text-shadow: none; color: inherit; opacity: 0; }
+        to { text-shadow: 0 0 8px rgba(245, 158, 11, 0.6), 0 0 12px rgba(236, 72, 153, 0.4); color: #F59E0B; opacity: 1; }
+      }
+      
+      .inspire-glow {
+        animation: glow 1.5s ease forwards;
+      }
+      
+      @keyframes combine {
+        0% { transform: translateX(-20px); opacity: 0; }
+        50% { transform: translateX(10px); opacity: 0.5; }
+        100% { transform: translateX(0); opacity: 1; }
+      }
+      
+      .root-combine {
+        display: inline-block;
+        animation: combine 1.2s ease forwards;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 nav-shadow transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-word-primary to-word-secondary flex items-center justify-center">
+            <i class="fa fa-book text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">Word Insight</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" id="searchInput" placeholder="Search for a word..." value="inspire" class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-word-primary/50 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-300 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" id="mobileSearchInput" placeholder="Search for a word..." value="inspire" class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#basic-info" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">基本信息</a>
+          <a href="#etymology" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">词源故事</a>
+          <a href="#history" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">历史文化</a>
+          <a href="#usage" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">用法示例</a>
+          <a href="#derivatives" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">衍生词</a>
+          <a href="#related-words" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">相关词汇</a>
+          <a href="#memory-tips" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">记忆技巧</a>
+          <a href="#quiz" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">小测验</a>
+          <a href="#summary" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">总结</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Banner图 -->
+  <section class="relative h-[40vh] min-h-[300px] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800 opacity-70 z-10"></div>
+    <img src="https://picsum.photos/id/1060/1920/1080" alt="Inspirational landscape with light breaking through clouds" class="absolute w-full h-full object-cover object-center">
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <div class="relative">
+        <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 max-w-3xl reveal-element" style="animation-delay: 0.2s">
+          <span class="prefix-in">in</span><span class="spir-root">spire</span>
+          <button class="pronunciation-btn" title="语音功能已禁用">
+            <i class="fa fa-volume-up"></i>
+          </button>
+        </h1>
+        <div id="sparkContainer" class="absolute -top-10 -left-10 w-full h-full"></div>
+      </div>
+      <p class="text-xl text-gray-200 max-w-2xl mb-8 reveal-element" style="animation-delay: 0.4s">/ɪnˈspaɪər/ — to fill someone with the urge or ability to do or feel something, especially to do something creative
+        <button class="pronunciation-btn" title="语音功能已禁用">
+          <i class="fa fa-volume-up"></i>
+        </button>
+      </p>
+      <div class="flex flex-wrap gap-4 reveal-element" style="animation-delay: 0.6s">
+        <a href="#basic-info" class="bg-white text-gray-800 px-6 py-3 rounded-lg font-medium hover:bg-gray-100 transition-colors">
+          开始学习
+        </a>
+        <a href="#summary" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-lg font-medium hover:bg-white/10 transition-colors">
+          查看总结
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-word-primary dark:text-gray-400 dark:hover:text-word-primary">
+              <i class="fa fa-home mr-1"></i> Home
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-word-primary dark:text-gray-400 dark:hover:text-word-primary">Vocabulary</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">Inspire</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg sidebar-shadow overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#basic-info" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-info-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>基本信息</span>
+            </a>
+            <a href="#etymology" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-sitemap text-word-primary mr-3 w-5 text-center"></i>
+              <span>词源故事</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history text-word-primary mr-3 w-5 text-center"></i>
+              <span>历史文化</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment text-word-primary mr-3 w-5 text-center"></i>
+              <span>用法示例</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork text-word-primary mr-3 w-5 text-center"></i>
+              <span>衍生词</span>
+            </a>
+            <a href="#related-words" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-link text-word-primary mr-3 w-5 text-center"></i>
+              <span>相关词汇</span>
+            </a>
+            <a href="#memory-tips" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-lightbulb-o text-word-primary mr-3 w-5 text-center"></i>
+              <span>记忆技巧</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>小测验</span>
+            </a>
+            <a href="#summary" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-check-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>总结</span>
+            </a>
+          </nav>
+          
+          <!-- 单词学习进度 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-4">学习进度</h3>
+            
+            <div class="space-y-4">
+              <div>
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="text-gray-600 dark:text-gray-400">完成度</span>
+                  <span class="text-gray-600 dark:text-gray-400">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div class="bg-word-primary h-2 rounded-full" style="width: 0%" id="progressBar"></div>
+                </div>
+              </div>
+              
+              <button id="markAsLearned" class="w-full bg-word-primary hover:bg-word-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                标记为已学习
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 1. 基本信息 -->
+        <section id="basic-info" class="mb-10 bg-white dark:bg-gray-800 rounded-xl shadow-lg card-hover">
+          <div class="flex justify-between items-center p-6 border-b border-gray-100 dark:border-gray-700">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white">基本信息</h2>
+            <span class="badge bg-word-primary/10 text-word-primary dark:bg-word-primary/20">核心词汇</span>
+          </div>
+          
+          <div class="content-section">
+            <div class="word-card relative h-64 w-full">
+              <div class="front absolute w-full h-full backface-visibility-hidden bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 flex flex-col justify-center items-center transition-all duration-500">
+                <h3 class="text-5xl font-bold text-word-primary mb-4 inspire-glow">
+                  <span class="prefix-in">in</span><span class="spir-root">spire</span>
+                  <button class="pronunciation-btn" title="语音功能已禁用">
+                    <i class="fa fa-volume-up"></i>
+                  </button>
+                </h3>
+                <p class="text-xl text-gray-600 dark:text-gray-400 italic mb-6">/ɪnˈspaɪər/</p>
+                <p class="text-center text-gray-700 dark:text-gray-300 max-w-md">点击卡片查看更多信息</p>
+                <i class="fa fa-refresh text-gray-400 absolute bottom-4"></i>
+              </div>
+              <div class="back absolute w-full h-full backface-visibility-hidden bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6 transition-all duration-500">
+                <div class="space-y-4">
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">单词</h4>
+                    <p class="text-xl font-semibold text-gray-800 dark:text-white">
+                      <span class="prefix-in">in</span><span class="spir-root">spire</span>
+                      <button class="pronunciation-btn" title="语音功能已禁用">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">音标</h4>
+                    <p class="text-lg text-gray-700 dark:text-gray-300 italic">/ɪnˈspaɪər/</p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">词根</h4>
+                    <p class="text-lg text-gray-700 dark:text-gray-300">拉丁语 <span class="spir-root">inspirare</span>
+                      <button class="pronunciation-btn" title="语音功能已禁用">
+                        <i class="fa fa-volume-up"></i>
+                      </button>
+                      （"吹入、吸入"）
+                    </p>
+                  </div>
+                  <div>
+                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">核心含义</h4>
+                    <p class="text-lg text-gray-700 dark:text-gray-300">吹入 → 赋予灵感、激发</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-verb text-word-primary mr-2"></i> 词性
+                </h4>
+                <ul class="space-y-2">
+                  <li class="flex items-center">
+                    <span class="badge bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 mr-2">动词</span>
+                    <span class="text-gray-700 dark:text-gray-300">激发、鼓舞、赋予灵感</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-star text-word-primary mr-2"></i> 常见程度
+                </h4>
+                <div class="flex items-center mb-2">
+                  <div class="flex">
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                  </div>
+                  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">高频核心词汇</span>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">在各类场景中广泛使用，是表达创意与激励的必备词汇</p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 2. 词源故事 -->
+        <section id="etymology" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">词源故事</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 opacity-10">
+                  <i class="fa fa-wind text-6xl text-word-primary"></i>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 mb-4 reveal-element" style="animation-delay: 0.1s">
+                  <span class="font-medium text-gray-800 dark:text-white">inspire</span> 源自拉丁语 
+                  <span class="spir-root">inspirare</span>
+                  <button class="pronunciation-btn" title="语音功能已禁用">
+                    <i class="fa fa-volume-up"></i>
+                  </button>
+                  ，这个词由两部分组成：
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 reveal-element" style="animation-delay: 0.3s">
+                  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <p class="font-semibold text-word-primary text-lg prefix-in">in-</p>
+                    <p class="text-gray-600 dark:text-gray-400">前缀，意为"进入、向内"</p>
+                  </div>
+                  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <p class="font-semibold text-word-primary text-lg spir-root">spirare</p>
+                    <p class="text-gray-600 dark:text-gray-400">动词，意为"呼吸、吹气"</p>
+                  </div>
+                </div>
+                
+                <p class="text-gray-700 dark:text-gray-300 mb-4 reveal-element" style="animation-delay: 0.5s">
+                  因此，<span class="font-medium text-gray-800 dark:text-white">inspirare</span> 的字面意思就是"吹入"或"吸入"。古人认为，艺术家和诗人的创造力并非来自自身，而是神灵将神圣的气息吹入他们体内的结果。
+                </p>
+                
+                <p class="text-gray-700 dark:text-gray-300 reveal-element" style="animation-delay: 0.7s">
+                  这种"神圣气息吹入"的概念逐渐演变为我们今天所说的"灵感"，所以 <span class="font-medium text-gray-800 dark:text-white">inspire</span> 就有了"赋予灵感、激发"的含义。
+                </p>
+                
+                <div class="mt-6 p-4 bg-word-primary/5 rounded-lg border border-word-primary/20 reveal-element" style="animation-delay: 0.9s">
+                  <p class="text-sm text-gray-700 dark:text-gray-300 italic">
+                    "The ancient Greeks believed that creative genius was a divine gift - a breath from the gods that inspired artists and poets."
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </p>
+                </div>
+              </div>
+              
+              <!-- 词根组合动画演示 -->
+              <div class="mt-6 bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 1.1s">
+                <h4 class="font-medium text-gray-800 dark:text-white mb-4 text-center">词根组合演示</h4>
+                <div class="flex justify-center items-center h-24">
+                  <div id="rootAnimationContainer" class="text-4xl font-bold">
+                    <span id="prefixAnimation" class="text-word-primary opacity-0">in</span>
+                    <span id="rootAnimation" class="text-word-secondary opacity-0">spir</span>
+                    <span class="text-word-accent">e</span>
+                  </div>
+                </div>
+                <div class="text-center mt-4">
+                  <button id="playRootAnimation" class="bg-word-primary hover:bg-word-primary/90 text-white px-4 py-2 rounded-lg text-sm transition-colors">
+                    播放词根组合动画
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 3. 历史文化背景 -->
+        <section id="history" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">历史文化背景</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <div class="space-y-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.1s">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                      <i class="fa fa-university text-word-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">古罗马时期</h3>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    在古罗马，诗人和艺术家常说自己受到了缪斯女神（Muses）的 
+                    <span class="font-medium text-word-primary">inspiration</span>
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>。他们相信创作灵感是神灵吹入体内的气息，自己只是这种神圣力量的传递者。
+                  </p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.3s">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                      <i class="fa fa-church text-word-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">中世纪宗教</h3>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    中世纪的宗教文献中，先知和圣徒被描述为"被上帝的灵所 
+                    <span class="font-medium text-word-primary">inspired</span>
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>"。这里保留了"神灵吹气入体"的原始含义，指神圣力量进入人体并赋予其启示能力。
+                  </p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                      <i class="fa fa-paint-brush text-word-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">文艺复兴时期</h3>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    文艺复兴时期，<span class="font-medium text-word-primary">inspire</span>
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 的含义开始从纯粹的宗教语境扩展到艺术和文学领域。艺术家们开始探讨"灵感"这一概念，认为它既是神圣的馈赠，也是人类创造力的体现。
+                  </p>
+                  <div class="flex justify-center">
+                    <img src="https://picsum.photos/id/1074/600/300" alt="Renaissance painting representing inspiration" class="rounded-lg shadow-md max-w-full h-auto">
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.7s">
+                  <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                      <i class="fa fa-lightbulb-o text-word-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white">现代含义</h3>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-400">
+                    到了现代，<span class="font-medium text-word-primary">inspire</span>
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button> 的宗教色彩逐渐减弱，更多地用来描述人与人之间的激励和影响，以及创造力的激发过程。它既可以指伟大的艺术灵感，也可以指日常生活中鼓舞人心的小事。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 4. 用法示例 -->
+        <section id="usage" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">用法示例</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-6 reveal-element" style="animation-delay: 0.1s">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">基础释义</h3>
+                <div class="space-y-4">
+                  <div class="flex">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-word-primary/20 flex items-center justify-center mt-0.5">
+                      <span class="text-word-primary font-medium text-sm">1</span>
+                    </div>
+                    <div class="ml-4">
+                      <p class="font-medium text-gray-900 dark:text-white">激发，鼓舞</p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">to fill someone with the urge to do something</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-word-primary/20 flex items-center justify-center mt-0.5">
+                      <span class="text-word-primary font-medium text-sm">2</span>
+                    </div>
+                    <div class="ml-4">
+                      <p class="font-medium text-gray-900 dark:text-white">赋予灵感</p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">to influence creatively or spiritually</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex">
+                    <div class="flex-shrink-0 w-8 h-8 rounded-full bg-word-primary/20 flex items-center justify-center mt-0.5">
+                      <span class="text-word-primary font-medium text-sm">3</span>
+                    </div>
+                    <div class="ml-4">
+                      <p class="font-medium text-gray-900 dark:text-white">吸入空气</p>
+                      <p class="text-sm text-gray-600 dark:text-gray-400">literary/医学意义</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 reveal-element" style="animation-delay: 0.3s">场景例句</h3>
+              
+              <div class="space-y-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.4s">
+                  <p class="text-gray-900 dark:text-white font-medium mb-2">The teacher's words inspired me to study harder.
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </p>
+                  <p class="text-gray-600 dark:text-gray-400 italic mb-3">老师的话激励我更加努力学习。</p>
+                  <div class="p-3 bg-gray-100 dark:bg-gray-600/50 rounded text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-medium">用法说明：</span>表示某人的言行激发了他人的行动或决心。
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.6s">
+                  <p class="text-gray-900 dark:text-white font-medium mb-2">The movie was inspired by a true story.
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </p>
+                  <p class="text-gray-600 dark:text-gray-400 italic mb-3">这部电影的灵感来自一个真实的故事。</p>
+                  <div class="p-3 bg-gray-100 dark:bg-gray-600/50 rounded text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-medium">用法说明：</span>被动语态，表示作品或创意受到某种事物的启发。
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.8s">
+                  <p class="text-gray-900 dark:text-white font-medium mb-2">She delivered an inspiring speech about hope.
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </p>
+                  <p class="text-gray-600 dark:text-gray-400 italic mb-3">她发表了一篇关于希望的鼓舞人心的演讲。</p>
+                  <div class="p-3 bg-gray-100 dark:bg-gray-600/50 rounded text-sm text-gray-700 dark:text-gray-300">
+                    <span class="font-medium">用法说明：</span>形容词形式"inspiring"用来描述能激发他人的事物。
+                  </div>
+                </div>
+              </div>
+              
+              <div class="mt-8 bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 1.0s">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">常见搭配</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div class="flex items-start">
+                    <span class="badge bg-word-primary/10 text-word-primary mr-2 mt-0.5">动词短语</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">be inspired by（受到…的启发）</span>
+                  </div>
+                  <div class="flex items-start">
+                    <span class="badge bg-word-primary/10 text-word-primary mr-2 mt-0.5">名词搭配</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">inspiring speech（鼓舞人心的演讲）</span>
+                  </div>
+                  <div class="flex items-start">
+                    <span class="badge bg-word-primary/10 text-word-primary mr-2 mt-0.5">名词形式</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">find inspiration（找到灵感）</span>
+                  </div>
+                  <div class="flex items-start">
+                    <span class="badge bg-word-primary/10 text-word-primary mr-2 mt-0.5">副词搭配</span>
+                    <span class="text-sm text-gray-600 dark:text-gray-400">deeply inspired（深受启发）</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 5. 衍生词 -->
+        <section id="derivatives" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">衍生词</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">单词</th>
+                      <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">含义</th>
+                      <th class="px-6 py-3 bg-gray-50 dark:bg-gray-700 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">与inspire的关系</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.1s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">inspiration
+                          <button class="pronunciation-btn" title="语音功能已禁用">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">灵感、启发</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">inspire的名词形式</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.2s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">inspiring
+                          <button class="pronunciation-btn" title="语音功能已禁用">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">鼓舞人心的、启发灵感的</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">inspire的现在分词/形容词</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors reveal-element" style="animation-delay: 0.3s">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-gray-900 dark:text-white">inspired
+                          <button class="pronunciation-btn" title="语音功能已禁用">
+                            <i class="fa fa-volume-up"></i>
+                          </button>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">有灵感的、受启发的</div>
+                      </td>
+                      <td class="px-6 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">inspire的过去分词/形容词</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="mt-6 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.4s">
+                <h4 class="font-medium text-gray-800 dark:text-white mb-2">词缀规律</h4>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 添加后缀 <span class="font-medium text-word-primary">-ation</span> 形成名词 <span class="font-medium">inspiration</span></li>
+                  <li>• 现在分词形式 <span class="font-medium">inspiring</span> 作形容词，表示"令人鼓舞的"</li>
+                  <li>• 过去分词形式 <span class="font-medium">inspired</span> 作形容词，表示"受启发的"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 6. 相关词汇 -->
+        <section id="related-words" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">相关词汇（同根词）</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <p class="text-gray-700 dark:text-gray-300 mb-6 reveal-element" style="animation-delay: 0.1s">
+                以下单词都来自相同的拉丁词根 <span class="spir-root">spirare</span>
+                <button class="pronunciation-btn" title="语音功能已禁用">
+                  <i class="fa fa-volume-up"></i>
+                </button>
+                （"呼吸"），通过不同前缀形成了相关但各具特色的含义：
+              </p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.2s">
+                  <div class="font-medium text-gray-900 dark:text-white mb-1">spirit
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">精神、灵魂、气概</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 italic">字面意思是"呼吸"，古人认为呼吸是生命和灵魂的象征</p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.3s">
+                  <div class="font-medium text-gray-900 dark:text-white mb-1">respire
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">呼吸（正式用语）</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 italic">re-（重复）+ spire → 重复呼吸的动作</p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.4s">
+                  <div class="font-medium text-gray-900 dark:text-white mb-1">expire
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">期满、终止、死亡</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 italic">ex-（向外）+ spire → 气息呼出，生命结束</p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                  <div class="font-medium text-gray-900 dark:text-white mb-1">aspire
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">渴望、追求、向往</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-500 italic">a-（朝向）+ spire → 朝着目标呼吸，引申为渴望</p>
+                </div>
+              </div>
+              
+              <div class="mt-6 bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.6s">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3">词源关系图</h4>
+                <div class="relative h-64">
+                  <svg width="100%" height="100%" viewBox="0 0 500 200" class="max-w-2xl mx-auto">
+                    <!-- 连接线 -->
+                    <path d="M250,100 L100,50" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" />
+                    <path d="M250,100 L100,150" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" style="animation-delay: 0.2s" />
+                    <path d="M250,100 L400,50" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" style="animation-delay: 0.4s" />
+                    <path d="M250,100 L400,150" stroke="currentColor" stroke-width="2" class="text-word-primary timeline-line" style="animation-delay: 0.6s" />
+                    
+                    <!-- 中心词 -->
+                    <g transform="translate(250,100)">
+                      <circle cx="0" cy="0" r="35" fill="white" stroke="currentColor" stroke-width="2" class="text-word-primary dark:stroke-word-primary" />
+                      <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-primary">spirare</text>
+                      <text x="0" y="20" text-anchor="middle" fill="currentColor" class="font-medium text-xs text-gray-500">to breathe</text>
+                    </g>
+                    
+                    <!-- 相关词 -->
+                    <g transform="translate(100,50)">
+                      <circle cx="0" cy="0" r="30" fill="white" stroke="currentColor" stroke-width="2" class="text-word-secondary dark:stroke-word-secondary" />
+                      <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-secondary">spirit</text>
+                    </g>
+                    
+                    <g transform="translate(100,150)">
+                      <circle cx="0" cy="0" r="30" fill="white" stroke="currentColor" stroke-width="2" class="text-word-secondary dark:stroke-word-secondary" />
+                      <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-secondary">respire</text>
+                    </g>
+                    
+                    <g transform="translate(400,50)">
+                      <circle cx="0" cy="0" r="30" fill="white" stroke="currentColor" stroke-width="2" class="text-word-accent dark:stroke-word-accent" />
+                      <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-accent">expire</text>
+                    </g>
+                    
+                    <g transform="translate(400,150)">
+                      <circle cx="0" cy="0" r="30" fill="white" stroke="currentColor" stroke-width="2" class="text-word-accent dark:stroke-word-accent" />
+                      <text x="0" y="5" text-anchor="middle" fill="currentColor" class="font-medium text-sm text-word-accent">aspire</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 7. 记忆技巧 -->
+        <section id="memory-tips" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">记忆技巧</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <div class="space-y-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.1s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                    <i class="fa fa-lightbulb-o text-word-primary mr-2"></i> 词根联想记忆法
+                  </h3>
+                  <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    把 <span class="font-medium text-word-primary">inspire</span>
+                    <button class="pronunciation-btn" title="语音功能已禁用">
+                      <i class="fa fa-volume-up"></i>
+                    </button>
+                    拆分为两部分记忆：
+                  </p>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
+                      <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                        <span class="text-word-primary font-medium">in-</span>
+                      </div>
+                      <div>
+                        <p class="font-medium text-gray-900 dark:text-white">向内、进入</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">表示方向或趋势</p>
+                      </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 flex items-center">
+                      <div class="w-10 h-10 rounded-full bg-word-secondary/20 flex items-center justify-center mr-3">
+                        <span class="text-word-secondary font-medium spir-root">spire</span>
+                      </div>
+                      <div>
+                        <p class="font-medium text-gray-900 dark:text-white">呼吸、气息</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">来自拉丁语"spirare"</p>
+                      </div>
+                    </div>
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300">
+                    组合起来：<span class="font-medium">"气息进入"</span> → 灵感被吹入心中 → 激发创造力。
+                  </p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.3s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                    <i class="fa fa-image text-word-primary mr-2"></i> 图像联想
+                  </h3>
+                  <p class="text-gray-600 dark:text-gray-300 mb-4">
+                    想象这样一个场景：一阵微风（气息）吹向你，当它进入（in-）你的身体，你突然有了一个绝妙的想法，眼前一亮。这种"被气息启发"的感觉就是 <span class="font-medium text-word-primary">inspire</span>。
+                  </p>
+                  <div class="flex justify-center">
+                    <img src="https://picsum.photos/id/1069/600/300" alt="Wind blowing through trees representing inspiration" class="rounded-lg shadow-md max-w-full h-auto">
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.5s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                    <i class="fa fa-link text-word-primary mr-2"></i> 关联记忆法
+                  </h3>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">
+                    将 <span class="font-medium text-word-primary">inspire</span> 与同根词一起记忆，形成记忆网络：
+                  </p>
+                  <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <ul class="space-y-2 text-sm">
+                      <li class="flex items-center">
+                        <i class="fa fa-arrow-right text-word-primary mr-2"></i>
+                        <span>当你感到 <span class="font-medium">inspired</span>（有灵感的），你就有了 <span class="font-medium">inspiration</span>（灵感）</span>
+                      </li>
+                      <li class="flex items-center">
+                        <i class="fa fa-arrow-right text-word-primary mr-2"></i>
+                        <span>有 <span class="font-medium">spirit</span>（精神）的人更容易被 <span class="font-medium">inspire</span>（激发）</span>
+                      </li>
+                      <li class="flex items-center">
+                        <i class="fa fa-arrow-right text-word-primary mr-2"></i>
+                        <span>当你 <span class="font-medium">aspire</span>（渴望）成功时，你会被成功者的故事 <span class="font-medium">inspire</span>（鼓舞）</span>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 reveal-element" style="animation-delay: 0.7s">
+                  <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                    <i class="fa fa-repeat text-word-primary mr-2"></i> 实用句子练习
+                  </h3>
+                  <p class="text-gray-600 dark:text-gray-300 mb-4">用以下句子练习，加深记忆：</p>
+                  <div class="space-y-3">
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-sm">
+                      1. Good books can inspire us to be better people.
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-sm">
+                      2. Her courage in the face of difficulty inspires me.
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 text-sm">
+                      3. Many artists find inspiration in nature.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 8. 小测验 -->
+        <section id="quiz" class="mb-10">
+          <div class="reveal-card bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 cursor-pointer reveal-header flex justify-between items-center border-b border-gray-100 dark:border-gray-700">
+              <h2 class="text-3xl font-bold text-gray-800 dark:text-white">小测验</h2>
+              <i class="fa fa-chevron-down text-gray-500 transition-transform duration-300 rotate-180"></i>
+            </div>
+            <div class="content-section">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg border border-gray-200 dark:border-gray-700 mb-6 reveal-element" style="animation-delay: 0.1s">
+                <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">测试你的理解</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">完成以下问题，检验你对"inspire"的掌握程度：</p>
+                
+                <div class="space-y-6" id="quizContainer">
+                  <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <p class="font-medium text-gray-900 dark:text-white mb-3">1. "inspire" 来自拉丁语，它的字面意思是什么？</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q1" value="A" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">A. 向外呼吸</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q1" value="B" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">B. 吹入、吸入</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q1" value="C" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">C. 创造、发明</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <p class="font-medium text-gray-900 dark:text-white mb-3">2. 下列哪个词与 "inspire" 来自相同的词根？</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q2" value="A" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">A. expire</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q2" value="B" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">B. spirit</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q2" value="C" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">C. aspire</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q2" value="D" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">D. 以上全部</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <p class="font-medium text-gray-900 dark:text-white mb-3">3. 下列哪个句子使用 "inspire" 不正确？</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q3" value="A" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">A. The sunset inspired her to paint.</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q3" value="B" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">B. He inspired great confidence in his students.</span>
+                      </label>
+                      <label class="flex items-center p-2 border border-gray-200 dark:border-gray-700 rounded hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer">
+                        <input type="radio" name="q3" value="C" class="text-word-primary focus:ring-word-primary mr-3">
+                        <span class="text-gray-700 dark:text-gray-300">C. I was inspiring by her story.</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-6 text-center">
+                  <button id="checkQuizBtn" class="bg-word-primary hover:bg-word-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    检查答案
+                  </button>
+                  <div id="quizResults" class="mt-6 hidden"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 总结 -->
+        <section id="summary" class="mb-10 bg-gradient-to-r from-word-primary/10 to-word-secondary/10 dark:from-word-primary/20 dark:to-word-secondary/20 rounded-xl shadow-lg">
+          <div class="p-6 border-b border-gray-100 dark:border-gray-700">
+            <h2 class="text-3xl font-bold mb-0 text-gray-800 dark:text-white">总结</h2>
+          </div>
+          
+          <div class="content-section">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-md mb-6">
+              <p class="text-xl text-gray-800 dark:text-white font-medium">
+                <span class="prefix-in">in</span><span class="spir-root">spire</span> = 气息进入 → 灵感被吹入心中，激发创造力。记住这个词的"呼吸"词根，就能掌握一系列相关词汇！
+              </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                <h3 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-lightbulb-o text-word-primary mr-2"></i> 核心记忆点
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• 源自拉丁语"吹入、吸入"</li>
+                  <li>• 由"in-" + "spirare"组成</li>
+                  <li>• 核心含义：激发灵感、鼓舞</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                <h3 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-sign-language text-word-primary mr-2"></i> 常见搭配
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• be inspired by 受到…启发</li>
+                  <li>• inspiring speech 鼓舞人心的演讲</li>
+                  <li>• find inspiration 找到灵感</li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-5 rounded-lg shadow-md">
+                <h3 class="font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-graduation-cap text-word-primary mr-2"></i> 同根词家族
+                </h3>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  <li>• spirit 精神、灵魂</li>
+                  <li>• respire 呼吸</li>
+                  <li>• expire 期满、终止</li>
+                  <li>• aspire 渴望、追求</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="mt-8 text-center">
+              <button id="reviewBtn" class="bg-word-primary hover:bg-word-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors inline-flex items-center">
+                <i class="fa fa-refresh mr-2"></i> 重新复习
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-gray-900 text-white py-16 mt-16">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-word-primary to-word-secondary flex items-center justify-center">
+              <i class="fa fa-book text-white text-xl"></i>
+            </div>
+            <span class="text-xl font-bold">Word Insight</span>
+          </div>
+          <p class="text-gray-400 mb-6">专业的英语单词学习平台，通过词源、文化和用法全方位解析单词，让学习更高效。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-word-primary hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-word-primary hover:text-white transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-word-primary hover:text-white transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">单词分类</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">基础词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学术词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">商务词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">日常表达</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">词根词缀</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">学习资源</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学习方法</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">记忆技巧</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">词汇测验</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见错误</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学习计划</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold mb-6">联系我们</h4>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fa fa-envelope-o text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">contact@wordinsight.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-globe text-gray-400 mt-1 mr-3"></i>
+              <span class="text-gray-400">wordinsight.com</span>
+            </li>
+          </ul>
+          
+          <div class="mt-6">
+            <h5 class="text-sm font-medium mb-3 text-gray-300">订阅单词学习技巧</h5>
+            <form class="flex">
+              <input type="email" placeholder="Your email" class="px-4 py-2 rounded-l-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-1 focus:ring-word-primary text-sm w-full">
+              <button type="submit" class="bg-word-primary hover:bg-word-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+                <i class="fa fa-paper-plane"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 pt-8">
+        <div class="flex flex-col md:flex-row justify-between items-center">
+          <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2025 Word Insight. All rights reserved.</p>
+          <div class="flex space-x-6">
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Privacy Policy</a>
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Terms of Service</a>
+            <a href="#" class="text-gray-500 hover:text-gray-300 text-sm">Cookie Policy</a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 回到顶部按钮 -->
+      <button id="backToTop" class="fixed bottom-8 right-8 bg-word-primary hover:bg-word-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 invisible">
+        <i class="fa fa-chevron-up"></i>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // 禁用语音功能
+    function speakWord(word) {
+      // 语音功能已禁用，不执行任何操作
+    }
+    
+    function speakSentence(sentence) {
+      // 语音功能已禁用，不执行任何操作
+    }
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', function() {
+      // 强制黑色主题
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('modePreference', 'dark');
+      
+      // 初始化卡片折叠功能（默认不折叠）
+      initRevealCards();
+      
+      // 初始化单词卡片翻转功能
+      initWordCardFlip();
+      
+      // 初始化灵感火花动画
+      initSparksAnimation();
+      
+      // 初始化词根组合动画
+      initRootCombinationAnimation();
+      
+      // 初始化滚动动画
+      initScrollAnimations();
+      
+      // 绑定事件处理
+      bindEventHandlers();
+    });
+    
+    // 初始化卡片折叠功能（默认不折叠）
+    function initRevealCards() {
+      const revealHeaders = document.querySelectorAll('.reveal-header');
+      
+      revealHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+          const card = this.closest('.reveal-card');
+          const icon = this.querySelector('i');
+          
+          card.classList.toggle('collapsed');
+          if (card.classList.contains('collapsed')) {
+            icon.style.transform = 'rotate(0deg)';
+          } else {
+            icon.style.transform = 'rotate(180deg)';
+            triggerRevealAnimations(card);
+          }
+        });
+      });
+      
+      // 确保所有卡片默认不折叠
+      const revealCards = document.querySelectorAll('.reveal-card');
+      revealCards.forEach(card => {
+        card.classList.remove('collapsed');
+        const icon = card.querySelector('.reveal-header i');
+        icon.style.transform = 'rotate(180deg)';
+      });
+    }
+    
+    // 触发揭示动画
+    function triggerRevealAnimations(container) {
+      const elements = container.querySelectorAll('.reveal-element');
+      elements.forEach(el => {
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = '';
+      });
+    }
+    
+    // 初始化单词卡片翻转功能
+    function initWordCardFlip() {
+      const wordCard = document.querySelector('.word-card');
+      
+      wordCard.addEventListener('click', function() {
+        this.classList.toggle('flipped');
+      });
+    }
+    
+    // 初始化灵感火花动画
+    function initSparksAnimation() {
+      const container = document.getElementById('sparkContainer');
+      if (!container) return;
+      
+      // 创建随机火花
+      function createSpark() {
+        const spark = document.createElement('div');
+        spark.classList.add('inspire-spark');
+        
+        // 随机位置
+        const x = Math.random() * 100;
+        const y = Math.random() * 100;
+        
+        // 随机动画延迟和持续时间
+        const delay = Math.random() * 2;
+        const duration = 0.5 + Math.random() * 1.5;
+        
+        spark.style.left = `${x}%`;
+        spark.style.top = `${y}%`;
+        spark.style.animationDelay = `${delay}s`;
+        spark.style.animationDuration = `${duration}s`;
+        
+        container.appendChild(spark);
+        
+        // 一段时间后移除火花
+        setTimeout(() => {
+          spark.remove();
+        }, (delay + duration) * 1000);
+      }
+      
+      // 初始创建一些火花
+      for (let i = 0; i < 8; i++) {
+        createSpark();
+      }
+      
+      // 定时创建新火花
+      setInterval(createSpark, 1500);
+    }
+    
+    // 初始化词根组合动画
+    function initRootCombinationAnimation() {
+      const prefix = document.getElementById('prefixAnimation');
+      const root = document.getElementById('rootAnimation');
+      const button = document.getElementById('playRootAnimation');
+      
+      if (!prefix || !root || !button) return;
+      
+      function playAnimation() {
+        // 重置动画
+        prefix.style.opacity = '0';
+        prefix.style.transform = 'translateX(-50px)';
+        root.style.opacity = '0';
+        root.style.transform = 'translateX(50px)';
+        
+        // 触发重绘
+        prefix.offsetHeight;
+        root.offsetHeight;
+        
+        // 播放动画
+        prefix.style.transition = 'opacity 1s ease-out, transform 1s ease-out';
+        root.style.transition = 'opacity 1s ease-out 0.3s, transform 1s ease-out 0.3s';
+        
+        prefix.style.opacity = '1';
+        prefix.style.transform = 'translateX(0)';
+        
+        root.style.opacity = '1';
+        root.style.transform = 'translateX(0)';
+      }
+      
+      // 初始播放一次
+      setTimeout(playAnimation, 1000);
+      
+      // 点击按钮重新播放
+      button.addEventListener('click', playAnimation);
+    }
+    
+    // 初始化滚动动画
+    function initScrollAnimations() {
+      // 初始显示的元素
+      const initialElements = document.querySelectorAll('.reveal-element');
+      initialElements.forEach(el => {
+        el.classList.add('fade-in');
+      });
+      
+      // 监听滚动事件
+      window.addEventListener('scroll', function() {
+        const elements = document.querySelectorAll('.reveal-element:not(.fade-in)');
+        elements.forEach(el => {
+          const elementTop = el.getBoundingClientRect().top;
+          const elementVisible = 150;
+          
+          if (elementTop < window.innerHeight - elementVisible) {
+            el.classList.add('fade-in');
+          }
+        });
+        
+        // 学习进度保持0%，不更新
+      });
+    }
+    
+    // 绑定事件处理函数
+    function bindEventHandlers() {
+      // 全局模式切换
+      const globalToggle = document.getElementById('globalToggle');
+      globalToggle.addEventListener('click', function() {
+        document.documentElement.classList.toggle('dark');
+        const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        localStorage.setItem('modePreference', mode);
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.classList.add('hidden');
+        }
+      });
+      
+      // 移动端搜索框切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 回到顶部按钮
+      const backToTopBtn = document.getElementById('backToTop');
+      
+      window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+          backToTopBtn.classList.remove('opacity-0', 'invisible');
+          backToTopBtn.classList.add('opacity-100', 'visible');
+        } else {
+          backToTopBtn.classList.remove('opacity-100', 'visible');
+          backToTopBtn.classList.add('opacity-0', 'invisible');
+        }
+      });
+      
+      backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          if (targetId === '#') return;
+          
+          const targetElement = document.querySelector(targetId);
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+          }
+        });
+      });
+      
+      // 标记为已学习按钮（点击后仍保持0%进度）
+      document.getElementById('markAsLearned').addEventListener('click', function() {
+        this.textContent = '已标记为学习';
+        this.classList.add('bg-green-600', 'hover:bg-green-700');
+        this.classList.remove('bg-word-primary', 'hover:bg-word-primary/90');
+        
+        // 保持进度为0%
+        document.getElementById('progressBar').style.width = '0%';
+        document.querySelector('#progressBar').nextElementSibling.textContent = '0%';
+        
+        alert('你已标记 "inspire" 为学习过的单词。');
+      });
+      
+      // 测验检查答案
+      document.getElementById('checkQuizBtn').addEventListener('click', function() {
+        // 正确答案
+        const correctAnswers = {
+          q1: 'B',
+          q2: 'D',
+          q3: 'C'
+        };
+        
+        let score = 0;
+        let total = 0;
+        
+        // 检查每个问题
+        for (const [question, correct] of Object.entries(correctAnswers)) {
+          total++;
+          const selected = document.querySelector(`input[name="${question}"]:checked`);
+          
+          if (selected && selected.value === correct) {
+            score++;
+            // 标记正确答案
+            selected.closest('label').classList.add('bg-green-50', 'border-green-200', 'dark:bg-green-900/20', 'dark:border-green-800');
+          } else if (selected) {
+            // 标记错误答案
+            selected.closest('label').classList.add('bg-red-50', 'border-red-200', 'dark:bg-red-900/20', 'dark:border-red-800');
+            
+            // 显示正确答案
+            const correctLabel = document.querySelector(`input[name="${question}"][value="${correct}"]`).closest('label');
+            correctLabel.classList.add('bg-green-50', 'border-green-200', 'dark:bg-green-900/20', 'dark:border-green-800');
+          }
+        }
+        
+        // 显示结果
+        const resultsContainer = document.getElementById('quizResults');
+        resultsContainer.classList.remove('hidden');
+        
+        resultsContainer.innerHTML = `
+          <div class="p-4 rounded-lg ${score === total ? 'bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800' : 'bg-blue-50 border border-blue-200 dark:bg-blue-900/20 dark:border-blue-800'}">
+            <h4 class="font-medium text-gray-900 dark:text-white mb-2">你的得分: ${score}/${total}</h4>
+            <p class="text-sm text-gray-700 dark:text-gray-300">
+              ${score === total ? '恭喜！你完全掌握了"inspire"这个单词！' : 
+                '继续努力！查看正确答案，加深对"inspire"的理解。'}
+            </p>
+          </div>
+        `;
+      });
+      
+      // 重新复习按钮
+      document.getElementById('reviewBtn').addEventListener('click', function() {
+        window.scrollTo({
+          top: document.getElementById('basic-info').offsetTop - 80,
+          behavior: 'smooth'
+        });
+      });
+    }
+  </script>
+</body>
+</html>
