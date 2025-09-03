@@ -1,0 +1,1461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词 Discover 详解 | 专业英语学习平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            discover: {
+              primary: '#3B82F6',    // 蓝色主色调，象征探索与发现
+              secondary: '#F59E0B',  // 橙色辅助色，象征新发现的光芒
+              light: '#EFF6FF',
+              dark: '#1E40AF'
+            },
+            explorer: {
+              accent: '#10B981',     // 探索者绿色，象征新生命与发现
+              muted: '#94A3B8'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .reveal-mask {
+        mask-image: linear-gradient(to right, transparent, black 50%, transparent);
+        mask-size: 200% 100%;
+        animation: reveal 2s ease-in-out forwards;
+      }
+      @keyframes reveal {
+        0% { mask-position: 0% 0; }
+        100% { mask-position: 100% 0; }
+      }
+      .star {
+        position: absolute;
+        background-color: white;
+        border-radius: 50%;
+        animation: twinkle 2s infinite alternate;
+      }
+      @keyframes twinkle {
+        0% { opacity: 0.3; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1.2); }
+      }
+      .discover-fade {
+        opacity: 0;
+        transform: scale(0.95);
+        animation: discoverAppear 1s forwards;
+      }
+      @keyframes discoverAppear {
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .timeline-dot::before {
+        content: '';
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background-color: theme('colors.discover.primary');
+        left: -10px;
+        top: 5px;
+        z-index: 1;
+      }
+      .timeline-line::before {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 100%;
+        background-color: theme('colors.discover.primary/30');
+        left: 0;
+        top: 25px;
+      }
+      .word-chain-link {
+        position: relative;
+        transition: all 0.3s ease;
+      }
+      .word-chain-link::after {
+        content: '→';
+        position: absolute;
+        right: -20px;
+        color: theme('colors.discover.secondary');
+        opacity: 0.7;
+      }
+      .word-chain-link:last-child::after {
+        content: '';
+      }
+      .word-chain-link.active {
+        color: theme('colors.discover.primary');
+        font-weight: bold;
+      }
+      .flip-card {
+        perspective: 1000px;
+      }
+      .flip-card-inner {
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+      }
+      .flip-card:hover .flip-card-inner {
+        transform: rotateY(180deg);
+      }
+      .flip-card-front, .flip-card-back {
+        backface-visibility: hidden;
+      }
+      .flip-card-back {
+        transform: rotateY(180deg);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300 text-gray-800 dark:text-gray-200">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-discover-primary to-discover-secondary flex items-center justify-center">
+            <i class="fa fa-compass text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-discover-primary/50 transition-colors" value="discover">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-400 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors" value="discover">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#overview" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">单词概览</a>
+          <a href="#root" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">词根解析</a>
+          <a href="#history" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">词源历史</a>
+          <a href="#usage" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">现代用法</a>
+          <a href="#derivatives" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">衍生词汇</a>
+          <a href="#culture" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">文化背景</a>
+          <a href="#quotes" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">名言引用</a>
+          <a href="#quiz" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">单词测验</a>
+          <a href="#timeline" class="text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors py-2">历史发现</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 单词Banner - 带发现动画效果 -->
+  <section class="relative h-[30vh] min-h-[250px] overflow-hidden bg-gradient-to-br from-discover-light to-blue-50 dark:from-gray-800 dark:to-discover-dark/30" id="starry-background">
+    <!-- 星空背景 - 动态生成的星星 -->
+    <!-- 词根解析 -->
+    
+    <div class="absolute inset-0 bg-gradient-to-r from-discover-primary/10 to-discover-secondary/10 dark:from-discover-primary/20 dark:to-discover-secondary/20 z-10"></div>
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-2 discover-fade reveal-mask" id="discover-title" style="animation-delay: 0.3s">Discover</h1>
+        <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 italic discover-fade" style="animation-delay: 0.6s">/dɪˈskʌvər/</p>
+        <div class="flex flex-wrap justify-center gap-2 mb-4 discover-fade" style="animation-delay: 0.9s">
+          <span class="px-3 py-1 rounded-full bg-discover-primary/10 text-discover-primary dark:bg-discover-primary/20 text-sm font-medium">名词 (noun)</span>
+          <span class="px-3 py-1 rounded-full bg-discover-primary/10 text-discover-primary dark:bg-discover-primary/20 text-sm font-medium">动词 (verb)</span>
+          <span class="px-3 py-1 rounded-full bg-discover-secondary/10 text-discover-secondary dark:bg-discover-secondary/20 text-sm font-medium">高频词</span>
+        </div>
+        <p class="text-base md:text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto discover-fade" style="animation-delay: 1.2s">发现、发觉，揭示之前未知的事物或信息</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 词链导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center text-sm">
+        <p class="text-gray-500 dark:text-gray-400 mr-3">探索类词链:</p>
+        <div class="flex space-x-6">
+          <a href="#" class="word-chain-link text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors">explore</a>
+          <a href="#" class="word-chain-link active text-discover-primary font-medium">discover</a>
+          <a href="#" class="word-chain-link text-gray-600 hover:text-discover-primary dark:text-gray-300 dark:hover:text-discover-primary transition-colors">invent</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-discover-primary dark:text-gray-400 dark:hover:text-discover-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-discover-primary dark:text-gray-400 dark:hover:text-discover-primary">单词库</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-discover-primary dark:text-gray-400 dark:hover:text-discover-primary">D开头单词</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-discover-primary dark:text-gray-400 dark:hover:text-discover-primary">探索类词链</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">Discover</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">单词学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#overview" class="flex items-center px-4 py-3 rounded-lg bg-discover-primary/10 text-discover-primary dark:bg-discover-primary/20 dark:text-discover-primary transition-colors">
+              <i class="fa fa-info-circle mr-3 w-5 text-center"></i>
+              <span>单词概览</span>
+            </a>
+            <a href="#root" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-puzzle-piece mr-3 w-5 text-center"></i>
+              <span>词根解析</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history mr-3 w-5 text-center"></i>
+              <span>词源历史</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment mr-3 w-5 text-center"></i>
+              <span>现代用法</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork mr-3 w-5 text-center"></i>
+              <span>衍生词汇</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-film mr-3 w-5 text-center"></i>
+              <span>文化背景</span>
+            </a>
+            <a href="#quotes" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-quote-right mr-3 w-5 text-center"></i>
+              <span>名言引用</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle mr-3 w-5 text-center"></i>
+              <span>单词测验</span>
+            </a>
+            <a href="#timeline" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-clock-o mr-3 w-5 text-center"></i>
+              <span>历史发现</span>
+            </a>
+          </nav>
+          
+          <!-- 学习进度 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-3">学习进度</h3>
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">单词掌握度</span>
+                <span class="text-discover-primary font-medium">35%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div class="bg-gradient-to-r from-discover-primary to-discover-secondary h-2 rounded-full progress-animation" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="w-full bg-discover-primary hover:bg-discover-dark text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+              <i class="fa fa-plus-circle mr-2"></i> 添加到单词本
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 单词概览 -->
+        <section id="overview" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-info"></i>
+            </span>
+            单词概览
+          </h2>
+          
+          <!-- 核心信息卡片 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 card-hover">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Discover</h3>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-4">
+                  /dɪˈskʌvər/
+                  <button class="ml-2 p-1.5 rounded-full bg-gray-200 dark:bg-gray-600 text-discover-primary hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors hover:scale-110 transform transition-transform" id="pronunciationBtn">
+                    <i class="fa fa-volume-up"></i>
+                  </button>
+                </p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <span class="px-3 py-1 rounded-full bg-discover-primary/10 text-discover-primary dark:bg-discover-primary/20 text-sm font-medium">名词 (noun)</span>
+                  <span class="px-3 py-1 rounded-full bg-discover-primary/10 text-discover-primary dark:bg-discover-primary/20 text-sm font-medium">动词 (verb)</span>
+                  <span class="px-3 py-1 rounded-full bg-discover-secondary/10 text-discover-secondary dark:bg-discover-secondary/20 text-sm font-medium">高频词</span>
+                </div>
+                
+                <p class="text-gray-700 dark:text-gray-300">
+                  核心含义：发现、发觉，揭示之前未知的事物或信息
+                </p>
+              </div>
+              
+              <div class="flex flex-col justify-center">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                    <i class="fa fa-lightbulb-o text-discover-secondary mr-2"></i>
+                    为什么要学习这个词？
+                  </h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
+                    "Discover" 是描述人类探索未知、获取新知识的核心词汇。从科学发现到日常惊喜，这个词贯穿了人类认知世界的全过程，是学术写作和日常交流中不可或缺的词汇。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 发现过程可视化 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">发现过程可视化</h3>
+            <div class="relative h-64 md:h-80 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden">
+              <!-- 发现过程动画 -->
+              <div class="absolute inset-0 bg-gradient-to-b from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-discover-dark/50"></div>
+              
+              <!-- 隐藏的物体 -->
+              <div class="absolute top-1/3 left-1/3 w-16 h-16 bg-discover-secondary/30 rounded-full blur-md opacity-0" id="hidden-object"></div>
+              
+              <!-- 探索者 -->
+              <div class="absolute bottom-10 left-10 w-8 h-12 bg-discover-primary rounded-full" id="explorer">
+                <div class="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-white border-2 border-discover-primary rounded-full"></div>
+              </div>
+              
+              <!-- 探索路径 -->
+              <svg class="absolute inset-0 w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40,200 Q150,180 200,120 T380,100" stroke="rgba(59, 130, 246, 0.3)" stroke-width="2" fill="none" stroke-dasharray="5,5" class="animate-dash" />
+              </svg>
+              
+              <!-- 标签 -->
+              <div class="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-full bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs shadow-sm">未知事物</div>
+              <div class="absolute bottom-1/3 right-1/4 bg-white dark:bg-gray-800 px-2 py-1 rounded text-xs shadow-sm">发现时刻</div>
+            </div>
+          </div>
+          
+          <!-- 常见搭配 -->
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">常见搭配</h3>
+            <div class="flex flex-wrap gap-3">
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">discover a secret</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">discover the truth</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">discover a new species</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">discover how to</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">recently discovered</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">discover by accident</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">discover yourself</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm">scientific discovery</div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 词根解析 -->
+        <section id="root" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-puzzle-piece"></i>
+            </span>
+            词根解析
+          </h2>
+          
+          <!-- 词源卡片翻转效果 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6 text-center">词源构成 - 点击卡片查看解析</h3>
+            
+            <div class="flip-card max-w-2xl mx-auto">
+              <div class="flip-card-inner">
+                <div class="flip-card-front bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <div class="text-center">
+                    <div class="text-4xl font-bold text-discover-primary mb-4">discover</div>
+                    <p class="text-gray-600 dark:text-gray-400">点击卡片翻转查看词根解析</p>
+                    <div class="mt-6 flex justify-center space-x-4">
+                      <div class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-discover-primary font-medium">dis-</div>
+                      <div class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-discover-primary font-medium">+</div>
+                      <div class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-discover-primary font-medium">cover</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flip-card-back bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="text-xl font-semibold text-center text-gray-800 dark:text-white mb-6">词根解析</h4>
+                  
+                  <div class="space-y-6">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 w-16 font-medium text-discover-primary">dis-</div>
+                      <div class="flex-1">
+                        <p class="text-gray-700 dark:text-gray-300">前缀，表示"去掉、分开、相反"</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">在"discover"中表示"去除"</p>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 w-16 font-medium text-discover-primary">cover</div>
+                      <div class="flex-1">
+                        <p class="text-gray-700 dark:text-gray-300">源自拉丁语"cooperire"，意为"覆盖"</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">现代英语中保留"覆盖"的含义</p>
+                      </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <p class="text-gray-700 dark:text-gray-300 font-medium">组合含义：</p>
+                      <p class="text-gray-600 dark:text-gray-400 mt-1">
+                        "去掉覆盖" → "揭开隐藏的事物" → "发现"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">词根解析</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <div class="w-8 h-8 rounded-full bg-discover-primary/10 flex items-center justify-center mr-2">
+                    <i class="fa fa-puzzle-piece text-discover-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">核心词根</h4>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 mb-2"><strong>cover-</strong> (覆盖)</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                  来源于拉丁语"cooperire"，由"com-"（一起）和"operire"（覆盖）组成，意为"完全覆盖"。这个词根在许多英语单词中都有出现，如coverage（覆盖范围）、recovery（恢复）等。
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <div class="w-8 h-8 rounded-full bg-discover-primary/10 flex items-center justify-center mr-2">
+                    <i class="fa fa-code-fork text-discover-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">词缀组合</h4>
+                </div>
+                <ul class="text-gray-600 dark:text-gray-400 text-sm space-y-1">
+                  <li><strong>dis-</strong>: 前缀，表示"否定、相反、分离"</li>
+                  <li><strong>-y</strong>: 名词后缀，构成抽象名词</li>
+                  <li><strong>-er</strong>: 名词后缀，表示"做某事的人"</li>
+                  <li><strong>un-</strong>: 前缀，表示"否定"</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 词源历史 -->
+        <section id="history" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-history"></i>
+            </span>
+            词源历史
+          </h2>
+          
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 mb-8 card-hover">
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              "Discover" 源自拉丁语 <em>discooperire</em>，由 <em>dis-</em>（去掉）和 <em>cooperire</em>（覆盖）组成，字面意思是"揭开覆盖物"。
+            </p>
+            
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+              在中世纪时期，这个词主要用于描述物理动作，如揭开物体上的遮盖物。随着大航海时代的到来，它开始被广泛用于描述航海家"发现"新的土地和岛屿。
+            </p>
+            
+            <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+              17世纪科学革命后，"discover" 的含义扩展到科学领域，用来描述新现象、新原理的发现。到了现代，这个词的使用范围更加广泛，既可以用于重大科学发现，也可以用于日常生活中发现一个小秘密或一家好餐厅。
+            </p>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">历史演变关键点</h3>
+              
+              <div class="space-y-4">
+                <div class="flex">
+                  <div class="min-w-[100px] text-discover-primary font-medium">拉丁语时期</div>
+                  <div class="text-gray-700 dark:text-gray-300">discooperire，指揭开覆盖物</div>
+                </div>
+                <div class="flex">
+                  <div class="min-w-[100px] text-discover-primary font-medium">中世纪</div>
+                  <div class="text-gray-700 dark:text-gray-300">进入英语，指物理上的揭开</div>
+                </div>
+                <div class="flex">
+                  <div class="min-w-[100px] text-discover-primary font-medium">大航海时代</div>
+                  <div class="text-gray-700 dark:text-gray-300">用于描述发现新土地</div>
+                </div>
+                <div class="flex">
+                  <div class="min-w-[100px] text-discover-primary font-medium">科学革命</div>
+                  <div class="text-gray-700 dark:text-gray-300">扩展到科学发现领域</div>
+                </div>
+                <div class="flex">
+                  <div class="min-w-[100px] text-discover-primary font-medium">现代</div>
+                  <div class="text-gray-700 dark:text-gray-300">广泛用于各种发现场景</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">哥伦布与"发现"</h3>
+              
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                1492年哥伦布"发现"新大陆是"discover"一词在历史上最著名的应用之一。值得注意的是，这个词在当时带有欧洲中心主义色彩，因为美洲大陆上早已有人居住。
+              </p>
+              
+              <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-600 text-center">
+                <i class="fa fa-ship text-3xl text-discover-primary mb-2"></i>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                  "发现"的定义随着历史和文化视角的变化而演变，反映了人类对世界认知的改变
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 现代用法 -->
+        <section id="usage" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-comment"></i>
+            </span>
+            现代用法
+          </h2>
+          
+          <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-discover-primary/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-flask text-discover-primary"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">科学发现</h3>
+              </div>
+              
+              <p class="text-gray-700 dark:text-gray-300 mb-4">描述科学领域的新发现</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="text-gray-800 dark:text-white italic text-sm mb-1">"Scientists discovered a new planet outside our solar system."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">科学家发现了一颗位于太阳系外的新行星。</p>
+                </div>
+                <div>
+                  <p class="text-gray-800 dark:text-white italic text-sm mb-1">"She discovered a new treatment for the disease."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">她发现了这种疾病的新疗法。</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="flex items-center mb-4">
+                <div>
+                  <div class="w-10 h-10 rounded-full bg-discover-primary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-cutlery text-discover-primary"></i>
+                  </div>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">日常发现</h3>
+              </div>
+              
+              <p class="text-gray-700 dark:text-gray-300 mb-4">描述日常生活中的新发现</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="text-gray-800 dark:text-white italic text-sm mb-1">"I just discovered a great coffee shop near my office."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">我刚发现了一家办公室附近的好咖啡店。</p>
+                </div>
+                <div>
+                  <p class="text-gray-800 dark:text-white italic text-sm mb-1">"We discovered that our neighbors love the same music."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">我们发现邻居和我们喜欢同样的音乐。</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-discover-primary/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-lightbulb-o text-discover-primary"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">自我发现</h3>
+              </div>
+              
+              <p class="text-gray-700 dark:text-gray-300 mb-4">描述对自我的新认知</p>
+              
+              <div class="space-y-4">
+                <div>
+                  <p class="text-gray-800 dark:text-white italic text-sm mb-1">"Travel helps you discover new aspects of yourself."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">旅行能帮助你发现自己新的一面。</p>
+                </div>
+                <div>
+                  <p class="text-gray-800 dark:text-white italic text-sm mb-1">"Through painting, she discovered her true passion."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">通过绘画，她发现了自己真正的热情。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 名词 vs 动词 对比 -->
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">名词 vs 动词 用法对比</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 class="font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                  <span class="w-6 h-6 rounded-full bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2 text-sm">n.</span>
+                  作为名词 (较少见)
+                </h4>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">主要用于"the discover of..."结构，表示发现的行为</p>
+                <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                  <li>• The discover of penicillin changed medicine forever.</li>
+                  <li>• Her discover of the ancient manuscript made headlines.</li>
+                  <li>• We celebrate the discover of electricity each year.</li>
+                </ul>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">注：作为名词时，更多使用"discovery"</p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 class="font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                  <span class="w-6 h-6 rounded-full bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2 text-sm">v.</span>
+                  作为动词 (更常见)
+                </h4>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-3">表示发现的动作或过程</p>
+                <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                  <li>• Researchers discovered a new species of butterfly.</li>
+                  <li>• She discovered a talent for singing at an early age.</li>
+                  <li>• They discovered an old letter hidden in the attic.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 衍生词汇 -->
+        <section id="derivatives" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-code-fork"></i>
+            </span>
+            衍生词汇
+          </h2>
+          
+          <!-- 衍生词卡片 - 翻转效果 -->
+          <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full">
+                <div class="flip-card-front bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">discovery</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/dɪˈskʌvəri/ (名词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">发现（科学成果、真相）</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "The discovery of vaccines has saved millions of lives."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    疫苗的发现拯救了数百万人的生命。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由discover + -y名词后缀构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full">
+                <div class="flip-card-front bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">discoverer</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/dɪˈskʌvərə(r)/ (名词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">发现者（如探险家、科学家）</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "Columbus is often called the discoverer of America."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    哥伦布常被称为美洲的发现者。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由discover + -er名词后缀构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full">
+                <div class="flip-card-front bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">undiscovered</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/ˌʌndɪˈskʌvəd/ (形容词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">未被发现的，未知的</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "There are still many undiscovered species in the Amazon."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    亚马逊雨林中仍有许多未被发现的物种。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由un-否定前缀 + discover + -ed构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">词根家族关联</h3>
+            
+            <div class="flex flex-wrap gap-4">
+              <div class="flex items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
+                <span class="text-discover-primary font-medium mr-2">cover</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">覆盖，掩盖</span>
+              </div>
+              
+              <div class="flex items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
+                <span class="text-discover-primary font-medium mr-2">discover</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">发现，发觉</span>
+              </div>
+              
+              <div class="flex items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
+                <span class="text-discover-primary font-medium mr-2">recovery</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">恢复，康复</span>
+              </div>
+              
+              <div class="flex items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
+                <span class="text-discover-primary font-medium mr-2">coverage</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">覆盖范围，新闻报道</span>
+              </div>
+              
+              <div class="flex items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
+                <span class="text-discover-primary font-medium mr-2">discovery</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">发现，发觉</span>
+              </div>
+              
+              <div class="flex items-center bg-white dark:bg-gray-800 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600">
+                <span class="text-discover-primary font-medium mr-2">uncover</span>
+                <span class="text-sm text-gray-600 dark:text-gray-400">揭露，发现</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 文化背景 -->
+        <section id="culture" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-film"></i>
+            </span>
+            文化背景
+          </h2>
+          
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-discover-primary/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-flask text-discover-primary"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">科学史上的重大发现</h3>
+              </div>
+              
+              <div class="space-y-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">万有引力的发现</h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    牛顿发现万有引力的故事广为人知，据说这一发现源于他观察苹果落地的思考。这一discovery彻底改变了人类对宇宙的理解。
+                  </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">镭的发现</h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    居里夫人发现镭元素是放射性研究的里程碑，这一discovery为现代医学和能源研究奠定了基础。
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="flex items-center mb-4">
+                <div class="w-10 h-10 rounded-full bg-discover-primary/10 flex items-center justify-center mr-3">
+                  <i class="fa fa-bullhorn text-discover-primary"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white">流行文化中的"发现"</h3>
+              </div>
+              
+              <div class="space-y-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">文学中的自我发现</h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    许多文学作品都以"发现自我"为主题，如《哈克贝利·费恩历险记》中主角通过旅行发现自己的道德观和价值观。
+                  </p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">商业与营销</h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">
+                    "Discover"常被用于商业口号，如信用卡品牌"Discover Card"，以及旅游公司的广告"Discover the world"，强调探索和发现的体验。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 发现的哲学意义 -->
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">发现的哲学意义</h3>
+            
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <i class="fa fa-eye text-discover-primary mr-2"></i>
+                  <h4 class="font-medium text-gray-800 dark:text-white text-sm">认识论</h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-xs">
+                  发现是认识论的核心概念，探讨人类如何获取知识，什么是"新"知识，以及知识如何改变我们对世界的理解。
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <i class="fa fa-question text-discover-primary mr-2"></i>
+                  <h4 class="font-medium text-gray-800 dark:text-white text-sm">未知与已知</h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-xs">
+                  发现不断重新定义已知与未知的边界，每一个新发现都可能带来更多问题，推动人类继续探索。
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <i class="fa fa-user text-discover-primary mr-2"></i>
+                  <h4 class="font-medium text-gray-800 dark:text-white text-sm">自我发现</h4>
+                </div>
+                <p class="text-gray-600 dark:text-gray-400 text-xs">
+                  发现不仅限于外部世界，也包括对自我的认知。许多哲学和心理学理论都强调自我发现对个人成长的重要性。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 名言引用 -->
+        <section id="quotes" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-quote-right"></i>
+            </span>
+            名言引用
+          </h2>
+          
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 card-hover">
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600 relative">
+              <div class="absolute -top-4 -left-4 text-5xl text-discover-primary/20">
+                <i class="fa fa-quote-left"></i>
+              </div>
+              
+              <div class="relative z-10">
+                <p class="text-lg md:text-xl text-gray-700 dark:text-gray-300 italic mb-6 leading-relaxed">
+                  "The real voyage of discovery consists not in seeking new landscapes, but in having new eyes."
+                </p>
+                
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-discover-primary/10 flex items-center justify-center mr-3">
+                    <i class="fa fa-user text-discover-primary"></i>
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Marcel Proust</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">法国作家</p>
+                  </div>
+                </div>
+                
+                <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <p class="text-gray-600 dark:text-gray-400">
+                    中文翻译：真正的发现之旅不在于寻找新的风景，而在于拥有新的眼睛。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                <p class="text-gray-700 dark:text-gray-300 italic text-sm mb-4">
+                  "Discovery consists of seeing what everybody has seen and thinking what nobody has thought."
+                </p>
+                <p class="text-gray-800 dark:text-white text-sm font-medium">Albert Szent-Györgyi</p>
+                <p class="text-gray-600 dark:text-gray-400 text-xs mt-2">
+                  中文翻译：发现就是看到每个人都看到的东西，却想到没有人想到的东西。
+                </p>
+              </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 card-hover">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 h-full">
+                <p class="text-gray-700 dark:text-gray-300 italic text-sm mb-4">
+                  "The greatest discoveries all start with a question."
+                </p>
+                <p class="text-gray-800 dark:text-white text-sm font-medium">Neil deGrasse Tyson</p>
+                <p class="text-gray-600 dark:text-gray-400 text-xs mt-2">
+                  中文翻译：最伟大的发现都始于一个问题。
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 历史发现时间轴 -->
+        <section id="timeline" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-clock-o"></i>
+            </span>
+            历史上的伟大发现
+          </h2>
+          
+          <div class="relative timeline-line pl-10 ml-5 space-y-8">
+            <!-- 时间点1 -->
+            <div class="relative timeline-dot">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="md:w-1/4">
+                  <p class="text-discover-primary font-medium">公元前3世纪</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">阿基米德</p>
+                </div>
+                <div class="md:w-3/4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">浮力原理的发现</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    传说阿基米德在洗澡时发现了浮力原理，即浸入液体中的物体受到向上的浮力，其大小等于物体所排开的液体重量。这一发现对物理学和工程学产生了深远影响。
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 时间点2 -->
+            <div class="relative timeline-dot">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="md:w-1/4">
+                  <p class="text-discover-primary font-medium">1492年</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">克里斯托弗·哥伦布</p>
+                </div>
+                <div class="md:w-3/4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">美洲大陆的发现</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    哥伦布的航行导致了欧洲与美洲的首次持续接触，开启了"地理大发现"时代，对世界历史进程产生了深远影响。
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 时间点3 -->
+            <div class="relative timeline-dot">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="md:w-1/4">
+                  <p class="text-discover-primary font-medium">1687年</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">艾萨克·牛顿</p>
+                </div>
+                <div class="md:w-3/4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">万有引力定律的发现</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    牛顿在《自然哲学的数学原理》中发表了万有引力定律，解释了物体之间的引力相互作用，成为经典物理学的基础。
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 时间点4 -->
+            <div class="relative timeline-dot">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="md:w-1/4">
+                  <p class="text-discover-primary font-medium">1895年</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">威廉·伦琴</p>
+                </div>
+                <div class="md:w-3/4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">X射线的发现</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    伦琴在研究阴极射线时偶然发现了X射线，这一发现彻底改变了医学诊断，并为后来的量子物理学研究奠定了基础。
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 时间点5 -->
+            <div class="relative timeline-dot">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="md:w-1/4">
+                  <p class="text-discover-primary font-medium">1928年</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">亚历山大·弗莱明</p>
+                </div>
+                <div class="md:w-3/4 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">青霉素的发现</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    弗莱明发现青霉素具有抗菌作用，这是第一个抗生素，彻底改变了医学，拯救了无数生命，开创了抗菌治疗的新时代。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 单词测验 -->
+        <section id="quiz" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-discover-primary/10 text-discover-primary flex items-center justify-center mr-2">
+              <i class="fa fa-question-circle"></i>
+            </span>
+            单词测验
+          </h2>
+          
+          <div class="bg-gradient-to-br from-discover-primary/5 to-discover-secondary/5 dark:from-discover-primary/10 dark:to-discover-secondary/10 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+            <div class="mb-6 text-center">
+              <p class="text-gray-700 dark:text-gray-300 mb-2">测试你对"Discover"的掌握程度</p>
+              <div class="w-24 h-1 bg-gradient-to-r from-discover-primary to-discover-secondary rounded-full mx-auto"></div>
+            </div>
+            
+            <!-- 词义理解测验 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600 mb-8">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 text-center">选择正确的句子含义</h3>
+              
+              <div class="mb-5">
+                <p class="text-center text-gray-700 dark:text-gray-300 mb-4">"Scientists discovered a cure for the disease."</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                  <button class="discover-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                    科学家发明了治疗这种疾病的方法。
+                  </button>
+                  <button class="discover-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="true">
+                    科学家发现了治疗这种疾病的方法。
+                  </button>
+                  <button class="discover-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                    科学家研究了治疗这种疾病的方法。
+                  </button>
+                  <button class="discover-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                    科学家推广了治疗这种疾病的方法。
+                  </button>
+                </div>
+              </div>
+              
+              <div id="meaning-feedback" class="hidden text-center p-3 rounded-lg"></div>
+            </div>
+            
+            <!-- 衍生词选择 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 text-center">选择正确的衍生词</h3>
+              
+              <div class="mb-5">
+                <p class="text-center text-gray-700 dark:text-gray-300 mb-4">
+                  Marie Curie made one of the most important scientific ______ of the 20th century.
+                </p>
+                
+                <div class="max-w-md mx-auto">
+                  <div class="flex flex-wrap gap-2 justify-center">
+                    <button class="discover-option px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-word="discoveries">discoveries</button>
+                    <button class="discover-option px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-word="discovers">discovers</button>
+                    <button class="discover-option px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-word="discoverers">discoverers</button>
+                    <button class="discover-option px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-word="discovering">discovering</button>
+                  </div>
+                  
+                  <div class="mt-4 text-center" id="word-blank-container">
+                    Marie Curie made one of the most important scientific <span id="word-blank" class="inline-block w-36 h-6 border-b-2 border-gray-300 dark:border-gray-600"></span> of the 20th century.
+                  </div>
+                </div>
+              </div>
+              
+              <div id="word-feedback" class="hidden text-center p-3 rounded-lg"></div>
+            </div>
+            
+            <div class="mt-6 text-center">
+              <button id="reset-quiz" class="px-4 py-2 bg-discover-primary hover:bg-discover-dark text-white rounded-lg transition-colors text-sm font-medium">
+                重新开始测验
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 词链导航提示 -->
+  <div class="fixed bottom-6 right-6 z-40 bg-white dark:bg-gray-800 shadow-lg rounded-full p-4 border border-gray-200 dark:border-gray-700">
+    <div class="flex items-center space-x-3">
+      <span class="text-sm text-gray-600 dark:text-gray-400">探索词链:</span>
+      <div class="flex space-x-2">
+        <a href="#" class="text-discover-primary/70 hover:text-discover-primary transition-colors text-sm">explore</a>
+        <span class="text-discover-secondary/70 text-sm">→</span>
+        <a href="#" class="text-discover-primary font-medium text-sm">discover</a>
+        <span class="text-discover-secondary/70 text-sm">→</span>
+        <a href="#" class="text-discover-primary/70 hover:text-discover-primary transition-colors text-sm">invent</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-discover-primary to-discover-secondary flex items-center justify-center">
+            <i class="fa fa-compass text-white text-sm"></i>
+          </div>
+          <span class="text-lg font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <div class="flex space-x-6 mb-4 md:mb-0">
+          <a href="#" class="text-gray-400 hover:text-discover-primary dark:text-gray-500 dark:hover:text-discover-primary transition-colors">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-discover-primary dark:text-gray-500 dark:hover:text-discover-primary transition-colors">
+            <i class="fa fa-twitter"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-discover-primary dark:text-gray-500 dark:hover:text-discover-primary transition-colors">
+            <i class="fa fa-instagram"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-discover-primary dark:text-gray-500 dark:hover:text-discover-primary transition-colors">
+            <i class="fa fa-youtube"></i>
+          </a>
+        </div>
+        
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          © 2023 EnglishMaster. 保留所有权利。
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 逐字出现效果
+      const title = document.getElementById('discover-title');
+      if (title) {
+        const text = title.textContent;
+        title.textContent = '';
+        
+        for (let i = 0; i < text.length; i++) {
+          const span = document.createElement('span');
+          span.textContent = text[i];
+          span.style.animationDelay = `${i * 0.1}s`;
+          title.appendChild(span);
+        }
+      }
+      
+      // 创建星空背景
+      createStars();
+      
+      // 学习进度条动画
+      setTimeout(() => {
+        document.querySelector('.progress-animation').style.width = '35%';
+      }, 500);
+      
+      // 探索者动画
+      animateExplorer();
+      
+      // 隐藏物体显现动画
+      setTimeout(() => {
+        const hiddenObject = document.getElementById('hidden-object');
+        if (hiddenObject) {
+          hiddenObject.animate([
+            { opacity: 0, transform: 'scale(0.5)' },
+            { opacity: 1, transform: 'scale(1.2)' },
+            { opacity: 0.8, transform: 'scale(1)' }
+          ], {
+            duration: 2000,
+            fill: 'forwards'
+          });
+        }
+      }, 3000);
+      
+      // 探索者动画函数
+      function animateExplorer() {
+        const explorer = document.getElementById('explorer');
+        if (explorer) {
+          explorer.animate([
+            { left: '10%', bottom: '10%' },
+            { left: '30%', bottom: '15%' },
+            { left: '45%', bottom: '10%' },
+            { left: '60%', bottom: '20%' },
+            { left: '80%', bottom: '15%' }
+          ], {
+            duration: 8000,
+            iterations: Infinity,
+            direction: 'alternate',
+            easing: 'ease-in-out'
+          });
+        }
+      }
+      
+      // 创建星空背景
+      function createStars() {
+        const container = document.getElementById('starry-background');
+        if (!container) return;
+        
+        const starCount = 50;
+        
+        for (let i = 0; i < starCount; i++) {
+          const star = document.createElement('div');
+          star.classList.add('star');
+          
+          // 随机大小
+          const size = Math.random() * 3 + 1;
+          star.style.width = `${size}px`;
+          star.style.height = `${size}px`;
+          
+          // 随机位置
+          const left = Math.random() * 100;
+          const top = Math.random() * 100;
+          star.style.left = `${left}%`;
+          star.style.top = `${top}%`;
+          
+          // 随机动画延迟
+          star.style.animationDelay = `${Math.random() * 2}s`;
+          
+          container.appendChild(star);
+        }
+      }
+      
+      // 主题切换功能
+      const themeToggle = document.getElementById('globalToggle');
+      
+      // 检查本地存储的主题偏好
+      if (localStorage.getItem('theme') === 'dark' || 
+          (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // 切换主题
+      themeToggle.addEventListener('click', function() {
+        document.documentElement.classList.toggle('dark');
+        
+        // 保存主题偏好
+        if (document.documentElement.classList.contains('dark')) {
+          localStorage.setItem('theme', 'dark');
+        } else {
+          localStorage.setItem('theme', 'light');
+        }
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        // 关闭搜索框（如果打开）
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.classList.add('hidden');
+        }
+      });
+      
+      // 移动端搜索框切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        // 关闭菜单（如果打开）
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单和搜索框（如果打开）
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+            if (!mobileSearch.classList.contains('hidden')) {
+              mobileSearch.classList.add('hidden');
+            }
+          }
+        });
+      });
+      
+      // 发音功能
+      const pronunciationBtn = document.getElementById('pronunciationBtn');
+      if (pronunciationBtn) {
+        pronunciationBtn.addEventListener('click', function() {
+          const word = "discover";
+          const utterance = new SpeechSynthesisUtterance(word);
+          utterance.lang = 'en-US';
+          utterance.rate = 0.9;
+          window.speechSynthesis.speak(utterance);
+          
+          // 按钮动画反馈
+          this.classList.add('scale-90');
+          setTimeout(() => {
+            this.classList.remove('scale-90');
+          }, 200);
+        });
+      }
+      
+      // 词义理解测验
+      document.querySelectorAll('.discover-question').forEach(option => {
+        option.addEventListener('click', function() {
+          const isCorrect = this.dataset.correct === 'true';
+          const feedback = document.getElementById('meaning-feedback');
+          
+          // 重置所有选项样式
+          document.querySelectorAll('.discover-question').forEach(opt => {
+            opt.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'dark:bg-green-900/20', 'dark:bg-red-900/20');
+          });
+          
+          // 设置当前选项样式
+          if (isCorrect) {
+            this.classList.add('bg-green-100', 'border-green-500', 'dark:bg-green-900/20');
+            feedback.textContent = '正确！"discover" 表示发现已经存在但未被知晓的事物。';
+            feedback.className = 'text-center p-3 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+          } else {
+            this.classList.add('bg-red-100', 'border-red-500', 'dark:bg-red-900/20');
+            feedback.textContent = '不正确。"discover" 强调发现已存在但未知的事物，而不是发明新事物。';
+            feedback.className = 'text-center p-3 rounded-lg bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+          }
+          
+          feedback.classList.remove('hidden');
+        });
+      });
+      
+      // 衍生词选择测验
+      document.querySelectorAll('.discover-option').forEach(option => {
+        option.addEventListener('click', function() {
+          const word = this.dataset.word;
+          const isCorrect = word === 'discoveries';
+          const blank = document.getElementById('word-blank');
+          const feedback = document.getElementById('word-feedback');
+          
+          blank.textContent = word;
+          blank.classList.remove('border-gray-300', 'dark:border-gray-600');
+          
+          if (isCorrect) {
+            blank.classList.add('text-green-600', 'dark:text-green-400');
+            feedback.textContent = '太棒了！"discoveries"是"discover"的名词复数形式，指科学发现。';
+            feedback.className = 'text-center p-3 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+          } else {
+            blank.classList.add('text-red-600', 'dark:text-red-400');
+            feedback.textContent = '不太对哦，再试一次！提示：需要填入"discover"的名词复数形式。';
+            feedback.className = 'text-center p-3 rounded-lg bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+          }
+          
+          feedback.classList.remove('hidden');
+        });
+      });
+      
+      // 重置测验
+      document.getElementById('reset-quiz').addEventListener('click', function() {
+        // 重置词义理解题
+        document.querySelectorAll('.discover-question').forEach(opt => {
+          opt.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'dark:bg-green-900/20', 'dark:bg-red-900/20');
+        });
+        document.getElementById('meaning-feedback').classList.add('hidden');
+        
+        // 重置衍生词选择题
+        const blank = document.getElementById('word-blank');
+        blank.textContent = '';
+        blank.className = 'inline-block w-36 h-6 border-b-2 border-gray-300 dark:border-gray-600';
+        document.getElementById('word-feedback').classList.add('hidden');
+      });
+    });
+  </script>
+</body>
+</html>

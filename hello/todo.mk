@@ -4,9 +4,9 @@
 
 🔹 推荐单词列表（20个） up to date
 	1.	transform — 转变、变革 -
-	2.	discover — 发现、揭示
+	2.	discover — 发现、揭示 -
 	3.	achieve — 达成、实现 - 
-	4.	innovate — 创新、改革
+	4.	innovate — 创新、改革 -
 	5.	challenge — 挑战、质疑 - 
 	6.	explore — 探索、研究 -
 	7.	create — 创造、建立
@@ -20,8 +20,8 @@
 	15.	reflect — 反思、映射 -
 	16.	elevate — 提升、举起 -
 	17.	unite — 团结、结合
-	18.	adapt — 适应、调整
-	19.	influence — 影响、感化
+	18.	adapt — 适应、调整 -
+	19.	influence — 影响、感化 -
 	20.	succeed — 成功、继承
 
 ⸻
@@ -32,8 +32,5 @@
 	•	应用广，现代用法、常用搭配和场景多
 	•	适合制作专业单词页面，每个单词都能设计 7 个板块（基本信息、历史故事、衍生词、词源图、现代用法、词根对比、文化趣闻）
 
-⸻
-
-我可以帮你把这 20 个单词 逐一生成下一步的详细整理方案，比如先选 1 个生成完整页面内容框架。
-
-你希望我先挑哪个单词开始整理呢？
+ 接着整理 “explore → discover → next: invent” 这样的一条 “科学/探索类词链”
+ 可以和 discover → innovate → invent 形成一个逻辑链条（发现 → 创新 → 发明）
