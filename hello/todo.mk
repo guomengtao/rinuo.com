@@ -16,9 +16,9 @@
 	11.	motivate — 激励、驱动 -
 	12.	enlighten — 启迪、开导 -
 	13.	overcome — 克服、战胜
-	14.	celebrate — 庆祝、赞美
-	15.	reflect — 反思、映射
-	16.	elevate — 提升、举起
+	14.	celebrate — 庆祝、赞美 -
+	15.	reflect — 反思、映射 -
+	16.	elevate — 提升、举起 -
 	17.	unite — 团结、结合
 	18.	adapt — 适应、调整
 	19.	influence — 影响、感化
