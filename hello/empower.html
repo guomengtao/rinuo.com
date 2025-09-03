@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Empower - 英语单词学习（日夜模式）</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            tech: {
+              primary: '#3B82F6',
+              dark: '#1E293B'
+            },
+            education: {
+              primary: '#6366F1',
+              dark: '#1F2937'
+            },
+            word: {
+              primary: '#10B981', // 改为绿色系，象征赋权和成长
+              secondary: '#8B5CF6',
+              accent: '#EC4899',
+              dark: '#0F172A',
+              light: '#E2E8F0',
+              neon: '#10B981', // 赋权主题的霓虹色
+              cosmic: '#059669' // 深绿色作为辅助色
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            sci: ['Orbitron', 'sans-serif']
+          },
+          animation: {
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+            'glow': 'glow 2s ease-in-out infinite alternate',
+            'morph': 'morph 8s ease-in-out infinite',
+            'rotate': 'rotate 15s linear infinite',
+            'grow': 'grow 2s ease-out forwards', // 新增：用于表现赋权的增长动画
+            'shine': 'shine 1.5s ease-out forwards' // 新增：用于表现点亮效果
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' }
+            },
+            glow: {
+              '0%': { textShadow: '0 0 5px #fff, 0 0 10px #fff, 0 0 15px #10B981, 0 0 20px #10B981' },
+              '100%': { textShadow: '0 0 10px #fff, 0 0 20px #fff, 0 0 30px #34D399, 0 0 40px #34D399' }
+            },
+            morph: {
+              '0%, 100%': { borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%' },
+              '25%': { borderRadius: '50% 30% 40% 70% / 60% 30% 70% 40%' },
+              '50%': { borderRadius: '60% 40% 50% 50% / 50% 60% 30% 60%' },
+              '75%': { borderRadius: '70% 60% 40% 50% / 30% 40% 70% 60%' }
+            },
+            rotate: {
+              '0%': { transform: 'rotate(0deg)' },
+              '100%': { transform: 'rotate(360deg)' }
+            },
+            grow: {
+              '0%': { transform: 'scale(0.8)', opacity: 0.5 },
+              '100%': { transform: 'scale(1)', opacity: 1 }
+            },
+            shine: {
+              '0%': { boxShadow: '0 0 5px rgba(16, 185, 129, 0.3)' },
+              '100%': { boxShadow: '0 0 10px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .pulse-effect {
+        animation: pulse 2s infinite;
+      }
+      .float-effect {
+        animation: float 3s ease-in-out infinite;
+      }
+      .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      }
+      .dark .nav-shadow {
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+      .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .dark .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+      .text-shadow {
+        text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+      }
+      .bg-stars {
+        background-image: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+      }
+      .neon-border {
+        box-shadow: 0 0 5px #10B981, 0 0 10px #10B981;
+      }
+      .word-card {
+        transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        transform-style: preserve-3d;
+      }
+      .word-card.flipped {
+        transform: rotateY(180deg);
+      }
+      .card-front, .card-back {
+        backface-visibility: hidden;
+      }
+      .card-back {
+        transform: rotateY(180deg);
+      }
+      .power-bar {
+        height: 8px;
+        background: linear-gradient(to right, #10B981, #34D399);
+        transform-origin: left;
+        transform: scaleX(0);
+        transition: transform 1.5s ease-out;
+      }
+      .key-icon {
+        transition: transform 0.5s ease, box-shadow 0.5s ease;
+      }
+      .key-icon:hover {
+        transform: rotate(15deg) scale(1.1);
+        box-shadow: 0 0 15px rgba(16, 185, 129, 0.6);
+      }
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+        70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+      }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-5px); }
+        100% { transform: translateY(0px); }
+      }
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&amp;display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-100 dark:bg-word-dark min-h-screen transition-colors duration-300">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-word-dark/80 nav-shadow transition-all duration-300 backdrop-blur-md border-b border-word-primary/30">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="h-10 w-10 rounded-full bg-gradient-to-r from-word-primary to-word-cosmic flex items-center justify-center animate-rotate">
+            <i class="fa fa-bolt text-white text-xl"></i> <!-- 改为闪电图标，象征力量 -->
+          </div>
+          <span class="text-xl font-sci font-bold text-gray-800 dark:text-white">
+            <span class="text-word-neon animate-glow">Word</span>Empower
+          </span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" placeholder="搜索单词..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-word-dark border-0 focus:ring-2 focus:ring-word-primary/50 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-word-dark rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-word-primary rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-400 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-word-dark transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-word-dark transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+          
+          <button class="hidden md:block px-4 py-2 rounded-full bg-word-primary/20 border border-word-primary/50 hover:bg-word-primary/30 transition-all">
+            <i class="fa fa-bookmark mr-2"></i>收藏
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" placeholder="搜索单词..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-word-dark border-0 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">单词详情</a>
+          <a href="#examples" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">用法示例</a>
+          <a href="#etymology" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">词源解析</a>
+          <a href="#culture" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">文化应用</a>
+          <a href="#quiz" class="text-gray-600 hover:text-word-primary dark:text-gray-300 dark:hover:text-word-primary transition-colors py-2">小测验</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section class="relative pt-24 pb-16 overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-b from-word-dark/80 via-word-dark/60 to-word-dark z-10"></div>
+    <!-- 装饰性变换形状 -->
+    <div class="absolute top-1/4 right-10 w-60 h-60 bg-word-primary/20 animate-morph filter blur-3xl"></div>
+    <div class="absolute bottom-1/3 left-10 w-80 h-80 bg-word-secondary/20 animate-morph filter blur-3xl" style="animation-delay: 2s;"></div>
+    
+    <div class="relative z-20 container mx-auto px-4">
+      <div class="max-w-4xl mx-auto text-center">
+        <h1 class="text-[clamp(2.5rem,6vw,5rem)] font-sci font-bold mb-6 leading-tight">
+          <span class="text-word-neon animate-glow">empower</span>
+        </h1>
+        <div class="text-[clamp(1.2rem,3vw,1.5rem)] text-gray-300 dark:text-gray-300 mb-4 font-mono">/ɛmˈpaʊər/</div>
+        <div class="inline-block px-6 py-2 rounded-full bg-word-primary/20 border border-word-primary/40 mb-8">
+          <span class="font-sci text-word-primary">verb</span>
+        </div>
+        <p class="text-[clamp(1rem,2vw,1.25rem)] text-gray-300 dark:text-gray-300 mb-8 max-w-2xl mx-auto">
+          赋予某人权力、能力或信心去做某事
+        </p>
+        <div class="flex flex-wrap justify-center gap-4">
+          <button class="px-8 py-3 rounded-full bg-gradient-to-r from-word-primary to-word-cosmic font-sci font-medium text-white hover:shadow-lg hover:shadow-word-primary/30 transition-all transform hover:-translate-y-1">
+            <i class="fa fa-volume-up mr-2"></i>发音
+          </button>
+          <button class="px-8 py-3 rounded-full bg-transparent border border-word-primary/70 font-sci font-medium text-word-primary hover:bg-word-primary/10 transition-all">
+            查看全部用法
+          </button>
+        </div>
+        
+        <!-- 力量增长动画指示器 -->
+        <div class="mt-12 max-w-md mx-auto">
+          <div class="h-8 bg-white/10 rounded-full overflow-hidden mb-2">
+            <div class="power-bar h-full" id="powerIndicator"></div>
+          </div>
+          <p class="text-sm text-gray-400">赋能过程 → 点击上方按钮体验</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-word-dark border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-word-primary dark:text-gray-400 dark:hover:text-word-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-word-primary dark:text-gray-400 dark:hover:text-word-primary">单词学习</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">empower</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl shadow-lg sidebar-shadow overflow-hidden sticky top-24 border border-word-primary/30">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-sci font-semibold text-gray-800 dark:text-white">单词学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-word-dark/80 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-info-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>单词详情</span>
+            </a>
+            <a href="#examples" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-word-dark/80 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-file-text-o text-word-primary mr-3 w-5 text-center"></i>
+              <span>用法示例</span>
+            </a>
+            <a href="#etymology" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-word-dark/80 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history text-word-primary mr-3 w-5 text-center"></i>
+              <span>词源解析</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-word-dark/80 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-film text-word-primary mr-3 w-5 text-center"></i>
+              <span>文化应用</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-word-dark/80 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle text-word-primary mr-3 w-5 text-center"></i>
+              <span>小测验</span>
+            </a>
+            <a href="#related" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-word-dark/80 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-sitemap text-word-primary mr-3 w-5 text-center"></i>
+              <span>相关词汇</span>
+            </a>
+          </nav>
+          
+          <!-- 单词模式切换 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-sci font-semibold text-gray-800 dark:text-white mb-3">单词学习模式</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">切换适合不同场景的学习模式</p>
+            
+            <div class="flex items-center space-x-4 mb-6">
+              <div class="relative inline-block w-16 h-8 bg-gray-200 dark:bg-word-dark rounded-full cursor-pointer toggle-transition" id="studyModeToggle">
+                <div class="absolute left-1 top-1 w-6 h-6 bg-white dark:bg-word-primary rounded-full toggle-transition transform dark:translate-x-8"></div>
+                <div class="absolute inset-0 flex items-center justify-between px-2">
+                  <i class="fa fa-sun-o text-yellow-400 sun-moon-transition"></i>
+                  <i class="fa fa-moon-o text-gray-600 dark:text-gray-300 sun-moon-transition"></i>
+                </div>
+              </div>
+              <span class="text-sm text-gray-600 dark:text-gray-300" id="studyModeStatus">专注模式</span>
+            </div>
+            
+            <!-- 邮件订阅框 -->
+            <h3 class="font-sci font-semibold text-gray-800 dark:text-white mb-3">订阅单词学习</h3>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">获取每日单词学习推送</p>
+            <form class="space-y-3">
+              <div>
+                <input type="email" placeholder="您的邮箱地址" class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-word-dark focus:outline-none focus:ring-2 focus:ring-word-primary/50 transition-colors text-gray-800 dark:text-gray-200">
+              </div>
+              <button type="submit" class="w-full bg-word-primary hover:bg-word-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                订阅
+              </button>
+            </form>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 单词基本信息 -->
+        <section class="mb-16 bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl p-6 md:p-8 shadow-lg border border-word-primary/30">
+          <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-sci font-bold mb-6 text-gray-800 dark:text-white">单词核心信息</h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 class="text-lg font-medium text-word-primary mb-4 flex items-center">
+                <i class="fa fa-info-circle mr-2"></i>核心含义
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-6">赋予某人权力、能力或信心去做某事</p>
+              
+              <h3 class="text-lg font-medium text-word-primary mb-4 flex items-center">
+                <i class="fa fa-line-chart mr-2"></i>使用频率
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-6">常见于商业、教育、社会学、心理学等语境</p>
+              
+              <h3 class="text-lg font-medium text-word-primary mb-4 flex items-center">
+                <i class="fa fa-lightbulb-o mr-2"></i>记忆技巧
+              </h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-3">power = 力量 → empower = 给别人力量。</p>
+              <p class="text-gray-600 dark:text-gray-300">想象一个人被赋予一把"力量之剑"，从无力变得有力。</p>
+            </div>
+            
+            <div class="relative">
+              <div class="word-card relative h-64 w-full cursor-pointer rounded-xl" id="meaning-card">
+                <div class="card-front absolute inset-0 bg-white dark:bg-word-dark/80 rounded-xl p-6 border border-word-primary/40 flex flex-col justify-center">
+                  <h3 class="text-center text-xl font-sci mb-4 text-gray-800 dark:text-white">点击查看衍生词</h3>
+                  <div class="flex justify-center">
+                    <div class="w-16 h-16 rounded-full bg-word-primary/10 flex items-center justify-center key-icon">
+                      <i class="fa fa-key text-2xl text-word-primary"></i>
+                    </div>
+                  </div>
+                </div>
+                <div class="card-back absolute inset-0 bg-white dark:bg-word-dark/80 rounded-xl p-6 border border-word-primary/40">
+                  <h3 class="text-center text-xl font-sci mb-4 text-gray-800 dark:text-white">衍生词</h3>
+                  <ul class="space-y-3">
+                    <li class="flex justify-between">
+                      <span class="text-word-neon font-medium">empowerment</span>
+                      <span class="text-gray-600 dark:text-gray-300">赋权，增强信心的过程</span>
+                    </li>
+                    <li class="flex justify-between">
+                      <span class="text-word-neon font-medium">disempower</span>
+                      <span class="text-gray-600 dark:text-gray-300">剥夺权力或信心</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 词源和历史 -->
+        <section class="mb-16" id="etymology">
+          <div class="bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl p-6 md:p-8 shadow-lg border border-word-primary/30">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-sci font-bold mb-6 text-gray-800 dark:text-white">词源与历史</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- 词源卡片 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden border border-word-primary/20 group hover:border-word-primary/40 transition-all duration-300 p-6">
+                    <h3 class="text-xl font-sci font-bold text-gray-800 dark:text-white mb-4">词源解析</h3>
+                    
+                    <div class="mb-6">
+                        <div class="flex items-center mb-2">
+                            <span class="px-3 py-1 bg-word-primary/20 rounded-full text-xs mr-2">前缀</span>
+                            <span class="text-word-neon font-medium">en-</span>
+                            <span class="text-gray-600 dark:text-gray-300 ml-2">= 使…进入某种状态</span>
+                        </div>
+                        
+                        <div class="flex items-center mb-2">
+                            <span class="px-3 py-1 bg-word-primary/20 rounded-full text-xs mr-2">词根</span>
+                            <span class="text-word-neon font-medium">power</span>
+                            <span class="text-gray-600 dark:text-gray-300 ml-2">= 力量</span>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button id="splitButton" class="px-4 py-2 bg-word-primary/10 hover:bg-word-primary/20 rounded-lg text-word-primary transition-colors flex items-center">
+                                <i class="fa fa-random mr-2"></i> 拆分查看
+                            </button>
+                            <div id="splitAnimation" class="mt-4 hidden">
+                                <div class="flex justify-center items-center space-x-6">
+                                    <div class="text-2xl font-bold text-word-primary animate-grow" style="animation-delay: 0.2s">en-</div>
+                                    <div class="text-xl text-gray-500">+</div>
+                                    <div class="text-2xl font-bold text-word-primary animate-grow" style="animation-delay: 0.5s">power</div>
+                                    <div class="text-xl text-gray-500">=</div>
+                                    <div class="text-2xl font-bold text-word-neon animate-grow" style="animation-delay: 0.8s">empower</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">相关词汇</h4>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-white dark:bg-word-dark/60 rounded-full text-sm border border-word-primary/30 hover:border-word-primary/60 transition-colors text-gray-700 dark:text-gray-300">enable</span>
+                                <span class="px-3 py-1 bg-white dark:bg-word-dark/60 rounded-full text-sm border border-word-primary/30 hover:border-word-primary/60 transition-colors text-gray-700 dark:text-gray-300">enrich</span>
+                                <span class="px-3 py-1 bg-white dark:bg-word-dark/60 rounded-full text-sm border border-word-primary/30 hover:border-word-primary/60 transition-colors text-gray-700 dark:text-gray-300">strengthen</span>
+                                <span class="px-3 py-1 bg-white dark:bg-word-dark/60 rounded-full text-sm border border-word-primary/30 hover:border-word-primary/60 transition-colors text-gray-700 dark:text-gray-300">authorize</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 历史卡片 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden border border-word-primary/20 group hover:border-word-primary/40 transition-all duration-300 p-6">
+                    <h3 class="text-xl font-sci font-bold text-gray-800 dark:text-white mb-4">历史演变</h3>
+                    
+                    <div class="mb-4">
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">来自中古英语 <span class="text-word-neon">enpower</span>，由 en-（使…进入某种状态）+ power（力量）组成。14世纪首次出现，意为"授予官方权力"。</p>
+                        
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">在中世纪欧洲，国王通过授予地方领主"权力书状"（charter）来让他们统治某片土地，这一行为就是 empower 的早期语境。后来逐渐扩展为精神和心理上的赋权。</p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-word-dark/60 p-4 rounded-lg border border-word-primary/20">
+                        <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">历史文献引用</h4>
+                        <p class="text-gray-600 dark:text-gray-300 mb-2"><span class="text-word-primary font-medium">大宪章 (1215)</span> — 被视为"赋予人民权力"的早期法律文献</p>
+                        <p class="text-gray-600 dark:text-gray-300 italic">"I am grateful to be a woman. I must have done something great in another life."</p>
+                        <p class="text-right text-sm text-gray-500 dark:text-gray-400 mt-1">— Maya Angelou</p>
+                    </div>
+                    
+                    <!-- 历史时间线 -->
+                    <div class="mt-6">
+                        <button id="timelineButton" class="w-full py-2 border border-word-primary/30 rounded-lg text-word-primary hover:bg-word-primary/10 transition-colors flex items-center justify-center">
+                            <i class="fa fa-history mr-2"></i> 查看历史演变时间线
+                        </button>
+                        <div id="timelineContainer" class="mt-4 hidden">
+                            <div class="relative">
+                                <!-- 时间线轴线 -->
+                                <div class="absolute left-3 top-0 bottom-0 w-0.5 bg-word-primary/30"></div>
+                                
+                                <!-- 时间点1 -->
+                                <div class="relative pl-10 pb-6">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-word-primary flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-full bg-white"></div>
+                                    </div>
+                                    <h5 class="font-medium text-gray-800 dark:text-white">14世纪</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">首次出现，用于描述官方权力授予</p>
+                                </div>
+                                
+                                <!-- 时间点2 -->
+                                <div class="relative pl-10 pb-6">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-word-primary flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-full bg-white"></div>
+                                    </div>
+                                    <h5 class="font-medium text-gray-800 dark:text-white">17-18世纪</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">扩展到法律和政治语境中的权力赋予</p>
+                                </div>
+                                
+                                <!-- 时间点3 -->
+                                <div class="relative pl-10 pb-6">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-word-primary flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-full bg-white"></div>
+                                    </div>
+                                    <h5 class="font-medium text-gray-800 dark:text-white">20世纪</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">开始用于社会运动和心理赋权语境</p>
+                                </div>
+                                
+                                <!-- 时间点4 -->
+                                <div class="relative pl-10">
+                                    <div class="absolute left-0 top-1 w-6 h-6 rounded-full bg-word-primary flex items-center justify-center">
+                                        <div class="w-2 h-2 rounded-full bg-white"></div>
+                                    </div>
+                                    <h5 class="font-medium text-gray-800 dark:text-white">当代</h5>
+                                    <p class="text-sm text-gray-600 dark:text-gray-300">广泛应用于教育、商业、心理学等多个领域</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 现代用法示例 -->
+        <section class="mb-16" id="examples">
+          <div class="bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl p-6 md:p-8 shadow-lg border border-word-primary/30">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-sci font-bold mb-6 text-gray-800 dark:text-white">现代用法</h2>
+            
+            <div class="relative overflow-hidden rounded-xl border border-word-primary/30">
+                <div class="flex overflow-x-auto snap-x snap-mandatory py-6 scrollbar-hide">
+                    <!-- 用法1 -->
+                    <div class="min-w-[300px] md:min-w-[400px] p-4 snap-center">
+                        <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden h-full border border-word-primary/20 transition-all hover:border-word-primary/40 hover:shadow-lg hover:shadow-word-primary/10 h-full">
+                            <div class="p-6">
+                                <h3 class="text-xl font-sci font-bold text-gray-800 dark:text-white mb-4">授予法律或官方权力</h3>
+                                
+                                <div class="mb-4 p-4 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/10">
+                                    <p class="text-gray-800 dark:text-white mb-2 font-medium">英文例句</p>
+                                    <p class="text-gray-600 dark:text-gray-300 italic">"The constitution empowers citizens to vote."</p>
+                                </div>
+                                
+                                <div class="p-4 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/10">
+                                    <p class="text-gray-800 dark:text-white mb-2 font-medium">中文翻译</p>
+                                    <p class="text-gray-600 dark:text-gray-300">"宪法赋予公民投票的权力。"</p>
+                                </div>
+                                
+                                <div class="mt-4 flex justify-center">
+                                    <div class="w-16 h-16 rounded-full bg-word-primary/10 flex items-center justify-center key-icon">
+                                        <i class="fa fa-gavel text-2xl text-word-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用法2 -->
+                    <div class="min-w-[300px] md:min-w-[400px] p-4 snap-center">
+                        <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden h-full border border-word-primary/20 transition-all hover:border-word-primary/40 hover:shadow-lg hover:shadow-word-primary/10 h-full">
+                            <div class="p-6">
+                                <h3 class="text-xl font-sci font-bold text-gray-800 dark:text-white mb-4">给予信心或能力</h3>
+                                
+                                <div class="mb-4 p-4 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/10">
+                                    <p class="text-gray-800 dark:text-white mb-2 font-medium">英文例句</p>
+                                    <p class="text-gray-600 dark:text-gray-300 italic">"The teacher empowers students to think independently."</p>
+                                </div>
+                                
+                                <div class="p-4 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/10">
+                                    <p class="text-gray-800 dark:text-white mb-2 font-medium">中文翻译</p>
+                                    <p class="text-gray-600 dark:text-gray-300">"老师赋予学生独立思考的能力。"</p>
+                                </div>
+                                
+                                <div class="mt-4 flex justify-center">
+                                    <div class="w-16 h-16 rounded-full bg-word-primary/10 flex items-center justify-center key-icon">
+                                        <i class="fa fa-graduation-cap text-2xl text-word-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 用法3 -->
+                    <div class="min-w-[300px] md:min-w-[400px] p-4 snap-center">
+                        <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden h-full border border-word-primary/20 transition-all hover:border-word-primary/40 hover:shadow-lg hover:shadow-word-primary/10 h-full">
+                            <div class="p-6">
+                                <h3 class="text-xl font-sci font-bold text-gray-800 dark:text-white mb-4">提升群体地位或影响力</h3>
+                                
+                                <div class="mb-4 p-4 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/10">
+                                    <p class="text-gray-800 dark:text-white mb-2 font-medium">英文例句</p>
+                                    <p class="text-gray-600 dark:text-gray-300 italic">"The movement aims to empower women in the workplace."</p>
+                                </div>
+                                
+                                <div class="p-4 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/10">
+                                    <p class="text-gray-800 dark:text-white mb-2 font-medium">中文翻译</p>
+                                    <p class="text-gray-600 dark:text-gray-300">"该运动旨在赋予女性在职场上的权力与影响力。"</p>
+                                </div>
+                                
+                                <div class="mt-4 flex justify-center">
+                                    <div class="w-16 h-16 rounded-full bg-word-primary/10 flex items-center justify-center key-icon">
+                                        <i class="fa fa-users text-2xl text-word-primary"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 滚动指示器 -->
+                <div class="absolute bottom-2 left-0 right-0 flex justify-center space-x-2">
+                    <span class="w-2 h-2 rounded-full bg-word-primary"></span>
+                    <span class="w-2 h-2 rounded-full bg-word-primary/30"></span>
+                    <span class="w-2 h-2 rounded-full bg-word-primary/30"></span>
+                </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 文化中的应用 -->
+        <section class="mb-16" id="culture">
+          <div class="bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl p-6 md:p-8 shadow-lg border border-word-primary/30">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-sci font-bold mb-6 text-gray-800 dark:text-white">文化中的应用</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 电影 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl p-6 border border-word-primary/20 hover:border-word-primary/40 transition-all">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                            <i class="fa fa-film text-word-primary"></i>
+                        </div>
+                        <h3 class="text-lg font-sci font-bold text-gray-800 dark:text-white">电影中的赋权</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex">
+                            <div class="mr-4">
+                                <div class="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-word-dark/60 flex items-center justify-center">
+                                    <i class="fa fa-balance-scale text-2xl text-word-primary"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 dark:text-white">Erin Brockovich</h4>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">《永不妥协》(2000) — 女性法律赋权故事</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="mr-4">
+                                <div class="w-16 h-16 rounded-lg overflow-hidden bg-white dark:bg-word-dark/60 flex items-center justify-center">
+                                    <i class="fa fa-rocket text-2xl text-word-primary"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800 dark:text-white">Hidden Figures</h4>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">《隐藏人物》(2016) — NASA 女性科学家的赋权与贡献</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 名言 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl p-6 border border-word-primary/20 hover:border-word-primary/40 transition-all">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                            <i class="fa fa-quote-left text-word-primary"></i>
+                        </div>
+                        <h3 class="text-lg font-sci font-bold text-gray-800 dark:text-white">关于赋权的名言</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="p-4 bg-white dark:bg-word-dark/60 rounded-lg border border-word-primary/10">
+                            <p class="text-gray-600 dark:text-gray-300 italic">"Change will not come if we wait for some other person. We are the ones we've been waiting for. We are the change that we seek."</p>
+                            <p class="text-right text-sm text-gray-500 dark:text-gray-400 mt-2">— Barack Obama</p>
+                        </div>
+                        
+                        <div class="p-4 bg-white dark:bg-word-dark/60 rounded-lg border border-word-primary/10">
+                            <p class="text-gray-600 dark:text-gray-300 italic">"The best way to find yourself is to lose yourself in the service of others."</p>
+                            <p class="text-right text-sm text-gray-500 dark:text-gray-400 mt-2">— Mahatma Gandhi</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 日常用法 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl p-6 border border-word-primary/20 hover:border-word-primary/40 transition-all">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-full bg-word-primary/20 flex items-center justify-center mr-3">
+                            <i class="fa fa-bolt text-word-primary"></i>
+                        </div>
+                        <h3 class="text-lg font-sci font-bold text-gray-800 dark:text-white">日常场景应用</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div class="p-3 bg-white dark:bg-word-dark/60 rounded-lg border border-word-primary/10">
+                            <h4 class="font-medium text-word-primary mb-1">社会领域</h4>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">"Empower communities to solve their own problems."</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">赋予社区解决自身问题的能力。</p>
+                        </div>
+                        
+                        <div class="p-3 bg-white dark:bg-word-dark/60 rounded-lg border border-word-primary/10">
+                            <h4 class="font-medium text-word-primary mb-1">教育领域</h4>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">"Empower children with the skills they need for the future."</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">赋予孩子们未来所需的技能。</p>
+                        </div>
+                        
+                        <div class="p-3 bg-white dark:bg-word-dark/60 rounded-lg border border-word-primary/10">
+                            <h4 class="font-medium text-word-primary mb-1">商业领域</h4>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">"Companies empower employees by giving them decision-making authority."</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm mt-1">公司通过授予决策权来赋能员工。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 小测验 -->
+        <section class="mb-16" id="quiz">
+          <div class="bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl p-6 md:p-8 shadow-lg border border-word-primary/30">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-sci font-bold mb-6 text-gray-800 dark:text-white">单词小测验</h2>
+            
+            <div class="max-w-3xl mx-auto space-y-6">
+                <!-- 问题1 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden border border-word-primary/20">
+                    <div class="px-6 py-4">
+                        <p class="font-medium text-gray-800 dark:text-white mb-4">1. What does the prefix "en-" mean in empower?</p>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q1" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">without</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q1" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">to cause to be in a certain state</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q1" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">against</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 问题2 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden border border-word-primary/20">
+                    <div class="px-6 py-4">
+                        <p class="font-medium text-gray-800 dark:text-white mb-4">2. Which derivative means "the process of giving power"?</p>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q2" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">empowerment</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q2" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">disempower</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q2" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">powerful</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 问题3 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden border border-word-primary/20">
+                    <div class="px-6 py-4">
+                        <p class="font-medium text-gray-800 dark:text-white mb-4">3. Choose the correct usage:</p>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q3" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">(A) The king empowered knights with land.</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q3" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">(B) He empowered his homework.</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 问题4 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 backdrop-blur-sm rounded-xl overflow-hidden border border-word-primary/20">
+                    <div class="px-6 py-4">
+                        <p class="font-medium text-gray-800 dark:text-white mb-4">4. Which movie shows women empowerment in NASA?</p>
+                        <div class="space-y-3">
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q4" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">Hidden Figures</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q4" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">Erin Brockovich</span>
+                            </label>
+                            <label class="flex items-center space-x-3 p-3 bg-white dark:bg-word-dark/40 rounded-lg border border-word-primary/20 hover:border-word-primary/40 cursor-pointer transition-colors">
+                                <input type="radio" name="q4" class="rounded text-word-primary focus:ring-word-primary/50 bg-white dark:bg-word-dark border-word-primary/50">
+                                <span class="text-gray-700 dark:text-gray-300">The Matrix</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <button class="px-8 py-3 rounded-full bg-gradient-to-r from-word-primary to-word-cosmic font-sci font-medium text-white hover:shadow-lg hover:shadow-word-primary/30 transition-all transform hover:-translate-y-1">
+                        提交答案
+                    </button>
+                </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 相关词汇 -->
+        <section class="mb-16" id="related">
+          <div class="bg-white dark:bg-word-dark/60 backdrop-blur-md rounded-xl p-6 md:p-8 shadow-lg border border-word-primary/30">
+            <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-sci font-bold mb-6 text-gray-800 dark:text-white">相关词汇拓展</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 卡片1 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 rounded-xl overflow-hidden shadow-md card-hover border border-word-primary/20">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-word-neon">enable</h4>
+                            <span class="text-xs bg-word-primary/10 text-word-primary dark:bg-word-primary/20 px-2 py-1 rounded-full">动词</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">使能够</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-3">"The new software enables faster data processing."</p>
+                        <div class="flex justify-between items-center">
+                            <button class="text-xs text-word-primary dark:text-word-primary hover:underline">
+                                <i class="fa fa-volume-up mr-1"></i>发音
+                            </button>
+                            <a href="#" class="text-xs text-word-primary dark:text-word-primary font-medium hover:underline">详细</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 卡片2 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 rounded-xl overflow-hidden shadow-md card-hover border border-word-primary/20">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-word-neon">authorize</h4>
+                            <span class="text-xs bg-word-primary/10 text-word-primary dark:bg-word-primary/20 px-2 py-1 rounded-full">动词</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">授权，批准</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-3">"The manager authorized the purchase."</p>
+                        <div class="flex justify-between items-center">
+                            <button class="text-xs text-word-primary dark:text-word-primary hover:underline">
+                                <i class="fa fa-volume-up mr-1"></i>发音
+                            </button>
+                            <a href="#" class="text-xs text-word-primary dark:text-word-primary font-medium hover:underline">详细</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 卡片3 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 rounded-xl overflow-hidden shadow-md card-hover border border-word-primary/20">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-word-neon">strengthen</h4>
+                            <span class="text-xs bg-word-primary/10 text-word-primary dark:bg-word-primary/20 px-2 py-1 rounded-full">动词</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">加强，巩固</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-3">"Exercise helps strengthen your muscles."</p>
+                        <div class="flex justify-between items-center">
+                            <button class="text-xs text-word-primary dark:text-word-primary hover:underline">
+                                <i class="fa fa-volume-up mr-1"></i>发音
+                            </button>
+                            <a href="#" class="text-xs text-word-primary dark:text-word-primary font-medium hover:underline">详细</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 卡片4 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 rounded-xl overflow-hidden shadow-md card-hover border border-word-primary/20">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-word-neon">enrich</h4>
+                            <span class="text-xs bg-word-primary/10 text-word-primary dark:bg-word-primary/20 px-2 py-1 rounded-full">动词</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">使丰富，充实</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-3">"Travel can enrich your life experience."</p>
+                        <div class="flex justify-between items-center">
+                            <button class="text-xs text-word-primary dark:text-word-primary hover:underline">
+                                <i class="fa fa-volume-up mr-1"></i>发音
+                            </button>
+                            <a href="#" class="text-xs text-word-primary dark:text-word-primary font-medium hover:underline">详细</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 卡片5 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 rounded-xl overflow-hidden shadow-md card-hover border border-word-primary/20">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-word-neon">empowerment</h4>
+                            <span class="text-xs bg-word-primary/10 text-word-primary dark:bg-word-primary/20 px-2 py-1 rounded-full">名词</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">赋权，授权</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-3">"The program focuses on youth empowerment."</p>
+                        <div class="flex justify-between items-center">
+                            <button class="text-xs text-word-primary dark:text-word-primary hover:underline">
+                                <i class="fa fa-volume-up mr-1"></i>发音
+                            </button>
+                            <a href="#" class="text-xs text-word-primary dark:text-word-primary font-medium hover:underline">详细</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 卡片6 -->
+                <div class="bg-gray-50 dark:bg-word-dark/40 rounded-xl overflow-hidden shadow-md card-hover border border-word-primary/20">
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-semibold text-word-neon">disempower</h4>
+                            <span class="text-xs bg-word-primary/10 text-word-primary dark:bg-word-primary/20 px-2 py-1 rounded-full">动词</span>
+                        </div>
+                        <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">剥夺权力</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic mb-3">"Lack of information can disempower people."</p>
+                        <div class="flex justify-between items-center">
+                            <button class="text-xs text-word-primary dark:text-word-primary hover:underline">
+                                <i class="fa fa-volume-up mr-1"></i>发音
+                            </button>
+                            <a href="#" class="text-xs text-word-primary dark:text-word-primary font-medium hover:underline">详细</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 分页控件 -->
+            <div class="flex justify-center mt-8">
+                <nav class="inline-flex items-center space-x-1" aria-label="分页">
+                    <a href="#" class="px-3 py-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-word-dark/40 transition-colors">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+                    <a href="#" aria-current="page" class="px-4 py-2 rounded-md bg-word-primary text-white font-medium">
+                        1
+                    </a>
+                    <a href="#" class="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-word-dark/40 transition-colors">
+                        2
+                    </a>
+                    <span class="px-2 py-2 text-gray-500 dark:text-gray-500">
+                        ...
+                    </span>
+                    <a href="#" class="px-4 py-2 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-word-dark/40 transition-colors">
+                        4
+                    </a>
+                    <a href="#" class="px-3 py-2 rounded-md text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-word-dark/40 transition-colors">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+                </nav>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 总结和订阅 -->
+        <section>
+          <div class="bg-gradient-to-r from-word-primary/20 to-word-cosmic/20 backdrop-blur-md rounded-3xl p-8 md:p-12 border border-word-primary/30 relative overflow-hidden">
+              <div class="absolute top-0 right-0 w-64 h-64 bg-word-primary/10 rounded-full filter blur-3xl -mr-32 -mt-32"></div>
+              <div class="absolute bottom-0 left-0 w-64 h-64 bg-word-cosmic/10 rounded-full filter blur-3xl -ml-32 -mb-32"></div>
+              
+              <div class="relative z-10 max-w-3xl mx-auto">
+                  <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-sci font-bold mb-6 text-center text-gray-800 dark:text-white">单词要点总结</h2>
+                  
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                      <div class="bg-white dark:bg-word-dark/40 p-5 rounded-xl border border-word-primary/20">
+                          <h3 class="text-lg font-medium text-word-primary mb-3">核心要点</h3>
+                          <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                              <li class="flex items-start">
+                                  <i class="fa fa-check-circle text-word-primary mt-1 mr-2"></i>
+                                  <span>词根 en- (使) + power (力量) = 赋予力量</span>
+                              </li>
+                              <li class="flex items-start">
+                                  <i class="fa fa-check-circle text-word-primary mt-1 mr-2"></i>
+                                  <span>最初用于法律/官方授权 → 现代扩展到心理、社会层面</span>
+                              </li>
+                              <li class="flex items-start">
+                                  <i class="fa fa-check-circle text-word-primary mt-1 mr-2"></i>
+                                  <span>高频场景: 法律、教育、社会运动、商业管理</span>
+                              </li>
+                              <li class="flex items-start">
+                                  <i class="fa fa-check-circle text-word-primary mt-1 mr-2"></i>
+                                  <span>衍生词: empowerment, disempower</span>
+                              </li>
+                          </ul>
+                      </div>
+                      
+                      <div class="bg-white dark:bg-word-dark/40 p-5 rounded-xl border border-word-primary/20">
+                          <h3 class="text-lg font-medium text-word-primary mb-3">使用小贴士</h3>
+                          <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                              <li class="flex items-start">
+                                  <i class="fa fa-lightbulb-o text-word-primary mt-1 mr-2"></i>
+                                  <span>empower 强调赋予能力和信心，而 enable 更侧重提供机会</span>
+                              </li>
+                              <li class="flex items-start">
+                                  <i class="fa fa-lightbulb-o text-word-primary mt-1 mr-2"></i>
+                                  <span>常用搭配: empower someone to do something, women's empowerment</span>
+                              </li>
+                              <li class="flex items-start">
+                                  <i class="fa fa-lightbulb-o text-word-primary mt-1 mr-2"></i>
+                                  <span>反义词: disempower (剥夺权力), weaken (削弱)</span>
+                              </li>
+                          </ul>
+                      </div>
+                  </div>
+                  
+                  <form class="flex flex-col sm:flex-row gap-4 max-w-xl mx-auto">
+                      <input type="email" placeholder="订阅更多单词学习资料" class="flex-1 px-5 py-3 rounded-full bg-white dark:bg-word-dark/60 border border-word-primary/50 focus:outline-none focus:ring-2 focus:ring-word-primary/50 text-gray-800 dark:text-gray-200">
+                      <button type="submit" class="px-8 py-3 rounded-full bg-gradient-to-r from-word-primary to-word-cosmic font-sci font-medium text-white hover:shadow-lg hover:shadow-word-primary/30 transition-all transform hover:-translate-y-1 whitespace-nowrap">
+                          订阅
+                      </button>
+                  </form>
+              </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-word-dark text-white py-16 mt-16">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="h-10 w-10 rounded-full bg-gradient-to-r from-word-primary to-word-cosmic flex items-center justify-center animate-rotate">
+              <i class="fa fa-bolt text-white text-xl"></i>
+            </div>
+            <h2 class="text-xl font-sci font-bold text-white">
+              <span class="text-word-neon">Word</span>Empower
+            </h2>
+          </div>
+          <p class="text-gray-400 mb-6">探索英语单词的奥秘，通过词源和用法掌握词汇，让语言学习变得更高效。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-word-dark/60 border border-word-primary/30 flex items-center justify-center text-word-primary hover:bg-word-primary/10 transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-word-dark/60 border border-word-primary/30 flex items-center justify-center text-word-primary hover:bg-word-primary/10 transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-word-dark/60 border border-word-primary/30 flex items-center justify-center text-word-primary hover:bg-word-primary/10 transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-word-dark/60 border border-word-primary/30 flex items-center justify-center text-word-primary hover:bg-word-primary/10 transition-colors">
+              <i class="fa fa-youtube-play"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-sci font-bold text-white mb-6">单词分类</h3>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">学术词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">日常用语</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">科技词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">商业术语</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">文学词汇</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-sci font-bold text-white mb-6">学习资源</h3>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">词源词典</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">例句库</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">同义词辨析</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">词汇测验</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-word-primary transition-colors">学习技巧</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-sci font-bold text-white mb-6">联系我们</h3>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fa fa-map-marker text-word-primary mt-1 mr-3"></i>
+              <span class="text-gray-400">语言学习中心，知识大道123号</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-phone text-word-primary mr-3"></i>
+              <span class="text-gray-400">+86 123 4567 8901</span>
+            </li>
+            <li class="flex items-center">
+              <i class="fa fa-envelope text-word-primary mr-3"></i>
+              <span class="text-gray-400">info@wordempower.com</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="pt-8 border-t border-word-primary/10 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2025 WordEmpower. 保留所有权利.</p>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-500 hover:text-word-primary transition-colors text-sm">隐私政策</a>
+          <a href="#" class="text-gray-500 hover:text-word-primary transition-colors text-sm">服务条款</a>
+          <a href="#" class="text-gray-500 hover:text-word-primary transition-colors text-sm">Cookie政策</a>
+        </div>
+      </div>
+      
+      <!-- 回到顶部按钮 -->
+      <button id="backToTop" class="fixed bottom-8 right-8 bg-word-primary hover:bg-word-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 invisible">
+        <i class="fa fa-chevron-up"></i>
+      </button>
+    </div>
+  </footer>
+
+  <script>
+    // 初始化模式设置 - 默认dark模式
+    function initMode() {
+      // 检查本地存储中的用户偏好
+      const userPreference = localStorage.getItem('modePreference');
+      
+      if (userPreference) {
+        // 应用用户偏好
+        if (userPreference === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else {
+        // 默认设置为dark模式
+        document.documentElement.classList.add('dark');
+      }
+      
+      updateStatus();
+    }
+    
+    // 全局模式切换
+    const globalToggle = document.getElementById('globalToggle');
+    
+    globalToggle.addEventListener('click', function() {
+      document.documentElement.classList.toggle('dark');
+      // 保存用户偏好到本地存储
+      const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('modePreference', mode);
+      updateStatus();
+    });
+    
+    // 学习模式切换按钮
+    const studyModeToggle = document.getElementById('studyModeToggle');
+    const studyModeStatus = document.getElementById('studyModeStatus');
+    
+    studyModeToggle.addEventListener('click', function() {
+      document.documentElement.classList.toggle('dark');
+      // 保存用户偏好到本地存储
+      const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('modePreference', mode);
+      updateStatus();
+    });
+    
+    // 移动端菜单切换
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    mobileMenuBtn.addEventListener('click', function() {
+      mobileMenu.classList.toggle('hidden');
+      // 如果搜索框是打开的，则关闭
+      if (!mobileSearch.classList.contains('hidden')) {
+        mobileSearch.classList.add('hidden');
+      }
+    });
+    
+    // 移动端搜索框切换
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileSearch = document.getElementById('mobileSearch');
+    
+    mobileSearchBtn.addEventListener('click', function() {
+      mobileSearch.classList.toggle('hidden');
+      // 如果菜单是打开的，则关闭
+      if (!mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+    
+    // 单词卡片翻转效果
+    const wordCard = document.getElementById('meaning-card');
+    if (wordCard) {
+      wordCard.addEventListener('click', function() {
+        this.classList.toggle('flipped');
+      });
+    }
+    
+    // 更新状态文本
+    function updateStatus() {
+      const isDark = document.documentElement.classList.contains('dark');
+      studyModeStatus.textContent = isDark ? '专注模式' : '轻松模式';
+    }
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80, // 考虑导航栏高度
+            behavior: 'smooth'
+          });
+          
+          // 关闭移动菜单
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+    
+    // 回到顶部按钮功能
+    const backToTopBtn = document.getElementById('backToTop');
+    
+    window.addEventListener('scroll', function() {
+      if (window.pageYOffset > 300) {
+        backToTopBtn.classList.remove('opacity-0', 'invisible');
+        backToTopBtn.classList.add('opacity-100', 'visible');
+      } else {
+        backToTopBtn.classList.remove('opacity-100', 'visible');
+        backToTopBtn.classList.add('opacity-0', 'invisible');
+      }
+    });
+    
+    backToTopBtn.addEventListener('click', function() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // 测验提交处理
+    const quizSubmit = document.querySelector('#quiz button');
+    if (quizSubmit) {
+      quizSubmit.addEventListener('click', function() {
+        alert('测验提交成功！在实际应用中，这里会显示你的得分和正确答案解析。');
+      });
+    }
+    
+    // 力量指示器动画
+    const powerIndicator = document.getElementById('powerIndicator');
+    const heroButtons = document.querySelectorAll('.max-w-4xl.mx-auto.text-center button');
+    
+    heroButtons.forEach(button => {
+      button.addEventListener('click', function() {
+        // 重置动画
+        powerIndicator.style.transform = 'scaleX(0)';
+        setTimeout(() => {
+          // 触发动画
+          powerIndicator.style.transform = 'scaleX(1)';
+        }, 100);
+      });
+    });
+    
+    // 词根拆分动画
+    const splitButton = document.getElementById('splitButton');
+    const splitAnimation = document.getElementById('splitAnimation');
+    
+    if (splitButton && splitAnimation) {
+      splitButton.addEventListener('click', function() {
+        splitAnimation.classList.toggle('hidden');
+      });
+    }
+    
+    // 历史时间线显示/隐藏
+    const timelineButton = document.getElementById('timelineButton');
+    const timelineContainer = document.getElementById('timelineContainer');
+    
+    if (timelineButton && timelineContainer) {
+      timelineButton.addEventListener('click', function() {
+        timelineContainer.classList.toggle('hidden');
+      });
+    }
+    
+    // 页面加载时初始化模式
+    window.addEventListener('DOMContentLoaded', initMode);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achieve | 专业英语单词学习</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#165DFF',
+            secondary: '#36CFC9',
+            accent: '#722ED1',
+            success: '#52C41A',
+            warning: '#FAAD14',
+            danger: '#F5222D',
+            dark: {
+              100: '#E5E6EB',
+              200: '#C9CDD4',
+              300: '#86909C',
+              400: '#4E5969',
+              500: '#272E3B',
+              600: '#1D2129',
+              700: '#0A0C10',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          boxShadow: {
+            'card': '0 4px 20px rgba(0, 0, 0, 0.08)',
+            'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+            'dark-card': '0 4px 20px rgba(0, 0, 0, 0.3)',
+            'dark-card-hover': '0 8px 30px rgba(0, 0, 0, 0.4)',
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-balance {
+        text-wrap: balance;
+      }
+      .card-transition {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .theme-transition {
+        transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      }
+      .progress-transition {
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .section-fade {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+      }
+      .slide-in {
+        animation: slideIn 0.5s ease-out forwards;
+        transform: translateY(20px);
+        opacity: 0;
+      }
+      .flip-card {
+        perspective: 1000px;
+      }
+      .flip-card-inner {
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+      }
+      .flip-card.flipped .flip-card-inner {
+        transform: rotateY(180deg);
+      }
+      .flip-card-front, .flip-card-back {
+        backface-visibility: hidden;
+      }
+      .flip-card-back {
+        transform: rotateY(180deg);
+      }
+      .badge-pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes slideIn {
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-dark-600 font-inter text-gray-800 dark:text-gray-200 min-h-screen theme-transition">
+  <!-- 顶部导航 -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-dark-500/90 backdrop-blur-md border-b border-gray-200 dark:border-dark-400 theme-transition">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <i class="fa fa-book text-white text-lg"></i>
+          </div>
+          <span class="text-xl font-bold tracking-tight">Lexica</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-xl mx-8">
+          <input type="text" id="searchInput" placeholder="Search for a word..." value="achieve" 
+                 class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-dark-400 border-0 focus:ring-2 focus:ring-primary/50 outline-none theme-transition">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-5">
+          <!-- 主题切换 -->
+          <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors relative" aria-label="Toggle theme">
+            <i class="fa fa-sun-o text-gray-600 dark:text-gray-300 dark:hidden"></i>
+            <i class="fa fa-moon-o text-gray-600 dark:text-gray-300 hidden dark:inline-block"></i>
+          </button>
+          
+          <!-- 移动端菜单按钮 -->
+          <button id="mobileMenuBtn" class="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Menu">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Search">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div id="mobileSearch" class="md:hidden hidden pb-4">
+        <div class="relative">
+          <input type="text" id="mobileSearchInput" placeholder="Search for a word..." value="achieve" 
+                 class="w-full pl-10 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-dark-400 border-0 focus:ring-2 focus:ring-primary/50 outline-none theme-transition">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div id="mobileMenu" class="md:hidden hidden pb-4">
+        <nav class="flex flex-col space-y-2">
+          <a href="#basic-info" class="py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">基本信息</a>
+          <a href="#history" class="py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">历史词源</a>
+          <a href="#derivatives" class="py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">衍生词汇</a>
+          <a href="#usage" class="py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">用法示例</a>
+          <a href="#comparison" class="py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">词汇对比</a>
+          <a href="#quiz" class="py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">知识测验</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主横幅 -->
+  <section class="relative h-[50vh] min-h-[400px] overflow-hidden">
+    <div class="absolute inset-0 bg-gradient-to-r from-dark-700/90 to-dark-600/80 z-10"></div>
+    <img src="https://picsum.photos/id/1071/1920/1080" alt="Mountain climber reaching the summit representing achievement" 
+         class="absolute w-full h-full object-cover object-center">
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <div class="max-w-3xl">
+        <div class="inline-block px-3 py-1 rounded-full bg-primary/20 text-primary text-sm font-medium mb-4 slide-in" style="animation-delay: 0.1s">
+          动词 / 成就类
+        </div>
+        <h1 class="text-4xl md:text-6xl font-bold text-white mb-4 slide-in" style="animation-delay: 0.3s">
+          achieve
+          <button class="ml-3 text-white/80 hover:text-white transition-colors" title="播放发音">
+            <i class="fa fa-volume-up"></i>
+          </button>
+        </h1>
+        <div class="flex items-center mb-6 slide-in" style="animation-delay: 0.5s">
+          <span class="text-xl text-gray-200 italic mr-4">/əˈtʃiːv/</span>
+          <button class="text-gray-300 hover:text-white transition-colors" title="播放发音">
+            <i class="fa fa-volume-up"></i>
+          </button>
+        </div>
+        <p class="text-lg text-gray-200 mb-8 max-w-2xl slide-in text-balance" style="animation-delay: 0.7s">
+          成功达成目标或取得成果，尤指通过努力、技能或勇气实现预期目的
+        </p>
+        <div class="flex flex-wrap gap-4 slide-in" style="animation-delay: 0.9s">
+          <a href="#basic-info" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+            <i class="fa fa-book mr-2"></i> 开始学习
+          </a>
+          <a href="#quiz" class="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white border border-white/30 px-6 py-3 rounded-lg font-medium transition-colors flex items-center">
+            <i class="fa fa-check-circle mr-2"></i> 测试掌握度
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-dark-500 border-b border-gray-200 dark:border-dark-400 py-3 theme-transition">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">词汇库</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">成就类词汇</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300 font-medium">achieve</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8 md:py-12">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧边栏 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card card-transition sticky top-24 overflow-hidden">
+          <div class="p-5 border-b border-gray-200 dark:border-dark-400 theme-transition">
+            <h3 class="font-semibold text-lg">学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#basic-info" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">
+              <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                <i class="fa fa-info"></i>
+              </span>
+              <span>基本信息</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">
+              <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                <i class="fa fa-history"></i>
+              </span>
+              <span>历史词源</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">
+              <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                <i class="fa fa-code-fork"></i>
+              </span>
+              <span>衍生词汇</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">
+              <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                <i class="fa fa-comment"></i>
+              </span>
+              <span>用法示例</span>
+            </a>
+            <a href="#comparison" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">
+              <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                <i class="fa fa-exchange"></i>
+              </span>
+              <span>词汇对比</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors section-link">
+              <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                <i class="fa fa-question-circle"></i>
+              </span>
+              <span>知识测验</span>
+            </a>
+          </nav>
+          
+          <!-- 学习进度 -->
+          <div class="p-5 border-t border-gray-200 dark:border-dark-400 theme-transition">
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-semibold">学习进度</h3>
+              <span class="text-sm text-gray-500 dark:text-gray-400" id="progressPercent">0%</span>
+            </div>
+            
+            <div class="w-full bg-gray-200 dark:bg-dark-400 rounded-full h-2.5 mb-6">
+              <div class="bg-primary h-2.5 rounded-full progress-transition" style="width: 0%" id="progressBar"></div>
+            </div>
+            
+            <button id="markAsLearned" class="w-full bg-primary hover:bg-primary/90 text-white py-2.5 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+              <i class="fa fa-check mr-2"></i> 标记为已掌握
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 1. 基本信息 -->
+        <section id="basic-info" class="mb-8 section-card">
+          <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card overflow-hidden card-transition hover:shadow-card-hover dark:hover:shadow-dark-card-hover">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-400 theme-transition flex justify-between items-center">
+              <h2 class="text-2xl font-bold">基本信息</h2>
+              <button class="close-section text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Close section">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <div class="flip-card h-64 w-full mb-8">
+                <div class="flip-card-inner relative h-full w-full">
+                  <div class="flip-card-front absolute w-full h-full bg-gray-50 dark:bg-dark-400 rounded-xl p-6 flex flex-col justify-center items-center">
+                    <h3 class="text-4xl font-bold text-primary mb-4">achieve</h3>
+                    <p class="text-lg text-gray-500 dark:text-gray-400 italic mb-6">/əˈtʃiːv/</p>
+                    <p class="text-center text-gray-600 dark:text-gray-300 max-w-md mb-4">点击卡片查看详细信息</p>
+                    <i class="fa fa-refresh text-gray-400 animate-spin-slow"></i>
+                  </div>
+                  <div class="flip-card-back absolute w-full h-full bg-gray-50 dark:bg-dark-400 rounded-xl p-6">
+                    <div class="space-y-4">
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">单词</h4>
+                        <p class="text-xl font-semibold">achieve</p>
+                      </div>
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">音标</h4>
+                        <p class="text-lg text-gray-600 dark:text-gray-300 italic">/əˈtʃiːv/</p>
+                      </div>
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">词源</h4>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">拉丁语 <span class="text-primary font-medium">ad</span> + <span class="text-primary font-medium">caput</span>（"到达头部/终点"）</p>
+                      </div>
+                      <div>
+                        <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400">核心含义</h4>
+                        <p class="text-lg text-gray-600 dark:text-gray-300">通过努力达成目标或取得成果</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                  <h4 class="font-semibold mb-3 flex items-center">
+                    <i class="fa fa-tag text-primary mr-2"></i> 词性与释义
+                  </h4>
+                  <ul class="space-y-3">
+                    <li class="flex">
+                      <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-primary/10 text-primary mr-3 mt-0.5">动词</span>
+                      <span>完成；实现；达到；获得</span>
+                    </li>
+                    <li>
+                      <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">
+                        指通过持续的努力、运用技能或展现勇气，成功达成预期的目标或取得显著成果。
+                      </p>
+                    </li>
+                  </ul>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                  <h4 class="font-semibold mb-3 flex items-center">
+                    <i class="fa fa-bar-chart text-primary mr-2"></i> 使用频率
+                  </h4>
+                  <div class="flex items-center mb-3">
+                    <div class="flex">
+                      <i class="fa fa-star text-warning"></i>
+                      <i class="fa fa-star text-warning"></i>
+                      <i class="fa fa-star text-warning"></i>
+                      <i class="fa fa-star text-warning"></i>
+                      <i class="fa fa-star-half-o text-warning"></i>
+                    </div>
+                    <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">中高频词汇</span>
+                  </div>
+                  <div class="w-full bg-gray-200 dark:bg-dark-300 rounded-full h-2 mb-1">
+                    <div class="bg-primary h-2 rounded-full" style="width: 78%"></div>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">在学术与日常场景中均高频出现</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 2. 历史词源 -->
+        <section id="history" class="mb-8 section-card">
+          <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card overflow-hidden card-transition hover:shadow-card-hover dark:hover:shadow-dark-card-hover">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-400 theme-transition flex justify-between items-center">
+              <h2 class="text-2xl font-bold">历史词源</h2>
+              <button class="close-section text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Close section">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <div class="relative">
+                <!-- 时间线 -->
+                <div class="hidden md:block absolute left-0 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-dark-400 ml-5"></div>
+                
+                <div class="space-y-10">
+                  <!-- 起源 -->
+                  <div class="md:pl-16 relative">
+                    <div class="md:absolute left-0 top-2 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center z-10">
+                      <div class="w-3 h-3 rounded-full bg-primary"></div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">词源起源</h3>
+                    <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                      <p class="mb-3">
+                        <span class="font-medium">achieve</span> 一词源于14世纪的法语 <span class="text-primary font-medium">achever</span>（完成、结束），可追溯至古法语 <span class="text-primary font-medium">achiever</span> 或 <span class="text-primary font-medium">ačevrer</span>。
+                      </p>
+                      <p>
+                        其最终词源为拉丁语组合 <span class="text-primary font-medium">ad</span>（到） + <span class="text-primary font-medium">caput</span>（头、顶端），字面意思是"到达头部/终点"，最初指完成一段旅程或任务到达终点，后逐渐演变为"通过努力实现目标"的现代含义。
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <!-- 历史演变 -->
+                  <div class="md:pl-16 relative">
+                    <div class="md:absolute left-0 top-2 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center z-10">
+                      <div class="w-3 h-3 rounded-full bg-primary"></div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">词义演变</h3>
+                    <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                      <ul class="space-y-3">
+                        <li class="flex">
+                          <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-200 dark:bg-dark-300 mr-3 mt-0.5">14世纪</span>
+                          <span>最初表示"完成、结束"，尤指完成某项工作或任务</span>
+                        </li>
+                        <li class="flex">
+                          <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-200 dark:bg-dark-300 mr-3 mt-0.5">16-17世纪</span>
+                          <span>扩展为"达到预期目标"，开始与"成就、成功"相关联</span>
+                        </li>
+                        <li class="flex">
+                          <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-200 dark:bg-dark-300 mr-3 mt-0.5">18世纪至今</span>
+                          <span>固定为"通过努力实现目标"的含义，广泛用于各种语境</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <!-- 名人名言 -->
+                  <div class="md:pl-16 relative">
+                    <div class="md:absolute left-0 top-2 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center z-10">
+                      <div class="w-3 h-3 rounded-full bg-primary"></div>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">经典引用</h3>
+                    <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition mb-4">
+                      <p class="italic text-gray-700 dark:text-gray-300 mb-3">
+                        "What you get by achieving your goals is not as important as what you become by achieving your goals."
+                      </p>
+                      <p class="text-right text-gray-500 dark:text-gray-400">— Zig Ziglar</p>
+                    </div>
+                    <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                      <p class="italic text-gray-700 dark:text-gray-300 mb-3">
+                        "The secret of getting ahead is getting started. The secret of getting started is breaking your complex overwhelming goals into small manageable tasks, and then starting on the first one."
+                      </p>
+                      <p class="text-right text-gray-500 dark:text-gray-400">— Mark Twain</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 3. 衍生词汇 -->
+        <section id="derivatives" class="mb-8 section-card">
+          <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card overflow-hidden card-transition hover:shadow-card-hover dark:hover:shadow-dark-card-hover">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-400 theme-transition flex justify-between items-center">
+              <h2 class="text-2xl font-bold">衍生词汇</h2>
+              <button class="close-section text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Close section">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <p class="mb-6">从 <span class="font-medium text-primary">achieve</span> 衍生出多个相关词汇，它们共享核心含义但各有侧重：</p>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- 衍生词1 -->
+                <div class="bg-gray-50 dark:bg-dark-400 rounded-xl border border-gray-200 dark:border-dark-400 p-5 theme-transition hover:border-primary/30 card-transition">
+                  <h4 class="font-semibold text-lg mb-2">achievement</h4>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">/əˈtʃiːvmənt/</p>
+                  <div class="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary mb-3">
+                    名词
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">成就；成绩；功绩</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    指通过努力获得的成果或达到的目标，尤指具有重要意义的成就。
+                  </p>
+                </div>
+                
+                <!-- 衍生词2 -->
+                <div class="bg-gray-50 dark:bg-dark-400 rounded-xl border border-gray-200 dark:border-dark-400 p-5 theme-transition hover:border-primary/30 card-transition">
+                  <h4 class="font-semibold text-lg mb-2">achiever</h4>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">/əˈtʃiːvə(r)/</p>
+                  <div class="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary mb-3">
+                    名词
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">成功者；有成就的人</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    指能够通过努力实现目标、取得成就的人，强调其积极进取的特质。
+                  </p>
+                </div>
+                
+                <!-- 衍生词3 -->
+                <div class="bg-gray-50 dark:bg-dark-400 rounded-xl border border-gray-200 dark:border-dark-400 p-5 theme-transition hover:border-primary/30 card-transition">
+                  <h4 class="font-semibold text-lg mb-2">achievable</h4>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">/əˈtʃiːvəbl/</p>
+                  <div class="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary mb-3">
+                    形容词
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">可实现的；可达成的</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    指目标或任务通过努力可以完成，强调可行性和现实性。
+                  </p>
+                </div>
+                
+                <!-- 衍生词4 -->
+                <div class="bg-gray-50 dark:bg-dark-400 rounded-xl border border-gray-200 dark:border-dark-400 p-5 theme-transition hover:border-primary/30 card-transition">
+                  <h4 class="font-semibold text-lg mb-2">underachieve</h4>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">/ˌʌndərəˈtʃiːv/</p>
+                  <div class="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary mb-3">
+                    动词
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">未充分发挥；成绩不佳</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    指未达到预期的成就或潜力，表现低于预期水平。
+                  </p>
+                </div>
+                
+                <!-- 衍生词5 -->
+                <div class="bg-gray-50 dark:bg-dark-400 rounded-xl border border-gray-200 dark:border-dark-400 p-5 theme-transition hover:border-primary/30 card-transition">
+                  <h4 class="font-semibold text-lg mb-2">overachieve</h4>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">/ˌəʊvərəˈtʃiːv/</p>
+                  <div class="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary mb-3">
+                    动词
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">超额完成；成就出众</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    指达到或超过预期目标，表现优异，超出正常水平。
+                  </p>
+                </div>
+                
+                <!-- 衍生词6 -->
+                <div class="bg-gray-50 dark:bg-dark-400 rounded-xl border border-gray-200 dark:border-dark-400 p-5 theme-transition hover:border-primary/30 card-transition">
+                  <h4 class="font-semibold text-lg mb-2">achievement-oriented</h4>
+                  <p class="text-gray-500 dark:text-gray-400 text-sm mb-3">/əˈtʃiːvmənt ˈɔːrientɪd/</p>
+                  <div class="flex items-center text-xs font-medium px-2.5 py-0.5 rounded-full bg-secondary/10 text-secondary mb-3">
+                    形容词
+                  </div>
+                  <p class="text-gray-600 dark:text-gray-300 mb-3">注重成就的；以成就为导向的</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                    描述个人或组织专注于设定和实现目标，重视成就和成果的特质。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 4. 用法示例 -->
+        <section id="usage" class="mb-8 section-card">
+          <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card overflow-hidden card-transition hover:shadow-card-hover dark:hover:shadow-dark-card-hover">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-400 theme-transition flex justify-between items-center">
+              <h2 class="text-2xl font-bold">用法示例</h2>
+              <button class="close-section text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Close section">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <div class="space-y-8">
+                <!-- 用法1 -->
+                <div>
+                  <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                      <span>1</span>
+                    </div>
+                    <h3 class="text-xl font-semibold">实现目标、完成任务</h3>
+                  </div>
+                  
+                  <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">She achieved all her career goals by the age of 30.</p>
+                    <p class="text-gray-600 dark:text-gray-400 italic mb-4">她在30岁前就实现了所有职业目标。</p>
+                    
+                    <div class="p-3 bg-gray-100 dark:bg-dark-300 rounded-lg text-sm mb-4">
+                      <span class="font-medium">用法解析：</span>此用法强调通过努力完成预设目标，常与goal, target, objective等词搭配，突出结果与努力的关联性。
+                    </div>
+                    
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">常见搭配：</h4>
+                      <div class="flex flex-wrap gap-2">
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve a goal</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve objectives</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve targets</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve aims</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 用法2 -->
+                <div>
+                  <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                      <span>2</span>
+                    </div>
+                    <h3 class="text-xl font-semibold">取得成功、获得成就</h3>
+                  </div>
+                  
+                  <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">The team achieved great success in the international competition.</p>
+                    <p class="text-gray-600 dark:text-gray-400 italic mb-4">该团队在国际比赛中取得了巨大成功。</p>
+                    
+                    <div class="p-3 bg-gray-100 dark:bg-dark-300 rounded-lg text-sm mb-4">
+                      <span class="font-medium">用法解析：</span>用于描述在特定领域或活动中获得显著成就，常与success, recognition, fame等名词搭配，强调成就的重要性。
+                    </div>
+                    
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">常见搭配：</h4>
+                      <div class="flex flex-wrap gap-2">
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve success</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve recognition</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve fame</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve greatness</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- 用法3 -->
+                <div>
+                  <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center mr-3 text-primary">
+                      <span>3</span>
+                    </div>
+                    <h3 class="text-xl font-semibold">达到某种水平或标准</h3>
+                  </div>
+                  
+                  <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">Students must achieve a high score to be admitted to the university.</p>
+                    <p class="text-gray-600 dark:text-gray-400 italic mb-4">学生必须取得高分才能被这所大学录取。</p>
+                    
+                    <div class="p-3 bg-gray-100 dark:bg-dark-300 rounded-lg text-sm mb-4">
+                      <span class="font-medium">用法解析：</span>用于描述达到特定的标准、水平或数值，常与score, level, standard等词搭配，强调达到预设的要求。
+                    </div>
+                    
+                    <div>
+                      <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">常见搭配：</h4>
+                      <div class="flex flex-wrap gap-2">
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve a score</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve a level</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve standards</span>
+                        <span class="text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">achieve results</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 5. 词汇对比 -->
+        <section id="comparison" class="mb-8 section-card">
+          <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card overflow-hidden card-transition hover:shadow-card-hover dark:hover:shadow-dark-card-hover">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-400 theme-transition flex justify-between items-center">
+              <h2 class="text-2xl font-bold">词汇对比</h2>
+              <button class="close-section text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Close section">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <p class="mb-6">以下词汇与 <span class="font-medium text-primary">achieve</span> 意思相近，但在用法和侧重点上有所不同：</p>
+              
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-dark-400">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-3 bg-gray-50 dark:bg-dark-400 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">词汇</th>
+                      <th class="px-4 py-3 bg-gray-50 dark:bg-dark-400 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">含义</th>
+                      <th class="px-4 py-3 bg-gray-50 dark:bg-dark-400 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">区别与用法</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-dark-500 divide-y divide-gray-200 dark:divide-dark-400">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors">
+                      <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="font-medium">achieve</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">实现；达成；获得</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">强调通过努力、技能或勇气实现目标，尤指长期或具有挑战性的目标</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors">
+                      <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="font-medium">accomplish</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">完成；实现；达到</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">侧重成功完成某项任务或工作，强调过程的完成</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors">
+                      <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="font-medium">attain</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">达到；获得；实现</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">正式用语，指通过努力达到某种水平、状态或目标，尤指理想的结果</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors">
+                      <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="font-medium">reach</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">达到；抵达；达成</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">强调到达某个点、阶段或达成协议，可用于具体和抽象的目标</div>
+                      </td>
+                    </tr>
+                    <tr class="hover:bg-gray-50 dark:hover:bg-dark-400 transition-colors">
+                      <td class="px-4 py-4 whitespace-nowrap">
+                        <div class="font-medium">fulfill</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">实现；履行；满足</div>
+                      </td>
+                      <td class="px-4 py-4">
+                        <div class="text-sm text-gray-600 dark:text-gray-400">强调实现期望、完成责任或满足要求，常与义务、梦想等搭配</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="mt-8 bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition">
+                <h4 class="font-semibold mb-4">语境辨析</h4>
+                
+                <div class="space-y-4">
+                  <div>
+                    <p class="font-medium mb-2">1. 描述职业成就</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">She <span class="text-primary font-medium">achieved</span> great success in her career. (正确)</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">She <span class="text-danger font-medium">accomplished</span> great success in her career. (不自然)</p>
+                  </div>
+                  
+                  <div>
+                    <p class="font-medium mb-2">2. 描述完成任务</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">We <span class="text-primary font-medium">accomplished</span> the project on time. (正确)</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">We <span class="text-danger font-medium">achieved</span> the project on time. (错误)</p>
+                  </div>
+                  
+                  <div>
+                    <p class="font-medium mb-2">3. 描述达成协议</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-1">The two parties <span class="text-primary font-medium">reached</span> an agreement. (正确)</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-300">The two parties <span class="text-danger font-medium">achieved</span> an agreement. (不自然)</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 6. 知识测验 -->
+        <section id="quiz" class="mb-8 section-card">
+          <div class="bg-white dark:bg-dark-500 rounded-xl shadow-card dark:shadow-dark-card overflow-hidden card-transition hover:shadow-card-hover dark:hover:shadow-dark-card-hover">
+            <div class="p-6 border-b border-gray-200 dark:border-dark-400 theme-transition flex justify-between items-center">
+              <h2 class="text-2xl font-bold">知识测验</h2>
+              <button class="close-section text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-dark-400 transition-colors" aria-label="Close section">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+            
+            <div class="p-6">
+              <div class="bg-gray-50 dark:bg-dark-400 p-5 rounded-xl border border-gray-200 dark:border-dark-400 theme-transition mb-6">
+                <h3 class="text-xl font-semibold mb-4">测试你的理解</h3>
+                <p class="mb-6">完成以下问题，检验你对"achieve"的掌握程度：</p>
+                
+                <div class="space-y-6" id="quizContainer">
+                  <!-- 问题1 -->
+                  <div class="bg-white dark:bg-dark-500 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">1. "achieve" 一词的词源含义是什么？</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q1" value="A" class="text-primary focus:ring-primary mr-3">
+                        <span>努力工作</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q1" value="B" class="text-primary focus:ring-primary mr-3">
+                        <span>到达头部/终点</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q1" value="C" class="text-primary focus:ring-primary mr-3">
+                        <span>梦想成真</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <!-- 问题2 -->
+                  <div class="bg-white dark:bg-dark-500 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">2. 下列哪个是 "achieve" 的名词形式？</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q2" value="A" class="text-primary focus:ring-primary mr-3">
+                        <span>achieving</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q2" value="B" class="text-primary focus:ring-primary mr-3">
+                        <span>achievement</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q2" value="C" class="text-primary focus:ring-primary mr-3">
+                        <span>achievable</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <!-- 问题3 -->
+                  <div class="bg-white dark:bg-dark-500 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">3. 选择正确的句子：</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q3" value="A" class="text-primary focus:ring-primary mr-3">
+                        <span>She achieved to finish the project on time.</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q3" value="B" class="text-primary focus:ring-primary mr-3">
+                        <span>She achieved finishing the project on time.</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q3" value="C" class="text-primary focus:ring-primary mr-3">
+                        <span>She achieved her goal of finishing the project on time.</span>
+                      </label>
+                    </div>
+                  </div>
+                  
+                  <!-- 问题4 -->
+                  <div class="bg-white dark:bg-dark-500 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-dark-400 theme-transition">
+                    <p class="font-medium mb-3">4. 与 "achieve" 意思最接近的词是：</p>
+                    <div class="space-y-2">
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q4" value="A" class="text-primary focus:ring-primary mr-3">
+                        <span>attempt</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q4" value="B" class="text-primary focus:ring-primary mr-3">
+                        <span>accomplish</span>
+                      </label>
+                      <label class="flex items-center p-3 border border-gray-200 dark:border-dark-400 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-400 cursor-pointer theme-transition">
+                        <input type="radio" name="q4" value="C" class="text-primary focus:ring-primary mr-3">
+                        <span>attempt</span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="mt-6 text-center">
+                  <button id="checkQuizBtn" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-colors">
+                    检查答案
+                  </button>
+                  <div id="quizResults" class="mt-6 hidden"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark-700 text-gray-300 py-12 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center space-x-3 mb-6">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+              <i class="fa fa-book text-white text-lg"></i>
+            </div>
+            <span class="text-xl font-bold text-white">Lexica</span>
+          </div>
+          <p class="text-gray-400 mb-6">专业英语词汇学习平台，助您高效掌握英语单词，提升语言能力。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-9 h-9 rounded-full bg-dark-500 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full bg-dark-500 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors">
+              <i class="fa fa-facebook"></i>
+            </a>
+            <a href="#" class="w-9 h-9 rounded-full bg-dark-500 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors">
+              <i class="fa fa-instagram"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">词汇资源</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常用词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学术词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">商务词汇</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">词根词缀</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">情景词汇</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">学习工具</h4>
+          <ul class="space-y-2">
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">单词测验</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">词汇卡片</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">学习计划</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">记忆技巧</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">常见错误</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">联系我们</h4>
+          <ul class="space-y-3">
+            <li class="flex items-start">
+              <i class="fa fa-envelope-o text-gray-400 mt-1 mr-3"></i>
+              <span>contact@lexica.com</span>
+            </li>
+            <li class="flex items-start">
+              <i class="fa fa-phone text-gray-400 mt-1 mr-3"></i>
+              <span>+86 123 4567 8910</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-dark-500 pt-6 text-center text-gray-500 text-sm">
+        <p>&copy; 2023 Lexica 词汇学习平台. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 等待DOM加载完成
+    document.addEventListener('DOMContentLoaded', function() {
+      // 主题切换功能
+      const themeToggle = document.getElementById('themeToggle');
+      const htmlElement = document.documentElement;
+      
+      // 检查本地存储的主题偏好
+      if (localStorage.getItem('theme') === 'light' || 
+          (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+        htmlElement.classList.remove('dark');
+      }
+      
+      themeToggle.addEventListener('click', function() {
+        htmlElement.classList.toggle('dark');
+        
+        // 保存主题偏好到本地存储
+        if (htmlElement.classList.contains('dark')) {
+          localStorage.setItem('theme', 'dark');
+        } else {
+          localStorage.setItem('theme', 'light');
+        }
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        mobileSearch.classList.add('hidden'); // 关闭搜索框
+      });
+      
+      // 移动端搜索切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        mobileMenu.classList.add('hidden'); // 关闭菜单
+      });
+      
+      // 卡片翻转功能
+      const flipCard = document.querySelector('.flip-card');
+      
+      flipCard.addEventListener('click', function() {
+        this.classList.toggle('flipped');
+      });
+      
+      // 卡片展开/折叠功能
+      const closeButtons = document.querySelectorAll('.close-section');
+      
+      closeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const sectionCard = this.closest('.section-card');
+          sectionCard.style.display = 'none';
+          
+          // 更新进度
+          updateProgress();
+        });
+      });
+      
+      // 学习进度功能
+      const progressBar = document.getElementById('progressBar');
+      const progressPercent = document.getElementById('progressPercent');
+      const sections = document.querySelectorAll('.section-card');
+      const sectionLinks = document.querySelectorAll('.section-link');
+      
+      // 初始进度计算
+      function updateProgress() {
+        const visibleSections = document.querySelectorAll('.section-card:not([style*="display: none"])');
+        const completedSections = document.querySelectorAll('.section-card:not([style*="display: none"]) .completed');
+        const totalSections = visibleSections.length;
+        
+        if (totalSections === 0) {
+          progressBar.style.width = '0%';
+          progressPercent.textContent = '0%';
+          return;
+        }
+        
+        // 可见部分中已完成的比例
+        const percentage = Math.round((completedSections.length / totalSections) * 100);
+        progressBar.style.width = percentage + '%';
+        progressPercent.textContent = percentage + '%';
+      }
+      
+      // 标记为已掌握
+      const markAsLearnedBtn = document.getElementById('markAsLearned');
+      
+      markAsLearnedBtn.addEventListener('click', function() {
+        sections.forEach(section => {
+          if (!section.hasAttribute('style') || section.style.display !== 'none') {
+            section.classList.add('completed');
+          }
+        });
+        
+        updateProgress();
+        
+        // 按钮状态变化
+        this.innerHTML = '<i class="fa fa-check mr-2"></i> 已掌握';
+        this.classList.remove('bg-primary', 'hover:bg-primary/90');
+        this.classList.add('bg-success', 'hover:bg-success/90');
+        
+        // 显示提示
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-success text-white px-4 py-2 rounded-lg shadow-lg z-50 badge-pulse';
+        notification.textContent = '恭喜！你已掌握 "achieve" 这个单词';
+        document.body.appendChild(notification);
+        
+        // 3秒后移除提示
+        setTimeout(() => {
+          notification.remove();
+        }, 3000);
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单
+            mobileMenu.classList.add('hidden');
+            mobileSearch.classList.add('hidden');
+            
+            // 标记当前部分为已浏览
+            targetElement.classList.add('completed');
+            updateProgress();
+          }
+        });
+      });
+      
+      // 测验功能
+      const checkQuizBtn = document.getElementById('checkQuizBtn');
+      const quizResults = document.getElementById('quizResults');
+      const quizContainer = document.getElementById('quizContainer');
+      
+      checkQuizBtn.addEventListener('click', function() {
+        // 正确答案
+        const correctAnswers = {
+          q1: 'B',
+          q2: 'B',
+          q3: 'C',
+          q4: 'B'
+        };
+        
+        // 获取用户答案
+        let userAnswers = {};
+        let score = 0;
+        let totalQuestions = Object.keys(correctAnswers).length;
+        
+        document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
+          userAnswers[radio.name] = radio.value;
+        });
+        
+        // 检查答案
+        for (let question in correctAnswers) {
+          if (userAnswers[question] === correctAnswers[question]) {
+            score++;
+          }
+        }
+        
+        // 显示结果
+        quizResults.classList.remove('hidden');
+        quizResults.className = 'mt-6 p-5 rounded-xl ' + (score === totalQuestions ? 'bg-success/10 border border-success/30' : 'bg-gray-100 dark:bg-dark-400 border border-gray-200 dark:border-dark-300');
+        
+        let resultHtml = `
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="font-semibold text-lg ${score === totalQuestions ? 'text-success' : ''}">你的得分: ${score}/${totalQuestions}</h4>
+            <span class="px-3 py-1 rounded-full text-sm font-medium ${score === totalQuestions ? 'bg-success/20 text-success' : score >= totalQuestions * 0.6 ? 'bg-warning/20 text-warning' : 'bg-danger/20 text-danger'}">
+              ${score === totalQuestions ? '满分！' : score >= totalQuestions * 0.6 ? '良好' : '继续努力'}
+            </span>
+          </div>
+        `;
+        
+        // 显示每道题的正确答案
+        for (let i = 1; i <= totalQuestions; i++) {
+          const questionKey = `q${i}`;
+          const isCorrect = userAnswers[questionKey] === correctAnswers[questionKey];
+          
+          resultHtml += `
+            <div class="mb-3 pb-3 ${i < totalQuestions ? 'border-b border-gray-200 dark:border-dark-300' : ''}">
+              <div class="flex items-center mb-2">
+                <span class="font-medium mr-2">问题 ${i}:</span>
+                <span class="text-sm px-2 py-0.5 rounded-full ${isCorrect ? 'bg-success/20 text-success' : 'bg-danger/20 text-danger'}">
+                  ${isCorrect ? '正确' : '错误'}
+                </span>
+              </div>
+              <p class="text-sm text-gray-600 dark:text-gray-400">
+                正确答案: ${correctAnswers[questionKey]}
+              </p>
+            </div>
+          `;
+        }
+        
+        // 添加重新测验按钮
+        resultHtml += `
+          <div class="mt-4">
+            <button id="resetQuizBtn" class="w-full bg-primary hover:bg-primary/90 text-white py-2 rounded-lg transition-colors text-sm font-medium">
+              重新测验
+            </button>
+          </div>
+        `;
+        
+        quizResults.innerHTML = resultHtml;
+        
+        // 重置测验按钮功能
+        document.getElementById('resetQuizBtn').addEventListener('click', function() {
+          // 清除所有选中状态
+          document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.checked = false;
+          });
+          
+          // 隐藏结果
+          quizResults.classList.add('hidden');
+        });
+        
+        // 如果全对，标记测验部分为已完成
+        if (score === totalQuestions) {
+          document.getElementById('quiz').classList.add('completed');
+          updateProgress();
+        }
+      });
+      
+      // 初始进度更新
+      updateProgress();
+      
+      // 添加滚动动画
+      const animateOnScroll = function() {
+        const elements = document.querySelectorAll('.section-card');
+        
+        elements.forEach(element => {
+          const elementPosition = element.getBoundingClientRect().top;
+          const windowHeight = window.innerHeight;
+          
+          if (elementPosition < windowHeight * 0.75 && !element.classList.contains('section-fade')) {
+            element.classList.add('section-fade');
+          }
+        });
+      };
+      
+      // 初始加载时执行一次
+      animateOnScroll();
+      
+      // 滚动时执行
+      window.addEventListener('scroll', animateOnScroll);
+    });
+  </script>
+</body>
+</html>
+    

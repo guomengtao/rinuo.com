@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motivate - 单词学习平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            vocab: {
+              primary: '#3B82F6',
+              secondary: '#10B981',
+              dark: '#1E293B',
+              light: '#F8FAFC'
+            },
+            education: {
+              primary: '#8B5CF6'
+            },
+            finance: {
+              primary: '#F59E0B'
+            },
+            medical: {
+              primary: '#EC4899'
+            },
+            sports: {
+              primary: '#14B8A6'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 3s ease-in-out infinite',
+            'grow': 'grow 1.5s ease-out forwards'
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            grow: {
+              '0%': { width: '0%' },
+              '100%': { width: '100%' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .word-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .word-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+      }
+      .dark .word-card:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+      }
+      .etymology-line {
+        position: relative;
+        padding-left: 1.5rem;
+      }
+      .etymology-line::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0.75rem;
+        width: 0.5rem;
+        height: 2px;
+        background-color: currentColor;
+      }
+      .etymology-line::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0.5rem;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background-color: currentColor;
+      }
+      .quote-mark {
+        font-size: 4rem;
+        line-height: 0;
+        opacity: 0.2;
+        position: absolute;
+      }
+      .quote-mark.start {
+        top: 1.5rem;
+        left: 0;
+      }
+      .quote-mark.end {
+        bottom: 0.5rem;
+        right: 0;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-vocab-light dark:bg-vocab-dark min-h-screen transition-colors duration-300 text-gray-800 dark:text-gray-200">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-vocab-dark/90 backdrop-blur-md shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-vocab-primary to-vocab-secondary flex items-center justify-center">
+            <i class="fa fa-book text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">VocabMaster</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" placeholder="搜索单词..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-vocab-primary/50 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-vocab-primary rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-400 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" placeholder="搜索单词..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors text-gray-800 dark:text-gray-200">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#word-info" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors py-2">单词信息</a>
+          <a href="#history" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors py-2">词源历史</a>
+          <a href="#etymology" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors py-2">词根分析</a>
+          <a href="#usage" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors py-2">用法示例</a>
+          <a href="#culture" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors py-2">文化背景</a>
+          <a href="#quiz" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors py-2">词汇测验</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 单词Banner区 -->
+  <section class="relative h-[35vh] min-h-[250px] overflow-hidden bg-gradient-to-r from-vocab-primary/10 to-vocab-secondary/10 dark:from-vocab-primary/20 dark:to-vocab-secondary/20">
+    <div class="absolute inset-0 z-10">
+      <!-- 装饰元素 -->
+      <div class="absolute top-1/4 left-1/4 w-20 h-20 rounded-full bg-vocab-primary/20 dark:bg-vocab-primary/30 animate-pulse-slow"></div>
+      <div class="absolute bottom-1/3 right-1/3 w-16 h-16 rounded-full bg-vocab-secondary/20 dark:bg-vocab-secondary/30 animate-pulse-slow" style="animation-delay: 1s"></div>
+    </div>
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+      <!-- 动力进度条动画 -->
+      <div class="w-full max-w-md mb-6">
+        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+          <div id="motivation-bar" class="h-full bg-gradient-to-r from-vocab-primary to-vocab-secondary animate-grow"></div>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">动力加载中...</p>
+      </div>
+      
+      <h1 class="text-5xl md:text-7xl font-bold text-vocab-primary mb-4 animate-float">motivate</h1>
+      <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-2">/ˈmoʊtɪveɪt/ <span class="inline-block px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm ml-2">动词</span></p>
+      <p class="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">核心含义：激励某人采取行动或保持努力</p>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-vocab-primary dark:text-gray-400 dark:hover:text-vocab-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-vocab-primary dark:text-gray-400 dark:hover:text-vocab-primary">词汇库</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-vocab-primary dark:text-gray-400 dark:hover:text-vocab-primary">M开头单词</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">motivate</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#word-info" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-info-circle text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>单词基本信息</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>词源历史</span>
+            </a>
+            <a href="#etymology" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>词根分析</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-cubes text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>衍生词汇</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>用法示例</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-film text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>文化背景</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle text-vocab-primary mr-3 w-5 text-center"></i>
+              <span>词汇测验</span>
+            </a>
+          </nav>
+          
+          <!-- 单词收藏与分享 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-4">学习工具</h3>
+            
+            <div class="flex space-x-3 mb-6">
+              <button id="favorite-btn" class="flex-1 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+                <i class="fa fa-star-o mr-2"></i> 收藏单词
+              </button>
+              <button class="w-10 h-10 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors flex items-center justify-center">
+                <i class="fa fa-share-alt"></i>
+              </button>
+            </div>
+            
+            <div class="mb-6">
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">发音练习</h4>
+              <button class="w-full bg-vocab-primary hover:bg-vocab-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+                <i class="fa fa-volume-up mr-2"></i> 播放发音
+              </button>
+            </div>
+            
+            <div>
+              <h4 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">难度评级</h4>
+              <div class="flex items-center">
+                <span class="text-sm text-gray-500 dark:text-gray-400 mr-2">初级</span>
+                <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 mr-2">
+                  <div class="bg-vocab-primary h-2 rounded-full" style="width: 30%"></div>
+                </div>
+                <span class="text-sm text-gray-500 dark:text-gray-400">高级</span>
+              </div>
+              <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">高频词汇，常见于教育、管理、心理学</p>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 单词基本信息 -->
+        <div id="word-info" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-info-circle text-vocab-primary mr-3"></i>
+            单词基本信息
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">基本属性</h3>
+              <ul class="space-y-3">
+                <li class="flex items-start">
+                  <span class="w-24 text-gray-500 dark:text-gray-400">单词：</span>
+                  <span class="font-medium">motivate</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-24 text-gray-500 dark:text-gray-400">音标：</span>
+                  <span>/ˈmoʊtɪveɪt/</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-24 text-gray-500 dark:text-gray-400">词性：</span>
+                  <span>动词 (verb)</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-24 text-gray-500 dark:text-gray-400">核心含义：</span>
+                  <span>激励某人采取行动或保持努力</span>
+                </li>
+                <li class="flex items-start">
+                  <span class="w-24 text-gray-500 dark:text-gray-400">使用频率：</span>
+                  <span class="flex items-center">
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star text-yellow-400"></i>
+                    <i class="fa fa-star-o text-yellow-400"></i>
+                    <span class="ml-2 text-sm">高频词汇</span>
+                  </span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">使用场景</h3>
+              <div class="space-y-3">
+                <div class="flex items-center">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-education-primary/10 text-education-primary mr-3">
+                    <i class="fa fa-graduation-cap"></i>
+                  </span>
+                  <span>教育领域：激励学生提问、学习</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-finance-primary/10 text-finance-primary mr-3">
+                    <i class="fa fa-briefcase"></i>
+                  </span>
+                  <span>商业管理：激励员工提升绩效</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-medical-primary/10 text-medical-primary mr-3">
+                    <i class="fa fa-heartbeat"></i>
+                  </span>
+                  <span>心理学：激发个人内在动力</span>
+                </div>
+                <div class="flex items-center">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-sports-primary/10 text-sports-primary mr-3">
+                    <i class="fa fa-futbol-o"></i>
+                  </span>
+                  <span>体育竞技：激励运动员发挥潜能</span>
+                </div>
+              </div>
+              
+              <div class="mt-6 p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
+                <p class="text-sm text-gray-700 dark:text-gray-300">
+                  <i class="fa fa-lightbulb-o text-yellow-500 mr-2"></i>
+                  <strong>记忆提示：</strong>
+                  想象"motivate"是"motor"（发动机）+ "vate"，就像给人装上发动机一样提供动力。
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 词源历史 -->
+        <div id="history" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-history text-vocab-primary mr-3"></i>
+            词源历史
+          </h2>
+          
+          <div class="space-y-6">
+            <div>
+              <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">词源起源</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">
+                源自拉丁语 <em>movere</em>（移动），经由法语 <em>motiver</em> 演变而来。最早用法在 19 世纪末的心理学与教育学领域，意为"提供行动的理由或动机"。
+              </p>
+              
+              <!-- 时间线 -->
+              <div class="relative pl-6 border-l-2 border-vocab-primary/30 dark:border-vocab-primary/50 ml-2 space-y-8">
+                <div class="relative">
+                  <div class="absolute -left-[29px] w-4 h-4 rounded-full bg-vocab-primary"></div>
+                  <h4 class="font-semibold text-gray-800 dark:text-white mb-1">19世纪末</h4>
+                  <p class="text-gray-600 dark:text-gray-300">首次在心理学领域使用，用于描述激发人类行为的内在驱动力</p>
+                </div>
+                <div class="relative">
+                  <div class="absolute -left-[29px] w-4 h-4 rounded-full bg-vocab-primary"></div>
+                  <h4 class="font-semibold text-gray-800 dark:text-white mb-1">20世纪初</h4>
+                  <p class="text-gray-600 dark:text-gray-300">被教育学家广泛采用，用于讨论如何有效激励学生学习</p>
+                </div>
+                <div class="relative">
+                  <div class="absolute -left-[29px] w-4 h-4 rounded-full bg-vocab-primary"></div>
+                  <h4 class="font-semibold text-gray-800 dark:text-white mb-1">20世纪中期</h4>
+                  <p class="text-gray-600 dark:text-gray-300">进入管理学领域，成为激励员工的核心术语</p>
+                </div>
+                <div class="relative">
+                  <div class="absolute -left-[29px] w-4 h-4 rounded-full bg-vocab-primary"></div>
+                  <h4 class="font-semibold text-gray-800 dark:text-white mb-1">21世纪至今</h4>
+                  <p class="text-gray-600 dark:text-gray-300">成为日常英语中的高频词汇，广泛应用于各种领域</p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">历史故事</h3>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">
+                工业革命后，工厂主与教育学家开始思考如何"激励"工人和学生更高效地工作和学习，这时 <em>motivate</em> 被正式引入学术语境。随着心理学的发展，该词汇逐渐从学术领域走向大众，成为描述人类行为驱动力的重要术语。
+              </p>
+              
+              <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3">重要参考文献</h4>
+                <ul class="space-y-3">
+                  <li class="flex items-start">
+                    <i class="fa fa-book text-vocab-primary mt-1 mr-3"></i>
+                    <div>
+                      <span class="font-medium">《Principles of Psychology》(1890)</span>
+                      <p class="text-sm text-gray-600 dark:text-gray-300">作者：William James - 早期心理学中首次大量讨论动机与人类行为</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fa fa-quote-left text-vocab-primary mt-1 mr-3"></i>
+                    <div>
+                      <p class="italic text-gray-700 dark:text-gray-300">"Motivation is the fuel necessary to keep the human engine running."</p>
+                      <p class="text-sm text-gray-600 dark:text-gray-300 mt-1">— Napoleon Hill（成功学大师）</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 词根分析 -->
+        <div id="etymology" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-code-fork text-vocab-primary mr-3"></i>
+            词根分析
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <div class="bg-gradient-to-r from-vocab-primary/10 to-vocab-secondary/10 dark:from-vocab-primary/20 dark:to-vocab-secondary/20 p-5 rounded-lg mb-6">
+                <h3 class="text-lg font-semibold mb-3 text-gray-800 dark:text-white">词根分解</h3>
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                  <div class="text-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+                    <p class="font-bold text-vocab-primary">mot</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">来自拉丁语 movere</p>
+                  </div>
+                  <i class="fa fa-plus text-gray-400"></i>
+                  <div class="text-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
+                    <p class="font-bold text-vocab-primary">-ivate</p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">动词后缀</p>
+                  </div>
+                </div>
+                <p class="text-center text-gray-600 dark:text-gray-300">
+                  <em>mot-</em> (移动) + <em>-ivate</em> (使...) → 使人"被推动"去做某事
+                </p>
+              </div>
+              
+              <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">记忆技巧</h3>
+              <ul class="space-y-3 text-gray-600 dark:text-gray-300">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-vocab-secondary mt-1 mr-2"></i>
+                  <span><strong>联想记忆：</strong>motive = reason to move → motivate = give a reason to move</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-vocab-secondary mt-1 mr-2"></i>
+                  <span><strong>场景记忆：</strong>想象老师在背后"推"(mot-)学生一把，让他开始行动(-ivate)</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-vocab-secondary mt-1 mr-2"></i>
+                  <span><strong>声音记忆：</strong>发音类似"摩托vate"，想象摩托车提供动力，就像motivate提供行动动力</span>
+                </li>
+              </ul>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold mb-3 text-gray-700 dark:text-gray-300">相关词汇</h3>
+              <div class="space-y-4">
+                <div class="etymology-line text-gray-600 dark:text-gray-300">
+                  <p class="font-medium">motion /ˈmoʊʃn/</p>
+                  <p class="text-sm">n. 运动，移动 → 最直接的词根相关词</p>
+                </div>
+                <div class="etymology-line text-gray-600 dark:text-gray-300">
+                  <p class="font-medium">emotion /ɪˈmoʊʃn/</p>
+                  <p class="text-sm">n. 情感 → 内心的"移动"，内心活动</p>
+                </div>
+                <div class="etymology-line text-gray-600 dark:text-gray-300">
+                  <p class="font-medium">promote /prəˈmoʊt/</p>
+                  <p class="text-sm">v. 促进，推动 → 向前(pro-)移动(mot-)</p>
+                </div>
+                <div class="etymology-line text-gray-600 dark:text-gray-300">
+                  <p class="font-medium">remote /rɪˈmoʊt/</p>
+                  <p class="text-sm">adj. 遥远的，遥控的 → 从远处(re-)移动(mot-)的</p>
+                </div>
+                <div class="etymology-line text-gray-600 dark:text-gray-300">
+                  <p class="font-medium">motive /ˈmoʊtɪv/</p>
+                  <p class="text-sm">n. 动机，目的 → motivate的名词形式，行动的原因</p>
+                </div>
+                <div class="etymology-line text-gray-600 dark:text-gray-300">
+                  <p class="font-medium">motor /ˈmoʊtər/</p>
+                  <p class="text-sm">n. 发动机，马达 → 提供动力的装置，与"动力"概念相关</p>
+                </div>
+              </div>
+              
+              <!-- 词根思维导图 -->
+              <div class="mt-8 p-4 bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-100 dark:border-gray-600">
+                <h4 class="font-semibold text-gray-800 dark:text-white mb-3 text-center">词根 "mot-" 思维导图</h4>
+                <div class="flex flex-wrap justify-center gap-3">
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">motivate</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">motion</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">motive</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">emotion</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">promote</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">remote</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">motor</div>
+                  <div class="px-3 py-1 bg-vocab-primary/10 dark:bg-vocab-primary/20 text-vocab-primary rounded-full text-sm">mobility</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 衍生词汇 -->
+        <div id="derivatives" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-cubes text-vocab-primary mr-3"></i>
+            衍生词汇
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700">
+              <div class="w-12 h-12 rounded-full bg-vocab-primary/10 dark:bg-vocab-primary/20 flex items-center justify-center mb-4">
+                <i class="fa fa-bolt text-vocab-primary text-xl"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">motivation</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-3">/ˌmoʊtɪˈveɪʃn/ | 名词</p>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">动机，激励；推动某人行动的力量或原因</p>
+              <div class="space-y-2">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>例句：</strong></p>
+                <p class="text-sm italic text-gray-600 dark:text-gray-400">"She lacks motivation to study."</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">（她缺乏学习的动力。）</p>
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700">
+              <div class="w-12 h-12 rounded-full bg-vocab-secondary/10 dark:bg-vocab-secondary/20 flex items-center justify-center mb-4">
+                <i class="fa fa-lightbulb-o text-vocab-secondary text-xl"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">motivational</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-3">/ˌmoʊtɪˈveɪʃənl/ | 形容词</p>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">激励性的，动机的；能够激发积极性的</p>
+              <div class="space-y-2">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>例句：</strong></p>
+                <p class="text-sm italic text-gray-600 dark:text-gray-400">"He gave a motivational speech."</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">（他发表了一篇激励人心的演讲。）</p>
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700">
+              <div class="w-12 h-12 rounded-full bg-red-500/10 dark:bg-red-500/20 flex items-center justify-center mb-4">
+                <i class="fa fa-times-circle text-red-500 text-xl"></i>
+              </div>
+              <h3 class="text-xl font-semibold mb-2 text-gray-800 dark:text-white">demotivate</h3>
+              <p class="text-gray-500 dark:text-gray-400 mb-3">/diːˈmoʊtɪveɪt/ | 动词</p>
+              <p class="text-gray-600 dark:text-gray-300 mb-4">使失去动力，使消极；减少某人的积极性</p>
+              <div class="space-y-2">
+                <p class="text-sm text-gray-700 dark:text-gray-300"><strong>例句：</strong></p>
+                <p class="text-sm italic text-gray-600 dark:text-gray-400">"Criticism can demotivate employees."</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">（批评会使员工失去动力。）</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 衍生词关系图 -->
+          <div class="mt-8 p-5 bg-white dark:bg-gray-700 rounded-lg border border-gray-100 dark:border-gray-600">
+            <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white text-center">词汇衍生关系</h3>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-6">
+              <div class="text-center p-3">
+                <p class="text-xl font-bold text-vocab-primary">motivate</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">动词 (v.)</p>
+              </div>
+              <i class="fa fa-arrow-down md:fa fa-arrow-right text-gray-400"></i>
+              <div class="flex flex-col items-center space-y-3">
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p class="font-bold text-vocab-primary">motivation</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">名词 (n.)</p>
+                </div>
+                <i class="fa fa-arrow-down text-gray-400"></i>
+                <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                  <p class="font-bold text-vocab-secondary">motivational</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">形容词 (adj.)</p>
+                </div>
+              </div>
+              <i class="fa fa-arrow-down md:fa fa-arrow-right text-gray-400"></i>
+              <div class="text-center p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                <p class="font-bold text-red-500">demotivate</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400">动词 (v.) - 反义词</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 用法示例 -->
+        <div id="usage" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-comment text-vocab-primary mr-3"></i>
+            用法示例
+          </h2>
+          
+          <div class="space-y-8">
+            <!-- 用法分类1 -->
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-vocab-primary/10 text-vocab-primary mr-3">
+                  1
+                </span>
+                激励某人去做某事
+              </h3>
+              
+              <div class="space-y-4 pl-11">
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="font-medium text-gray-800 dark:text-white">基础句型</p>
+                    <span class="text-xs bg-vocab-primary/10 text-vocab-primary px-2 py-1 rounded-full">常用</span>
+                  </div>
+                  <p class="text-gray-700 dark:text-gray-300 mb-1"><strong>motivate + 某人 + to do something</strong></p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">激励某人做某事</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                  <p class="text-gray-800 dark:text-white mb-1"><strong>例句 1：</strong></p>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"Her speech motivated the team to keep trying."</p>
+                  <p class="text-gray-600 dark:text-gray-400">（她的演讲激励了团队继续努力。）</p>
+                  <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fa fa-info-circle text-vocab-primary mr-1"></i> 场景：工作场合，描述领导或同事的激励行为</p>
+                  </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                  <p class="text-gray-800 dark:text-white mb-1"><strong>例句 2：</strong></p>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"The coach motivated the players to train harder."</p>
+                  <p class="text-gray-600 dark:text-gray-400">（教练激励运动员更努力地训练。）</p>
+                  <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fa fa-info-circle text-vocab-primary mr-1"></i> 场景：体育领域，描述教练对运动员的激励</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 用法分类2 -->
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-vocab-primary/10 text-vocab-primary mr-3">
+                  2
+                </span>
+                提供做某事的理由或动机
+              </h3>
+              
+              <div class="space-y-4 pl-11">
+                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+                  <div class="flex items-center justify-between mb-2">
+                    <p class="font-medium text-gray-800 dark:text-white">基础句型</p>
+                    <span class="text-xs bg-vocab-primary/10 text-vocab-primary px-2 py-1 rounded-full">正式</span>
+                  </div>
+                  <p class="text-gray-700 dark:text-gray-300 mb-1"><strong>motivate + 某事 / 某人的行为</strong></p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">成为某事/某人行为的动机</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                  <p class="text-gray-800 dark:text-white mb-1"><strong>例句 1：</strong></p>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"Money alone does not always motivate people."</p>
+                  <p class="text-gray-600 dark:text-gray-400">（金钱并不总能激励人们。）</p>
+                  <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fa fa-info-circle text-vocab-primary mr-1"></i> 场景：心理学或管理学讨论，分析激励因素</p>
+                  </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                  <p class="text-gray-800 dark:text-white mb-1"><strong>例句 2：</strong></p>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"What motivated his decision to change careers?"</p>
+                  <p class="text-gray-600 dark:text-gray-400">（是什么促使他决定转行的？）</p>
+                  <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fa fa-info-circle text-vocab-primary mr-1"></i> 场景：日常对话，询问他人行为的动机</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 用法分类3 -->
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300 flex items-center">
+                <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-vocab-primary/10 text-vocab-primary mr-3">
+                  3
+                </span>
+                驱动个人成长或进步
+              </h3>
+              
+              <div class="space-y-4 pl-11">
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                  <p class="text-gray-800 dark:text-white mb-1"><strong>例句 1：</strong></p>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"Teachers should motivate students to love learning."</p>
+                  <p class="text-gray-600 dark:text-gray-400">（教师应激励学生热爱学习。）</p>
+                  <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fa fa-info-circle text-vocab-primary mr-1"></i> 场景：教育领域，强调激发学习兴趣的重要性</p>
+                  </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                  <p class="text-gray-800 dark:text-white mb-1"><strong>例句 2：</strong></p>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"A desire for self-improvement motivated her to study."</p>
+                  <p class="text-gray-600 dark:text-gray-400">（自我提升的愿望激励她学习。）</p>
+                  <div class="mt-3 text-sm text-gray-500 dark:text-gray-400">
+                    <p><i class="fa fa-info-circle text-vocab-primary mr-1"></i> 场景：个人成长，描述内在动力的重要性</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 用法对比 -->
+            <div class="mt-10 bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700">
+              <h3 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">近义词辨析</h3>
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead>
+                    <tr>
+                      <th class="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">词汇</th>
+                      <th class="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">含义侧重</th>
+                      <th class="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">使用场景</th>
+                      <th class="px-4 py-3 bg-gray-100 dark:bg-gray-800 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">例句</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+                    <tr>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-vocab-primary">motivate</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">强调提供行动的动力或动机</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">教育、管理、心理学</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">He motivated his team to succeed.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-vocab-primary">inspire</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">强调激发灵感或热情，更感性</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">艺术、创作、演讲</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">Her story inspired many people.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-vocab-primary">encourage</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">强调给予支持和信心，更温和</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">日常交流、教育</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">I encouraged her to keep trying.</td>
+                    </tr>
+                    <tr>
+                      <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-vocab-primary">stimulate</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">强调刺激思维或行动，更正式</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">科学、学术、经济</td>
+                      <td class="px-4 py-4 text-sm text-gray-600 dark:text-gray-300">The report stimulated discussion.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 文化背景 -->
+        <div id="culture" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-film text-vocab-primary mr-3"></i>
+            文化背景
+          </h2>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">激励主题电影</h3>
+              
+              <div class="space-y-6">
+                <div class="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-sm border border-gray-100 dark:border-gray-600">
+                  <img src="https://picsum.photos/id/237/600/300" alt="Rocky 电影海报" class="w-full h-40 object-cover">
+                  <div class="p-4">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-1">Rocky (洛奇, 1976)</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">经典的奋斗激励电影，讲述一个普通人通过努力实现梦想的故事</p>
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <span class="flex items-center mr-3">
+                        <i class="fa fa-star text-yellow-400 mr-1"></i> 8.1/10
+                      </span>
+                      <span>励志指数：★★★★★</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 rounded-lg overflow-hidden shadow-sm border border-gray-100 dark:border-gray-600">
+                  <img src="https://picsum.photos/id/1005/600/300" alt="The Pursuit of Happyness 电影海报" class="w-full h-40 object-cover">
+                  <div class="p-4">
+                    <h4 class="font-semibold text-gray-800 dark:text-white mb-1">The Pursuit of Happyness (当幸福来敲门, 2006)</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-2">激励人心的逆境故事，展现父爱的伟大和个人奋斗的力量</p>
+                    <div class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <span class="flex items-center mr-3">
+                        <i class="fa fa-star text-yellow-400 mr-1"></i> 8.0/10
+                      </span>
+                      <span>励志指数：★★★★★</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">著名励志名言</h3>
+              
+              <div class="space-y-6">
+                <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700 relative">
+                  <span class="quote-mark start">"</span>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-4 relative z-10">People often say motivation doesn't last. Well, neither does bathing — that's why we recommend it daily.</p>
+                  <span class="quote-mark end">"</span>
+                  <p class="text-right text-gray-600 dark:text-gray-400 font-medium">— Zig Ziglar（著名励志演说家）</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-500 mt-3">
+                    <i class="fa fa-lightbulb-o text-yellow-500 mr-1"></i>
+                    解读：激励就像洗澡一样，需要每天进行才能保持效果
+                  </p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700 relative">
+                  <span class="quote-mark start">"</span>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-4 relative z-10">The difference between a successful person and others is not a lack of strength, not a lack of knowledge, but rather a lack of will.</p>
+                  <span class="quote-mark end">"</span>
+                  <p class="text-right text-gray-600 dark:text-gray-400 font-medium">— Vince Lombardi（传奇橄榄球教练）</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-500 mt-3">
+                    <i class="fa fa-lightbulb-o text-yellow-500 mr-1"></i>
+                    解读：成功人士与其他人的区别不在于力量或知识，而在于意志力（内在动力）
+                  </p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-900 p-5 rounded-lg border border-gray-100 dark:border-gray-700 relative">
+                  <span class="quote-mark start">"</span>
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-4 relative z-10">Motivation is what gets you started. Habit is what keeps you going.</p>
+                  <span class="quote-mark end">"</span>
+                  <p class="text-right text-gray-600 dark:text-gray-400 font-medium">— Jim Ryun（奥运运动员）</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-500 mt-3">
+                    <i class="fa fa-lightbulb-o text-yellow-500 mr-1"></i>
+                    解读：激励让你开始行动，而习惯让你持续前进
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 日常使用场景 -->
+          <div class="mt-10">
+            <h3 class="text-lg font-semibold mb-4 text-gray-700 dark:text-gray-300">日常使用场景</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-education-primary/10 text-education-primary mr-3">
+                    <i class="fa fa-graduation-cap"></i>
+                  </span>
+                  <h4 class="font-medium text-gray-800 dark:text-white">教育领域</h4>
+                </div>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300 pl-11">
+                  <li class="flex items-start">
+                    <i class="fa fa-check text-vocab-secondary mt-1 mr-2"></i>
+                    <span>Teachers motivate students to ask questions.</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fa fa-check text-vocab-secondary mt-1 mr-2"></i>
+                    <span>Schools use rewards to motivate learning.</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-finance-primary/10 text-finance-primary mr-3">
+                    <i class="fa fa-briefcase"></i>
+                  </span>
+                  <h4 class="font-medium text-gray-800 dark:text-white">商业领域</h4>
+                </div>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300 pl-11">
+                  <li class="flex items-start">
+                    <i class="fa fa-check text-vocab-secondary mt-1 mr-2"></i>
+                    <span>Companies motivate employees with bonuses.</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fa fa-check text-vocab-secondary mt-1 mr-2"></i>
+                    <span>Leaders motivate teams to achieve goals.</span>
+                  </li>
+                </ul>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-100 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-sports-primary/10 text-sports-primary mr-3">
+                    <i class="fa fa-futbol-o"></i>
+                  </span>
+                  <h4 class="font-medium text-gray-800 dark:text-white">体育领域</h4>
+                </div>
+                <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-300 pl-11">
+                  <li class="flex items-start">
+                    <i class="fa fa-check text-vocab-secondary mt-1 mr-2"></i>
+                    <span>Coaches motivate players before the game.</span>
+                  </li>
+                  <li class="flex items-start">
+                    <i class="fa fa-check text-vocab-secondary mt-1 mr-2"></i>
+                    <span>Fans motivate athletes with their support.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 词汇测验 -->
+        <div id="quiz" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg word-card">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <i class="fa fa-question-circle text-vocab-primary mr-3"></i>
+            词汇测验
+          </h2>
+          
+          <div class="space-y-8">
+            <!-- 测验说明 -->
+            <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg border border-gray-100 dark:border-gray-700">
+              <h3 class="font-semibold text-gray-800 dark:text-white mb-2">测验说明</h3>
+              <p class="text-sm text-gray-600 dark:text-gray-300">
+                完成以下5道关于"motivate"的练习题，检验你的学习成果。每道题只有一个正确答案，提交后将显示你的得分和详细解析。
+              </p>
+            </div>
+            
+            <!-- 测验题目 -->
+            <form id="vocabQuiz" class="space-y-6">
+              <!-- 题目1 -->
+              <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                <div class="flex items-start mb-4">
+                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-vocab-primary text-white text-sm mr-3 mt-0.5 flex-shrink-0">1</span>
+                  <h3 class="font-medium text-gray-800 dark:text-white">选择"motivate"的正确含义：</h3>
+                </div>
+                <div class="pl-9 space-y-3">
+                  <label class="flex items-center">
+                    <input type="radio" name="q1" value="A" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">A. 批评，指责</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q1" value="B" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">B. 激励，激发动力</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q1" value="C" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">C. 忽视，忽略</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q1" value="D" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">D. 计算，核算</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 题目2 -->
+              <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                <div class="flex items-start mb-4">
+                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-vocab-primary text-white text-sm mr-3 mt-0.5 flex-shrink-0">2</span>
+                  <h3 class="font-medium text-gray-800 dark:text-white">选择正确的句子：</h3>
+                </div>
+                <div class="pl-9 space-y-3">
+                  <label class="flex items-start">
+                    <input type="radio" name="q2" value="A" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">A. The teacher motivated her students giving up.</span>
+                  </label>
+                  <label class="flex items-start">
+                    <input type="radio" name="q2" value="B" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">B. The teacher motivated her students to give up.</span>
+                  </label>
+                  <label class="flex items-start">
+                    <input type="radio" name="q2" value="C" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">C. The teacher motivated her students to keep trying.</span>
+                  </label>
+                  <label class="flex items-start">
+                    <input type="radio" name="q2" value="D" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">D. The teacher motivated her students keep trying.</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 题目3 -->
+              <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                <div class="flex items-start mb-4">
+                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-vocab-primary text-white text-sm mr-3 mt-0.5 flex-shrink-0">3</span>
+                  <h3 class="font-medium text-gray-800 dark:text-white">"motivation"的正确词性是：</h3>
+                </div>
+                <div class="pl-9 space-y-3">
+                  <label class="flex items-center">
+                    <input type="radio" name="q3" value="A" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">A. 动词</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q3" value="B" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">B. 名词</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q3" value="C" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">C. 形容词</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q3" value="D" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">D. 副词</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 题目4 -->
+              <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                <div class="flex items-start mb-4">
+                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-vocab-primary text-white text-sm mr-3 mt-0.5 flex-shrink-0">4</span>
+                  <h3 class="font-medium text-gray-800 dark:text-white">选择"motivate"的最佳同义词：</h3>
+                </div>
+                <div class="pl-9 space-y-3">
+                  <label class="flex items-center">
+                    <input type="radio" name="q4" value="A" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">A. discourage</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q4" value="B" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">B. inspire</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q4" value="C" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">C. ignore</span>
+                  </label>
+                  <label class="flex items-center">
+                    <input type="radio" name="q4" value="D" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">D. forget</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 题目5 -->
+              <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-100 dark:border-gray-600 shadow-sm">
+                <div class="flex items-start mb-4">
+                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-vocab-primary text-white text-sm mr-3 mt-0.5 flex-shrink-0">5</span>
+                  <h3 class="font-medium text-gray-800 dark:text-white">选择正确的翻译："What motivated him to change his mind?"</h3>
+                </div>
+                <div class="pl-9 space-y-3">
+                  <label class="flex items-start">
+                    <input type="radio" name="q5" value="A" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">A. 他为什么不改变主意？</span>
+                  </label>
+                  <label class="flex items-start">
+                    <input type="radio" name="q5" value="B" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">B. 是什么促使他改变主意的？</span>
+                  </label>
+                  <label class="flex items-start">
+                    <input type="radio" name="q5" value="C" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">C. 他什么时候改变主意的？</span>
+                  </label>
+                  <label class="flex items-start">
+                    <input type="radio" name="q5" value="D" class="w-4 h-4 text-vocab-primary focus:ring-vocab-primary border-gray-300 dark:border-gray-600 mt-1">
+                    <span class="ml-3 text-gray-700 dark:text-gray-300">D. 他改变主意有什么用？</span>
+                  </label>
+                </div>
+              </div>
+              
+              <!-- 提交按钮 -->
+              <div class="flex justify-center pt-4">
+                <button type="button" id="submitQuiz" class="bg-vocab-primary hover:bg-vocab-primary/90 text-white font-medium py-3 px-8 rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center">
+                  <i class="fa fa-paper-plane mr-2"></i> 提交答案
+                </button>
+              </div>
+            </form>
+            
+            <!-- 测验结果（默认隐藏） -->
+            <div id="quizResult" class="hidden bg-gray-50 dark:bg-gray-900 p-6 rounded-lg border border-gray-100 dark:border-gray-700">
+              <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-vocab-secondary/20 dark:bg-vocab-secondary/30 mb-4">
+                  <i class="fa fa-check text-vocab-secondary text-3xl"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">测验完成！</h3>
+                <p class="text-gray-600 dark:text-gray-300">你的得分是：<span id="score" class="font-bold text-vocab-primary">0</span>/5</p>
+              </div>
+              
+              <div id="explanations" class="space-y-4">
+                <!-- 解析内容将通过JavaScript动态生成 -->
+              </div>
+              
+              <div class="mt-6 text-center">
+                <button id="resetQuiz" class="bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 font-medium py-2 px-6 rounded-lg transition-colors">
+                  重新测验
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  
+  <!-- 页面底部 -->
+  <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-6 md:mb-0">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-vocab-primary to-vocab-secondary flex items-center justify-center">
+            <i class="fa fa-book text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">VocabMaster</span>
+        </div>
+        
+        <div class="flex flex-wrap justify-center gap-6 mb-6 md:mb-0">
+          <a href="#" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors">关于我们</a>
+          <a href="#" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors">使用帮助</a>
+          <a href="#" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors">词汇库</a>
+          <a href="#" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors">学习资源</a>
+          <a href="#" class="text-gray-600 hover:text-vocab-primary dark:text-gray-300 dark:hover:text-vocab-primary transition-colors">联系我们</a>
+        </div>
+        
+        <div class="flex space-x-4">
+          <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-vocab-primary hover:text-white dark:hover:bg-vocab-primary transition-colors">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-vocab-primary hover:text-white dark:hover:bg-vocab-primary transition-colors">
+            <i class="fa fa-twitter"></i>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-vocab-primary hover:text-white dark:hover:bg-vocab-primary transition-colors">
+            <i class="fa fa-instagram"></i>
+          </a>
+          <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-vocab-primary hover:text-white dark:hover:bg-vocab-primary transition-colors">
+            <i class="fa fa-youtube-play"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 text-center text-sm text-gray-500 dark:text-gray-400">
+        <p>&copy; 2023 VocabMaster 单词学习平台. 保留所有权利.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 深色模式切换 - 默认设置为黑夜模式
+    const globalToggle = document.getElementById('globalToggle');
+    const htmlElement = document.documentElement;
+    
+    // 强制设置为黑夜模式作为默认
+    htmlElement.classList.add('dark');
+    localStorage.setItem('darkMode', 'true');
+    
+    globalToggle.addEventListener('click', () => {
+      htmlElement.classList.toggle('dark');
+      localStorage.setItem('darkMode', htmlElement.classList.contains('dark'));
+    });
+    
+    // 移动端菜单切换
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    mobileMenuBtn.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      mobileSearch.classList.add('hidden'); // 确保搜索框关闭
+    });
+    
+    // 移动端搜索框切换
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileSearch = document.getElementById('mobileSearch');
+    
+    mobileSearchBtn.addEventListener('click', () => {
+      mobileSearch.classList.toggle('hidden');
+      mobileMenu.classList.add('hidden'); // 确保菜单关闭
+    });
+    
+    // 收藏按钮功能
+    const favoriteBtn = document.getElementById('favorite-btn');
+    let isFavorite = false;
+    
+    favoriteBtn.addEventListener('click', () => {
+      isFavorite = !isFavorite;
+      if (isFavorite) {
+        favoriteBtn.innerHTML = '<i class="fa fa-star mr-2"></i> 已收藏';
+        favoriteBtn.classList.remove('bg-gray-100', 'dark:bg-gray-700');
+        favoriteBtn.classList.add('bg-yellow-100', 'text-yellow-600', 'dark:bg-yellow-900/30', 'dark:text-yellow-400');
+      } else {
+        favoriteBtn.innerHTML = '<i class="fa fa-star-o mr-2"></i> 收藏单词';
+        favoriteBtn.classList.remove('bg-yellow-100', 'text-yellow-600', 'dark:bg-yellow-900/30', 'dark:text-yellow-400');
+        favoriteBtn.classList.add('bg-gray-100', 'dark:bg-gray-700');
+      }
+    });
+    
+    // 测验功能
+    const submitQuizBtn = document.getElementById('submitQuiz');
+    const resetQuizBtn = document.getElementById('resetQuiz');
+    const quizForm = document.getElementById('vocabQuiz');
+    const quizResult = document.getElementById('quizResult');
+    const scoreDisplay = document.getElementById('score');
+    const explanationsContainer = document.getElementById('explanations');
+    
+    // 正确答案
+    const correctAnswers = {
+      q1: 'B',
+      q2: 'C',
+      q3: 'B',
+      q4: 'B',
+      q5: 'B'
+    };
+    
+    // 答案解析
+    const explanations = {
+      q1: '正确答案是B。"motivate"的意思是激励、激发动力，其他选项均不符合。',
+      q2: '正确答案是C。"motivate"的常用结构是"motivate sb. to do sth."，表示"激励某人做某事"，且根据语义，老师应该激励学生继续尝试而非放弃。',
+      q3: '正确答案是B。"motivation"是名词，意为"动机、动力"，是"motivate"的名词形式。',
+      q4: '正确答案是B。"inspire"（鼓舞、激励）与"motivate"意思最接近；"discourage"是反义词，意为"使泄气"。',
+      q5: '正确答案是B。这句话询问的是促使他改变主意的原因，其他选项翻译均不准确。'
+    };
+    
+    // 提交测验
+    submitQuizBtn.addEventListener('click', () => {
+      let score = 0;
+      const formData = new FormData(quizForm);
+      const userAnswers = {};
+      
+      // 收集用户答案
+      formData.forEach((value, key) => {
+        userAnswers[key] = value;
+      });
+      
+      // 检查是否所有问题都已回答
+      if (Object.keys(userAnswers).length !== 5) {
+        alert('请完成所有题目后再提交！');
+        return;
+      }
+      
+      // 计算得分并生成解析
+      explanationsContainer.innerHTML = '';
+      for (const [question, answer] of Object.entries(userAnswers)) {
+        if (answer === correctAnswers[question]) {
+          score++;
+        }
+        
+        // 创建解析元素
+        const explanationDiv = document.createElement('div');
+        explanationDiv.className = `p-3 rounded-lg ${answer === correctAnswers[question] ? 'bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800' : 'bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800'}`;
+        
+        explanationDiv.innerHTML = `
+          <div class="flex items-center mb-2">
+            <span class="font-medium text-gray-800 dark:text-white">问题 ${question.slice(1)}：</span>
+            <span class="ml-2 text-sm px-2 py-0.5 rounded-full ${answer === correctAnswers[question] ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'}">
+              ${answer === correctAnswers[question] ? '正确' : '错误'}
+            </span>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-300">${explanations[question]}</p>
+        `;
+        
+        explanationsContainer.appendChild(explanationDiv);
+      }
+      
+      // 显示结果
+      scoreDisplay.textContent = score;
+      quizResult.classList.remove('hidden');
+      // 滚动到结果部分
+      quizResult.scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    // 重置测验
+    resetQuizBtn.addEventListener('click', () => {
+      quizForm.reset();
+      quizResult.classList.add('hidden');
+      // 滚动到测验开始
+      document.getElementById('quiz').scrollIntoView({ behavior: 'smooth' });
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // 关闭移动菜单（如果打开）
+        mobileMenu.classList.add('hidden');
+        
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+          behavior: 'smooth'
+        });
+      });
+    });
+  </script>
+</body>
+</html>

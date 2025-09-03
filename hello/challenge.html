@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词 Challenge 详解 | 专业英语学习平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            english: {
+              primary: '#4F46E5',
+              dark: '#1E293B'
+            },
+            learning: {
+              accent: '#EC4899',
+              light: '#F0F9FF'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+      .challenge-animation {
+        animation: challengePulse 3s infinite;
+      }
+      @keyframes challengePulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+      }
+      .highlight-text {
+        position: relative;
+      }
+      .highlight-text::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(79, 70, 229, 0.3);
+        transition: background-color 0.3s ease;
+      }
+      .dark .highlight-text::after {
+        background-color: rgba(79, 70, 229, 0.5);
+      }
+      .highlight-text:hover::after {
+        background-color: rgba(79, 70, 229, 0.6);
+      }
+      .pronunciation-btn {
+        transition: all 0.2s ease;
+      }
+      .pronunciation-btn:hover {
+        transform: scale(1.1);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-english-primary to-learning-accent flex items-center justify-center">
+            <i class="fa fa-book text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-english-primary/50 transition-colors text-gray-800 dark:text-gray-200" value="challenge">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-400 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors text-gray-800 dark:text-gray-200" value="challenge">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#overview" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">单词概览</a>
+          <a href="#history" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">词源历史</a>
+          <a href="#usage" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">现代用法</a>
+          <a href="#derivatives" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">衍生词汇</a>
+          <a href="#culture" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">文化关联</a>
+          <a href="#quiz" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">单词测验</a>
+          <a href="#practice" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">练习工具</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 单词Banner -->
+  <section class="relative h-[30vh] min-h-[250px] overflow-hidden bg-english-primary/5 dark:bg-english-dark/30">
+    <div class="absolute inset-0 bg-gradient-to-r from-english-primary/10 to-learning-accent/10 dark:from-english-primary/20 dark:to-learning-accent/20 z-10"></div>
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-2 challenge-animation">Challenge</h1>
+        <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 italic">/ˈtʃæl.ɪndʒ/ 
+          <button class="pronunciation-btn ml-2 p-1.5 rounded-full bg-english-primary/10 text-english-primary hover:bg-english-primary/20 transition-colors">
+            <i class="fa fa-volume-up"></i>
+          </button>
+        </p>
+        <div class="flex flex-wrap justify-center gap-2 mb-4">
+          <span class="px-3 py-1 rounded-full bg-english-primary/10 text-english-primary dark:bg-english-primary/20 text-sm font-medium">名词 (noun)</span>
+          <span class="px-3 py-1 rounded-full bg-english-primary/10 text-english-primary dark:bg-english-primary/20 text-sm font-medium">动词 (verb)</span>
+          <span class="px-3 py-1 rounded-full bg-learning-accent/10 text-learning-accent dark:bg-learning-accent/20 text-sm font-medium">高频词</span>
+        </div>
+        <p class="text-base md:text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto">需要努力才能完成的任务、考验或质疑某事的行为</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary">单词库</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary">C开头单词</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">Challenge</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">单词学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#overview" class="flex items-center px-4 py-3 rounded-lg bg-english-primary/10 text-english-primary dark:bg-english-primary/20 dark:text-english-primary transition-colors">
+              <i class="fa fa-info-circle mr-3 w-5 text-center"></i>
+              <span>单词概览</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history mr-3 w-5 text-center"></i>
+              <span>词源历史</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment mr-3 w-5 text-center"></i>
+              <span>现代用法</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork mr-3 w-5 text-center"></i>
+              <span>衍生词汇</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-film mr-3 w-5 text-center"></i>
+              <span>文化关联</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle mr-3 w-5 text-center"></i>
+              <span>单词测验</span>
+            </a>
+            <a href="#practice" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-pencil mr-3 w-5 text-center"></i>
+              <span>练习工具</span>
+            </a>
+          </nav>
+          
+          <!-- 学习进度 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-3">学习进度</h3>
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">单词掌握度</span>
+                <span class="text-english-primary font-medium">65%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-english-primary h-2 rounded-full" style="width: 65%"></div>
+              </div>
+            </div>
+            <button class="w-full bg-english-primary hover:bg-english-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+              <i class="fa fa-plus-circle mr-2"></i> 添加到单词本
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 单词概览 -->
+        <section id="overview" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">单词概览</h2>
+          
+          <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
+                <i class="fa fa-check-circle text-english-primary mr-2"></i> 核心含义
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                <span class="highlight-text font-medium">Challenge</span> 最核心的含义是"挑战"，既可以表示需要付出努力才能完成的困难任务，也可以表示对某种观点或权威的质疑。这个词在日常交流和正式场合中都非常常用，具有很强的灵活性。
+              </p>
+              
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-l-4 border-english-primary">
+                <p class="text-gray-700 dark:text-gray-300 italic">
+                  "生活的意义在于接受挑战，而不是逃避挑战。"
+                </p>
+              </div>
+            </div>
+            
+            <div class="space-y-4">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white flex items-center">
+                <i class="fa fa-line-chart text-english-primary mr-2"></i> 使用频率
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300">
+                在英语中属于高频词汇，在学术写作、日常对话、新闻报道等场景中出现频率极高。根据COCA语料库统计，challenge在英语词汇使用频率排名中位列前500。
+              </p>
+              
+              <div class="h-12 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-english-primary to-learning-accent" style="width: 92%"></div>
+              </div>
+              <div class="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                <span>基础词汇</span>
+                <span>高频词汇</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="space-y-6">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white">常见搭配</h3>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">face a challenge</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">meet the challenge</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">accept a challenge</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">pose a challenge</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">great challenge</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">major challenge</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">challenge authority</span>
+              <span class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded-full text-gray-700 dark:text-gray-300 text-sm">challenge someone</span>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 词源历史 -->
+        <section id="history" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">词源历史</h2>
+          
+          <div class="space-y-6">
+            <div class="flex items-start">
+              <div class="mr-4 mt-1 bg-english-primary/10 p-2 rounded-full text-english-primary">
+                <i class="fa fa-history"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">词源起源</h3>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  <span class="highlight-text">Challenge</span> 一词源于13世纪的古法语 "chalenge"，最初表示"质疑、抗议或召唤"。更早可以追溯到拉丁语 "calumnia"，意为"虚假指控或诽谤"。
+                </p>
+              </div>
+            </div>
+            
+            <div class="flex items-start">
+              <div class="mr-4 mt-1 bg-english-primary/10 p-2 rounded-full text-english-primary">
+                <i class="fa fa-clock-o"></i>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">词义演变</h3>
+                <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  在中世纪时期，该词主要用于法律和骑士文化中，表示"正式质疑"或"决斗挑战"。到了16世纪，词义扩展为"需要努力克服的困难任务"。19世纪后，又发展出"质疑权威或观点"的含义。现代英语中，它既可以作为名词也可以作为动词使用，应用范围非常广泛。
+                </p>
+              </div>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">历史趣闻</h3>
+              <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                在中世纪的欧洲，"challenge" 是骑士文化的重要组成部分。当一名骑士对另一名骑士的荣誉提出质疑时，会发出正式的 "challenge"，这通常意味着需要通过决斗来解决争端。这种传统一直延续到19世纪初才逐渐消失，但"challenge" 一词的核心含义却保留了下来。
+              </p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 现代用法 -->
+        <section id="usage" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">现代用法</h2>
+          
+          <div class="mb-8">
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+              <span class="w-8 h-8 rounded-full bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">n.</span>
+              作为名词使用
+            </h3>
+            
+            <div class="space-y-6 pl-10">
+              <div>
+                <p class="text-gray-800 dark:text-white font-medium mb-1">1. 挑战；艰巨任务</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2">指需要付出巨大努力才能完成的困难任务</p>
+                <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <p class="text-gray-800 dark:text-gray-200 italic mb-1">"Starting a new business is a huge challenge."</p>
+                  <p class="text-gray-600 dark:text-gray-400">创办新企业是一项巨大的挑战。</p>
+                </div>
+              </div>
+              
+              <div>
+                <p class="text-gray-800 dark:text-white font-medium mb-1">2. 质疑；异议</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2">对某种说法、观点或行为的质疑</p>
+                <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <p class="text-gray-800 dark:text-gray-200 italic mb-1">"She raised a challenge to the new policy."</p>
+                  <p class="text-gray-600 dark:text-gray-400">她对新政策提出了质疑。</p>
+                </div>
+              </div>
+              
+              <div>
+                <p class="text-gray-800 dark:text-white font-medium mb-1">3. 挑战赛</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2">一种竞技比赛或竞赛活动</p>
+                <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <p class="text-gray-800 dark:text-gray-200 italic mb-1">"The annual dance challenge will be held next month."</p>
+                  <p class="text-gray-600 dark:text-gray-400">一年一度的舞蹈挑战赛将于下月举行。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+              <span class="w-8 h-8 rounded-full bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">v.</span>
+              作为动词使用
+            </h3>
+            
+            <div class="space-y-6 pl-10">
+              <div>
+                <p class="text-gray-800 dark:text-white font-medium mb-1">1. 向...挑战；质疑</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2">对某事的真实性或正确性提出质疑</p>
+                <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <p class="text-gray-800 dark:text-gray-200 italic mb-1">"Scientists challenged the theory."</p>
+                  <p class="text-gray-600 dark:text-gray-400">科学家们对这一理论提出了质疑。</p>
+                </div>
+              </div>
+              
+              <div>
+                <p class="text-gray-800 dark:text-white font-medium mb-1">2. 挑战；邀请比赛</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2">邀请某人参加竞赛或较量</p>
+                <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <p class="text-gray-800 dark:text-gray-200 italic mb-1">"He challenged me to a game of chess."</p>
+                  <p class="text-gray-600 dark:text-gray-400">他向我挑战下一盘国际象棋。</p>
+                </div>
+              </div>
+              
+              <div>
+                <p class="text-gray-800 dark:text-white font-medium mb-1">3. 考验；对...提出挑战</p>
+                <p class="text-gray-700 dark:text-gray-300 mb-2">考验某人的能力或极限</p>
+                <div class="pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                  <p class="text-gray-800 dark:text-gray-200 italic mb-1">"This job will challenge your skills."</p>
+                  <p class="text-gray-600 dark:text-gray-400">这份工作将对你的技能提出挑战。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 衍生词汇 -->
+        <section id="derivatives" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">衍生词汇</h2>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="card-hover p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Challenger <span class="text-sm font-normal text-gray-500 dark:text-gray-400">n.</span></h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-3">挑战者；提出质疑的人</p>
+              <div class="text-sm text-gray-600 dark:text-gray-400 italic">
+                "She was a strong challenger in the election."
+              </div>
+            </div>
+            
+            <div class="card-hover p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Challenging <span class="text-sm font-normal text-gray-500 dark:text-gray-400">adj.</span></h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-3">具有挑战性的；困难的</p>
+              <div class="text-sm text-gray-600 dark:text-gray-400 italic">
+                "It's a challenging problem that requires careful thought."
+              </div>
+            </div>
+            
+            <div class="card-hover p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Unchallenged <span class="text-sm font-normal text-gray-500 dark:text-gray-400">adj.</span></h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-3">未受质疑的；未被挑战的</p>
+              <div class="text-sm text-gray-600 dark:text-gray-400 italic">
+                "His authority remained unchallenged for many years."
+              </div>
+            </div>
+            
+            <div class="card-hover p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Challengeable <span class="text-sm font-normal text-gray-500 dark:text-gray-400">adj.</span></h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-3">可挑战的；可质疑的</p>
+              <div class="text-sm text-gray-600 dark:text-gray-400 italic">
+                "The decision is challengeable under company rules."
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-8 p-5 bg-english-primary/5 dark:bg-english-primary/10 rounded-lg">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">词汇拓展</h3>
+            <p class="text-gray-700 dark:text-gray-300 mb-4">与"challenge"意义相近的词语：</p>
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-sm shadow-sm">difficulty</span>
+              <span class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-sm shadow-sm">obstacle</span>
+              <span class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-sm shadow-sm">task</span>
+              <span class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-sm shadow-sm">dispute</span>
+              <span class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-sm shadow-sm">question</span>
+              <span class="px-3 py-1 bg-white dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-sm shadow-sm">contest</span>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 文化关联 -->
+        <section id="culture" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">文化关联</h2>
+          
+          <div class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">流行文化中的"Challenge"</h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                在现代流行文化中，"challenge" 经常与社交媒体上的各种挑战活动相关联。例如：
+              </p>
+              
+              <div class="grid md:grid-cols-3 gap-4">
+                <div class="card-hover bg-gray-50 dark:bg-gray-700/50 rounded-lg overflow-hidden">
+                  <div class="h-40 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                    <i class="fa fa-music text-5xl text-gray-400"></i>
+                  </div>
+                  <div class="p-4">
+                    <h4 class="font-medium text-gray-800 dark:text-white mb-1">Ice Bucket Challenge</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">为渐冻症研究筹款的公益挑战</p>
+                  </div>
+                </div>
+                
+                <div class="card-hover bg-gray-50 dark:bg-gray-700/50 rounded-lg overflow-hidden">
+                  <div class="h-40 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                    <i class="fa fa-film text-5xl text-gray-400"></i>
+                  </div>
+                  <div class="p-4">
+                    <h4 class="font-medium text-gray-800 dark:text-white mb-1">Mannequin Challenge</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">静止不动模仿人体模型的网络挑战</p>
+                  </div>
+                </div>
+                
+                <div class="card-hover bg-gray-50 dark:bg-gray-700/50 rounded-lg overflow-hidden">
+                  <div class="h-40 bg-gray-200 dark:bg-gray-600 flex items-center justify-center">
+                    <i class="fa fa-book text-5xl text-gray-400"></i>
+                  </div>
+                  <div class="p-4">
+                    <h4 class="font-medium text-gray-800 dark:text-white mb-1">No Spend Challenge</h4>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">一段时间内不消费的自律挑战</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">名言中的"Challenge"</h3>
+              <div class="space-y-4">
+                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-english-primary">
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"A smooth sea never made a skilled sailor."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-right">— Franklin D. Roosevelt</p>
+                </div>
+                
+                <div class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-learning-accent">
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"The greater the challenge, the greater the glory in overcoming it."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-right">— Marcus Tullius Cicero</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 单词测验 -->
+        <section id="quiz" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">单词测验</h2>
+          
+          <div class="space-y-6">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">1. 选择"challenge"的正确含义</h3>
+              <div class="space-y-3">
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz1" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">A. 容易完成的任务</span>
+                </label>
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz1" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">B. 需要努力克服的困难</span>
+                </label>
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz1" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">C. 放弃尝试的决定</span>
+                </label>
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz1" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">D. 简单的问题</span>
+                </label>
+              </div>
+            </div>
+            
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">2. 选择正确的句子填空："She decided to _____ herself by learning a new language."</h3>
+              <div class="space-y-3">
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz2" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">A. challenge</span>
+                </label>
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz2" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">B. challengeable</span>
+                </label>
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz2" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">C. challenger</span>
+                </label>
+                <label class="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer hover:border-english-primary transition-colors">
+                  <input type="radio" name="quiz2" class="mr-3 text-english-primary">
+                  <span class="text-gray-700 dark:text-gray-300">D. challenging</span>
+                </label>
+              </div>
+            </div>
+            
+            <button class="px-6 py-3 bg-english-primary hover:bg-english-primary/90 text-white rounded-lg transition-colors font-medium flex items-center">
+              <i class="fa fa-check mr-2"></i> 提交答案
+            </button>
+          </div>
+        </section>
+        
+        <!-- 练习工具 -->
+        <section id="practice" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">练习工具</h2>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="card-hover p-5 bg-gradient-to-br from-english-primary/5 to-english-primary/10 dark:from-english-primary/10 dark:to-english-primary/20 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                <i class="fa fa-pencil-square-o text-english-primary mr-2"></i>
+                填空练习
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                通过填空练习巩固"challenge"的用法，提高在语境中的应用能力。
+              </p>
+              <button class="px-4 py-2 bg-english-primary/10 hover:bg-english-primary/20 text-english-primary rounded-lg transition-colors text-sm font-medium">
+                开始练习
+              </button>
+            </div>
+            
+            <div class="card-hover p-5 bg-gradient-to-br from-learning-accent/5 to-learning-accent/10 dark:from-learning-accent/10 dark:to-learning-accent/20 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                <i class="fa fa-comments-o text-learning-accent mr-2"></i>
+                情景对话
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                在模拟真实场景的对话中使用"challenge"，提升实际交流能力。
+              </p>
+              <button class="px-4 py-2 bg-learning-accent/10 hover:bg-learning-accent/20 text-learning-accent rounded-lg transition-colors text-sm font-medium">
+                开始练习
+              </button>
+            </div>
+            
+            <div class="card-hover p-5 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                <i class="fa fa-microphone text-green-600 mr-2"></i>
+                发音练习
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                跟随标准发音，练习"challenge"的正确发音和语调。
+              </p>
+              <button class="px-4 py-2 bg-green-100 hover:bg-green-200 text-green-600 dark:bg-green-900/30 dark:hover:bg-green-900/40 rounded-lg transition-colors text-sm font-medium">
+                开始练习
+              </button>
+            </div>
+            
+            <div class="card-hover p-5 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                <i class="fa fa-gamepad text-yellow-600 mr-2"></i>
+                单词游戏
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                通过有趣的小游戏加深对"challenge"及其衍生词的记忆。
+              </p>
+              <button class="px-4 py-2 bg-yellow-100 hover:bg-yellow-200 text-yellow-600 dark:bg-yellow-900/30 dark:hover:bg-yellow-900/40 rounded-lg transition-colors text-sm font-medium">
+                开始游戏
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <footer class="bg-gray-100 dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-english-primary to-learning-accent flex items-center justify-center">
+            <i class="fa fa-book text-white text-sm"></i>
+          </div>
+          <span class="text-lg font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <div class="flex space-x-6 mb-4 md:mb-0">
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-twitter"></i>
+          </a>
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-instagram"></i>
+          </a>
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-youtube"></i>
+          </a>
+        </div>
+        
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          © 2023 EnglishMaster. 保留所有权利。
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 初始化模式设置 - 默认深色模式
+    function initMode() {
+      // 检查本地存储中的用户偏好
+      const userPreference = localStorage.getItem('modePreference');
+      
+      if (userPreference) {
+        // 应用用户偏好
+        if (userPreference === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } else {
+        // 默认使用深色模式
+        document.documentElement.classList.add('dark');
+        // 同时保存默认偏好到本地存储
+        localStorage.setItem('modePreference', 'dark');
+      }
+    }
+    
+    // 页面加载时初始化模式
+    initMode();
+    
+    // 全局模式切换功能
+    const globalToggle = document.getElementById('globalToggle');
+    
+    globalToggle.addEventListener('click', function() {
+      document.documentElement.classList.toggle('dark');
+      // 保存用户偏好到本地存储
+      const mode = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+      localStorage.setItem('modePreference', mode);
+    });
+    
+    // 移动端菜单切换
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileMenu = document.getElementById('mobileMenu');
+    
+    mobileMenuBtn.addEventListener('click', function() {
+      mobileMenu.classList.toggle('hidden');
+      if (!mobileSearch.classList.contains('hidden')) {
+        mobileSearch.classList.add('hidden');
+      }
+    });
+    
+    // 移动端搜索框切换
+    const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+    const mobileSearch = document.getElementById('mobileSearch');
+    
+    mobileSearchBtn.addEventListener('click', function() {
+      mobileSearch.classList.toggle('hidden');
+      if (!mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+      }
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          if (!mobileMenu.classList.contains('hidden')) {
+            mobileMenu.classList.add('hidden');
+          }
+        }
+      });
+    });
+    
+    // 发音按钮功能
+    document.querySelector('.pronunciation-btn').addEventListener('click', function() {
+      // 这里可以添加语音播放功能
+      const word = "challenge";
+      const utterance = new SpeechSynthesisUtterance(word);
+      utterance.lang = 'en-US';
+      speechSynthesis.speak(utterance);
+      
+      // 添加点击动画
+      this.classList.add('scale-90');
+      setTimeout(() => {
+        this.classList.remove('scale-90');
+      }, 200);
+    });
+  </script>
+</body>
+</html>
+    
