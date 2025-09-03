@@ -1,0 +1,1561 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词 Create 详解 | 专业英语学习平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            create: {
+              primary: '#8B5CF6',    // 创造紫 - 主色调
+              secondary: '#EC4899',  // 辅助粉
+              dark: '#5B21B6',       // 深紫
+              light: '#F3E8FF'       // 浅紫
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          },
+          animation: {
+            'brush-stroke': 'brushStroke 1.5s ease-out forwards',
+            'grow': 'grow 2s ease-out forwards',
+            'light-spread': 'lightSpread 3s ease-out forwards',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite'
+          },
+          keyframes: {
+            brushStroke: {
+              '0%': { 'stroke-dashoffset': '100', 'opacity': '0' },
+              '100%': { 'stroke-dashoffset': '0', 'opacity': '1' }
+            },
+            grow: {
+              '0%': { 'transform': 'scale(0)', 'opacity': '0' },
+              '100%': { 'transform': 'scale(1)', 'opacity': '1' }
+            },
+            lightSpread: {
+              '0%': { 'opacity': '0', 'transform': 'scale(0.5)' },
+              '100%': { 'opacity': '1', 'transform': 'scale(1)' }
+            },
+            float: {
+              '0%, 100%': { 'transform': 'translateY(0)' },
+              '50%': { 'transform': 'translateY(-10px)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+      }
+      .creation-path {
+        stroke-dasharray: 100;
+        stroke-dashoffset: 100;
+      }
+      .grow-element {
+        transform-origin: bottom center;
+        opacity: 0;
+      }
+      .light-source {
+        position: absolute;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(139, 92, 246, 0.3), transparent 70%);
+        transform: scale(0.5);
+        opacity: 0;
+      }
+      .creativity-tree {
+        transition: all 0.5s ease;
+      }
+      .creativity-tree:hover .tree-branch {
+        transform: scale(1.05);
+      }
+      .card-reveal {
+        opacity: 0;
+        transform: translateY(20px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      }
+      .card-reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300 text-gray-800 dark:text-gray-200">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-create-primary to-create-secondary flex items-center justify-center">
+            <i class="fa fa-paint-brush text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-create-primary/50 transition-colors" value="create">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer transition-all duration-400" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full transition-all duration-400 transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs transition-all duration-300"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-400 text-xs transition-all duration-300"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors" value="create">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#overview" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">单词概览</a>
+          <a href="#etymology" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">词源解析</a>
+          <a href="#usage" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">现代用法</a>
+          <a href="#derivatives" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">衍生词汇</a>
+          <a href="#culture" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">文化内涵</a>
+          <a href="#quotes" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">名人名言</a>
+          <a href="#quiz" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">单词测验</a>
+          <a href="#practice" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors py-2">练习工具</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 单词Banner - 创造主题动画 -->
+  <section class="relative h-[35vh] min-h-[280px] overflow-hidden bg-gradient-to-br from-create-light to-pink-50 dark:from-gray-800 dark:to-gray-900">
+    <!-- 背景光芒效果 -->
+    <div class="light-source w-[800px] h-[800px] top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" id="main-light-source"></div>
+    
+    <!-- 创造元素装饰 -->
+    <div class="absolute top-1/4 left-1/5 w-16 h-16 text-create-primary/20 animate-pulse-slow">
+      <i class="fa fa-star text-5xl"></i>
+    </div>
+    <div class="absolute bottom-1/3 right-1/4 w-12 h-12 text-create-secondary/20 animate-float">
+      <i class="fa fa-paint-brush text-4xl"></i>
+    </div>
+    
+    <div class="absolute inset-0 bg-gradient-to-r from-create-primary/10 to-create-secondary/10 dark:from-create-primary/20 dark:to-create-secondary/20 z-10"></div>
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <div class="max-w-3xl mx-auto text-center">
+        <!-- 画笔动画效果的单词 -->
+        <div class="inline-block relative mb-2">
+          <svg width="240" height="80" viewBox="0 0 240 80" class="inline-block">
+            <text x="0" y="60" font-family="Inter, sans-serif" font-size="60" font-weight="bold" fill="none" stroke="#8B5CF6" stroke-width="2" class="creation-path" id="create-svg-text">Create</text>
+          </svg>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white opacity-0" id="create-title">Create</h1>
+          </div>
+        </div>
+        
+        <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 italic opacity-0 animate-fade-in" style="animation-delay: 0.5s">/kriˈeɪt/</p>
+        <div class="flex flex-wrap justify-center gap-2 mb-4 opacity-0 animate-fade-in" style="animation-delay: 1s">
+          <span class="px-3 py-1 rounded-full bg-create-primary/10 text-create-primary dark:bg-create-primary/20 text-sm font-medium">动词 (verb)</span>
+          <span class="px-3 py-1 rounded-full bg-create-secondary/10 text-create-secondary dark:bg-create-secondary/20 text-sm font-medium">高频词汇</span>
+          <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-sm font-medium">核心词汇</span>
+        </div>
+        <p class="text-base md:text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto opacity-0 animate-fade-in" style="animation-delay: 1.5s">创造，使产生；引起或导致某事</p>
+        
+        <!-- 创造探索按钮 -->
+        <button class="mt-6 px-4 py-2 bg-create-primary hover:bg-create-dark text-white rounded-full shadow-lg transition-all duration-300 hover:scale-105 opacity-0 animate-fade-in" style="animation-delay: 2s" id="creation-btn">
+          <i class="fa fa-magic mr-2"></i> 探索创造的力量
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 词链导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center text-sm">
+        <p class="text-gray-500 dark:text-gray-400 mr-3">创造思维词链:</p>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors">imagine</a>
+          <a href="#" class="font-medium text-create-primary">create</a>
+          <a href="#" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors">design</a>
+          <a href="#" class="text-gray-600 hover:text-create-primary dark:text-gray-300 dark:hover:text-create-primary transition-colors">produce</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-create-primary dark:text-gray-400 dark:hover:text-create-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-create-primary dark:text-gray-400 dark:hover:text-create-primary">单词库</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-create-primary dark:text-gray-400 dark:hover:text-create-primary">C开头单词</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-create-primary dark:text-gray-400 dark:hover:text-create-primary">创造与设计类</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">Create</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">单词学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#overview" class="flex items-center px-4 py-3 rounded-lg bg-create-primary/10 text-create-primary dark:bg-create-primary/20 dark:text-create-primary transition-colors">
+              <i class="fa fa-info-circle mr-3 w-5 text-center"></i>
+              <span>单词概览</span>
+            </a>
+            <a href="#etymology" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-puzzle-piece mr-3 w-5 text-center"></i>
+              <span>词源解析</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment mr-3 w-5 text-center"></i>
+              <span>现代用法</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork mr-3 w-5 text-center"></i>
+              <span>衍生词汇</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-globe mr-3 w-5 text-center"></i>
+              <span>文化内涵</span>
+            </a>
+            <a href="#quotes" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-quote-left mr-3 w-5 text-center"></i>
+              <span>名人名言</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle mr-3 w-5 text-center"></i>
+              <span>单词测验</span>
+            </a>
+            <a href="#practice" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-paint-brush mr-3 w-5 text-center"></i>
+              <span>练习工具</span>
+            </a>
+          </nav>
+          
+          <!-- 学习进度 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-3">学习进度</h3>
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">单词掌握度</span>
+                <span class="text-create-primary font-medium">45%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 overflow-hidden">
+                <div class="bg-gradient-to-r from-create-primary to-create-secondary h-2 rounded-full progress-animation" style="width: 0%"></div>
+              </div>
+            </div>
+            <button class="w-full bg-create-primary hover:bg-create-dark text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+              <i class="fa fa-plus-circle mr-2"></i> 添加到单词本
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 单词概览 -->
+        <section id="overview" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-info"></i>
+            </span>
+            单词概览
+          </h2>
+          
+          <!-- 核心信息卡片 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 hover:shadow-lg transition-shadow duration-300">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-3">Create</h3>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-4">
+                  /kriˈeɪt/
+                  <button class="ml-2 p-1.5 rounded-full bg-gray-200 dark:bg-gray-600 text-create-primary hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors hover:scale-110 transform transition-transform" id="pronunciationBtn">
+                    <i class="fa fa-volume-up"></i>
+                  </button>
+                </p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                  <span class="px-3 py-1 rounded-full bg-create-primary/10 text-create-primary dark:bg-create-primary/20 text-sm font-medium">动词 (verb)</span>
+                  <span class="px-3 py-1 rounded-full bg-create-secondary/10 text-create-secondary dark:bg-create-secondary/20 text-sm font-medium">高频词汇</span>
+                  <span class="px-3 py-1 rounded-full bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 text-sm font-medium">核心词汇</span>
+                </div>
+                
+                <p class="text-gray-700 dark:text-gray-300 mb-4">
+                  核心含义：创造，使产生；引起或导致某事
+                </p>
+                
+                <div class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-600 inline-block">
+                  <p class="text-sm text-gray-600 dark:text-gray-400 italic">
+                    "Create" 强调从无到有的创造过程，涉及想象力和原创性，可用于艺术、思想、机会等多种语境。
+                  </p>
+                </div>
+              </div>
+              
+              <div class="flex flex-col justify-center">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 h-full relative overflow-hidden group">
+                  <div class="absolute inset-0 bg-gradient-to-br from-create-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                  
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3 flex items-center relative z-10">
+                    <i class="fa fa-lightbulb-o text-create-primary mr-2"></i>
+                    为什么要学习这个词？
+                  </h4>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed relative z-10">
+                    "Create" 是表达人类创造力的核心词汇，在艺术、科技、商业等领域都有广泛应用。掌握这个词有助于准确描述创新过程，从艺术创作到商业机会的创造，是表达人类能动性的关键词汇。
+                  </p>
+                  
+                  <div class="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 relative z-10">
+                    <div class="flex items-center text-sm">
+                      <i class="fa fa-bar-chart text-create-primary mr-2"></i>
+                      <span class="text-gray-600 dark:text-gray-400">在各类文本中出现频率：每百万词约 42 次</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 创造过程可视化 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">创造过程可视化</h3>
+            <div class="relative h-64 md:h-80 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-600 overflow-hidden" id="creation-visualization">
+              <!-- 初始状态 - 空白 -->
+              <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-600" id="initial-blank">
+                <i class="fa fa-square-o text-6xl"></i>
+              </div>
+              
+              <!-- 创意火花 -->
+              <div class="absolute top-1/4 left-1/3 w-12 h-12 text-create-primary opacity-0" id="idea-spark">
+                <i class="fa fa-lightbulb-o text-3xl animate-pulse"></i>
+              </div>
+              
+              <!-- 创造过程 - 画笔路径 -->
+              <svg class="absolute inset-0 w-full h-full" id="creation-path" style="z-index: 0;">
+                <path d="M 100,200 C 150,100 250,100 300,200" stroke="#8B5CF6" stroke-width="2" fill="none" stroke-dasharray="300" stroke-dashoffset="300" />
+              </svg>
+              
+              <!-- 创造结果 -->
+              <div class="absolute bottom-1/4 right-1/4 w-24 h-24 bg-gradient-to-br from-create-primary/20 to-create-secondary/20 rounded-lg border border-create-primary/30 flex items-center justify-center opacity-0" id="creation-result">
+                <i class="fa fa-paint-brush text-4xl text-create-primary"></i>
+              </div>
+              
+              <!-- 标签 -->
+              <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-full bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded text-xs shadow-sm" id="blank-label">
+                空白状态
+              </div>
+              <div class="absolute top-1/4 left-1/3 transform -translate-x-1/2 -translate-y-full bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded text-xs shadow-sm opacity-0" id="idea-label">
+                创意闪现
+              </div>
+              <div class="absolute bottom-1/4 right-1/4 transform -translate-x-1/2 translate-y-full bg-white/90 dark:bg-gray-800/90 px-2 py-1 rounded text-xs shadow-sm opacity-0" id="result-label">
+                创造成果
+              </div>
+            </div>
+          </div>
+          
+          <!-- 常见搭配 -->
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">常见搭配</h3>
+            <div class="flex flex-wrap gap-3">
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create art</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create opportunities</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create a masterpiece</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create value</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create problems</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create a new design</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create content</div>
+              <div class="px-3 py-2 bg-white dark:bg-gray-800 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors hover:shadow-sm hover:text-create-primary">create change</div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 词源解析 -->
+        <section id="etymology" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-puzzle-piece"></i>
+            </span>
+            词源解析
+          </h2>
+          
+          <!-- 词源卡片翻转效果 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6 text-center">词源构成 - 点击卡片查看解析</h3>
+            
+            <div class="flip-card max-w-2xl mx-auto">
+              <div class="flip-card-inner relative w-full h-64">
+                <div class="flip-card-front absolute w-full h-full bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden">
+                  <div class="text-center h-full flex flex-col justify-center">
+                    <div class="text-4xl font-bold text-create-primary mb-6">create</div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-8">点击卡片翻转查看词根解析</p>
+                    <div class="mt-6 flex justify-center space-x-4">
+                      <div class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-create-primary font-medium">cre-</div>
+                      <div class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-create-primary font-medium">+</div>
+                      <div class="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-create-primary font-medium">ate</div>
+                    </div>
+                    <div class="mt-8 text-sm text-gray-500 dark:text-gray-400">
+                      <p>源自拉丁语 "creare"（使生长、产生）</p>
+                    </div>
+                  </div>
+                </div>
+                <div class="flip-card-back absolute w-full h-full bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden rotate-180">
+                  <h4 class="text-xl font-semibold text-center text-gray-800 dark:text-white mb-6">词根解析</h4>
+                  
+                  <div class="space-y-6">
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 w-16 font-medium text-create-primary">cre-</div>
+                      <div class="flex-1">
+                        <p class="text-gray-700 dark:text-gray-300">词根，表示"生长，产生"</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">这个词根与"增长、产生"相关，出现在许多相关词汇中</p>
+                      </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                      <div class="flex-shrink-0 w-16 font-medium text-create-primary">ate</div>
+                      <div class="flex-1">
+                        <p class="text-gray-700 dark:text-gray-300">动词后缀，表示"做，使..."</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">常见于拉丁来源的动词，如generate, liberate等</p>
+                      </div>
+                    </div>
+                    
+                    <div class="pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <p class="text-gray-700 dark:text-gray-300 font-medium">组合含义：</p>
+                      <p class="text-gray-600 dark:text-gray-400 mt-1">
+                        "使生长" → "使产生" → "创造，带来新的事物"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">词根解析与记忆技巧</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <div class="w-8 h-8 rounded-full bg-create-primary/10 flex items-center justify-center mr-2">
+                    <i class="fa fa-puzzle-piece text-create-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">核心词根</h4>
+                </div>
+                <p class="text-gray-700 dark:text-gray-300 mb-3"><strong>cre-</strong> (生长，产生)</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">
+                  这是一个表示"生长、产生"的拉丁词根，与生命的成长和发展相关，是构成英语中许多与"创造、生长"相关词汇的基础。
+                </p>
+                
+                <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                  <h5 class="text-sm font-medium text-gray-800 dark:text-white mb-2">相关词汇</h5>
+                  <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    <li>• <span class="text-create-primary">increase</span> - 增加，增长</li>
+                    <li>• <span class="text-create-primary">decrease</span> - 减少，降低</li>
+                    <li>• <span class="text-create-primary">concrete</span> - 具体的，混凝土</li>
+                    <li>• <span class="text-create-primary">recreate</span> - 重现，娱乐</li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex items-center mb-3">
+                  <div class="w-8 h-8 rounded-full bg-create-primary/10 flex items-center justify-center mr-2">
+                    <i class="fa fa-lightbulb-o text-create-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">记忆技巧</h4>
+                </div>
+                
+                <div class="space-y-4">
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-create-primary/10 flex items-center justify-center mt-0.5 mr-2">
+                      <i class="fa fa-link text-create-primary text-xs"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                      建立联系：create（创造）与growth（生长）都包含"产生"的概念，源自同一核心思想。
+                    </p>
+                  </div>
+                  
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-create-primary/10 flex items-center justify-center mt-0.5 mr-2">
+                      <i class="fa fa-paint-brush text-create-primary text-xs"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                      联想创造过程：想象艺术家创作(create)作品时，想法如何从无到有地"生长"(cre-)出来。
+                    </p>
+                  </div>
+                  
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0 w-6 h-6 rounded-full bg-create-primary/10 flex items-center justify-center mt-0.5 mr-2">
+                      <i class="fa fa-book text-create-primary text-xs"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                      例句记忆：Artists create beauty that didn't exist before.（艺术家创造了前所未有的美。）
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 现代用法 -->
+        <section id="usage" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-comment"></i>
+            </span>
+            现代用法
+          </h2>
+          
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6">动词用法示例</h3>
+            
+            <div class="space-y-6">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-create-primary/30 transition-colors">
+                <div class="flex items-center mb-2">
+                  <div class="w-8 h-8 rounded-full bg-create-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-paint-brush text-create-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">艺术创作语境</h4>
+                </div>
+                <p class="text-gray-800 dark:text-white italic text-sm mb-1">"Artists create works that inspire people across generations."</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">艺术家创作的作品激励了一代又一代人。</p>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                  在艺术语境中，create强调原创性和想象力的表达
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-create-primary/30 transition-colors">
+                <div class="flex items-center mb-2">
+                  <div class="w-8 h-8 rounded-full bg-create-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-graduation-cap text-create-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">教育与机会语境</h4>
+                </div>
+                <p class="text-gray-800 dark:text-white italic text-sm mb-1">"We need to create opportunities for students to learn by doing."</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">我们需要为学生创造通过实践学习的机会。</p>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                  在这种语境中，create表示促成有利条件的产生
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-create-primary/30 transition-colors">
+                <div class="flex items-center mb-2">
+                  <div class="w-8 h-8 rounded-full bg-create-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-briefcase text-create-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">商业与价值语境</h4>
+                </div>
+                <p class="text-gray-800 dark:text-white italic text-sm mb-1">"Successful companies create value for their customers and shareholders."</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">成功的公司为客户和股东创造价值。</p>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                  在商业语境中，create常与value搭配，表示创造经济或实用价值
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 hover:border-create-primary/30 transition-colors">
+                <div class="flex items-center mb-2">
+                  <div class="w-8 h-8 rounded-full bg-create-primary/10 flex items-center justify-center mr-3 flex-shrink-0">
+                    <i class="fa fa-warning text-create-primary"></i>
+                  </div>
+                  <h4 class="font-medium text-gray-800 dark:text-white">问题与挑战语境</h4>
+                </div>
+                <p class="text-gray-800 dark:text-white italic text-sm mb-1">"Poor communication can create misunderstandings in relationships."</p>
+                <p class="text-gray-600 dark:text-gray-400 text-sm">沟通不畅会在人际关系中造成误解。</p>
+                <p class="mt-2 text-xs text-gray-500 dark:text-gray-500">
+                  在这种语境中，create表示引起或导致某种（通常是负面的）情况
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 近义词辨析 -->
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">近义词辨析</h3>
+            
+            <div class="grid md:grid-cols-3 gap-4">
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 class="font-medium text-create-primary mb-2">create</h4>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">强调从无到有，运用想象力创造全新事物</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 italic">
+                  "Artists create unique masterpieces."
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 class="font-medium text-create-secondary mb-2">invent</h4>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">指创造以前不存在的设备、方法或故事</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 italic">
+                  "Edison invented the electric light bulb."
+                </p>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                <h4 class="font-medium text-gray-700 dark:text-gray-300 mb-2">produce</h4>
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-2">强调通过加工或劳动制造出产品，批量生产</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 italic">
+                  "Factories produce thousands of cars daily."
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 衍生词汇 -->
+        <section id="derivatives" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-code-fork"></i>
+            </span>
+            衍生词汇
+          </h2>
+          
+          <!-- 交互式词根树 -->
+          <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-6 mb-8 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-6 text-center">交互式词根树</h3>
+            
+            <div class="creativity-tree bg-white dark:bg-gray-800 p-6 rounded-lg border border-gray-200 dark:border-gray-600 text-center">
+              <div class="relative inline-block">
+                <!-- 词根 -->
+                <div class="w-32 h-16 bg-create-primary text-white rounded-lg flex items-center justify-center font-medium text-lg mb-8 mx-auto tree-branch transition-all duration-300">
+                  cre-
+                </div>
+                
+                <!-- 主干词 -->
+                <div class="w-40 h-16 bg-create-primary/90 text-white rounded-lg flex items-center justify-center font-medium text-lg mb-12 mx-auto tree-branch transition-all duration-300">
+                  create
+                </div>
+                
+                <!-- 衍生词分支 -->
+                <div class="flex flex-wrap justify-center gap-x-12 gap-y-8">
+                  <div class="w-36 h-14 bg-create-primary/80 text-white rounded-lg flex items-center justify-center font-medium tree-branch transition-all duration-300">
+                    creation
+                  </div>
+                  <div class="w-36 h-14 bg-create-primary/70 text-white rounded-lg flex items-center justify-center font-medium tree-branch transition-all duration-300">
+                    creative
+                  </div>
+                  <div class="w-36 h-14 bg-create-primary/60 text-white rounded-lg flex items-center justify-center font-medium tree-branch transition-all duration-300">
+                    creativity
+                  </div>
+                  <div class="w-36 h-14 bg-create-primary/50 text-white rounded-lg flex items-center justify-center font-medium tree-branch transition-all duration-300">
+                    creator
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 衍生词卡片 - 翻转效果 -->
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full relative w-full">
+                <div class="flip-card-front absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">creation</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/kriˈeɪʃn/ (名词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">创造，作品；宇宙万物（the Creation）</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden rotate-180 flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "The artist's latest creation received critical acclaim."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    这位艺术家的最新作品获得了评论界的好评。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由create + -ion名词后缀构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full relative w-full">
+                <div class="flip-card-front absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">creative</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/kriˈeɪtɪv/ (形容词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">有创造力的，创造性的</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden rotate-180 flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "She has a creative approach to solving problems."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    她在解决问题方面有创造性的方法。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由create + -ive形容词后缀构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full relative w-full">
+                <div class="flip-card-front absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">creativity</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/ˌkriːeɪˈtɪvəti/ (名词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">创造力，创造性</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden rotate-180 flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "Children often display remarkable creativity in their artwork."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    儿童在他们的艺术作品中常常表现出非凡的创造力。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由creative + -ity名词后缀构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flip-card h-64">
+              <div class="flip-card-inner h-full relative w-full">
+                <div class="flip-card-front absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden flex flex-col">
+                  <div class="font-medium text-xl text-gray-800 dark:text-white mb-1">creator</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">/kriˈeɪtər/ (名词)</div>
+                  <p class="text-sm text-gray-600 dark:text-gray-300 mb-3 flex-grow">创造者，创作者；上帝</p>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 italic">
+                    点击卡片查看例句
+                  </div>
+                </div>
+                <div class="flip-card-back absolute w-full h-full bg-white dark:bg-gray-800 p-5 rounded-lg border border-gray-200 dark:border-gray-600 backface-visibility-hidden rotate-180 flex flex-col">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-3">例句</h4>
+                  <p class="text-sm text-gray-700 dark:text-gray-300 mb-2 italic">
+                    "Picasso is regarded as one of the greatest creators of modern art."
+                  </p>
+                  <p class="text-xs text-gray-600 dark:text-gray-400">
+                    毕加索被认为是现代艺术最伟大的创作者之一。
+                  </p>
+                  <div class="mt-auto pt-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+                    <p>由create + -or表示人的后缀构成</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 文化内涵 -->
+        <section id="culture" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-globe"></i>
+            </span>
+            文化内涵
+          </h2>
+          
+          <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+              <div class="w-12 h-12 rounded-full bg-create-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-cross text-create-primary text-xl"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">宗教意义</h3>
+              <p class="text-gray-600 dark:text-gray-400 text-sm">
+                在基督教、伊斯兰教等宗教中，"Creator"（造物主）是上帝的核心属性之一，指上帝从无到有创造世界的神圣行为。"the Creation"特指上帝创造世界的过程和结果。
+              </p>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+              <div class="w-12 h-12 rounded-full bg-create-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-briefcase text-create-primary text-xl"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">商业语境</h3>
+              <p class="text-gray-600 dark:text-gray-400 text-sm">
+                在商业领域，"create value"（创造价值）是核心概念，指企业通过产品、服务或商业模式为客户和股东带来新价值。创新创造是现代企业保持竞争力的关键。
+              </p>
+            </div>
+            
+            <div class="bg-gray-50 dark:bg-gray-700/30 rounded-xl p-5 border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+              <div class="w-12 h-12 rounded-full bg-create-primary/10 flex items-center justify-center mb-4">
+                <i class="fa fa-internet-explorer text-create-primary text-xl"></i>
+              </div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">数字时代</h3>
+              <p class="text-gray-600 dark:text-gray-400 text-sm">
+                数字化社会强调"user-generated content"（UGC，用户创造内容），指用户在互联网上创造并分享的文字、图片、视频等内容，体现了数字时代的创造民主化。
+              </p>
+            </div>
+          </div>
+          
+          <!-- 名画与创造相关案例展示 -->
+          <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">创造的艺术：名作赏析</h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 group">
+                <div class="h-48 overflow-hidden">
+                  <img src="https://picsum.photos/id/47/600/400" alt="《创造亚当》画作局部，展示上帝赋予亚当生命的经典场景" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                </div>
+                <div class="p-4">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-1">《创造亚当》- 米开朗基罗</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    这幅西斯廷教堂天顶画描绘了《圣经》中上帝创造亚当的场景，是西方艺术中对"创造"最著名的视觉诠释之一。
+                  </p>
+                </div>
+              </div>
+              
+              <div class="bg-white dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 group">
+                <div class="h-48 overflow-hidden">
+                  <img src="https://picsum.photos/id/96/600/400" alt="《星月夜》梵高作品，展示充满创造力的星空表现手法" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                </div>
+                <div class="p-4">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-1">《星月夜》- 文森特·梵高</h4>
+                  <p class="text-sm text-gray-600 dark:text-gray-400">
+                    这幅画展示了艺术家独特的创造性视野，通过扭曲的线条和鲜艳的色彩重新诠释了夜空，体现了艺术创造的无限可能。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 名人名言 -->
+        <section id="quotes" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-quote-left"></i>
+            </span>
+            名人名言
+          </h2>
+          
+          <div class="bg-gradient-to-br from-create-primary/5 to-create-secondary/5 dark:from-create-primary/10 dark:to-create-secondary/10 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+            <div class="relative">
+              <i class="fa fa-quote-left text-4xl text-create-primary/20 absolute -top-4 -left-2"></i>
+              <div class="pl-6 pb-6">
+                <p class="text-lg md:text-xl text-gray-800 dark:text-white italic mb-4">
+                  "You can't use up creativity. The more you use, the more you have."
+                </p>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                  创造力是用不完的，你用得越多，反而拥有得越多。
+                </p>
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mr-3">
+                    <img src="https://picsum.photos/id/64/100/100" alt="玛雅·安吉洛肖像照片" class="w-full h-full object-cover">
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Maya Angelou</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">美国作家、诗人</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 relative">
+              <i class="fa fa-quote-left text-4xl text-create-primary/20 absolute -top-4 -left-2"></i>
+              <div class="pl-6">
+                <p class="text-lg md:text-xl text-gray-800 dark:text-white italic mb-4">
+                  "Every child is an artist. The problem is how to remain an artist once he grows up."
+                </p>
+                <p class="text-gray-600 dark:text-gray-400 mb-6">
+                  每个孩子都是艺术家，问题在于如何在长大后仍保持艺术家的创造力。
+                </p>
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden mr-3">
+                    <img src="https://picsum.photos/id/87/100/100" alt="巴勃罗·毕加索肖像照片" class="w-full h-full object-cover">
+                  </div>
+                  <div>
+                    <p class="font-medium text-gray-800 dark:text-white">Pablo Picasso</p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">西班牙艺术家</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 单词测验 -->
+        <section id="quiz" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-question-circle"></i>
+            </span>
+            单词测验
+          </h2>
+          
+          <div class="bg-gradient-to-br from-create-primary/5 to-create-secondary/5 dark:from-create-primary/10 dark:to-create-secondary/10 rounded-xl p-6 border border-gray-100 dark:border-gray-700">
+            <div class="mb-6 text-center">
+              <p class="text-gray-700 dark:text-gray-300 mb-2">测试你对"Create"的掌握程度</p>
+              <div class="w-24 h-1 bg-gradient-to-r from-create-primary to-create-secondary rounded-full mx-auto"></div>
+            </div>
+            
+            <!-- 词义理解测验 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600 mb-8">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 text-center">选择正确的句子含义</h3>
+              
+              <div class="mb-5">
+                <p class="text-center text-gray-700 dark:text-gray-300 mb-4">"The team aims to create a new solution to this problem."</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl mx-auto">
+                  <button class="create-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                    团队旨在重复使用现有的解决方案。
+                  </button>
+                  <button class="create-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="true">
+                    团队旨在创造一个解决这个问题的新方案。
+                  </button>
+                  <button class="create-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                    团队旨在忽视这个问题的存在。
+                  </button>
+                  <button class="create-question p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                    团队旨在批评现有的解决方案。
+                  </button>
+                </div>
+              </div>
+              
+              <div id="meaning-feedback" class="hidden text-center p-3 rounded-lg"></div>
+            </div>
+            
+            <!-- 近义词选择 -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-5 border border-gray-200 dark:border-gray-600">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 text-center">选择最接近的近义词</h3>
+              
+              <div class="mb-5">
+                <p class="text-center text-gray-700 dark:text-gray-300 mb-4">create</p>
+                
+                <div class="max-w-md mx-auto">
+                  <div class="grid grid-cols-2 gap-3">
+                    <button class="create-synonym p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                      destroy
+                    </button>
+                    <button class="create-synonym p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="true">
+                      make something new
+                    </button>
+                    <button class="create-synonym p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                      copy
+                    </button>
+                    <button class="create-synonym p-3 border border-gray-200 dark:border-gray-600 rounded-lg text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors" data-correct="false">
+                      consume
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <div id="synonym-feedback" class="hidden text-center p-3 rounded-lg"></div>
+            </div>
+            
+            <div class="mt-6 text-center">
+              <button id="reset-quiz" class="px-4 py-2 bg-create-primary hover:bg-create-dark text-white rounded-lg transition-colors text-sm font-medium">
+                重新开始测验
+              </button>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 练习工具 -->
+        <section id="practice" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm card-reveal">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-create-primary/10 text-create-primary flex items-center justify-center mr-2">
+              <i class="fa fa-paint-brush"></i>
+            </span>
+            练习工具
+          </h2>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fa fa-magic text-create-primary mr-2"></i>
+                创造灵感生成器
+              </h3>
+              
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+                点击下方按钮，获取与"create"相关的创意写作提示，帮助你在语境中运用这个词。
+              </p>
+              
+              <div class="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-600 h-40 flex flex-col items-center justify-center" id="creative-prompt-container">
+                <button class="w-16 h-16 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center mb-3 cursor-pointer hover:bg-create-primary/20 transition-colors" id="creative-prompt-btn">
+                  <i class="fa fa-lightbulb-o text-2xl text-gray-400 dark:text-gray-500"></i>
+                </button>
+                <p class="text-sm text-gray-500 dark:text-gray-400 text-center" id="creative-prompt-text">
+                  点击获取创意提示
+                </p>
+              </div>
+            </div>
+            
+            <!-- 小游戏：点击空白处生成随机艺术图案 -->
+            <div class="p-5 bg-gray-50 dark:bg-gray-700/30 rounded-xl border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-shadow duration-300">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                <i class="fa fa-paint-brush text-create-primary mr-2"></i>
+                创造艺术小游戏
+              </h3>
+              
+              <p class="text-gray-700 dark:text-gray-300 text-sm mb-4">
+                点击画布创造随机艺术图案，体验创造的乐趣，同时加深对"create"的理解。
+              </p>
+              
+              <div class="bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-600 h-40 relative overflow-hidden" id="art-canvas">
+                <div class="absolute inset-0 flex items-center justify-center text-gray-400 dark:text-gray-600 text-sm" id="canvas-instruction">
+                  点击画布开始创作
+                </div>
+              </div>
+              
+              <div class="mt-3 flex justify-center">
+                <button id="clear-canvas" class="px-3 py-1 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm transition-colors">
+                  <i class="fa fa-eraser mr-1"></i> 清空画布
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 词链导航提示 -->
+  <div class="fixed bottom-6 right-6 z-40 bg-white/90 dark:bg-gray-800/90 shadow-lg rounded-full p-4 border border-gray-200 dark:border-gray-700 backdrop-blur-sm animate-float">
+    <div class="flex items-center space-x-3">
+      <span class="text-sm text-gray-600 dark:text-gray-400">创造思维词链:</span>
+      <div class="flex space-x-2">
+        <a href="#" class="text-create-primary/70 hover:text-create-primary transition-colors text-sm">imagine</a>
+        <span class="text-create-primary/70 text-sm">→</span>
+        <a href="#" class="text-create-primary font-medium text-sm">create</a>
+        <span class="text-create-primary/70 text-sm">→</span>
+        <a href="#" class="text-create-primary/70 hover:text-create-primary transition-colors text-sm">design</a>
+        <span class="text-create-primary/70 text-sm">→</span>
+        <a href="#" class="text-create-primary/70 hover:text-create-primary transition-colors text-sm">produce</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8 mt-12">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-create-primary to-create-secondary flex items-center justify-center">
+            <i class="fa fa-paint-brush text-white text-sm"></i>
+          </div>
+          <span class="text-lg font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <div class="flex space-x-6 mb-4 md:mb-0">
+          <a href="#" class="text-gray-400 hover:text-create-primary dark:text-gray-500 dark:hover:text-create-primary transition-colors">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-create-primary dark:text-gray-500 dark:hover:text-create-primary transition-colors">
+            <i class="fa fa-twitter"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-create-primary dark:text-gray-500 dark:hover:text-create-primary transition-colors">
+            <i class="fa fa-instagram"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-create-primary dark:text-gray-500 dark:hover:text-create-primary transition-colors">
+            <i class="fa fa-youtube"></i>
+          </a>
+        </div>
+        
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+          © 2023 EnglishMaster. 保留所有权利。
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 画笔动画显示单词
+      const svgText = document.getElementById('create-svg-text');
+      const createTitle = document.getElementById('create-title');
+      
+      // 初始化画笔动画
+      svgText.style.animation = 'brushStroke 1.5s ease-out forwards';
+      
+      // 画笔动画完成后显示文字
+      setTimeout(() => {
+        createTitle.style.opacity = '1';
+        createTitle.style.transition = 'opacity 0.5s ease-out';
+      }, 1500);
+      
+      // 光芒扩散动画
+      setTimeout(() => {
+        document.getElementById('main-light-source').classList.add('animate-light-spread');
+      }, 1000);
+      
+      // 学习进度条动画
+      setTimeout(() => {
+        document.querySelector('.progress-animation').style.width = '45%';
+      }, 500);
+      
+      // 创造过程可视化初始化
+      setupCreationVisualization();
+      
+      // 淡入动画样式
+      document.head.insertAdjacentHTML('beforeend', `
+        <style>
+          @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+          }
+          .animate-fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+          }
+          .flip-card {
+            perspective: 1000px;
+          }
+          .flip-card-inner {
+            transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transform-style: preserve-3d;
+          }
+          .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+          }
+          .backface-visibility-hidden {
+            backface-visibility: hidden;
+          }
+          .rotate-180 {
+            transform: rotateY(180deg);
+          }
+        </style>
+      `);
+      
+      // 显示初始隐藏的元素
+      setTimeout(() => {
+        document.querySelectorAll('.animate-fade-in').forEach(el => {
+          el.style.opacity = '1';
+        });
+      }, 100);
+      
+      // 主题切换功能
+      const themeToggle = document.getElementById('globalToggle');
+      
+      // 检查本地存储的主题偏好
+      if (localStorage.getItem('theme') === 'dark' || 
+          (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+      
+      // 切换主题
+      themeToggle.addEventListener('click', function() {
+        document.documentElement.classList.toggle('dark');
+        
+        // 保存主题偏好
+        if (document.documentElement.classList.contains('dark')) {
+          localStorage.setItem('theme', 'dark');
+        } else {
+          localStorage.setItem('theme', 'light');
+        }
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
+        // 关闭搜索框（如果打开）
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.classList.add('hidden');
+        }
+      });
+      
+      // 移动端搜索框切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        mobileSearch.classList.toggle('hidden');
+        // 关闭菜单（如果打开）
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单和搜索框（如果打开）
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+            if (!mobileSearch.classList.contains('hidden')) {
+              mobileSearch.classList.add('hidden');
+            }
+          }
+        });
+      });
+      
+      // 发音功能
+      const pronunciationBtn = document.getElementById('pronunciationBtn');
+      if (pronunciationBtn) {
+        pronunciationBtn.addEventListener('click', function() {
+          const word = "create";
+          const utterance = new SpeechSynthesisUtterance(word);
+          utterance.lang = 'en-US';
+          utterance.rate = 0.9;
+          window.speechSynthesis.speak(utterance);
+          
+          // 按钮动画反馈
+          this.classList.add('scale-90');
+          setTimeout(() => {
+            this.classList.remove('scale-90');
+          }, 200);
+        });
+      }
+      
+      // 词义理解测验
+      document.querySelectorAll('.create-question').forEach(option => {
+        option.addEventListener('click', function() {
+          const isCorrect = this.dataset.correct === 'true';
+          const feedback = document.getElementById('meaning-feedback');
+          
+          // 重置所有选项样式
+          document.querySelectorAll('.create-question').forEach(opt => {
+            opt.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'dark:bg-green-900/20', 'dark:bg-red-900/20');
+          });
+          
+          // 设置当前选项样式
+          if (isCorrect) {
+            this.classList.add('bg-green-100', 'border-green-500', 'dark:bg-green-900/20');
+            feedback.textContent = '正确！"create" 在这里表示创造一个新的解决方案。';
+            feedback.className = 'text-center p-3 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+          } else {
+            this.classList.add('bg-red-100', 'border-red-500', 'dark:bg-red-900/20');
+            feedback.textContent = '不正确。"create" 意为创造新事物，而不是重复、忽视或批评现有事物。';
+            feedback.className = 'text-center p-3 rounded-lg bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+          }
+          
+          feedback.classList.remove('hidden');
+        });
+      });
+      
+      // 近义词选择测验
+      document.querySelectorAll('.create-synonym').forEach(option => {
+        option.addEventListener('click', function() {
+          const isCorrect = this.dataset.correct === 'true';
+          const feedback = document.getElementById('synonym-feedback');
+          
+          // 重置所有选项样式
+          document.querySelectorAll('.create-synonym').forEach(opt => {
+            opt.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'dark:bg-green-900/20', 'dark:bg-red-900/20');
+          });
+          
+          // 设置当前选项样式
+          if (isCorrect) {
+            this.classList.add('bg-green-100', 'border-green-500', 'dark:bg-green-900/20');
+            feedback.textContent = '正确！"make something new"（创造新事物）与"create"含义最接近。';
+            feedback.className = 'text-center p-3 rounded-lg bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
+          } else {
+            this.classList.add('bg-red-100', 'border-red-500', 'dark:bg-red-900/20');
+            feedback.textContent = '不正确。正确答案是"make something new"，意为创造新事物。';
+            feedback.className = 'text-center p-3 rounded-lg bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
+          }
+          
+          feedback.classList.remove('hidden');
+        });
+      });
+      
+      // 重置测验
+      document.getElementById('reset-quiz').addEventListener('click', function() {
+        // 重置词义理解题
+        document.querySelectorAll('.create-question').forEach(opt => {
+          opt.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'dark:bg-green-900/20', 'dark:bg-red-900/20');
+        });
+        document.getElementById('meaning-feedback').classList.add('hidden');
+        
+        // 重置近义词选择题
+        document.querySelectorAll('.create-synonym').forEach(opt => {
+          opt.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'dark:bg-green-900/20', 'dark:bg-red-900/20');
+        });
+        document.getElementById('synonym-feedback').classList.add('hidden');
+      });
+      
+      // 创意提示生成器
+      const creativePromptBtn = document.getElementById('creative-prompt-btn');
+      const creativePromptText = document.getElementById('creative-prompt-text');
+      const creativePrompts = [
+        "写一个关于艺术家如何在逆境中创造杰作的短篇故事。",
+        "描述一项你希望有人创造出来的新发明，解释它如何改变世界。",
+        "用'create'及其衍生词写一段关于创造力重要性的论述。",
+        "想象你可以创造一种新的节日，描述它的庆祝方式和意义。",
+        "解释数字技术如何改变了人们创造和分享艺术的方式。",
+        "描述一个你亲身经历的创造过程，从构思到完成的整个旅程。",
+        "如果可以创造一种新的颜色，它会是什么样子？给它起个名字并描述它的特性。"
+      ];
+      
+      creativePromptBtn.addEventListener('click', function() {
+        // 随机选择一个创意提示
+        const randomPrompt = creativePrompts[Math.floor(Math.random() * creativePrompts.length)];
+        
+        // 按钮动画效果
+        this.classList.add('bg-create-primary/20');
+        this.innerHTML = '<i class="fa fa-lightbulb-o text-2xl text-create-primary animate-pulse"></i>';
+        
+        // 显示创意提示
+        creativePromptText.textContent = randomPrompt;
+        creativePromptText.classList.add('text-gray-700', 'dark:text-gray-300');
+        creativePromptText.classList.remove('text-gray-500', 'dark:text-gray-400');
+        
+        // 5秒后恢复状态，可再次点击
+        setTimeout(() => {
+          this.classList.remove('bg-create-primary/20');
+          this.innerHTML = '<i class="fa fa-lightbulb-o text-2xl text-gray-400 dark:text-gray-500"></i>';
+        }, 5000);
+      });
+      
+      // 创造艺术小游戏
+      const artCanvas = document.getElementById('art-canvas');
+      const canvasInstruction = document.getElementById('canvas-instruction');
+      const clearCanvas = document.getElementById('clear-canvas');
+      const colors = ['#8B5CF6', '#EC4899', '#10B981', '#3B82F6', '#F59E0B'];
+      
+      // 点击画布创建随机图形
+      artCanvas.addEventListener('click', function(e) {
+        // 隐藏初始提示
+        canvasInstruction.style.display = 'none';
+        
+        // 获取点击位置
+        const rect = artCanvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // 创建随机图形
+        const shape = document.createElement('div');
+        const size = Math.random() * 40 + 10;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        const isCircle = Math.random() > 0.5;
+        
+        // 设置图形样式
+        shape.style.position = 'absolute';
+        shape.style.left = `${x - size/2}px`;
+        shape.style.top = `${y - size/2}px`;
+        shape.style.width = `${size}px`;
+        shape.style.height = `${size}px`;
+        shape.style.backgroundColor = color;
+        shape.style.opacity = '0.7';
+        shape.style.borderRadius = isCircle ? '50%' : '0';
+        shape.style.transform = 'scale(0)';
+        shape.style.transition = 'transform 0.3s ease-out';
+        
+        // 添加到画布
+        artCanvas.appendChild(shape);
+        
+        // 动画显示
+        setTimeout(() => {
+          shape.style.transform = 'scale(1)';
+        }, 10);
+      });
+      
+      // 清空画布
+      clearCanvas.addEventListener('click', function() {
+        // 移除所有图形
+        const shapes = artCanvas.querySelectorAll('div:not(#canvas-instruction)');
+        shapes.forEach(shape => {
+          shape.style.transform = 'scale(0)';
+          setTimeout(() => {
+            shape.remove();
+          }, 300);
+        });
+        
+        // 显示初始提示
+        setTimeout(() => {
+          canvasInstruction.style.display = 'flex';
+        }, 300);
+      });
+      
+      // 滚动显示动画
+      setupScrollReveal();
+      
+      // "探索创造的力量"按钮功能
+      document.getElementById('creation-btn').addEventListener('click', function() {
+        // 触发创造过程动画
+        triggerCreationAnimation();
+        
+        // 按钮动画
+        this.classList.add('scale-90');
+        setTimeout(() => {
+          this.classList.remove('scale-90');
+        }, 200);
+      });
+    });
+    
+    // 设置创造过程可视化
+    function setupCreationVisualization() {
+      // 创造路径动画初始状态
+      const path = document.getElementById('creation-path').querySelector('path');
+      path.style.transition = 'none';
+      
+      // 创意火花和结果初始状态
+      document.getElementById('idea-spark').style.opacity = '0';
+      document.getElementById('creation-result').style.opacity = '0';
+      document.getElementById('idea-label').style.opacity = '0';
+      document.getElementById('result-label').style.opacity = '0';
+    }
+    
+    // 触发创造过程动画
+    function triggerCreationAnimation() {
+      const path = document.getElementById('creation-path').querySelector('path');
+      const ideaSpark = document.getElementById('idea-spark');
+      const creationResult = document.getElementById('creation-result');
+      const ideaLabel = document.getElementById('idea-label');
+      const resultLabel = document.getElementById('result-label');
+      const initialBlank = document.getElementById('initial-blank');
+      const blankLabel = document.getElementById('blank-label');
+      
+      // 重置所有动画
+      path.style.transition = 'none';
+      path.style.strokeDashoffset = '300';
+      ideaSpark.style.transition = 'none';
+      ideaSpark.style.opacity = '0';
+      creationResult.style.transition = 'none';
+      creationResult.style.opacity = '0';
+      ideaLabel.style.transition = 'none';
+      ideaLabel.style.opacity = '0';
+      resultLabel.style.transition = 'none';
+      resultLabel.style.opacity = '0';
+      
+      // 隐藏初始空白状态
+      initialBlank.style.opacity = '0.3';
+      blankLabel.style.opacity = '0.3';
+      
+      setTimeout(() => {
+        // 路径动画
+        path.style.transition = 'stroke-dashoffset 2s ease-in-out';
+        path.style.strokeDashoffset = '0';
+        
+        // 创意火花动画
+        setTimeout(() => {
+          ideaSpark.style.transition = 'opacity 1s ease-out';
+          ideaSpark.style.opacity = '1';
+          
+          // 创意标签动画
+          ideaLabel.style.transition = 'opacity 0.5s ease-out 0.3s';
+          ideaLabel.style.opacity = '1';
+          
+          // 创造结果动画
+          setTimeout(() => {
+            creationResult.style.transition = 'opacity 1.5s ease-out';
+            creationResult.style.opacity = '1';
+            
+            // 结果标签动画
+            resultLabel.style.transition = 'opacity 0.5s ease-out 0.5s';
+            resultLabel.style.opacity = '1';
+            
+            // 完全隐藏初始状态
+            initialBlank.style.opacity = '0';
+            blankLabel.style.opacity = '0';
+          }, 1000);
+        }, 500);
+      }, 50);
+    }
+    
+    // 设置滚动显示动画
+    function setupScrollReveal() {
+      // 检查元素是否在视口中
+      function checkVisibility() {
+        const elements = document.querySelectorAll('.card-reveal');
+        
+        elements.forEach((el, index) => {
+          const rect = el.getBoundingClientRect();
+          const isVisible = (
+            rect.top < window.innerHeight * 0.8 &&
+            rect.bottom >= 0
+          );
+          
+          if (isVisible) {
+            setTimeout(() => {
+              el.classList.add('active');
+            }, index * 100);
+          }
+        });
+      }
+      
+      // 初始检查
+      checkVisibility();
+      
+      // 滚动时检查
+      window.addEventListener('scroll', checkVisibility);
+    }
+  </script>
+</body>
+</html>

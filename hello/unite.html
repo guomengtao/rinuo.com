@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>单词 Unite 详解 | 专业英语学习平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            english: {
+              primary: '#1E40AF', // 深蓝色表示团结和统一
+              dark: '#0F172A'
+            },
+            learning: {
+              accent: '#F97316',
+              light: '#FFF7ED'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            serif: ['Georgia', 'Cambria', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .toggle-transition {
+        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+      .sun-moon-transition {
+        transition: transform 0.5s ease-in-out, opacity 0.3s ease, color 0.3s ease;
+      }
+      .bg-glass {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(8px);
+      }
+      .card-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+      }
+      .dark .card-hover:hover {
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+      }
+      .unite-animation {
+        animation: unitePulse 3s infinite;
+      }
+      @keyframes unitePulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.02); }
+        100% { transform: scale(1); }
+      }
+      .highlight-text {
+        position: relative;
+      }
+      .highlight-text::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background-color: rgba(30, 64, 175, 0.3);
+        transition: background-color 0.3s ease;
+      }
+      .dark .highlight-text::after {
+        background-color: rgba(30, 64, 175, 0.5);
+      }
+      .highlight-text:hover::after {
+        background-color: rgba(30, 64, 175, 0.6);
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease-in-out forwards;
+        opacity: 0;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .quiz-option {
+        transition: all 0.2s ease;
+      }
+      .quiz-option:hover {
+        background-color: rgba(30, 64, 175, 0.05);
+      }
+      .quiz-option.correct {
+        background-color: rgba(34, 197, 94, 0.1);
+        border-color: rgba(34, 197, 94, 0.5);
+      }
+      .quiz-option.incorrect {
+        background-color: rgba(239, 68, 68, 0.1);
+        border-color: rgba(239, 68, 68, 0.5);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+  <!-- 顶部导航条 -->
+  <header class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center py-4">
+        <div class="flex items-center space-x-2">
+          <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-english-primary to-learning-accent flex items-center justify-center">
+            <i class="fa fa-book text-white text-xl"></i>
+          </div>
+          <span class="text-xl font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <!-- 搜索框 -->
+        <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 focus:ring-2 focus:ring-english-primary/50 transition-colors text-gray-800 dark:text-gray-200" value="unite">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+        
+        <!-- 右侧功能区 -->
+        <div class="flex items-center space-x-4">
+          <!-- 全局模式切换按钮 -->
+          <div class="relative inline-block w-12 h-6 bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer toggle-transition" id="globalToggle">
+            <div class="absolute left-1 top-1 w-4 h-4 bg-white dark:bg-gray-300 rounded-full toggle-transition transform dark:translate-x-6"></div>
+            <div class="absolute inset-0 flex items-center justify-between px-1.5">
+              <i class="fa fa-sun-o text-yellow-500 text-xs sun-moon-transition"></i>
+              <i class="fa fa-moon-o text-gray-600 dark:text-gray-400 text-xs sun-moon-transition"></i>
+            </div>
+          </div>
+          
+          <!-- 移动端菜单按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileMenuBtn">
+            <i class="fa fa-bars"></i>
+          </button>
+          
+          <!-- 移动端搜索按钮 -->
+          <button class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors" id="mobileSearchBtn">
+            <i class="fa fa-search"></i>
+          </button>
+        </div>
+      </div>
+      
+      <!-- 移动端搜索框 -->
+      <div class="md:hidden hidden pb-4" id="mobileSearch">
+        <div class="relative">
+          <input type="text" placeholder="搜索单词、短语或例句..." class="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 border-0 transition-colors text-gray-800 dark:text-gray-200" value="unite">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+      
+      <!-- 移动端导航菜单 -->
+      <div class="md:hidden hidden pb-4" id="mobileMenu">
+        <nav class="flex flex-col space-y-3">
+          <a href="#overview" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">单词概览</a>
+          <a href="#history" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">词源历史</a>
+          <a href="#usage" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">现代用法</a>
+          <a href="#derivatives" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">衍生词汇</a>
+          <a href="#culture" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">文化关联</a>
+          <a href="#quiz" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">单词测验</a>
+          <a href="#practice" class="text-gray-600 hover:text-english-primary dark:text-gray-300 dark:hover:text-english-primary transition-colors py-2">练习工具</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- 单词Banner -->
+  <section class="relative h-[30vh] min-h-[250px] overflow-hidden bg-english-primary/5 dark:bg-english-dark/30">
+    <div class="absolute inset-0 bg-gradient-to-r from-english-primary/10 to-learning-accent/10 dark:from-english-primary/20 dark:to-learning-accent/20 z-10"></div>
+    <div class="relative z-20 container mx-auto px-4 h-full flex flex-col justify-center">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-4xl md:text-5xl font-bold text-gray-800 dark:text-white mb-2 unite-animation">Unite</h1>
+        <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 italic">/juˈnaɪt/</p>
+        <div class="flex flex-wrap justify-center gap-2 mb-4">
+          <span class="px-3 py-1 rounded-full bg-english-primary/10 text-english-primary dark:bg-english-primary/20 text-sm font-medium">动词 (verb)</span>
+          <span class="px-3 py-1 rounded-full bg-english-primary/10 text-english-primary dark:bg-english-primary/20 text-sm font-medium">名词 (noun, 较少用)</span>
+          <span class="px-3 py-1 rounded-full bg-learning-accent/10 text-learning-accent dark:bg-learning-accent/20 text-sm font-medium">高频词</span>
+        </div>
+        <p class="text-base md:text-lg text-gray-700 dark:text-gray-200 max-w-2xl mx-auto">联合、团结；使结合为一个整体；达成一致</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 面包屑导航 -->
+  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 py-3">
+    <div class="container mx-auto px-4">
+      <nav class="flex text-sm" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="#" class="inline-flex items-center text-gray-500 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary">单词库</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <a href="#" class="text-gray-500 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary">U开头单词</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-gray-400 text-xs mx-1"></i>
+              <span class="text-gray-700 dark:text-gray-300">Unite</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+
+  <div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col lg:flex-row gap-8">
+      <!-- 左侧菜单 -->
+      <aside class="lg:w-1/4 w-full">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden sticky top-24">
+          <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white">单词学习导航</h3>
+          </div>
+          <nav class="p-2">
+            <a href="#overview" class="flex items-center px-4 py-3 rounded-lg bg-english-primary/10 text-english-primary dark:bg-english-primary/20 dark:text-english-primary transition-colors">
+              <i class="fa fa-info-circle mr-3 w-5 text-center"></i>
+              <span>单词概览</span>
+            </a>
+            <a href="#history" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-history mr-3 w-5 text-center"></i>
+              <span>词源历史</span>
+            </a>
+            <a href="#usage" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-comment mr-3 w-5 text-center"></i>
+              <span>现代用法</span>
+            </a>
+            <a href="#derivatives" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-code-fork mr-3 w-5 text-center"></i>
+              <span>衍生词汇</span>
+            </a>
+            <a href="#culture" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-film mr-3 w-5 text-center"></i>
+              <span>文化关联</span>
+            </a>
+            <a href="#quiz" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-question-circle mr-3 w-5 text-center"></i>
+              <span>单词测验</span>
+            </a>
+            <a href="#practice" class="flex items-center px-4 py-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-gray-700 dark:text-gray-300">
+              <i class="fa fa-pencil mr-3 w-5 text-center"></i>
+              <span>练习工具</span>
+            </a>
+          </nav>
+          
+          <!-- 学习进度 -->
+          <div class="p-6 border-t border-gray-200 dark:border-gray-700">
+            <h3 class="font-semibold text-gray-800 dark:text-white mb-3">学习进度</h3>
+            <div class="mb-4">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="text-gray-600 dark:text-gray-400">单词掌握度</span>
+                <span class="text-english-primary font-medium">35%</span>
+              </div>
+              <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                <div class="bg-english-primary h-2 rounded-full" style="width: 35%"></div>
+              </div>
+            </div>
+            <button class="w-full bg-english-primary hover:bg-english-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-sm font-medium flex items-center justify-center">
+              <i class="fa fa-plus-circle mr-2"></i> 添加到单词本
+            </button>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- 主内容区 -->
+      <main class="lg:w-3/4 w-full">
+        <!-- 单词概览 -->
+        <section id="overview" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-info-circle"></i>
+            </span>
+            单词概览
+          </h2>
+          
+          <div class="grid md:grid-cols-2 gap-6">
+            <div>
+              <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-3">Unite</h3>
+              <p class="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                /juˈnaɪt/
+                <button class="ml-2 p-1.5 rounded-full bg-english-primary/10 text-english-primary hover:bg-english-primary/20 dark:bg-english-primary/20 dark:hover:bg-english-primary/30 transition-all duration-300 hover:scale-110 transform" id="pronunciationBtn">
+                  <i class="fa fa-volume-up"></i>
+                </button>
+              </p>
+              
+              <div class="flex flex-wrap gap-2 mb-4">
+                <span class="px-3 py-1 rounded-full bg-english-primary/10 text-english-primary dark:bg-english-primary/20 text-sm font-medium">动词 (verb)</span>
+                <span class="px-3 py-1 rounded-full bg-english-primary/10 text-english-primary dark:bg-english-primary/20 text-sm font-medium">名词 (noun, 较少用)</span>
+                <span class="px-3 py-1 rounded-full bg-learning-accent/10 text-learning-accent dark:bg-learning-accent/20 text-sm font-medium">高频词</span>
+              </div>
+              
+              <p class="text-gray-700 dark:text-gray-200 mb-4">
+                核心含义：使不同的人、群体或事物联合起来，形成一个整体；为共同目标而团结
+              </p>
+              
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
+                <p class="text-sm text-gray-600 dark:text-gray-300 italic">
+                  "Unite" 强调通过共同的目标、利益或信念将原本分离的个体或群体结合在一起，形成统一的整体。
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 h-full">
+                <h4 class="font-medium text-gray-800 dark:text-white mb-3 flex items-center">
+                  <i class="fa fa-lightbulb-o text-english-primary mr-2"></i>
+                  为什么要学习这个词？
+                </h4>
+                <p class="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  "Unite" 是描述社会、政治和人际关系中团结与合作的核心词汇。无论是谈论国家统一、团队合作还是国际联盟，这个词都至关重要。掌握"unite"及其衍生词能帮助你准确表达关于团结、联合的各种概念。
+                </p>
+                
+                <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                  <div class="flex items-center text-sm">
+                    <i class="fa fa-bar-chart text-english-primary mr-2"></i>
+                    <span class="text-gray-600 dark:text-gray-300">在各类文本中出现频率：每百万词约 38 次</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-8">
+            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">常见搭配</h3>
+            <div class="flex flex-wrap gap-3">
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite together</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite against</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite for a cause</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">national unity</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite efforts</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite forces</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite countries</div>
+              <div class="px-3 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:shadow-sm card-hover text-gray-800 dark:text-gray-200">unite as one</div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 词源历史 -->
+        <section id="history" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-history"></i>
+            </span>
+            词源历史
+          </h2>
+          
+          <div class="space-y-6">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">词源演变</h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-4">
+                "Unite" 一词源于拉丁语 <span class="highlight-text">unus</span>（意为"一"）和后缀"-ite"（表示动作），通过古法语 <span class="highlight-text">unir</span> 进入英语。
+              </p>
+              <p class="text-gray-700 dark:text-gray-300">
+                该词在14世纪末进入英语，最初用于描述物理上的"结合"或"合并"。到15世纪，其含义扩展到描述人群或组织的"团结"。在历史上，这个词在政治语境中频繁使用，特别是在国家形成和革命时期，如美国独立战争和法国大革命期间。
+              </p>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">历史用法变迁</h3>
+              <div class="grid md:grid-cols-3 gap-4">
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 card-hover">
+                  <div class="text-sm text-english-primary font-medium mb-2">14-15世纪</div>
+                  <p class="text-sm text-gray-700 dark:text-gray-300">主要表示物理上的结合或合并，如物体的连接</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 card-hover">
+                  <div class="text-sm text-english-primary font-medium mb-2">16-18世纪</div>
+                  <p class="text-sm text-gray-700 dark:text-gray-300">扩展到政治和社会领域，表示群体或国家的团结</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600 card-hover">
+                  <div class="text-sm text-english-primary font-medium mb-2">19世纪至今</div>
+                  <p class="text-sm text-gray-700 dark:text-gray-300">广泛用于社会、政治、文化等多个领域，表示各种形式的联合</p>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">文化影响</h3>
+              <p class="text-gray-700 dark:text-gray-300 mb-3">
+                "Unite" 一词在历史上的关键时期扮演了重要角色，成为许多社会运动和政治变革的口号核心。从美国的"合众为一"(E Pluribus Unum)到现代的国际合作，"unite" 始终是表达团结与共同目标的核心词汇。
+              </p>
+              <p class="text-gray-700 dark:text-gray-300">
+                在当代社会，"unite" 及其衍生词（如"unity"、"united"）常用于描述多样性中的团结、国际合作以及社会凝聚力，反映了人类对共同目标和集体行动的重视。
+              </p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 现代用法 -->
+        <section id="usage" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-comment"></i>
+            </span>
+            现代用法
+          </h2>
+          
+          <div class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">作为动词 (Verb)</h3>
+              
+              <div class="space-y-5">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">1. 使人们或群体团结起来</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-gray-800 dark:text-gray-200 mb-1"><strong>例句：</strong></p>
+                      <p class="text-gray-700 dark:text-gray-300 italic mb-2">"The tragedy united the community in grief."</p>
+                      <p class="text-gray-600 dark:text-gray-400 text-sm">（这场悲剧使整个社区在悲痛中团结起来。）</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">2. 联合或合并成一个整体</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-gray-800 dark:text-gray-200 mb-1"><strong>例句：</strong></p>
+                      <p class="text-gray-700 dark:text-gray-300 italic mb-2">"The two companies decided to unite to form a stronger competitor."</p>
+                      <p class="text-gray-600 dark:text-gray-400 text-sm">（这两家公司决定合并，成为更强的竞争者。）</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">3. 在意见或行动上达成一致</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-gray-800 dark:text-gray-200 mb-1"><strong>例句：</strong></p>
+                      <p class="text-gray-700 dark:text-gray-300 italic mb-2">"The committee united on a plan to address the issue."</p>
+                      <p class="text-gray-600 dark:text-gray-400 text-sm">（委员会就解决该问题的计划达成了一致。）</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">4. 与...联合；协力</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-gray-800 dark:text-gray-200 mb-1"><strong>例句：</strong></p>
+                      <p class="text-gray-700 dark:text-gray-300 italic mb-2">"They united with environmental groups to oppose the project."</p>
+                      <p class="text-gray-600 dark:text-gray-400 text-sm">（他们与环保组织联合起来反对这个项目。）</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">作为名词 (Noun) - 较少使用</h3>
+              
+              <div class="space-y-5">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">1. 联合；结合（主要用于特定短语）</h4>
+                  <div class="space-y-3">
+                    <div>
+                      <p class="text-gray-800 dark:text-gray-200 mb-1"><strong>例句：</strong></p>
+                      <p class="text-gray-700 dark:text-gray-300 italic mb-2">"The treaty marked a new unite between the two nations."</p>
+                      <p class="text-gray-600 dark:text-gray-400 text-sm">（这项条约标志着两国之间的新联合。）</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-800 dark:text-gray-200 mb-1"><strong>用法说明：</strong></p>
+                      <p class="text-gray-700 dark:text-gray-300 text-sm">作为名词使用时，"unite" 远不如其衍生词 "unity" 常见，主要出现在特定的正式语境中。</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">使用场景与语境</h3>
+              <div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2 flex items-center">
+                    <i class="fa fa-globe text-english-primary mr-2"></i> 政治与社会
+                  </h4>
+                  <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                    <li>• "The president called on the nation to unite."</li>
+                    <li>• "Different political parties united to pass the bill."</li>
+                  </ul>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2 flex items-center">
+                    <i class="fa fa-briefcase text-english-primary mr-2"></i> 商业与组织
+                  </h4>
+                  <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                    <li>• "The two firms united to develop new technology."</li>
+                    <li>• "Teams must unite to achieve the company's goals."</li>
+                  </ul>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2 flex items-center">
+                    <i class="fa fa-users text-english-primary mr-2"></i> 人际关系
+                  </h4>
+                  <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                    <li>• "Shared interests united the diverse group of friends."</li>
+                    <li>• "Family members united to support each other during difficult times."</li>
+                  </ul>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2 flex items-center">
+                    <i class="fa fa-university text-english-primary mr-2"></i> 国际事务
+                  </h4>
+                  <ul class="text-gray-700 dark:text-gray-300 text-sm space-y-2">
+                    <li>• "Nations united to combat climate change."</li>
+                    <li>• "International organizations work to unite countries in common causes."</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 衍生词汇 -->
+        <section id="derivatives" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-code-fork"></i>
+            </span>
+            衍生词汇
+          </h2>
+          
+          <div class="space-y-6">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">名词衍生词</h3>
+                
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">Unity</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/ˈjuːnəti/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：团结；统一；一致</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"National unity is essential for progress."</p>
+                  </div>
+                  
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">Union</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/ˈjuːniən/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：联盟；工会；联合；结合</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"The labor union negotiated better working conditions."</p>
+                  </div>
+                  
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">Unification</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/ˌjuːnɪfɪˈkeɪʃn/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：统一；联合；合并</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"The unification of Germany occurred in 1990."</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">形容词与副词衍生词</h3>
+                
+                <div class="space-y-4">
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">United</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/juˈnaɪtɪd/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：团结的；联合的；统一的</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"The united team won the championship."</p>
+                  </div>
+                  
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">Unifying</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/ˈjuːnɪfaɪɪŋ/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：使联合的；使统一的</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"A unifying theme runs through all his works."</p>
+                  </div>
+                  
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">Disunited</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/dɪsjuːˈnaɪtɪd/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：不团结的；分裂的</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"The disunited group failed to achieve its objectives."</p>
+                  </div>
+                  
+                  <div>
+                    <div class="flex items-center mb-1">
+                      <span class="font-medium text-gray-800 dark:text-white">Unitedly</span>
+                      <span class="ml-2 px-2 py-0.5 bg-english-primary/10 text-english-primary text-xs rounded-full">/juˈnaɪtɪdli/</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm mb-1">含义：团结地；一致地</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-sm italic">"The community acted unitedly to solve the problem."</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">常见短语与习语</h3>
+              
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                  <div class="font-medium text-gray-800 dark:text-white mb-1">unite as one</div>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">含义：团结成一个整体；齐心协力</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                  <div class="font-medium text-gray-800 dark:text-white mb-1">unite against</div>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">含义：联合起来反对；共同对抗</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                  <div class="font-medium text-gray-800 dark:text-white mb-1">in unity</div>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">含义：团结一致；和谐地</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                  <div class="font-medium text-gray-800 dark:text-white mb-1">unite for a common cause</div>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">含义：为共同的事业而团结</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                  <div class="font-medium text-gray-800 dark:text-white mb-1">stand united</div>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">含义：团结一致；立场一致</p>
+                </div>
+                <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600 hover:shadow-md transition-shadow">
+                  <div class="font-medium text-gray-800 dark:text-white mb-1">unite efforts</div>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">含义：齐心协力；共同努力</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="bg-english-primary/5 dark:bg-english-primary/10 p-5 rounded-lg border border-english-primary/20">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3 flex items-center">
+                <i class="fa fa-lightbulb-o text-english-primary mr-2"></i>
+                衍生词记忆技巧
+              </h3>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                "unite" 及其衍生词都围绕"统一、团结"这一核心概念。记住：
+                <ul class="mt-2 list-disc pl-5 space-y-1">
+                  <li>加后缀 "-y" 变成名词 "unity"（团结；统一）</li>
+                  <li>加后缀 "-ion" 变成 "union"（联盟；工会）和 "unification"（统一）</li>
+                  <li>加后缀 "-ed" 变成形容词 "united"（团结的）</li>
+                  <li>加前缀 "dis-" 变成反义词 "disunited"（分裂的）</li>
+                </ul>
+                注意 "united" 常用在国名中，如 "the United States" 和 "the United Kingdom"。
+              </p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 文化关联 -->
+        <section id="culture" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-film"></i>
+            </span>
+            文化关联
+          </h2>
+          
+          <div class="space-y-8">
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">流行文化中的 "Unite"</h3>
+              
+              <div class="grid md:grid-cols-2 gap-6">
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 card-hover">
+                  <div class="flex items-center mb-3">
+                    <i class="fa fa-music text-english-primary text-xl mr-3"></i>
+                    <h4 class="font-medium text-gray-800 dark:text-white">音乐作品</h4>
+                  </div>
+                  <ul class="text-gray-700 dark:text-gray-300 space-y-3 text-sm">
+                    <li>• <span class="font-medium">《We Shall Unite》</span> - Michael Jackson的歌曲，呼吁全球团结</li>
+                    <li>• <span class="font-medium">《Unite》</span> - Disturbed乐队的歌曲，关于集体力量</li>
+                    <li>• <span class="font-medium">《Unite All Originals》</span> - 可口可乐全球营销活动主题曲</li>
+                  </ul>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 card-hover">
+                  <div class="flex items-center mb-3">
+                    <i class="fa fa-television text-english-primary text-xl mr-3"></i>
+                    <h4 class="font-medium text-gray-800 dark:text-white">电影与标语</h4>
+                  </div>
+                  <ul class="text-gray-700 dark:text-gray-300 space-y-3 text-sm">
+                    <li>• <span class="font-medium">《United 93》</span> (2006) - 关于9/11事件中乘客团结反抗的电影</li>
+                    <li>• <span class="font-medium">"United we stand, divided we fall"</span> - 著名政治标语，强调团结的重要性</li>
+                    <li>• <span class="font-medium">《Unity》</span> (2015) - 探讨人类团结的纪录片</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">历史与政治中的团结理念</h3>
+              
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+                <p class="text-gray-700 dark:text-gray-300 mb-4">
+                  "团结"（unity）作为一种理念，在人类历史上扮演了重要角色。从古代城邦联盟到现代国际组织，团结一直是集体行动和解决共同问题的基础。
+                </p>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div class="font-medium text-gray-800 dark:text-white mb-1">国家统一</div>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">德国统一、意大利统一等历史事件</p>
+                  </div>
+                  <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div class="font-medium text-gray-800 dark:text-white mb-1">国际联盟</div>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">联合国、欧盟等跨国合作组织</p>
+                  </div>
+                  <div class="bg-white dark:bg-gray-700 p-3 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <div class="font-medium text-gray-800 dark:text-white mb-1">社会运动</div>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs">民权运动、环保运动等集体行动</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">名言警句中的 "Unite"</h3>
+              
+              <div class="space-y-4">
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border-l-4 border-english-primary border-gray-200 dark:border-gray-600">
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"United we stand, divided we fall."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">— 古老谚语，被许多领导人引用</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">（团结则存，分裂则亡。）</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border-l-4 border-english-primary border-gray-200 dark:border-gray-600">
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"We may have different religions, different languages, different colored skin, but we all belong to one human race."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">— Kofi Annan</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">（我们可能有不同的宗教、不同的语言、不同的肤色，但我们同属一个人类大家庭。）</p>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-700 p-4 rounded-lg border-l-4 border-english-primary border-gray-200 dark:border-gray-600">
+                  <p class="text-gray-700 dark:text-gray-300 italic mb-2">"Coming together is a beginning; keeping together is progress; working together is success."</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm">— Henry Ford</p>
+                  <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">（走到一起是开始；保持团结是进步；共同工作是成功。）</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 单词测验 -->
+        <section id="quiz" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-question-circle"></i>
+            </span>
+            单词测验
+          </h2>
+          
+          <div class="max-w-2xl mx-auto">
+            <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 mb-6">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">测试你的理解</h3>
+              <p class="text-gray-700 dark:text-gray-300 text-sm">
+                完成以下测验，检验你对"unite"一词的理解。每个问题有四个选项，请选择最恰当的答案。
+              </p>
+            </div>
+            
+            <div id="quiz-container" class="space-y-8">
+              <!-- 问题1 -->
+              <div class="quiz-question">
+                <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600 mb-3">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-4">1. 下列哪个句子正确使用了"unite"？</h4>
+                  <div class="space-y-3">
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">A. She decided to unite from the project due to disagreements.</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">B. The team will unite their leader at the meeting.</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="true">
+                      <p class="text-gray-700 dark:text-gray-300">C. Different communities united to clean up the park.</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">D. He needs to unite his homework before tomorrow.</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 hidden explanation">
+                    <p class="text-sm text-gray-600 dark:text-gray-400"><strong>解释：</strong>选项C正确使用"unite"表示不同社区为了共同目标而团结起来。其他选项使用不当。</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 问题2 -->
+              <div class="quiz-question">
+                <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600 mb-3">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-4">2. "unity"的意思最接近下列哪个词？</h4>
+                  <div class="space-y-3">
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">A. Division</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">B. Conflict</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="true">
+                      <p class="text-gray-700 dark:text-gray-300">C. Solidarity</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">D. Isolation</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 hidden explanation">
+                    <p class="text-sm text-gray-600 dark:text-gray-400"><strong>解释：</strong>"unity"意为"团结；统一"，与"solidarity"（团结；一致）意思最接近。其他选项均为反义词。</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 问题3 -->
+              <div class="quiz-question">
+                <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600 mb-3">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-4">3. 下列哪个短语表示"为了共同目标而团结"？</h4>
+                  <div class="space-y-3">
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">A. unite against</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">B. unite with</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">C. unite from</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="true">
+                      <p class="text-gray-700 dark:text-gray-300">D. unite for a cause</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 hidden explanation">
+                    <p class="text-sm text-gray-600 dark:text-gray-400"><strong>解释：</strong>"unite for a cause"表示"为了一项事业/目标而团结"。选项A表示"联合反对"，B表示"与...联合"。</p>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 问题4 -->
+              <div class="quiz-question">
+                <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600 mb-3">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-4">4. 选择最适合填入空白处的选项：<br>"The countries decided to _______ to address the global crisis."</h4>
+                  <div class="space-y-3">
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">A. unity</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="true">
+                      <p class="text-gray-700 dark:text-gray-300">B. unite</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">C. united</p>
+                    </div>
+                    <div class="quiz-option p-3 rounded-lg border border-gray-200 dark:border-gray-600 cursor-pointer" data-correct="false">
+                      <p class="text-gray-700 dark:text-gray-300">D. uniting</p>
+                    </div>
+                  </div>
+                  <div class="mt-4 hidden explanation">
+                    <p class="text-sm text-gray-600 dark:text-gray-400"><strong>解释：</strong>此处需要动词原形"unite"与助动词"decided to"搭配，构成不定式结构，表示各国决定联合应对全球危机。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="text-center mt-8">
+              <button id="check-answers" class="bg-english-primary hover:bg-english-primary/90 text-white py-3 px-6 rounded-lg transition-colors text-sm font-medium flex items-center justify-center mx-auto">
+                <i class="fa fa-check-circle mr-2"></i> 检查答案
+              </button>
+              
+              <div id="quiz-results" class="mt-6 hidden">
+                <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700">
+                  <h4 class="font-medium text-gray-800 dark:text-white mb-2">测验结果</h4>
+                  <p class="text-gray-700 dark:text-gray-300 mb-3">你答对了 <span id="correct-count" class="text-green-600 dark:text-green-400 font-medium">0</span> 题，共 <span id="total-count" class="font-medium">4</span> 题。</p>
+                  <button id="reset-quiz" class="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 py-2 px-4 rounded-lg transition-colors text-sm font-medium">
+                    重新测验
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- 练习工具 -->
+        <section id="practice" class="mb-12 bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm section-content">
+          <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white flex items-center">
+            <span class="w-8 h-8 rounded-lg bg-english-primary/10 text-english-primary flex items-center justify-center mr-2">
+              <i class="fa fa-pencil"></i>
+            </span>
+            练习工具
+          </h2>
+          
+          <div class="space-y-8">
+            <div class="grid md:grid-cols-2 gap-6">
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                  <i class="fa fa-pencil-square-o text-english-primary mr-2"></i>
+                  填空练习
+                </h3>
+                
+                <div class="space-y-4">
+                  <div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">1. People from different backgrounds can _______ for a common goal. (团结)</p>
+                    <div class="flex">
+                      <input type="text" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-english-primary/50 dark:bg-gray-700 dark:text-white" placeholder="在此输入答案">
+                      <button class="check-fill-btn bg-english-primary/10 hover:bg-english-primary/20 text-english-primary px-3 py-2 rounded-r-lg transition-colors">
+                        <i class="fa fa-check"></i>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">2. National _______ is important for a country's development. (统一)</p>
+                    <div class="flex">
+                      <input type="text" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-english-primary/50 dark:bg-gray-700 dark:text-white" placeholder="在此输入答案">
+                      <button class="check-fill-btn bg-english-primary/10 hover:bg-english-primary/20 text-english-primary px-3 py-2 rounded-r-lg transition-colors">
+                        <i class="fa fa-check"></i>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">3. The two organizations plan to _______ to increase their impact. (联合)</p>
+                    <div class="flex">
+                      <input type="text" class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-english-primary/50 dark:bg-gray-700 dark:text-white" placeholder="在此输入答案">
+                      <button class="check-fill-btn bg-english-primary/10 hover:bg-english-primary/20 text-english-primary px-3 py-2 rounded-r-lg transition-colors">
+                        <i class="fa fa-check"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-lg border border-gray-200 dark:border-gray-700 card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center">
+                  <i class="fa fa-exchange text-english-primary mr-2"></i>
+                  中英互译
+                </h3>
+                
+                <div class="space-y-6">
+                  <div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">将下列句子翻译成英文：</p>
+                    <p class="text-gray-800 dark:text-gray-200 mb-2">"各国需要团结起来应对气候变化这一共同挑战。"</p>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-english-primary/50 dark:bg-gray-700 dark:text-white h-20" placeholder="在此输入翻译"></textarea>
+                    <button class="check-translate-btn mt-2 bg-english-primary/10 hover:bg-english-primary/20 text-english-primary px-3 py-1.5 rounded-lg transition-colors text-sm">
+                      检查翻译
+                    </button>
+                  </div>
+                  
+                  <div>
+                    <p class="text-gray-700 dark:text-gray-300 mb-2">将下列句子翻译成中文：</p>
+                    <p class="text-gray-800 dark:text-gray-200 mb-2">"The community united to rebuild the park after the storm."</p>
+                    <textarea class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-english-primary/50 dark:bg-gray-700 dark:text-white h-20" placeholder="在此输入翻译"></textarea>
+                    <button class="check-translate-btn mt-2 bg-english-primary/10 hover:bg-english-primary/20 text-english-primary px-3 py-1.5 rounded-lg transition-colors text-sm">
+                      检查翻译
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-4">单词联想图</h3>
+              
+              <div class="bg-white dark:bg-gray-700 p-5 rounded-lg border border-gray-200 dark:border-gray-600">
+                <div class="flex flex-wrap justify-center gap-4 md:gap-8 py-4">
+                  <div class="text-center">
+                    <div class="w-20 h-20 mx-auto mb-2 rounded-full bg-english-primary flex items-center justify-center">
+                      <span class="text-white font-bold">Unite</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-english-primary/20 flex items-center justify-center">
+                      <span class="text-english-primary text-sm">Join</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-english-primary/20 flex items-center justify-center">
+                      <span class="text-english-primary text-sm">Combine</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-english-primary/20 flex items-center justify-center">
+                      <span class="text-english-primary text-sm">Unify</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-english-primary/20 flex items-center justify-center">
+                      <span class="text-english-primary text-sm">Merge</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-english-primary/20 flex items-center justify-center">
+                      <span class="text-english-primary text-sm">Cooperate</span>
+                    </div>
+                  </div>
+                  
+                  <div class="text-center">
+                    <div class="w-16 h-16 mx-auto mb-2 rounded-full bg-english-primary/20 flex items-center justify-center">
+                      <span class="text-english-primary text-sm">Alliance</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <p class="text-center text-gray-600 dark:text-gray-400 text-sm mt-2">
+                  思考"unite"与这些词的联系，帮助加深记忆
+                </p>
+              </div>
+            </div>
+            
+            <div class="bg-english-primary/5 dark:bg-english-primary/10 p-5 rounded-lg border border-english-primary/20">
+              <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">学习建议</h3>
+              <ul class="text-gray-700 dark:text-gray-300 space-y-2 text-sm">
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-english-primary mt-1 mr-2"></i>
+                  <span>关注新闻中"unite"及其衍生词的使用，特别是政治和社会新闻</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-english-primary mt-1 mr-2"></i>
+                  <span>学习国际组织和政治联盟的英文名称，许多都包含"united"或"union"</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-english-primary mt-1 mr-2"></i>
+                  <span>区分"unity"（名词）和"unite"（动词）的不同用法和搭配</span>
+                </li>
+                <li class="flex items-start">
+                  <i class="fa fa-check-circle text-english-primary mt-1 mr-2"></i>
+                  <span>练习写关于团队合作、国际合作的短文，有意识地使用相关词汇</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- 页脚 -->
+  <footer class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="flex items-center space-x-2 mb-4 md:mb-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-r from-english-primary to-learning-accent flex items-center justify-center">
+            <i class="fa fa-book text-white text-sm"></i>
+          </div>
+          <span class="text-lg font-bold text-gray-800 dark:text-white">EnglishMaster</span>
+        </div>
+        
+        <div class="flex space-x-6 mb-4 md:mb-0">
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-facebook"></i>
+          </a>
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-twitter"></i>
+          </a>
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-instagram"></i>
+          </a>
+          <a href="#" class="text-gray-600 hover:text-english-primary dark:text-gray-400 dark:hover:text-english-primary transition-colors">
+            <i class="fa fa-youtube"></i>
+          </a>
+        </div>
+        
+        <div class="text-sm text-gray-600 dark:text-gray-400">
+          &copy; 2023 EnglishMaster 专业英语学习平台. 保留所有权利.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 页面加载完成后执行
+    document.addEventListener('DOMContentLoaded', function() {
+      // 存储已处理的元素，防止重复动画
+      const animatedElements = new Set();
+      
+      // 昼夜模式切换功能
+      const themeToggle = document.getElementById('globalToggle');
+      const htmlElement = document.documentElement;
+      
+      // 默认设置为夜间模式
+      htmlElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+      
+      // 切换主题
+      themeToggle.addEventListener('click', function() {
+        htmlElement.classList.toggle('dark');
+        localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
+      });
+      
+      // 移动端菜单切换
+      const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+      const mobileMenu = document.getElementById('mobileMenu');
+      
+      mobileMenuBtn.addEventListener('click', function() {
+        toggleElement(mobileMenu);
+        // 如果搜索框打开则关闭
+        if (!mobileSearch.classList.contains('hidden')) {
+          mobileSearch.classList.add('hidden');
+        }
+      });
+      
+      // 移动端搜索切换
+      const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+      const mobileSearch = document.getElementById('mobileSearch');
+      
+      mobileSearchBtn.addEventListener('click', function() {
+        toggleElement(mobileSearch);
+        // 如果菜单打开则关闭
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+        }
+      });
+      
+      // 平滑滚动
+      document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+          e.preventDefault();
+          
+          const targetId = this.getAttribute('href');
+          const targetElement = document.querySelector(targetId);
+          
+          if (targetElement) {
+            window.scrollTo({
+              top: targetElement.offsetTop - 80,
+              behavior: 'smooth'
+            });
+            
+            // 关闭移动菜单和搜索框（如果打开）
+            if (!mobileMenu.classList.contains('hidden')) {
+              mobileMenu.classList.add('hidden');
+            }
+            if (!mobileSearch.classList.contains('hidden')) {
+              mobileSearch.classList.add('hidden');
+            }
+          }
+        });
+      });
+      
+      // 发音功能
+      const pronunciationBtn = document.getElementById('pronunciationBtn');
+      if (pronunciationBtn) {
+        pronunciationBtn.addEventListener('click', function() {
+          try {
+            const word = "unite";
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-US';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+            
+            // 按钮动画反馈
+            this.classList.add('scale-90');
+            setTimeout(() => {
+              this.classList.remove('scale-90');
+            }, 200);
+          } catch (error) {
+            console.error('发音功能出错:', error);
+            alert('发音功能暂时不可用');
+          }
+        });
+      }
+      
+      // 为各部分内容添加滚动动画
+      const observerOptions = {
+        root: null,
+        rootMargin: '0px 0px -100px 0px',
+        threshold: 0.1
+      };
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          // 只处理未动画过的元素
+          if (entry.isIntersecting && !animatedElements.has(entry.target)) {
+            entry.target.classList.add('fade-in');
+            animatedElements.add(entry.target);
+            // 避免重复观察
+            observer.unobserve(entry.target);
+          }
+        });
+      }, observerOptions);
+      
+      // 观察所有主要内容区块
+      document.querySelectorAll('.section-content').forEach(section => {
+        observer.observe(section);
+      });
+      
+      // 单词测验功能
+      const quizOptions = document.querySelectorAll('.quiz-option');
+      const checkAnswersBtn = document.getElementById('check-answers');
+      const quizResults = document.getElementById('quiz-results');
+      const correctCountEl = document.getElementById('correct-count');
+      const resetQuizBtn = document.getElementById('reset-quiz');
+      let answersChecked = false;
+      
+      // 点击选项
+      quizOptions.forEach(option => {
+        option.addEventListener('click', function() {
+          if (answersChecked) return;
+          
+          // 清除同题其他选项的选中状态
+          const questionEl = this.closest('.quiz-question');
+          const optionsInQuestion = questionEl.querySelectorAll('.quiz-option');
+          optionsInQuestion.forEach(opt => {
+            opt.classList.remove('border-english-primary', 'bg-english-primary/5');
+          });
+          
+          // 设置当前选项为选中
+          this.classList.add('border-english-primary', 'bg-english-primary/5');
+        });
+      });
+      
+      // 检查答案
+      checkAnswersBtn.addEventListener('click', function() {
+        if (answersChecked) return;
+        
+        let correctCount = 0;
+        const totalCount = quizOptions.length / 4; // 每个问题有4个选项
+        
+        quizOptions.forEach(option => {
+          const isCorrect = option.getAttribute('data-correct') === 'true';
+          
+          // 标记正确和错误选项
+          if (isCorrect) {
+            option.classList.add('correct');
+            correctCount++;
+          } else if (option.classList.contains('border-english-primary')) {
+            option.classList.add('incorrect');
+          }
+          
+          // 显示解释
+          const explanation = option.closest('.quiz-question').querySelector('.explanation');
+          explanation.classList.remove('hidden');
+        });
+        
+        // 显示结果
+        correctCountEl.textContent = correctCount;
+        quizResults.classList.remove('hidden');
+        answersChecked = true;
+      });
+      
+      // 重置测验
+      resetQuizBtn.addEventListener('click', function() {
+        quizOptions.forEach(option => {
+          option.classList.remove('border-english-primary', 'bg-english-primary/5', 'correct', 'incorrect');
+          
+          // 隐藏解释
+          const explanation = option.closest('.quiz-question').querySelector('.explanation');
+          explanation.classList.add('hidden');
+        });
+        
+        quizResults.classList.add('hidden');
+        answersChecked = false;
+      });
+      
+      // 填空练习检查
+      const fillButtons = document.querySelectorAll('.check-fill-btn');
+      fillButtons.forEach((button, index) => {
+        const correctAnswers = ['unite', 'unity', 'unite'];
+        
+        button.addEventListener('click', function() {
+          const input = this.previousElementSibling;
+          const userAnswer = input.value.trim().toLowerCase();
+          
+          if (userAnswer === correctAnswers[index]) {
+            input.classList.remove('border-red-500');
+            input.classList.add('border-green-500');
+          } else {
+            input.classList.remove('border-green-500');
+            input.classList.add('border-red-500');
+            
+            // 显示正确答案
+            setTimeout(() => {
+              alert(`正确答案是: ${correctAnswers[index]}`);
+            }, 300);
+          }
+        });
+      });
+      
+      // 翻译练习检查
+      const translateButtons = document.querySelectorAll('.check-translate-btn');
+      translateButtons.forEach((button, index) => {
+        const correctTranslations = [
+          "Countries need to unite to address the common challenge of climate change.",
+          "暴风雨过后，社区团结起来重建公园。"
+        ];
+        
+        button.addEventListener('click', function() {
+          const textarea = this.previousElementSibling;
+          const userTranslation = textarea.value.trim();
+          
+          // 简单检查（实际应用中可能需要更复杂的逻辑）
+          if (userTranslation.length > 0) {
+            alert(`参考翻译:\n${correctTranslations[index]}`);
+          } else {
+            alert("请先输入你的翻译");
+          }
+        });
+      });
+      
+      // 工具函数：切换元素显示状态
+      function toggleElement(element) {
+        if (element.classList.contains('hidden')) {
+          element.classList.remove('hidden');
+          // 添加显示动画
+          element.style.opacity = '0';
+          element.style.transform = 'translateY(10px)';
+          setTimeout(() => {
+            element.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+            element.style.opacity = '1';
+            element.style.transform = 'translateY(0)';
+          }, 10);
+        } else {
+          // 添加隐藏动画
+          element.style.opacity = '0';
+          element.style.transform = 'translateY(10px)';
+          setTimeout(() => {
+            element.classList.add('hidden');
+            // 重置样式，为下次显示做准备
+            element.style.transition = '';
+            element.style.opacity = '';
+            element.style.transform = '';
+          }, 300);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

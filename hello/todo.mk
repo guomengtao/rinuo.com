@@ -9,13 +9,13 @@
 	4.	innovate — 创新、改革 -
 	5.	challenge — 挑战、质疑 - 
 	6.	explore — 探索、研究 -
-	7.	create — 创造、建立
-	8.	connect — 连接、联系
+	7.	create — 创造、建立 -
+	8.	connect — 连接、联系 -
 	9.	empower — 授权、赋能 - 
-	10.	imagine — 想象、构思
+	10.	imagine — 想象、构思 -
 	11.	motivate — 激励、驱动 -
 	12.	enlighten — 启迪、开导 -
-	13.	overcome — 克服、战胜
+	13.	overcome — 克服、战胜 -
 	14.	celebrate — 庆祝、赞美 -
 	15.	reflect — 反思、映射 -
 	16.	elevate — 提升、举起 -
