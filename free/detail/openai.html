@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI - 人工智能研究与应用</title>
+    <!-- 外部资源 - 使用国内CDN确保可访问性 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome - 国内CDN主引用 -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" 
+          onload="this.classList.add('loaded')" 
+          onerror="document.getElementById('fallback-icons').removeAttribute('disabled')">
+    
+    <!-- 备用图标方案 - 仅在主图标库加载失败时启用 -->
+    <style id="fallback-icons" disabled>
+        /* 本地备份图标样式 - 基础图标集 */
+        .fa { display: inline-block; width: 1em; height: 1em; position: relative; vertical-align: middle; }
+        
+        /* 基础图标定义 */
+        .fa-check::before { content: "✓"; }
+        .fa-times::before { content: "✕"; }
+        .fa-search::before { content: "🔍"; }
+        .fa-star::before { content: "★"; }
+        .fa-star-half-o::before { content: "★"; opacity: 0.5; }
+        .fa-bars::before { content: "☰"; }
+        .fa-code::before { content: "💻"; }
+        .fa-lightbulb-o::before { content: "💡"; }
+        .fa-comment::before { content: "💬"; }
+        .fa-rocket::before { content: "🚀"; }
+        .fa-shield::before { content: "🛡️"; }
+        .fa-globe::before { content: "🌐"; }
+        .fa-users::before { content: "👥"; }
+        .fa-file-text::before { content: "📄"; }
+        .fa-paint-brush::before { content: "🎨"; }
+        .fa-refresh::before { content: "↺"; }
+        .fa-chevron-up::before { content: "↑"; }
+        .fa-info-circle::before { content: "ⓘ"; }
+        .fa-exclamation-triangle::before { content: "⚠️"; }
+        .fa-circle-o-notch::before { content: "◌"; animation: spin 1s linear infinite; }
+        .fa-github::before { content: "G"; }
+        .fa-twitter::before { content: "t"; }
+        .fa-linkedin::before { content: "in"; }
+        .fa-youtube-play::before { content: "▶"; }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- 图表库：使用国内CDN -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/4.4.8/chart.umd.min.js"></script>
+    
+    <!-- 字体：国内可用资源 + 备用方案 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
+          rel="stylesheet" 
+          onerror="document.getElementById('fallback-font').removeAttribute('disabled')">
+    <style id="fallback-font" disabled>
+        /* 国内字体备用方案 - 使用系统默认无衬线字体 */
+        body, button, input, select, textarea {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        openai: {
+                            primary: '#10A37F',
+                            secondary: '#065F46',
+                            light: '#D1FAE5',
+                            dark: '#047857',
+                            accent: '#34D399'
+                        },
+                        dark: {
+                            50: '#E8EAED',
+                            100: '#DADCE0',
+                            200: '#BDC1C6',
+                            300: '#9AA0A6',
+                            400: '#70757A',
+                            500: '#5F6368',
+                            600: '#3C4043',
+                            700: '#202124',
+                            800: '#171717',
+                            900: '#121212'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(to right, #10A37F, #34D399);
+            }
+            .bg-gradient-ai {
+                background-image: linear-gradient(135deg, #10A37F10, #34D39910);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px -5px rgba(16, 163, 127, 0.15);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-dark-900 text-dark-100 transition-colors duration-300">
+    <!-- 资源加载状态提示 -->
+    <div id="resource-status" class="fixed top-0 left-0 right-0 bg-dark-800 text-dark-100 py-2 px-4 text-center text-sm z-50 hidden">
+        <span>资源加载中...</span>
+    </div>
+    
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-dark-800/90 backdrop-blur border-b border-dark-700">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="#" class="flex items-center">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-openai-primary to-openai-accent flex items-center justify-center mr-3">
+                        <span class="font-bold text-white">AI</span>
+                    </div>
+                    <span class="font-bold text-xl">OpenAI</span>
+                </a>
+                
+                <!-- 桌面导航 -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#products" class="font-medium hover:text-openai-primary transition-colors">核心产品</a>
+                    <a href="#features" class="font-medium hover:text-openai-primary transition-colors">技术特点</a>
+                    <a href="#use-cases" class="font-medium hover:text-openai-primary transition-colors">应用场景</a>
+                    <a href="#pricing" class="font-medium hover:text-openai-primary transition-colors">价格方案</a>
+                    <a href="#reviews" class="font-medium hover:text-openai-primary transition-colors">用户评价</a>
+                    <a href="https://platform.openai.com" target="_blank" class="bg-openai-primary hover:bg-openai-dark text-white px-5 py-2 rounded-full text-sm font-medium transition-all">
+                        开始使用
+                    </a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-btn" class="md:hidden text-dark-100 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden py-4 border-t border-dark-700 animate-fade-in">
+                <div class="flex flex-col space-y-4">
+                    <a href="#products" class="font-medium hover:text-openai-primary transition-colors py-2">核心产品</a>
+                    <a href="#features" class="font-medium hover:text-openai-primary transition-colors py-2">技术特点</a>
+                    <a href="#use-cases" class="font-medium hover:text-openai-primary transition-colors py-2">应用场景</a>
+                    <a href="#pricing" class="font-medium hover:text-openai-primary transition-colors py-2">价格方案</a>
+                    <a href="#reviews" class="font-medium hover:text-openai-primary transition-colors py-2">用户评价</a>
+                    <a href="https://platform.openai.com" target="_blank" class="bg-openai-primary hover:bg-openai-dark text-white px-5 py-3 rounded-full text-sm font-medium transition-all text-center">
+                        开始使用
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 animate-fade-in">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-6">
+                        人工智能的<br>
+                        <span class="text-gradient">未来已来</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-dark-300 mb-8 max-w-lg">
+                        OpenAI 致力于研发安全友好的人工智能，通过 API 提供强大的模型能力，帮助开发者和企业构建下一代 AI 应用。
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#products" class="bg-openai-primary hover:bg-openai-dark text-white px-8 py-3 rounded-full font-semibold transition-all hover:shadow-lg hover:shadow-openai-primary/20">
+                            探索产品
+                        </a>
+                        <a href="#features" class="border-2 border-dark-600 hover:border-dark-400 text-dark-100 px-8 py-3 rounded-full font-semibold transition-all">
+                            技术特点
+                        </a>
+                    </div>
+                    
+                    <!-- 核心数据 -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-openai-primary mb-1">1亿+</div>
+                            <div class="text-dark-400 text-sm">活跃用户</div>
+                        </div>
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-openai-primary mb-1">50万+</div>
+                            <div class="text-dark-400 text-sm">开发者</div>
+                        </div>
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-openai-primary mb-1">10亿+</div>
+                            <div class="text-dark-400 text-sm">日调用量</div>
+                        </div>
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-openai-primary mb-1">40+</div>
+                            <div class="text-dark-400 text-sm">支持语言</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative animate-slide-up">
+                    <div class="relative z-10 rounded-2xl overflow-hidden shadow-2xl transform transition-transform hover:scale-[1.02] duration-500 border border-dark-700">
+                        <img src="https://picsum.photos/id/160/600/400" alt="OpenAI 技术展示" class="w-full h-auto">
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-40 h-40 bg-openai-primary/10 rounded-full -z-10"></div>
+                    <div class="absolute -top-6 -left-6 w-32 h-32 bg-openai-accent/5 rounded-full -z-10"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 合作伙伴 -->
+    <section class="py-12 bg-dark-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <p class="text-center text-dark-400 mb-8">全球领先企业的共同选择</p>
+            <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70">
+                <div class="text-dark-300 text-xl font-bold">Microsoft</div>
+                <div class="text-dark-300 text-xl font-bold">Google</div>
+                <div class="text-dark-300 text-xl font-bold">Amazon</div>
+                <div class="text-dark-300 text-xl font-bold">Salesforce</div>
+                <div class="text-dark-300 text-xl font-bold">Spotify</div>
+                <div class="text-dark-300 text-xl font-bold">Twitter</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心产品 -->
+    <section id="products" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">OpenAI 核心产品</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">探索 OpenAI 提供的强大 AI 模型和工具，赋能你的创意与业务</p>
+                <div class="w-20 h-1 bg-openai-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 产品卡片 1 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-openai-primary/20 to-openai-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-openai-primary">
+                            <i class="fa-comment"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">GPT-4</h3>
+                        <p class="text-dark-400 mb-4">
+                            多模态大型语言模型，能够理解文本和图像输入，生成高质量的文本输出，具备强大的推理和问题解决能力。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>多模态理解能力</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>高级推理能力</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>更长的上下文窗口</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-openai-primary hover:text-openai-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 2 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-openai-primary/20 to-openai-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-openai-primary">
+                            <i class="fa-code"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">GPT-3.5 Turbo</h3>
+                        <p class="text-dark-400 mb-4">
+                            高效的大型语言模型，提供快速响应和可靠性能，是构建聊天机器人、文本生成和自动化任务的理想选择。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>快速响应速度</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>成本效益高</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>适合实时应用</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-openai-primary hover:text-openai-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 3 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-openai-primary/20 to-openai-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-openai-primary">
+                            <i class="fa-paint-brush"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DALL·E</h3>
+                        <p class="text-dark-400 mb-4">
+                            文本到图像的生成模型，能够根据文本描述创建独特的图像和艺术作品，支持多种风格和创意表达。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>文本到图像生成</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>支持多种艺术风格</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>图像编辑能力</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-openai-primary hover:text-openai-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 4 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-openai-primary/20 to-openai-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-openai-primary">
+                            <i class="fa-lightbulb-o"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">ChatGPT</h3>
+                        <p class="text-dark-400 mb-4">
+                            基于 GPT 模型的对话界面，提供自然、流畅的交互体验，可用于问答、创意写作、学习辅助等多种场景。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>自然对话体验</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>支持多轮对话</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>可定制指令</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-openai-primary hover:text-openai-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 5 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-openai-primary/20 to-openai-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-openai-primary">
+                            <i class="fa-file-text"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">Whisper</h3>
+                        <p class="text-dark-400 mb-4">
+                            自动语音识别系统，能够将音频转换为文本，支持多种语言，具有强大的噪声鲁棒性和准确率。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>高精度语音转文字</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>多语言支持</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>噪声环境适应</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-openai-primary hover:text-openai-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 6 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-openai-primary/20 to-openai-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-openai-primary">
+                            <i class="fa-rocket"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">OpenAI API</h3>
+                        <p class="text-dark-400 mb-4">
+                            统一的 API 接口，让开发者能够轻松集成 OpenAI 的各种模型到自己的应用中，支持灵活的调用方式。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>统一接口设计</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>丰富的文档支持</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-openai-primary mr-2"></i>
+                                <span>灵活的使用方式</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-openai-primary hover:text-openai-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技术特点 -->
+    <section id="features" class="py-20 bg-dark-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">OpenAI 技术特点</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">了解 OpenAI 模型的核心技术优势和创新能力</p>
+                <div class="w-20 h-1 bg-openai-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1">
+                    <div class="space-y-6">
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-openai-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-lightbulb-o text-openai-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">强大的理解能力</h4>
+                                    <p class="text-dark-400">
+                                        能够理解复杂的上下文、细微的语义差别和抽象概念，提供准确、相关的回应。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-openai-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-comment text-openai-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">自然语言交互</h4>
+                                    <p class="text-dark-400">
+                                        支持流畅自然的对话体验，能够进行多轮交流，保持上下文连贯性，理解模糊查询。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-openai-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-code text-openai-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">多任务处理能力</h4>
+                                    <p class="text-dark-400">
+                                        单一模型支持多种任务，包括文本生成、摘要、翻译、问答、代码生成等，无需专用模型。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-openai-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-shield text-openai-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">安全与对齐</h4>
+                                    <p class="text-dark-400">
+                                        经过严格的安全训练，减少有害输出，遵循伦理准则，可通过系统提示进行行为引导。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-1 md:order-2">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/180/600/600" alt="OpenAI 技术特点展示" class="rounded-xl shadow-lg w-full h-auto border border-dark-700">
+                        
+                        <!-- 悬浮卡片 -->
+                        <div class="absolute -bottom-6 -left-6 bg-dark-900 p-4 rounded-lg border border-dark-700 shadow-lg max-w-[200px] animate-pulse-slow">
+                            <div class="flex items-center mb-2">
+                                <div class="w-2 h-2 rounded-full bg-openai-primary mr-2"></div>
+                                <span class="text-sm font-medium">实时学习能力</span>
+                            </div>
+                            <p class="text-dark-400 text-xs">模型能够根据新信息调整回应，适应不同场景需求</p>
+                        </div>
+                        
+                        <div class="absolute -top-6 -right-6 bg-dark-900 p-4 rounded-lg border border-dark-700 shadow-lg max-w-[180px] animate-pulse-slow" style="animation-delay: 1s;">
+                            <div class="flex items-center mb-2">
+                                <div class="w-2 h-2 rounded-full bg-openai-accent mr-2"></div>
+                                <span class="text-sm font-medium">多语言支持</span>
+                            </div>
+                            <p class="text-dark-400 text-xs">支持40多种语言，包括复杂的象形文字和语法结构</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模型能力对比图表 -->
+            <div class="mt-16 bg-dark-900 rounded-xl p-6 md:p-8 border border-dark-700">
+                <h3 class="text-xl font-bold mb-6 text-center">OpenAI 模型能力对比</h3>
+                <div class="h-80 relative">
+                    <canvas id="modelsChart"></canvas>
+                    
+                    <!-- 图表加载状态 -->
+                    <div id="chartLoader" class="absolute inset-0 flex items-center justify-center bg-dark-900/80 rounded-xl">
+                        <div class="text-center">
+                            <i class="fa fa-circle-o-notch fa-spin text-4xl text-openai-primary mb-4"></i>
+                            <p class="text-dark-300">加载模型对比图表中...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- 图表错误状态 -->
+                    <div id="chartError" class="absolute inset-0 flex items-center justify-center bg-dark-900/80 rounded-xl hidden">
+                        <div class="text-center max-w-md px-4">
+                            <i class="fa fa-exclamation-triangle text-4xl text-openai-accent mb-4"></i>
+                            <p class="text-dark-300 mb-4">图表加载失败</p>
+                            <button id="retryChart" class="bg-openai-primary hover:bg-openai-dark text-white px-5 py-2 rounded-full text-sm font-medium transition-all">
+                                重试加载
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 应用场景 -->
+    <section id="use-cases" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">应用场景</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">OpenAI 技术在各行各业的创新应用</p>
+                <div class="w-20 h-1 bg-openai-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 应用场景 1 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/48/600/400" alt="内容创作" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">内容创作</h3>
+                        <p class="text-dark-400 mb-4">
+                            辅助创作文章、博客、社交媒体内容、营销文案等，提高创作效率和质量。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">文案写作</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">创意生成</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">内容优化</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 2 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/160/600/400" alt="编程开发" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">编程开发</h3>
+                        <p class="text-dark-400 mb-4">
+                            自动生成代码、解释代码功能、调试程序、提供优化建议，提升开发效率。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">代码生成</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">调试辅助</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">文档生成</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 3 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/20/600/400" alt="客户服务" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">客户服务</h3>
+                        <p class="text-dark-400 mb-4">
+                            构建智能客服系统，自动回答常见问题，处理客户咨询，提供24/7不间断服务。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">智能客服</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">问题解答</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">工单处理</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 4 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/24/600/400" alt="教育培训" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">教育培训</h3>
+                        <p class="text-dark-400 mb-4">
+                            提供个性化学习体验，辅助教学内容创作，解答学生问题，评估学习成果。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">个性化学习</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">教学辅助</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">知识测评</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 5 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/104/600/400" alt="创意设计" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">创意设计</h3>
+                        <p class="text-dark-400 mb-4">
+                            根据文本描述生成图像，辅助创意构思，提供设计灵感，加速设计流程。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">图像生成</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">创意构思</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">设计辅助</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 6 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/175/600/400" alt="数据分析" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">数据分析</h3>
+                        <p class="text-dark-400 mb-4">
+                            分析复杂数据，生成洞察报告，解释数据趋势，辅助决策制定和业务优化。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">报告生成</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">趋势分析</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">决策支持</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 价格方案 -->
+    <section id="pricing" class="py-20 bg-dark-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">价格方案</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">灵活的定价选择，满足个人开发者到大型企业的不同需求</p>
+                <div class="w-20 h-1 bg-openai-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- 免费方案 -->
+                <div class="bg-dark-900 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="p-6 border-b border-dark-700">
+                        <h3 class="text-xl font-bold mb-2">探索版</h3>
+                        <p class="text-dark-400 mb-4">适合个人探索和学习</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold">免费</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>有限的 GPT-3.5 Turbo 访问</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>基础 API 功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>社区支持</span>
+                            </li>
+                            <li class="flex items-start text-dark-500">
+                                <i class="fa fa-times mr-3 mt-1"></i>
+                                <span>GPT-4 访问权限</span>
+                            </li>
+                            <li class="flex items-start text-dark-500">
+                                <i class="fa fa-times mr-3 mt-1"></i>
+                                <span>高级模型功能</span>
+                            </li>
+                        </ul>
+                        <button class="w-full mt-8 py-3 rounded-lg border-2 border-openai-primary text-openai-primary hover:bg-openai-primary hover:text-white font-medium transition-colors">
+                            免费开始
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 开发者方案 -->
+                <div class="bg-dark-900 rounded-xl overflow-hidden border-2 border-openai-primary shadow-lg shadow-openai-primary/10 transform md:-translate-y-4 card-hover relative">
+                    <div class="absolute top-0 right-0 bg-openai-primary text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
+                        最受欢迎
+                    </div>
+                    <div class="p-6 border-b border-dark-700">
+                        <h3 class="text-xl font-bold mb-2">开发者版</h3>
+                        <p class="text-dark-400 mb-4">适合开发者和小型项目</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold">按使用付费</span>
+                            <span class="text-dark-400 ml-2">灵活计费</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>无限制访问 GPT-3.5 Turbo</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>GPT-4 访问权限</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>DALL·E 和 Whisper 访问</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>完整 API 功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>文档和社区支持</span>
+                            </li>
+                        </ul>
+                        <button class="w-full mt-8 py-3 rounded-lg bg-openai-primary hover:bg-openai-dark text-white font-medium transition-colors">
+                            开始使用
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 企业方案 -->
+                <div class="bg-dark-900 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="p-6 border-b border-dark-700">
+                        <h3 class="text-xl font-bold mb-2">企业版</h3>
+                        <p class="text-dark-400 mb-4">适合大型企业和团队</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold">定制价格</span>
+                            <span class="text-dark-400 ml-2">联系销售</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>所有开发者版功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>企业级安全与隐私</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>专用容量和优先级</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>高级管理工具</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-openai-primary mr-3 mt-1"></i>
+                                <span>专属客户支持</span>
+                            </li>
+                        </ul>
+                        <button class="w-full mt-8 py-3 rounded-lg border-2 border-dark-600 hover:border-dark-400 text-dark-100 font-medium transition-colors">
+                            联系销售
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 价格说明 -->
+            <div class="max-w-3xl mx-auto mt-12 bg-dark-900 rounded-xl p-6 border border-dark-700">
+                <h4 class="font-semibold mb-4 flex items-center">
+                    <i class="fa fa-info-circle text-openai-primary mr-2"></i> 价格说明
+                </h4>
+                <p class="text-dark-400 text-sm mb-4">
+                    开发者版采用按使用量计费模式，不同模型有不同的定价。例如，GPT-3.5 Turbo 输入每 1K tokens 约 0.5 元，输出每 1K tokens 约 1.5 元；
+                    GPT-4 输入每 1K tokens 约 6 元，输出每 1K tokens 约 12 元。新用户注册可获得价值 5 美元的免费额度，有效期为 3 个月。
+                </p>
+                <a href="#" class="text-openai-primary hover:text-openai-accent text-sm font-medium transition-colors">
+                    查看完整价格表 <i class="fa fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 用户评价 -->
+    <section id="reviews" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">用户评价</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">来自全球开发者和企业的真实反馈</p>
+                <div class="w-20 h-1 bg-openai-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <!-- 筛选和搜索 -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                <div class="flex flex-wrap gap-2">
+                    <button class="review-filter active px-4 py-2 rounded-full bg-openai-primary text-white font-medium transition-colors">全部</button>
+                    <button class="review-filter px-4 py-2 rounded-full bg-dark-800 text-dark-300 font-medium hover:bg-dark-700 transition-colors">开发者</button>
+                    <button class="review-filter px-4 py-2 rounded-full bg-dark-800 text-dark-300 font-medium hover:bg-dark-700 transition-colors">企业用户</button>
+                    <button class="review-filter px-4 py-2 rounded-full bg-dark-800 text-dark-300 font-medium hover:bg-dark-700 transition-colors">个人用户</button>
+                </div>
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="review-search" placeholder="搜索评价..." 
+                        class="w-full pl-10 pr-4 py-2 rounded-full bg-dark-800 border border-dark-700 focus:border-openai-primary focus:outline-none transition-colors">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
+                </div>
+            </div>
+            
+            <!-- 评论统计 -->
+            <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 mb-10">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center">
+                        <div class="text-4xl font-bold text-openai-primary mr-4">4.8</div>
+                        <div>
+                            <div class="flex mb-1">
+                                <i class="fa fa-star text-openai-accent"></i>
+                                <i class="fa fa-star text-openai-accent"></i>
+                                <i class="fa fa-star text-openai-accent"></i>
+                                <i class="fa fa-star text-openai-accent"></i>
+                                <i class="fa fa-star-half-o text-openai-accent"></i>
+                            </div>
+                            <div class="text-dark-400 text-sm">基于 12,547 条用户评价</div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-auto flex-1">
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">5 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-openai-accent h-2 rounded-full" style="width: 82%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">82%</div>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">4 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-openai-accent h-2 rounded-full" style="width: 13%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">13%</div>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">3 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-openai-accent h-2 rounded-full" style="width: 3%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">3%</div>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">2 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-openai-accent h-2 rounded-full" style="width: 1%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">1%</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 text-sm text-dark-400">1 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-openai-accent h-2 rounded-full" style="width: 1%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">1%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论会通过JavaScript动态生成 -->
+                <div class="col-span-full text-center py-12">
+                    <i class="fa fa-circle-o-notch fa-spin text-4xl text-openai-primary mb-4"></i>
+                    <p class="text-dark-400">加载评价中...</p>
+                </div>
+            </div>
+            
+            <!-- 加载更多评论按钮 -->
+            <div class="text-center mt-12">
+                <button id="load-more" class="px-8 py-3 rounded-full bg-dark-800 border border-dark-700 text-dark-100 font-medium hover:border-openai-primary/50 transition-colors flex items-center mx-auto">
+                    <i class="fa fa-refresh mr-2"></i> 加载更多评价
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 开始使用 -->
+    <section class="py-20 bg-gradient-ai">
+        <div class="container mx-auto px-4 md:px-6 text-center">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6 max-w-3xl mx-auto">
+                开启你的 AI 创新之旅
+            </h2>
+            <p class="text-dark-300 max-w-2xl mx-auto text-lg mb-10">
+                加入全球数百万开发者的行列，利用 OpenAI 的技术构建下一代人工智能应用，
+                提升产品体验，加速业务增长。
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://platform.openai.com" target="_blank" class="bg-openai-primary hover:bg-openai-dark text-white px-8 py-3 rounded-full font-semibold transition-all hover:shadow-lg hover:shadow-openai-primary/20">
+                    立即注册
+                </a>
+                <a href="https://platform.openai.com/docs" target="_blank" class="bg-dark-800 hover:bg-dark-700 text-dark-100 px-8 py-3 rounded-full font-semibold transition-all">
+                    查看文档
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-900 border-t border-dark-700 py-12">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-openai-primary to-openai-accent flex items-center justify-center mr-3">
+                            <span class="font-bold text-white">AI</span>
+                        </div>
+                        <span class="font-bold text-xl">OpenAI</span>
+                    </div>
+                    <p class="text-dark-400 mb-4 max-w-md">
+                        OpenAI 是一家人工智能研究公司，致力于确保人工通用智能(AGI)造福全人类。通过开源和合作，推动AI技术的安全发展和广泛应用。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">产品</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">GPT-4</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">GPT-3.5</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">DALL·E</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">ChatGPT</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">Whisper</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">API</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">资源</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">文档</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">教程</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">示例</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">研究</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">安全</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">社区</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">公司</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">关于我们</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">博客</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">招贤纳士</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">联系我们</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-openai-primary transition-colors">服务条款</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-700 pt-8 text-center text-dark-500 text-sm">
+                <p>© 2023 OpenAI. 本网站仅作信息展示用途，与 OpenAI 公司无直接关联。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-openai-primary hover:bg-openai-dark text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
+        <i class="fa fa-chevron-up"></i>
+    </button>
+
+    <script>
+        // 图标加载状态管理
+        document.addEventListener('DOMContentLoaded', function() {
+            const resourceStatus = document.getElementById('resource-status');
+            const fontAwesomeLink = document.querySelector('link[href*="font-awesome"]');
+            
+            // 显示资源加载状态
+            resourceStatus.classList.remove('hidden');
+            
+            // 检查Font Awesome是否加载成功
+            function checkFontAwesomeLoaded() {
+                // 创建测试元素
+                const testIcon = document.createElement('i');
+                testIcon.className = 'fa fa-check';
+                testIcon.style.position = 'absolute';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+                
+                // 检查元素是否有宽度（说明图标已加载）
+                const isLoaded = testIcon.offsetWidth > 0;
+                document.body.removeChild(testIcon);
+                
+                return isLoaded;
+            }
+            
+            // 检查并处理图标加载状态
+            function handleIconLoading() {
+                if (checkFontAwesomeLoaded()) {
+                    resourceStatus.innerHTML = '<span>图标资源加载完成</span>';
+                    setTimeout(() => resourceStatus.classList.add('hidden'), 1000);
+                } else {
+                    resourceStatus.innerHTML = '<span>图标资源加载缓慢，正在使用备用方案...</span>';
+                    // 强制启用备用图标
+                    document.getElementById('fallback-icons').removeAttribute('disabled');
+                    setTimeout(() => resourceStatus.classList.add('hidden'), 2000);
+                }
+            }
+            
+            // 监听Font Awesome加载事件
+            if (fontAwesomeLink) {
+                fontAwesomeLink.addEventListener('load', handleIconLoading);
+                fontAwesomeLink.addEventListener('error', handleIconLoading);
+            }
+            
+            // 超时检查 - 5秒后如果还没加载完成则使用备用方案
+            setTimeout(handleIconLoading, 5000);
+        });
+        
+        // 生成用户评论数据
+        function generateReviews(count) {
+            const names = ["张明", "李华", "王芳", "赵伟", "陈静", "刘强", "杨洋", "周敏", "吴杰", "郑洁", 
+                          "黄强", "孙颖", "马丽", "朱明", "胡军", "林小红", "郭达", "高圆圆", "何静", "罗翔",
+                          "唐艺昕", "冯绍峰", "曹格", "韩红", "彭于晏", "蔡依林", "林志颖", "周杰伦", "林俊杰", "王力宏"];
+                          
+            const professions = [
+                "软件工程师", "产品经理", "设计师", "创业者", "数据科学家",
+                "内容创作者", "教育工作者", "市场专员", "企业CEO", "研究员",
+                "学生", "自由职业者", "客服总监", "技术总监", "营销总监"
+            ];
+            
+            const userTypes = ["开发者", "企业用户", "个人用户"];
+            
+            const positiveComments = [
+                "OpenAI的API彻底改变了我们的产品体验，集成简单且性能稳定，响应速度超出预期。",
+                "GPT-4的理解能力令人惊叹，我们用它构建的客服系统准确率达到了95%以上，大大降低了人工成本。",
+                "作为一名独立开发者，OpenAI的API让我能够在短时间内实现复杂的NLP功能，产品上线速度提高了3倍。",
+                "DALL·E生成的图像质量非常高，为我们的营销素材创作节省了大量时间和资源。",
+                "文档非常完善，示例代码丰富，即使是AI领域的新手也能快速上手。",
+                "API的稳定性令人印象深刻，几个月来几乎没有出现过服务中断的情况。",
+                "价格模型灵活，按使用量计费对我们这种初创公司非常友好，不会造成资源浪费。",
+                "技术支持团队响应迅速，之前遇到的集成问题很快就得到了解决方案。",
+                "Whisper的语音识别准确率远超我们测试过的其他系统，多语言支持也非常出色。",
+                "ChatGPT的对话能力让我们的教育产品焕然一新，学生反馈学习体验提升明显。"
+            ];
+            
+            const negativeComments = [
+                "API调用成本随着使用量增长很快，对于大规模应用来说长期成本有点高。",
+                "有时会遇到速率限制问题，在流量高峰期需要排队等待，影响用户体验。",
+                "GPT模型偶尔会产生错误信息，需要额外的验证机制来确保输出准确性。",
+                "某些地区的API响应速度较慢，希望能增加更多区域的服务器节点。",
+                "企业版的价格对于中小企业来说有些昂贵，希望能推出更灵活的中间方案。",
+                "文档虽然全面，但对于某些高级功能的说明不够详细，需要自己摸索。",
+                "模型更新有时会导致API行为变化，需要不断调整我们的应用来适配。"
+            ];
+            
+            const neutralComments = [
+                "OpenAI的API整体表现不错，功能强大但也存在一些需要改进的地方。",
+                "作为众多AI服务提供商之一，OpenAI在某些方面有优势，某些方面则与竞争对手相当。",
+                "使用体验符合预期，没有特别惊艳的地方，但也没有明显的缺点。",
+                "价格与性能的平衡做得还可以，对于我们的使用场景来说性价比适中。",
+                "API的易用性很好，但高级功能的学习曲线有些陡峭，需要更多的实践才能掌握。"
+            ];
+            
+            const reviews = [];
+            
+            for (let i = 0; i < count; i++) {
+                // 随机选择评论类型
+                let sentiment, content;
+                const rand = Math.random();
+                if (rand < 0.8) { // 80% 正面评论
+                    sentiment = "positive";
+                    content = positiveComments[Math.floor(Math.random() * positiveComments.length)];
+                    rating = Math.floor(Math.random() * 2) + 4; // 4-5星
+                } else if (rand < 0.95) { // 15% 中性评论
+                    sentiment = "neutral";
+                    content = neutralComments[Math.floor(Math.random() * neutralComments.length)];
+                    rating = Math.floor(Math.random() * 2) + 3; // 3-4星
+                } else { // 5% 负面评论
+                    sentiment = "negative";
+                    content = negativeComments[Math.floor(Math.random() * negativeComments.length)];
+                    rating = Math.floor(Math.random() * 3) + 1; // 1-3星
+                }
+                
+                // 随机用户类型
+                const userType = userTypes[Math.floor(Math.random() * userTypes.length)];
+                
+                // 随机生成日期（过去1年内）
+                const now = new Date();
+                const pastDate = new Date(now.getTime() - Math.random() * 365 * 24 * 60 * 60 * 1000);
+                const dateStr = `${pastDate.getFullYear()}-${String(pastDate.getMonth() + 1).padStart(2, '0')}-${String(pastDate.getDate()).padStart(2, '0')}`;
+                
+                reviews.push({
+                    id: i + 1,
+                    name: names[Math.floor(Math.random() * names.length)],
+                    avatar: `https://picsum.photos/id/${i + 200}/100/100`,
+                    profession: professions[Math.floor(Math.random() * professions.length)],
+                    userType: userType,
+                    rating: rating,
+                    date: dateStr,
+                    content: content,
+                    sentiment: sentiment
+                });
+            }
+            
+            return reviews;
+        }
+        
+        // 生成50条评论
+        const reviews = generateReviews(50);
+        let currentPage = 1;
+        const reviewsPerPage = 9;
+        let currentFilter = '全部';
+        let currentSearchTerm = '';
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染初始评论（第一页）
+            renderReviewsPage(currentPage);
+            
+            // 初始化模型对比图表
+            initModelsChart();
+            
+            // 移动端菜单切换
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 评论筛选功能
+            const filterButtons = document.querySelectorAll('.review-filter');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active', 'bg-openai-primary', 'text-white');
+                        btn.classList.add('bg-dark-800', 'text-dark-300');
+                    });
+                    this.classList.add('active', 'bg-openai-primary', 'text-white');
+                    this.classList.remove('bg-dark-800', 'text-dark-300');
+                    
+                    // 重置页码和搜索
+                    currentPage = 1;
+                    currentFilter = this.textContent.trim();
+                    currentSearchTerm = '';
+                    document.getElementById('review-search').value = '';
+                    
+                    // 筛选评论
+                    renderFilteredReviews(currentFilter);
+                });
+            });
+            
+            // 评论搜索功能
+            document.getElementById('review-search').addEventListener('input', function(e) {
+                currentSearchTerm = e.target.value.toLowerCase();
+                // 重置页码和筛选
+                currentPage = 1;
+                currentFilter = '全部';
+                
+                // 更新筛选按钮状态
+                filterButtons.forEach(btn => {
+                    if (btn.textContent.trim() === '全部') {
+                        btn.classList.add('active', 'bg-openai-primary', 'text-white');
+                        btn.classList.remove('bg-dark-800', 'text-dark-300');
+                    } else {
+                        btn.classList.remove('active', 'bg-openai-primary', 'text-white');
+                        btn.classList.add('bg-dark-800', 'text-dark-300');
+                    }
+                });
+                
+                renderSearchedReviews(currentSearchTerm);
+            });
+            
+            // 加载更多评论
+            document.getElementById('load-more').addEventListener('click', function() {
+                currentPage++;
+                
+                if (currentSearchTerm.length >= 2) {
+                    renderSearchedReviews(currentSearchTerm);
+                } else if (currentFilter !== '全部') {
+                    renderFilteredReviews(currentFilter);
+                } else {
+                    renderReviewsPage(currentPage);
+                }
+            });
+            
+            // 回到顶部按钮
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.remove('opacity-0', 'invisible');
+                    backToTopBtn.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopBtn.classList.remove('opacity-100', 'visible');
+                    backToTopBtn.classList.add('opacity-0', 'invisible');
+                }
+                
+                // 导航栏滚动效果
+                const navbar = document.getElementById('navbar');
+                if (window.pageYOffset > 100) {
+                    navbar.classList.add('py-2');
+                    navbar.classList.remove('py-4');
+                } else {
+                    navbar.classList.add('py-4');
+                    navbar.classList.remove('py-2');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        // 关闭移动菜单（如果打开）
+                        mobileMenu.classList.add('hidden');
+                        
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+        
+        // 渲染指定页的评论
+        function renderReviewsPage(page) {
+            const container = document.getElementById('reviews-container');
+            if (!container) return;
+            
+            const startIndex = (page - 1) * reviewsPerPage;
+            const endIndex = startIndex + reviewsPerPage;
+            const reviewsToRender = reviews.slice(startIndex, endIndex);
+            
+            // 如果是第一页，清空容器
+            if (page === 1) {
+                container.innerHTML = '';
+            }
+            
+            // 如果没有评论
+            if (reviewsToRender.length === 0) {
+                if (page === 1) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <i class="fa fa-search text-4xl text-dark-500 mb-4"></i>
+                            <p class="text-dark-400">没有找到评价</p>
+                        </div>
+                    `;
+                }
+                // 隐藏加载更多按钮
+                document.getElementById('load-more').style.display = 'none';
+                return;
+            }
+            
+            // 显示加载更多按钮（如果有更多评论）
+            document.getElementById('load-more').style.display = endIndex < reviews.length ? 'flex' : 'none';
+            
+            // 渲染评论
+            reviewsToRender.forEach(review => {
+                addReviewToContainer(review, container);
+            });
+        }
+        
+        // 渲染筛选后的评论
+        function renderFilteredReviews(filter) {
+            let filteredReviews;
+            
+            if (filter === '全部') {
+                filteredReviews = reviews;
+            } else {
+                filteredReviews = reviews.filter(review => review.userType === filter);
+            }
+            
+            renderFilteredReviewsPage(filteredReviews);
+        }
+        
+        // 渲染搜索后的评论
+        function renderSearchedReviews(searchTerm) {
+            if (searchTerm.length < 2) {
+                renderReviewsPage(1);
+                return;
+            }
+            
+            const filteredReviews = reviews.filter(review => 
+                review.content.toLowerCase().includes(searchTerm) || 
+                review.name.toLowerCase().includes(searchTerm) ||
+                review.profession.toLowerCase().includes(searchTerm) ||
+                review.userType.toLowerCase().includes(searchTerm)
+            );
+            
+            renderFilteredReviewsPage(filteredReviews);
+        }
+        
+        // 渲染筛选后的指定页评论
+        function renderFilteredReviewsPage(filteredReviews) {
+            const container = document.getElementById('reviews-container');
+            if (!container) return;
+            
+            const startIndex = (currentPage - 1) * reviewsPerPage;
+            const endIndex = startIndex + reviewsPerPage;
+            const reviewsToRender = filteredReviews.slice(startIndex, endIndex);
+            
+            // 如果是第一页，清空容器
+            if (currentPage === 1) {
+                container.innerHTML = '';
+            }
+            
+            // 如果没有评论
+            if (reviewsToRender.length === 0) {
+                if (currentPage === 1) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <i class="fa fa-search text-4xl text-dark-500 mb-4"></i>
+                            <p class="text-dark-400">没有找到匹配的评价</p>
+                        </div>
+                    `;
+                }
+                // 隐藏加载更多按钮
+                document.getElementById('load-more').style.display = 'none';
+                return;
+            }
+            
+            // 显示加载更多按钮（如果有更多评论）
+            document.getElementById('load-more').style.display = endIndex < filteredReviews.length ? 'flex' : 'none';
+            
+            // 渲染评论
+            reviewsToRender.forEach(review => {
+                addReviewToContainer(review, container);
+            });
+        }
+        
+        // 添加评论到容器
+        function addReviewToContainer(review, container) {
+            const reviewElement = document.createElement('div');
+            reviewElement.className = 'bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover animate-fade-in';
+            
+            // 生成星级评分HTML
+            let ratingHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= review.rating) {
+                    ratingHtml += '<i class="fa fa-star text-openai-accent"></i>';
+                } else {
+                    ratingHtml += '<i class="fa fa-star text-dark-600"></i>';
+                }
+            }
+            
+            // 用户类型标签样式
+            let userTypeClass = '';
+            if (review.userType === '开发者') {
+                userTypeClass = 'bg-openai-primary/20 text-openai-primary';
+            } else if (review.userType === '企业用户') {
+                userTypeClass = 'bg-blue-500/20 text-blue-400';
+            } else {
+                userTypeClass = 'bg-purple-500/20 text-purple-400';
+            }
+            
+            reviewElement.innerHTML = `
+                <div class="flex items-start mb-4">
+                    <img src="${review.avatar}" alt="${review.name}" class="w-12 h-12 rounded-full object-cover mr-4 border-2 border-dark-700">
+                    <div>
+                        <div class="flex items-center">
+                            <h4 class="font-bold">${review.name}</h4>
+                            <span class="text-xs ${userTypeClass} px-2 py-1 rounded ml-2">${review.userType}</span>
+                        </div>
+                        <div class="text-dark-400 text-sm mb-1">${review.profession}</div>
+                        <div class="flex items-center">
+                            <div class="flex mr-3">
+                                ${ratingHtml}
+                            </div>
+                            <span class="text-xs text-dark-400">${review.date}</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-dark-300">${review.content}</p>
+            `;
+            
+            container.appendChild(reviewElement);
+        }
+        
+        // 检查Chart.js是否加载
+        function checkChartLoaded() {
+            return typeof Chart !== 'undefined';
+        }
+        
+        // 初始化模型对比图表
+        function initModelsChart() {
+            const chartLoader = document.getElementById('chartLoader');
+            const chartError = document.getElementById('chartError');
+            const canvas = document.getElementById('modelsChart');
+            
+            // 检查canvas是否存在
+            if (!canvas) {
+                console.error('图表容器不存在');
+                return;
+            }
+            
+            // 检查Chart.js是否加载
+            if (!checkChartLoaded()) {
+                console.log('等待Chart.js加载...');
+                // 等待Chart.js加载
+                setTimeout(initModelsChart, 500);
+                return;
+            }
+            
+            try {
+                // 配置暗色模式下的图表样式
+                const textColor = '#DADCE0';
+                const gridColor = 'rgba(255, 255, 255, 0.1)';
+                
+                // 销毁已存在的图表
+                if (window.modelsChart) {
+                    window.modelsChart.destroy();
+                }
+                
+                // 创建图表
+                window.modelsChart = new Chart(canvas, {
+                    type: 'radar',
+                    data: {
+                        labels: [
+                            '文本理解', 
+                            '生成质量', 
+                            '推理能力', 
+                            '多语言支持', 
+                            '代码能力', 
+                            '速度', 
+                            '成本效益',
+                            '可靠性'
+                        ],
+                        datasets: [
+                            {
+                                label: 'GPT-3.5 Turbo',
+                                data: [85, 80, 75, 80, 75, 95, 90, 90],
+                                backgroundColor: 'rgba(16, 163, 127, 0.2)',
+                                borderColor: 'rgba(16, 163, 127, 0.8)',
+                                pointBackgroundColor: 'rgba(16, 163, 127, 1)',
+                                pointBorderColor: '#121212',
+                                pointHoverBackgroundColor: '#121212',
+                                pointHoverBorderColor: 'rgba(16, 163, 127, 1)'
+                            },
+                            {
+                                label: 'GPT-4',
+                                data: [95, 95, 90, 90, 90, 75, 60, 95],
+                                backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                                borderColor: 'rgba(52, 211, 153, 0.8)',
+                                pointBackgroundColor: 'rgba(52, 211, 153, 1)',
+                                pointBorderColor: '#121212',
+                                pointHoverBackgroundColor: '#121212',
+                                pointHoverBorderColor: 'rgba(52, 211, 153, 1)'
+                            },
+                            {
+                                label: 'DALL·E',
+                                data: [70, 85, 65, 75, 30, 70, 65, 85],
+                                backgroundColor: 'rgba(16, 163, 127, 0.1)',
+                                borderColor: 'rgba(16, 163, 127, 0.5)',
+                                pointBackgroundColor: 'rgba(16, 163, 127, 0.8)',
+                                pointBorderColor: '#121212',
+                                pointHoverBackgroundColor: '#121212',
+                                pointHoverBorderColor: 'rgba(16, 163, 127, 1)'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        elements: {
+                            line: {
+                                borderWidth: 3
+                            }
+                        },
+                        scales: {
+                            r: {
+                                min: 0,
+                                max: 100,
+                                ticks: {
+                                    stepSize: 20,
+                                    color: textColor,
+                                    backdropColor: 'transparent'
+                                },
+                                pointLabels: {
+                                    color: textColor,
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                grid: {
+                                    color: gridColor
+                                },
+                                angleLines: {
+                                    color: gridColor
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    color: textColor,
+                                    font: {
+                                        size: 14
+                                    },
+                                    padding: 20
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(32, 33, 36, 0.9)',
+                                titleColor: textColor,
+                                bodyColor: textColor,
+                                borderColor: 'rgba(255, 255, 255, 0.1)',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: true
+                            }
+                        },
+                        animation: {
+                            duration: 2000,
+                            easing: 'easeOutQuart'
+                        }
+                    }
+                });
+                
+                // 隐藏加载指示器，显示图表
+                if (chartLoader) chartLoader.classList.add('hidden');
+                if (chartError) chartError.classList.add('hidden');
+                
+            } catch (error) {
+                console.error('图表初始化失败:', error);
+                // 如果图表加载失败，显示错误状态
+                if (chartLoader) chartLoader.classList.add('hidden');
+                if (chartError) chartError.classList.remove('hidden');
+                
+                // 提供重试和隐藏选项
+                document.getElementById('retryChart').addEventListener('click', function() {
+                    if (chartLoader) chartLoader.classList.remove('hidden');
+                    if (chartError) chartError.classList.add('hidden');
+                    initModelsChart();
+                });
+            }
+        }
+    </script>
+</body>
+</html>
+    
