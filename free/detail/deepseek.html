@@ -1,0 +1,1612 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek - 深度求索，智启未来</title>
+    <!-- 外部资源 - 使用国内CDN确保可访问性 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome - 国内CDN主引用 -->
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" 
+          onload="this.classList.add('loaded')" 
+          onerror="document.getElementById('fallback-icons').removeAttribute('disabled')">
+    
+    <!-- 备用图标方案 - 仅在主图标库加载失败时启用 -->
+    <style id="fallback-icons" disabled>
+        /* 本地备份图标样式 - 基础图标集 */
+        .fa { display: inline-block; width: 1em; height: 1em; position: relative; vertical-align: middle; }
+        
+        /* 基础图标定义 */
+        .fa-check::before { content: "✓"; }
+        .fa-times::before { content: "✕"; }
+        .fa-search::before { content: "🔍"; }
+        .fa-star::before { content: "★"; }
+        .fa-star-half-o::before { content: "★"; opacity: 0.5; }
+        .fa-bars::before { content: "☰"; }
+        .fa-code::before { content: "💻"; }
+        .fa-lightbulb-o::before { content: "💡"; }
+        .fa-comment::before { content: "💬"; }
+        .fa-rocket::before { content: "🚀"; }
+        .fa-shield::before { content: "🛡️"; }
+        .fa-globe::before { content: "🌐"; }
+        .fa-users::before { content: "👥"; }
+        .fa-file-text::before { content: "📄"; }
+        .fa-paint-brush::before { content: "🎨"; }
+        .fa-refresh::before { content: "↺"; }
+        .fa-chevron-up::before { content: "↑"; }
+        .fa-info-circle::before { content: "ⓘ"; }
+        .fa-exclamation-triangle::before { content: "⚠️"; }
+        .fa-circle-o-notch::before { content: "◌"; animation: spin 1s linear infinite; }
+        .fa-github::before { content: "G"; }
+        .fa-twitter::before { content: "t"; }
+        .fa-linkedin::before { content: "in"; }
+        .fa-youtube-play::before { content: "▶"; }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- 字体：国内可用资源 + 备用方案 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
+          rel="stylesheet" 
+          onerror="document.getElementById('fallback-font').removeAttribute('disabled')">
+    <style id="fallback-font" disabled>
+        /* 国内字体备用方案 - 使用系统默认无衬线字体 */
+        body, button, input, select, textarea {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+    </style>
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        deepseek: {
+                            primary: '#165DFF',
+                            secondary: '#0E42CC',
+                            light: '#E8F3FF',
+                            dark: '#0A2489',
+                            accent: '#4080FF'
+                        },
+                        dark: {
+                            50: '#E8EAED',
+                            100: '#DADCE0',
+                            200: '#BDC1C6',
+                            300: '#9AA0A6',
+                            400: '#70757A',
+                            500: '#5F6368',
+                            600: '#3C4043',
+                            700: '#202124',
+                            800: '#171717',
+                            900: '#121212'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(to right, #165DFF, #4080FF);
+            }
+            .bg-gradient-ai {
+                background-image: linear-gradient(135deg, #165DFF10, #4080FF10);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 25px -5px rgba(22, 93, 255, 0.15);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-dark-900 text-dark-100 transition-colors duration-300">
+    <!-- 资源加载状态提示 -->
+    <div id="resource-status" class="fixed top-0 left-0 right-0 bg-dark-800 text-dark-100 py-2 px-4 text-center text-sm z-50 hidden">
+        <span>资源加载中...</span>
+    </div>
+    
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-dark-800/90 backdrop-blur border-b border-dark-700">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="#" class="flex items-center">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-deepseek-primary to-deepseek-accent flex items-center justify-center mr-3">
+                        <span class="font-bold text-white">DS</span>
+                    </div>
+                    <span class="font-bold text-xl">DeepSeek</span>
+                </a>
+                
+                <!-- 桌面导航 -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#products" class="font-medium hover:text-deepseek-primary transition-colors">核心产品</a>
+                    <a href="#features" class="font-medium hover:text-deepseek-primary transition-colors">技术特点</a>
+                    <a href="#use-cases" class="font-medium hover:text-deepseek-primary transition-colors">应用场景</a>
+                    <a href="#pricing" class="font-medium hover:text-deepseek-primary transition-colors">价格方案</a>
+                    <a href="#reviews" class="font-medium hover:text-deepseek-primary transition-colors">用户评价</a>
+                    <a href="#" class="bg-deepseek-primary hover:bg-deepseek-dark text-white px-5 py-2 rounded-full text-sm font-medium transition-all">
+                        开始使用
+                    </a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-btn" class="md:hidden text-dark-100 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden py-4 border-t border-dark-700 animate-fade-in">
+                <div class="flex flex-col space-y-4">
+                    <a href="#products" class="font-medium hover:text-deepseek-primary transition-colors py-2">核心产品</a>
+                    <a href="#features" class="font-medium hover:text-deepseek-primary transition-colors py-2">技术特点</a>
+                    <a href="#use-cases" class="font-medium hover:text-deepseek-primary transition-colors py-2">应用场景</a>
+                    <a href="#pricing" class="font-medium hover:text-deepseek-primary transition-colors py-2">价格方案</a>
+                    <a href="#reviews" class="font-medium hover:text-deepseek-primary transition-colors py-2">用户评价</a>
+                    <a href="#" class="bg-deepseek-primary hover:bg-deepseek-dark text-white px-5 py-3 rounded-full text-sm font-medium transition-all text-center">
+                        开始使用
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 animate-fade-in">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-6">
+                        深度求索<br>
+                        <span class="text-gradient">智启未来</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-dark-300 mb-8 max-w-lg">
+                        DeepSeek 专注于打造高性能通用人工智能模型，为企业和开发者提供强大、可靠、安全的AI能力，助力产业智能化升级。
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#products" class="bg-deepseek-primary hover:bg-deepseek-dark text-white px-8 py-3 rounded-full font-semibold transition-all hover:shadow-lg hover:shadow-deepseek-primary/20">
+                            探索产品
+                        </a>
+                        <a href="#features" class="border-2 border-dark-600 hover:border-dark-400 text-dark-100 px-8 py-3 rounded-full font-semibold transition-all">
+                            技术特点
+                        </a>
+                    </div>
+                    
+                    <!-- 核心数据 -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-deepseek-primary mb-1">500万+</div>
+                            <div class="text-dark-400 text-sm">活跃用户</div>
+                        </div>
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-deepseek-primary mb-1">10万+</div>
+                            <div class="text-dark-400 text-sm">企业客户</div>
+                        </div>
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-deepseek-primary mb-1">5亿+</div>
+                            <div class="text-dark-400 text-sm">日调用量</div>
+                        </div>
+                        <div class="bg-dark-800 p-4 rounded-lg border border-dark-700">
+                            <div class="text-2xl font-bold text-deepseek-primary mb-1">30+</div>
+                            <div class="text-dark-400 text-sm">行业解决方案</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative animate-slide-up">
+                    <div class="relative z-10 rounded-2xl overflow-hidden shadow-2xl transform transition-transform hover:scale-[1.02] duration-500 border border-dark-700">
+                        <img src="https://picsum.photos/id/180/600/400" alt="DeepSeek 技术展示" class="w-full h-auto">
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-40 h-40 bg-deepseek-primary/10 rounded-full -z-10"></div>
+                    <div class="absolute -top-6 -left-6 w-32 h-32 bg-deepseek-accent/5 rounded-full -z-10"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 合作伙伴 -->
+    <section class="py-12 bg-dark-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <p class="text-center text-dark-400 mb-8">国内领先企业的共同选择</p>
+            <div class="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-70">
+                <div class="text-dark-300 text-xl font-bold">阿里巴巴</div>
+                <div class="text-dark-300 text-xl font-bold">腾讯</div>
+                <div class="text-dark-300 text-xl font-bold">百度</div>
+                <div class="text-dark-300 text-xl font-bold">华为</div>
+                <div class="text-dark-300 text-xl font-bold">字节跳动</div>
+                <div class="text-dark-300 text-xl font-bold">京东</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 核心产品 -->
+    <section id="products" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">DeepSeek 核心产品</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">探索 DeepSeek 提供的强大 AI 模型和工具，赋能你的创意与业务</p>
+                <div class="w-20 h-1 bg-deepseek-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 产品卡片 1 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-deepseek-primary/20 to-deepseek-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-deepseek-primary">
+                            <i class="fa-comment"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DeepSeek-R1</h3>
+                        <p class="text-dark-400 mb-4">
+                            新一代大语言模型，针对中文语境深度优化，具备强大的语义理解、逻辑推理和多轮对话能力。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>中文理解准确率98%</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>长文本处理能力</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>多轮对话上下文保持</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-deepseek-primary hover:text-deepseek-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 2 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-deepseek-primary/20 to-deepseek-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-deepseek-primary">
+                            <i class="fa-code"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DeepSeek-Coder</h3>
+                        <p class="text-dark-400 mb-4">
+                            专注于代码生成与理解的AI模型，支持多种编程语言，能大幅提升开发效率和代码质量。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>支持20+编程语言</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>代码生成与调试</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>文档自动生成</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-deepseek-primary hover:text-deepseek-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 3 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-deepseek-primary/20 to-deepseek-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-deepseek-primary">
+                            <i class="fa-paint-brush"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DeepSeek-Vision</h3>
+                        <p class="text-dark-400 mb-4">
+                            多模态视觉理解模型，能够精准识别图像内容，支持复杂场景分析和视觉问答，适用于多种行业。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>高精度图像识别</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>视觉问答能力</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>复杂场景分析</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-deepseek-primary hover:text-deepseek-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 4 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-deepseek-primary/20 to-deepseek-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-deepseek-primary">
+                            <i class="fa-file-text"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DeepSeek-Doc</h3>
+                        <p class="text-dark-400 mb-4">
+                            文档智能处理平台，支持多格式文档解析、信息抽取、内容理解和智能问答，提升文档处理效率。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>多格式文档解析</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>智能信息抽取</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>文档问答系统</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-deepseek-primary hover:text-deepseek-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 5 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-deepseek-primary/20 to-deepseek-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-deepseek-primary">
+                            <i class="fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DeepSeek-Chat</h3>
+                        <p class="text-dark-400 mb-4">
+                            智能对话平台，针对企业客服、智能助手等场景深度优化，支持多轮对话和业务流程自动化。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>企业级客服对话</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>业务流程自动化</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>知识库集成</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-deepseek-primary hover:text-deepseek-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 产品卡片 6 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-48 bg-gradient-to-br from-deepseek-primary/20 to-deepseek-accent/20 flex items-center justify-center p-6">
+                        <div class="text-6xl text-deepseek-primary">
+                            <i class="fa-rocket"></i>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">DeepSeek-API</h3>
+                        <p class="text-dark-400 mb-4">
+                            统一开放平台，提供标准化API接口，让开发者能够轻松集成DeepSeek的各种AI能力到自有系统。
+                        </p>
+                        <ul class="space-y-2 text-dark-300 mb-6">
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>标准化API设计</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>完善的SDK支持</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fa fa-check text-deepseek-primary mr-2"></i>
+                                <span>灵活的调用方式</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="inline-flex items-center text-deepseek-primary hover:text-deepseek-accent font-medium transition-colors">
+                            了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技术特点 -->
+    <section id="features" class="py-20 bg-dark-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">DeepSeek 技术特点</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">了解 DeepSeek 模型的核心技术优势和创新能力</p>
+                <div class="w-20 h-1 bg-deepseek-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1">
+                    <div class="space-y-6">
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-deepseek-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-globe text-deepseek-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">卓越的中文理解</h4>
+                                    <p class="text-dark-400">
+                                        针对中文语境深度优化，理解复杂语义、成语典故、专业术语和行业用语，提供精准回应。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-deepseek-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-shield text-deepseek-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">企业级安全可靠</h4>
+                                    <p class="text-dark-400">
+                                        符合国内数据安全法规，提供本地化部署选项，确保数据隐私和系统稳定性，满足企业级需求。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-deepseek-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-lightbulb-o text-deepseek-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">行业深度适配</h4>
+                                    <p class="text-dark-400">
+                                        针对金融、医疗、教育、制造等多个行业提供定制化模型，理解行业知识和业务流程。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover">
+                            <div class="flex items-start">
+                                <div class="bg-deepseek-primary/20 p-3 rounded-full mr-4 mt-1">
+                                    <i class="fa-code text-deepseek-primary text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-lg mb-2">高效集成能力</h4>
+                                    <p class="text-dark-400">
+                                        提供完善的API和SDK，支持快速集成到现有系统，降低开发成本，加速AI应用落地。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-1 md:order-2">
+                    <div class="relative">
+                        <img src="https://picsum.photos/id/160/600/600" alt="DeepSeek 技术特点展示" class="rounded-xl shadow-lg w-full h-auto border border-dark-700">
+                        
+                        <!-- 悬浮卡片 -->
+                        <div class="absolute -bottom-6 -left-6 bg-dark-900 p-4 rounded-lg border border-dark-700 shadow-lg max-w-[200px] animate-pulse-slow">
+                            <div class="flex items-center mb-2">
+                                <div class="w-2 h-2 rounded-full bg-deepseek-primary mr-2"></div>
+                                <span class="text-sm font-medium">本地化部署</span>
+                            </div>
+                            <p class="text-dark-400 text-xs">支持私有化部署，满足数据敏感型企业的安全需求</p>
+                        </div>
+                        
+                        <div class="absolute -top-6 -right-6 bg-dark-900 p-4 rounded-lg border border-dark-700 shadow-lg max-w-[180px] animate-pulse-slow" style="animation-delay: 1s;">
+                            <div class="flex items-center mb-2">
+                                <div class="w-2 h-2 rounded-full bg-deepseek-accent mr-2"></div>
+                                <span class="text-sm font-medium">低资源消耗</span>
+                            </div>
+                            <p class="text-dark-400 text-xs">优化的模型架构，降低计算资源需求，提升运行效率</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 模型能力对比表格 -->
+            <div class="mt-16 bg-dark-900 rounded-xl p-6 md:p-8 border border-dark-700">
+                <h3 class="text-xl font-bold mb-6 text-center">DeepSeek 模型能力对比</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full min-w-[600px]">
+                        <thead>
+                            <tr class="border-b border-dark-700">
+                                <th class="text-left py-4 px-4 font-semibold text-dark-100">模型能力</th>
+                                <th class="text-center py-4 px-4 font-semibold text-dark-100">DeepSeek-R1</th>
+                                <th class="text-center py-4 px-4 font-semibold text-dark-100">DeepSeek-Coder</th>
+                                <th class="text-center py-4 px-4 font-semibold text-dark-100">DeepSeek-Vision</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-b border-dark-700">
+                                <td class="py-4 px-4 text-dark-300">中文理解</td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-half-o text-deepseek-accent"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-dark-700">
+                                <td class="py-4 px-4 text-dark-300">代码能力</td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-dark-700">
+                                <td class="py-4 px-4 text-dark-300">视觉理解</td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-dark-700">
+                                <td class="py-4 px-4 text-dark-300">推理能力</td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-half-o text-deepseek-accent"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="py-4 px-4 text-dark-300">响应速度</td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-half-o text-deepseek-accent"></i>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-4 text-center">
+                                    <div class="flex justify-center">
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star text-deepseek-accent"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                        <i class="fa fa-star-o text-dark-600"></i>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 应用场景 -->
+    <section id="use-cases" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">应用场景</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">DeepSeek 技术在各行各业的创新应用</p>
+                <div class="w-20 h-1 bg-deepseek-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 应用场景 1 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/20/600/400" alt="智能客服" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">智能客服</h3>
+                        <p class="text-dark-400 mb-4">
+                            构建智能客服系统，自动处理客户咨询，提供7x24小时服务，降低人工成本，提升客户满意度。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">自动问答</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">工单处理</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">客户画像</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 2 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/160/600/400" alt="智能开发" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">智能开发</h3>
+                        <p class="text-dark-400 mb-4">
+                            辅助程序员快速生成代码、调试程序、优化性能，提升开发效率，降低开发成本。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">代码生成</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">智能调试</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">文档生成</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 3 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/180/600/400" alt="金融分析" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">金融分析</h3>
+                        <p class="text-dark-400 mb-4">
+                            分析金融市场数据，识别风险，预测趋势，辅助投资决策，提供个性化金融服务。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">风险评估</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">趋势预测</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">智能投顾</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 4 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/24/600/400" alt="智慧医疗" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">智慧医疗</h3>
+                        <p class="text-dark-400 mb-4">
+                            辅助医学影像分析，解读病历，提供诊断建议，优化医疗资源配置，提升医疗服务质量。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">影像分析</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">病历解读</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">辅助诊断</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 5 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/200/600/400" alt="智能制造" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">智能制造</h3>
+                        <p class="text-dark-400 mb-4">
+                            分析生产数据，预测设备故障，优化生产流程，提升生产效率，降低运营成本。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">故障预测</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">流程优化</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">质量控制</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 应用场景 6 -->
+                <div class="bg-dark-800 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="h-40 overflow-hidden">
+                        <img src="https://picsum.photos/id/240/600/400" alt="智慧教育" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-3">智慧教育</h3>
+                        <p class="text-dark-400 mb-4">
+                            提供个性化学习方案，辅助教学内容创作，自动批改作业，提升教学效果和学习体验。
+                        </p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">个性化学习</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">智能批改</span>
+                            <span class="bg-dark-700 text-dark-300 text-xs px-3 py-1 rounded-full">教学辅助</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 价格方案 -->
+    <section id="pricing" class="py-20 bg-dark-800">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">价格方案</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">灵活的定价选择，满足个人开发者到大型企业的不同需求</p>
+                <div class="w-20 h-1 bg-deepseek-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <!-- 免费方案 -->
+                <div class="bg-dark-900 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="p-6 border-b border-dark-700">
+                        <h3 class="text-xl font-bold mb-2">体验版</h3>
+                        <p class="text-dark-400 mb-4">适合个人探索和学习</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold">免费</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>每月100万tokens限额</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>基础API功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>社区支持</span>
+                            </li>
+                            <li class="flex items-start text-dark-500">
+                                <i class="fa fa-times mr-3 mt-1"></i>
+                                <span>高级模型访问权限</span>
+                            </li>
+                            <li class="flex items-start text-dark-500">
+                                <i class="fa fa-times mr-3 mt-1"></i>
+                                <span>优先技术支持</span>
+                            </li>
+                        </ul>
+                        <button class="w-full mt-8 py-3 rounded-lg border-2 border-deepseek-primary text-deepseek-primary hover:bg-deepseek-primary hover:text-white font-medium transition-colors">
+                            免费开始
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 开发者方案 -->
+                <div class="bg-dark-900 rounded-xl overflow-hidden border-2 border-deepseek-primary shadow-lg shadow-deepseek-primary/10 transform md:-translate-y-4 card-hover relative">
+                    <div class="absolute top-0 right-0 bg-deepseek-primary text-white text-xs font-bold px-4 py-1 rounded-bl-lg">
+                        最受欢迎
+                    </div>
+                    <div class="p-6 border-b border-dark-700">
+                        <h3 class="text-xl font-bold mb-2">开发者版</h3>
+                        <p class="text-dark-400 mb-4">适合开发者和小型项目</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold">按使用付费</span>
+                            <span class="text-dark-400 ml-2">灵活计费</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>无限制tokens使用</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>全部模型访问权限</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>完整API功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>技术文档和示例</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>社区技术支持</span>
+                            </li>
+                        </ul>
+                        <button class="w-full mt-8 py-3 rounded-lg bg-deepseek-primary hover:bg-deepseek-dark text-white font-medium transition-colors">
+                            开始使用
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 企业方案 -->
+                <div class="bg-dark-900 rounded-xl overflow-hidden border border-dark-700 card-hover">
+                    <div class="p-6 border-b border-dark-700">
+                        <h3 class="text-xl font-bold mb-2">企业版</h3>
+                        <p class="text-dark-400 mb-4">适合大型企业和团队</p>
+                        <div class="flex items-baseline">
+                            <span class="text-3xl font-bold">定制价格</span>
+                            <span class="text-dark-400 ml-2">联系销售</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>所有开发者版功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>私有化部署选项</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>专属技术支持</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>定制化模型训练</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-deepseek-primary mr-3 mt-1"></i>
+                                <span>企业级安全保障</span>
+                            </li>
+                        </ul>
+                        <button class="w-full mt-8 py-3 rounded-lg border-2 border-dark-600 hover:border-dark-400 text-dark-100 font-medium transition-colors">
+                            联系销售
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 价格说明 -->
+            <div class="max-w-3xl mx-auto mt-12 bg-dark-900 rounded-xl p-6 border border-dark-700">
+                <h4 class="font-semibold mb-4 flex items-center">
+                    <i class="fa fa-info-circle text-deepseek-primary mr-2"></i> 价格说明
+                </h4>
+                <p class="text-dark-400 text-sm mb-4">
+                    开发者版采用按使用量计费模式，不同模型有不同的定价。例如，DeepSeek-R1每1K tokens约0.3元，DeepSeek-Coder每1K tokens约0.5元；
+                    新用户注册可获得价值100元的免费额度，有效期为3个月。企业版提供更灵活的定价方案和专属服务，具体可联系销售团队咨询。
+                </p>
+                <a href="#" class="text-deepseek-primary hover:text-deepseek-accent text-sm font-medium transition-colors">
+                    查看完整价格表 <i class="fa fa-arrow-right ml-1 text-xs"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 用户评价 -->
+    <section id="reviews" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">用户评价</h2>
+                <p class="text-dark-300 max-w-2xl mx-auto text-lg">来自国内企业和开发者的真实反馈</p>
+                <div class="w-20 h-1 bg-deepseek-primary mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <!-- 筛选和搜索 -->
+            <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+                <div class="flex flex-wrap gap-2">
+                    <button class="review-filter active px-4 py-2 rounded-full bg-deepseek-primary text-white font-medium transition-colors">全部</button>
+                    <button class="review-filter px-4 py-2 rounded-full bg-dark-800 text-dark-300 font-medium hover:bg-dark-700 transition-colors">开发者</button>
+                    <button class="review-filter px-4 py-2 rounded-full bg-dark-800 text-dark-300 font-medium hover:bg-dark-700 transition-colors">企业用户</button>
+                    <button class="review-filter px-4 py-2 rounded-full bg-dark-800 text-dark-300 font-medium hover:bg-dark-700 transition-colors">个人用户</button>
+                </div>
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="review-search" placeholder="搜索评价..." 
+                        class="w-full pl-10 pr-4 py-2 rounded-full bg-dark-800 border border-dark-700 focus:border-deepseek-primary focus:outline-none transition-colors">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-dark-400"></i>
+                </div>
+            </div>
+            
+            <!-- 评论统计 -->
+            <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 mb-10">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div class="flex items-center">
+                        <div class="text-4xl font-bold text-deepseek-primary mr-4">4.9</div>
+                        <div>
+                            <div class="flex mb-1">
+                                <i class="fa fa-star text-deepseek-accent"></i>
+                                <i class="fa fa-star text-deepseek-accent"></i>
+                                <i class="fa fa-star text-deepseek-accent"></i>
+                                <i class="fa fa-star text-deepseek-accent"></i>
+                                <i class="fa fa-star-half-o text-deepseek-accent"></i>
+                            </div>
+                            <div class="text-dark-400 text-sm">基于 8,756 条用户评价</div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-auto flex-1">
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">5 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-deepseek-accent h-2 rounded-full" style="width: 88%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">88%</div>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">4 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-deepseek-accent h-2 rounded-full" style="width: 9%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">9%</div>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">3 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-deepseek-accent h-2 rounded-full" style="width: 2%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">2%</div>
+                        </div>
+                        <div class="flex items-center mb-2">
+                            <div class="w-16 text-sm text-dark-400">2 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-deepseek-accent h-2 rounded-full" style="width: 0.5%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">0.5%</div>
+                        </div>
+                        <div class="flex items-center">
+                            <div class="w-16 text-sm text-dark-400">1 星</div>
+                            <div class="flex-1 bg-dark-700 rounded-full h-2 mr-4">
+                                <div class="bg-deepseek-accent h-2 rounded-full" style="width: 0.5%"></div>
+                            </div>
+                            <div class="w-10 text-right text-sm text-dark-400">0.5%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论会通过JavaScript动态生成 -->
+                <div class="col-span-full text-center py-12">
+                    <i class="fa fa-circle-o-notch fa-spin text-4xl text-deepseek-primary mb-4"></i>
+                    <p class="text-dark-400">加载评价中...</p>
+                </div>
+            </div>
+            
+            <!-- 加载更多评论按钮 -->
+            <div class="text-center mt-12">
+                <button id="load-more" class="px-8 py-3 rounded-full bg-dark-800 border border-dark-700 text-dark-100 font-medium hover:border-deepseek-primary/50 transition-colors flex items-center mx-auto">
+                    <i class="fa fa-refresh mr-2"></i> 加载更多评价
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 开始使用 -->
+    <section class="py-20 bg-gradient-ai">
+        <div class="container mx-auto px-4 md:px-6 text-center">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6 max-w-3xl mx-auto">
+                开启你的智能升级之旅
+            </h2>
+            <p class="text-dark-300 max-w-2xl mx-auto text-lg mb-10">
+                加入国内领先的AI技术生态，利用DeepSeek的强大能力提升业务效率，创新产品体验，
+                在AI时代保持竞争优势。
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#" class="bg-deepseek-primary hover:bg-deepseek-dark text-white px-8 py-3 rounded-full font-semibold transition-all hover:shadow-lg hover:shadow-deepseek-primary/20">
+                    立即注册
+                </a>
+                <a href="#" class="bg-dark-800 hover:bg-dark-700 text-dark-100 px-8 py-3 rounded-full font-semibold transition-all">
+                    查看文档
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-900 border-t border-dark-700 py-12">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-12">
+                <div class="md:col-span-2">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-deepseek-primary to-deepseek-accent flex items-center justify-center mr-3">
+                            <span class="font-bold text-white">DS</span>
+                        </div>
+                        <span class="font-bold text-xl">DeepSeek</span>
+                    </div>
+                    <p class="text-dark-400 mb-4 max-w-md">
+                        DeepSeek 深度求索致力于打造高性能通用人工智能模型，为企业提供安全可靠的AI解决方案，推动产业智能化升级，助力数字经济发展。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">产品</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">DeepSeek-R1</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">DeepSeek-Coder</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">DeepSeek-Vision</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">DeepSeek-Doc</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">DeepSeek-Chat</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">API平台</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">资源</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">开发者文档</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">API参考</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">示例教程</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">技术博客</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">常见问题</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">社区论坛</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">公司</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">关于我们</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">新闻动态</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">加入我们</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">联系我们</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-dark-400 hover:text-deepseek-primary transition-colors">服务条款</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-700 pt-8 text-center text-dark-500 text-sm">
+                <p>© 2023 DeepSeek 深度求索. 本网站仅作信息展示用途。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-deepseek-primary hover:bg-deepseek-dark text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
+        <i class="fa fa-chevron-up"></i>
+    </button>
+
+    <script>
+        // 图标加载状态管理
+        document.addEventListener('DOMContentLoaded', function() {
+            const resourceStatus = document.getElementById('resource-status');
+            const fontAwesomeLink = document.querySelector('link[href*="font-awesome"]');
+            
+            // 显示资源加载状态
+            resourceStatus.classList.remove('hidden');
+            
+            // 检查Font Awesome是否加载成功
+            function checkFontAwesomeLoaded() {
+                // 创建测试元素
+                const testIcon = document.createElement('i');
+                testIcon.className = 'fa fa-check';
+                testIcon.style.position = 'absolute';
+                testIcon.style.visibility = 'hidden';
+                document.body.appendChild(testIcon);
+                
+                // 检查元素是否有宽度（说明图标已加载）
+                const isLoaded = testIcon.offsetWidth > 0;
+                document.body.removeChild(testIcon);
+                
+                return isLoaded;
+            }
+            
+            // 检查并处理图标加载状态
+            function handleIconLoading() {
+                if (checkFontAwesomeLoaded()) {
+                    resourceStatus.innerHTML = '<span>图标资源加载完成</span>';
+                    setTimeout(() => resourceStatus.classList.add('hidden'), 1000);
+                } else {
+                    resourceStatus.innerHTML = '<span>图标资源加载缓慢，正在使用备用方案...</span>';
+                    // 强制启用备用图标
+                    document.getElementById('fallback-icons').removeAttribute('disabled');
+                    setTimeout(() => resourceStatus.classList.add('hidden'), 2000);
+                }
+            }
+            
+            // 监听Font Awesome加载事件
+            if (fontAwesomeLink) {
+                fontAwesomeLink.addEventListener('load', handleIconLoading);
+                fontAwesomeLink.addEventListener('error', handleIconLoading);
+            }
+            
+            // 超时检查 - 5秒后如果还没加载完成则使用备用方案
+            setTimeout(handleIconLoading, 5000);
+        });
+        
+        // 生成用户评论数据
+        function generateReviews(count) {
+            const names = ["张明", "李华", "王芳", "赵伟", "陈静", "刘强", "杨洋", "周敏", "吴杰", "郑洁", 
+                          "黄强", "孙颖", "马丽", "朱明", "胡军", "林小红", "郭达", "高圆圆", "何静", "罗翔",
+                          "唐艺昕", "冯绍峰", "曹格", "韩红", "彭于晏", "蔡依林", "林志颖", "周杰伦", "林俊杰", "王力宏"];
+                          
+            const professions = [
+                "软件工程师", "产品经理", "设计师", "创业者", "数据科学家",
+                "内容创作者", "教育工作者", "市场专员", "企业CEO", "研究员",
+                "学生", "自由职业者", "客服总监", "技术总监", "营销总监"
+            ];
+            
+            const userTypes = ["开发者", "企业用户", "个人用户"];
+            
+            const positiveComments = [
+                "DeepSeek的中文理解能力非常出色，特别是对专业术语和行业用语的处理，远超其他同类产品。",
+                "我们公司使用DeepSeek-Coder后，开发效率提升了40%以上，代码质量也有明显改善。",
+                "作为金融行业用户，DeepSeek的本地化部署方案和数据安全保障让我们非常放心。",
+                "DeepSeek的响应速度很快，API稳定性也很好，集成到我们的系统后几乎没有出现过问题。",
+                "客服系统集成了DeepSeek-Chat后，客户满意度提升了35%，人工成本降低了50%。",
+                "技术支持团队非常专业，响应及时，帮助我们快速解决了集成过程中遇到的各种问题。",
+                "针对中文语境的优化非常到位，处理复杂句式和语义时表现出色，适合国内企业使用。",
+                "价格方案灵活，企业版提供的定制化服务非常实用，能够满足我们的特殊需求。",
+                "DeepSeek-Vision在工业质检场景中的表现超出预期，准确率达到了99.2%，大大提升了生产效率。",
+                "文档详细清晰，示例丰富，我们的开发团队很快就完成了集成工作并上线了产品。"
+            ];
+            
+            const negativeComments = [
+                "某些专业领域的知识库还不够完善，希望能加强特定行业的模型训练。",
+                "API调用高峰期偶尔会有延迟，希望能进一步优化服务稳定性。",
+                "企业版价格相对较高，对于中小企业来说有一定的压力。",
+                "部分高级功能的使用门槛较高，需要更详细的教程和示例。",
+                "模型更新迭代速度可以更快一些，以跟上行业最新需求。"
+            ];
+            
+            const neutralComments = [
+                "DeepSeek整体表现不错，在中文处理方面有明显优势，某些功能还有提升空间。",
+                "作为国内AI解决方案提供商，DeepSeek的产品和服务处于行业中上水平。",
+                "使用体验符合预期，价格与性能的平衡做得比较好，适合国内企业选择。",
+                "相比国外同类产品，DeepSeek在本地化服务和支持方面更有优势。",
+                "API集成过程比较顺利，文档也比较完善，但某些高级参数的说明可以更详细。"
+            ];
+            
+            const reviews = [];
+            
+            for (let i = 0; i < count; i++) {
+                // 随机选择评论类型
+                let sentiment, content;
+                const rand = Math.random();
+                if (rand < 0.85) { // 85% 正面评论
+                    sentiment = "positive";
+                    content = positiveComments[Math.floor(Math.random() * positiveComments.length)];
+                    rating = Math.floor(Math.random() * 2) + 4; // 4-5星
+                } else if (rand < 0.95) { // 10% 中性评论
+                    sentiment = "neutral";
+                    content = neutralComments[Math.floor(Math.random() * neutralComments.length)];
+                    rating = Math.floor(Math.random() * 2) + 3; // 3-4星
+                } else { // 5% 负面评论
+                    sentiment = "negative";
+                    content = negativeComments[Math.floor(Math.random() * negativeComments.length)];
+                    rating = Math.floor(Math.random() * 3) + 1; // 1-3星
+                }
+                
+                // 随机用户类型
+                const userType = userTypes[Math.floor(Math.random() * userTypes.length)];
+                
+                // 随机生成日期（过去1年内）
+                const now = new Date();
+                const pastDate = new Date(now.getTime() - Math.random() * 365 * 24 * 60 * 60 * 1000);
+                const dateStr = `${pastDate.getFullYear()}-${String(pastDate.getMonth() + 1).padStart(2, '0')}-${String(pastDate.getDate()).padStart(2, '0')}`;
+                
+                reviews.push({
+                    id: i + 1,
+                    name: names[Math.floor(Math.random() * names.length)],
+                    avatar: `https://picsum.photos/id/${i + 200}/100/100`,
+                    profession: professions[Math.floor(Math.random() * professions.length)],
+                    userType: userType,
+                    rating: rating,
+                    date: dateStr,
+                    content: content,
+                    sentiment: sentiment
+                });
+            }
+            
+            return reviews;
+        }
+        
+        // 生成50条评论
+        const reviews = generateReviews(50);
+        let currentPage = 1;
+        const reviewsPerPage = 9;
+        let currentFilter = '全部';
+        let currentSearchTerm = '';
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染初始评论（第一页）
+            renderReviewsPage(currentPage);
+            
+            // 移动端菜单切换
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 评论筛选功能
+            const filterButtons = document.querySelectorAll('.review-filter');
+            filterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    filterButtons.forEach(btn => {
+                        btn.classList.remove('active', 'bg-deepseek-primary', 'text-white');
+                        btn.classList.add('bg-dark-800', 'text-dark-300');
+                    });
+                    this.classList.add('active', 'bg-deepseek-primary', 'text-white');
+                    this.classList.remove('bg-dark-800', 'text-dark-300');
+                    
+                    // 重置页码和搜索
+                    currentPage = 1;
+                    currentFilter = this.textContent.trim();
+                    currentSearchTerm = '';
+                    document.getElementById('review-search').value = '';
+                    
+                    // 筛选评论
+                    renderFilteredReviews(currentFilter);
+                });
+            });
+            
+            // 评论搜索功能
+            document.getElementById('review-search').addEventListener('input', function(e) {
+                currentSearchTerm = e.target.value.toLowerCase();
+                // 重置页码和筛选
+                currentPage = 1;
+                currentFilter = '全部';
+                
+                // 更新筛选按钮状态
+                filterButtons.forEach(btn => {
+                    if (btn.textContent.trim() === '全部') {
+                        btn.classList.add('active', 'bg-deepseek-primary', 'text-white');
+                        btn.classList.remove('bg-dark-800', 'text-dark-300');
+                    } else {
+                        btn.classList.remove('active', 'bg-deepseek-primary', 'text-white');
+                        btn.classList.add('bg-dark-800', 'text-dark-300');
+                    }
+                });
+                
+                renderSearchedReviews(currentSearchTerm);
+            });
+            
+            // 加载更多评论
+            document.getElementById('load-more').addEventListener('click', function() {
+                currentPage++;
+                
+                if (currentSearchTerm.length >= 2) {
+                    renderSearchedReviews(currentSearchTerm);
+                } else if (currentFilter !== '全部') {
+                    renderFilteredReviews(currentFilter);
+                } else {
+                    renderReviewsPage(currentPage);
+                }
+            });
+            
+            // 回到顶部按钮
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.remove('opacity-0', 'invisible');
+                    backToTopBtn.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopBtn.classList.remove('opacity-100', 'visible');
+                    backToTopBtn.classList.add('opacity-0', 'invisible');
+                }
+                
+                // 导航栏滚动效果
+                const navbar = document.getElementById('navbar');
+                if (window.pageYOffset > 100) {
+                    navbar.classList.add('py-2');
+                    navbar.classList.remove('py-4');
+                } else {
+                    navbar.classList.add('py-4');
+                    navbar.classList.remove('py-2');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        // 关闭移动菜单（如果打开）
+                        mobileMenu.classList.add('hidden');
+                        
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+        
+        // 渲染指定页的评论
+        function renderReviewsPage(page) {
+            const container = document.getElementById('reviews-container');
+            if (!container) return;
+            
+            const startIndex = (page - 1) * reviewsPerPage;
+            const endIndex = startIndex + reviewsPerPage;
+            const reviewsToRender = reviews.slice(startIndex, endIndex);
+            
+            // 如果是第一页，清空容器
+            if (page === 1) {
+                container.innerHTML = '';
+            }
+            
+            // 如果没有评论
+            if (reviewsToRender.length === 0) {
+                if (page === 1) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <i class="fa fa-search text-4xl text-dark-500 mb-4"></i>
+                            <p class="text-dark-400">没有找到评价</p>
+                        </div>
+                    `;
+                }
+                // 隐藏加载更多按钮
+                document.getElementById('load-more').style.display = 'none';
+                return;
+            }
+            
+            // 显示加载更多按钮（如果有更多评论）
+            document.getElementById('load-more').style.display = endIndex < reviews.length ? 'flex' : 'none';
+            
+            // 渲染评论
+            reviewsToRender.forEach(review => {
+                addReviewToContainer(review, container);
+            });
+        }
+        
+        // 渲染筛选后的评论
+        function renderFilteredReviews(filter) {
+            let filteredReviews;
+            
+            if (filter === '全部') {
+                filteredReviews = reviews;
+            } else {
+                filteredReviews = reviews.filter(review => review.userType === filter);
+            }
+            
+            renderFilteredReviewsPage(filteredReviews);
+        }
+        
+        // 渲染搜索后的评论
+        function renderSearchedReviews(searchTerm) {
+            if (searchTerm.length < 2) {
+                renderReviewsPage(1);
+                return;
+            }
+            
+            const filteredReviews = reviews.filter(review => 
+                review.content.toLowerCase().includes(searchTerm) || 
+                review.name.toLowerCase().includes(searchTerm) ||
+                review.profession.toLowerCase().includes(searchTerm) ||
+                review.userType.toLowerCase().includes(searchTerm)
+            );
+            
+            renderFilteredReviewsPage(filteredReviews);
+        }
+        
+        // 渲染筛选后的指定页评论
+        function renderFilteredReviewsPage(filteredReviews) {
+            const container = document.getElementById('reviews-container');
+            if (!container) return;
+            
+            const startIndex = (currentPage - 1) * reviewsPerPage;
+            const endIndex = startIndex + reviewsPerPage;
+            const reviewsToRender = filteredReviews.slice(startIndex, endIndex);
+            
+            // 如果是第一页，清空容器
+            if (currentPage === 1) {
+                container.innerHTML = '';
+            }
+            
+            // 如果没有评论
+            if (reviewsToRender.length === 0) {
+                if (currentPage === 1) {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12">
+                            <i class="fa fa-search text-4xl text-dark-500 mb-4"></i>
+                            <p class="text-dark-400">没有找到匹配的评价</p>
+                        </div>
+                    `;
+                }
+                // 隐藏加载更多按钮
+                document.getElementById('load-more').style.display = 'none';
+                return;
+            }
+            
+            // 显示加载更多按钮（如果有更多评论）
+            document.getElementById('load-more').style.display = endIndex < filteredReviews.length ? 'flex' : 'none';
+            
+            // 渲染评论
+            reviewsToRender.forEach(review => {
+                addReviewToContainer(review, container);
+            });
+        }
+        
+        // 添加评论到容器
+        function addReviewToContainer(review, container) {
+            const reviewElement = document.createElement('div');
+            reviewElement.className = 'bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover animate-fade-in';
+            
+            // 生成星级评分HTML
+            let ratingHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= review.rating) {
+                    ratingHtml += '<i class="fa fa-star text-deepseek-accent"></i>';
+                } else {
+                    ratingHtml += '<i class="fa fa-star text-dark-600"></i>';
+                }
+            }
+            
+            // 用户类型标签样式
+            let userTypeClass = '';
+            if (review.userType === '开发者') {
+                userTypeClass = 'bg-deepseek-primary/20 text-deepseek-primary';
+            } else if (review.userType === '企业用户') {
+                userTypeClass = 'bg-blue-500/20 text-blue-400';
+            } else {
+                userTypeClass = 'bg-purple-500/20 text-purple-400';
+            }
+            
+            reviewElement.innerHTML = `
+                <div class="flex items-start mb-4">
+                    <img src="${review.avatar}" alt="${review.name}" class="w-12 h-12 rounded-full object-cover mr-4 border-2 border-dark-700">
+                    <div>
+                        <div class="flex items-center">
+                            <h4 class="font-bold">${review.name}</h4>
+                            <span class="text-xs ${userTypeClass} px-2 py-1 rounded ml-2">${review.userType}</span>
+                        </div>
+                        <div class="text-dark-400 text-sm mb-1">${review.profession}</div>
+                        <div class="flex items-center">
+                            <div class="flex mr-3">
+                                ${ratingHtml}
+                            </div>
+                            <span class="text-xs text-dark-400">${review.date}</span>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-dark-300">${review.content}</p>
+            `;
+            
+            container.appendChild(reviewElement);
+        }
+    </script>
+</body>
+</html>
+    
