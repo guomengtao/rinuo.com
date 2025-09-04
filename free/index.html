@@ -1,841 +1,507 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>资源分类 | 云服务资源导航</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  
-  <!-- Tailwind配置 - 增强色彩系统和排版 -->
-  <script>
-    tailwind.config = {
-      theme: {
-          extend: {
-              colors: {
-                  primary: '#165DFF',      // 主色调：科技蓝
-                  secondary: '#4080FF',    // 辅助色：浅蓝色
-                  dark: '#1D2129',         // 文字深灰
-                  light: '#F2F3F5',        // 背景浅灰
-                  muted: '#86909C',        // 辅助文字灰
-                  success: '#00B42A',      // 成功色：绿色
-                  warning: '#FF7D00',      // 警告色：橙色
-                  danger: '#F53F3F',       // 危险色：红色
-                  // 服务类型颜色
-                  vps: '#0FC6C2',          // VPS：青色
-                  cloud: '#722ED1',        // 云服务器：紫色
-                  hosting: '#FF7D00',      // 虚拟主机：橙色
-                  serverless: '#00B42A',   // Serverless：绿色
-                  trial: '#F53F3F',        // 试用：红色
-                  free: '#165DFF'          // 永久免费：主色
-              },
-              fontFamily: {
-                  inter: ['Inter', 'system-ui', 'sans-serif'],
-              },
-              boxShadow: {
-                  'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
-                  'card-hover': '0 8px 24px rgba(22, 93, 255, 0.15)',
-                  'elevated': '0 12px 24px rgba(0, 0, 0, 0.05)'
-              },
-              animation: {
-                  'fade-in': 'fadeIn 0.5s ease-in-out',
-                  'slide-up': 'slideUp 0.4s ease-out',
-                  'pulse-soft': 'pulseSoft 2s infinite'
-              },
-              keyframes: {
-                  fadeIn: {
-                      '0%': { opacity: '0' },
-                      '100%': { opacity: '1' }
-                  },
-                  slideUp: {
-                      '0%': { transform: 'translateY(10px)', opacity: '0' },
-                      '100%': { transform: 'translateY(0)', opacity: '1' }
-                  },
-                  pulseSoft: {
-                      '0%, 100%': { opacity: '1' },
-                      '50%': { opacity: '0.8' }
-                  }
-              }
-          }
-      }
-    };
-  </script>
-  
-  <!-- 自定义工具类 -->
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .content-auto {
-        content-visibility: auto;
-      }
-      .card-hover {
-        @apply transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
-      }
-      .text-balance {
-        text-wrap: balance;
-      }
-      .category-icon {
-        @apply w-12 h-12 rounded-lg flex items-center justify-center text-xl mb-4;
-      }
-      .gradient-mask-b {
-        mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .bg-grid {
-        background-size: 20px 20px;
-        background-image: 
-          linear-gradient(to right, rgba(22, 93, 255, 0.03) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(22, 93, 255, 0.03) 1px, transparent 1px);
-      }
-    }
-    
-    /* 护眼暗黑模式样式优化 */
-    .dark {
-      color-scheme: dark;
-    }
-    
-    .dark body {
-      background-color: #1a1a1a; /* 更深的背景色，更护眼 */
-      color: #e0e0e0; /* 稍浅的文字，减少对比度 */
-    }
-    
-    .dark .bg-white {
-      background-color: #2d2d2d; /* 卡片背景色 */
-    }
-    
-    .dark .bg-gray-50 {
-      background-color: #242424; /* 浅灰色背景 */
-    }
-    
-    .dark .text-dark {
-      color: #e0e0e0;
-    }
-    
-    .dark .text-muted {
-      color: #b0b0b0; /* 更亮的次要文字 */
-    }
-    
-    .dark .border-gray-100 {
-      border-color: #444;
-    }
-    
-    .dark .hover\:bg-gray-100:hover {
-      background-color: #3a3a3a;
-    }
-    
-    .dark .shadow-sm {
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
-    }
-    
-    .dark .bg-grid {
-      background-image: 
-        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    }
-    
-    /* 降低导航栏和大图亮度 */
-    .header-dim {
-      backdrop-filter: brightness(0.9);
-    }
-    
-    .hero-dim {
-      filter: brightness(0.9);
-    }
-  </style>
-</head>
-
-<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col antialiased bg-grid">
-  <!-- 顶部导航栏 - 降低亮度，增强视觉效果和交互 -->
-  <header class="bg-white/80 header-dim backdrop-blur-md shadow-sm sticky top-0 z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <!-- Logo区域 - 添加动画效果 -->
-      <a href="../index.html" class="flex items-center space-x-2 group">
-        <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center transition-transform duration-300 group-hover:scale-110">
-          <i class="fa fa-cloud-server text-white text-xl"></i>
-        </div>
-        <h1 class="text-xl md:text-2xl font-bold text-primary">云服务资源导航</h1>
-      </a>
-      
-      <!-- 桌面端导航 - 增强交互反馈 -->
-      <div class="hidden md:flex items-center space-x-6">
-        <a href="../index.html" class="text-dark hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full">首页</a>
-        <a href="index.html" class="text-primary font-medium relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary">资源分类</a>
-        <a href="../sitemap.html" class="text-dark hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full">网站地图</a>
-        <a href="../api.html" class="text-dark hover:text-primary transition-colors relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full">API手册</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center group/link">
-          <i class="fa fa-github mr-1 transition-transform group-hover/link:rotate-12"></i> 提交资源
-        </a>
-        <button id="darkModeToggle" class="text-muted hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="切换护眼模式">
-          <i class="fa fa-moon-o text-lg"></i>
-        </button>
-      </div>
-      
-      <!-- 移动端菜单按钮 -->
-      <div class="md:hidden flex items-center space-x-2">
-        <button id="darkModeToggleMobile" class="text-muted hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="切换护眼模式">
-          <i class="fa fa-moon-o text-lg"></i>
-        </button>
-        <button class="text-dark focus:outline-none" id="menuBtn" aria-label="打开菜单">
-          <i class="fa fa-bars text-xl transition-transform duration-300" id="menuIcon"></i>
-        </button>
-      </div>
-    </div>
-    
-    <!-- 移动端导航菜单（带动画） -->
-    <div class="md:hidden hidden bg-white border-t border-gray-100 animate-fade-in" id="mobileMenu">
-      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-        <a href="../index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
-        <a href="index.html" class="py-2 text-primary font-medium">资源分类</a>
-        <a href="../sitemap.html" class="py-2 text-dark hover:text-primary transition-colors">网站地图</a>
-        <a href="../api.html" class="py-2 text-dark hover:text-primary transition-colors">API手册</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
-          <i class="fa fa-github mr-1"></i> 提交资源
-        </a>
-      </div>
-    </div>
-  </header>
-
-  <!-- 页面标题区 - 降低亮度，增强视觉深度 -->
-  <section class="bg-gradient-to-r from-primary to-blue-600 text-white py-10 md:py-16 relative overflow-hidden hero-dim">
-    <!-- 背景装饰元素 -->
-    <div class="absolute inset-0 overflow-hidden opacity-10">
-      <div class="absolute -right-16 -top-16 w-64 h-64 rounded-full bg-white"></div>
-      <div class="absolute left-1/4 bottom-0 w-96 h-96 rounded-full bg-white"></div>
-      <div class="absolute left-1/3 top-1/3 w-32 h-32 rounded-full bg-white"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div class="animate-slide-up">
-          <div class="flex items-center space-x-3 mb-4">
-            <i class="fa fa-th-large text-3xl"></i>
-            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold">资源分类</h2>
-          </div>
-          <p class="text-white/90 max-w-2xl text-balance">
-            浏览所有资源分类，快速找到您需要的开发工具和服务。每个分类都包含经过筛选的优质免费资源，帮助您降低项目成本。
-          </p>
-          
-          <div class="flex flex-wrap gap-3 mt-6">
-            <a href="#categories" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors backdrop-blur-sm">
-              <i class="fa fa-list-alt mr-2"></i> 浏览所有分类
-            </a>
-            <a href="index.html" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors backdrop-blur-sm">
-              <i class="fa fa-th mr-2"></i> 查看全部资源
-            </a>
-          </div>
-        </div>
-        
-        <!-- 数据概览卡片 - 增强视觉层次 -->
-        <div class="bg-white/15 backdrop-blur-md rounded-lg p-5 flex flex-col space-y-4 max-w-xs shadow-elevated animate-slide-up" style="animation-delay: 0.1s">
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">分类总数</span>
-            <span class="font-bold" id="totalCategories">0</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">资源总数</span>
-            <span class="font-bold" id="totalResources">0</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">永久免费</span>
-            <span class="font-bold" id="permanentFree">0</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">开源项目</span>
-            <span class="font-bold" id="openSourceCount">0</span>
-          </div>
-          <div class="border-t border-white/20 pt-4 mt-2">
-            <span class="text-white/90 text-sm">最后更新：<span id="lastUpdated">--</span></span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 面包屑导航 -->
-  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
-    <nav class="flex text-sm" aria-label="Breadcrumb">
-      <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-          <a href="../index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
-            <i class="fa fa-home mr-2"></i>首页
-          </a>
-        </li>
-        <li>
-          <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <a href="categories.html" class="text-primary font-medium">资源分类</a>
-          </div>
-        </li>
-      </ol>
-    </nav>
-  </div>
-
-  <!-- 搜索和筛选区 -->
-  <div class="container mx-auto px-4 py-6">
-    <div class="bg-white rounded-xl border border-gray-100 p-4 md:p-6 shadow-sm">
-      <div class="flex flex-col md:flex-row md:items-center gap-4">
-        <div class="relative flex-grow">
-          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
-          <input 
-            type="text" 
-            id="categorySearch" 
-            placeholder="搜索资源分类..." 
-            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
-          >
-        </div>
-        <div class="w-full md:w-auto">
-          <select 
-            id="categorySort" 
-            class="w-full md:w-auto px-4 py-3 rounded-lg border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all bg-white appearance-none pr-10 relative"
-          >
-            <option value="name">按名称排序</option>
-            <option value="count-desc">资源数量从多到少</option>
-            <option value="count-asc">资源数量从少到多</option>
-            <option value="updated">按更新时间</option>
-          </select>
-          <div class="pointer-events-none absolute right-10 top-1/2 -translate-y-1/2 text-muted">
-            <i class="fa fa-chevron-down text-xs"></i>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- 核心内容区 -->
-  <main class="container mx-auto px-4 py-6 flex-grow">
-    <!-- 页面标题 -->
-    <div class="text-center mb-10">
-      <h1 class="text-3xl md:text-4xl font-bold mb-4 text-balance">免费资源分类导航</h1>
-      <p class="text-muted text-lg max-w-3xl mx-auto text-balance">
-        精选各类免费开发者资源，涵盖AI、API、基础设施、开发工具等全品类服务，助力项目开发与创新
-      </p>
-    </div>
-
-    <!-- 分类按组展示 - 每组一行显示相关分类 -->
-    <div id="categories" class="space-y-8 mb-12">
-      <!-- 分类组将通过JavaScript动态生成 -->
-    </div>
-
-    <!-- 快速链接 - 增强交互性 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
-      <h3 class="text-lg font-semibold mb-4">快速链接</h3>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="../index.html" class="flex items-center text-primary hover:text-primary/80 transition-colors group">
-          <i class="fa fa-home mr-2 transition-transform group-hover:scale-110"></i>
-          <span>返回首页</span>
-        </a>
-        <a href="../sitemap.html" class="flex items-center text-primary hover:text-primary/80 transition-colors group">
-          <i class="fa fa-sitemap mr-2 transition-transform group-hover:scale-110"></i>
-          <span>网站地图</span>
-        </a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="flex items-center text-primary hover:text-primary/80 transition-colors group">
-          <i class="fa fa-github mr-2 transition-transform group-hover:rotate-12"></i>
-          <span>提交资源</span>
-        </a>
-        <a href="https://github.com/guomengtao/rinuo.com" target="_blank" class="flex items-center text-primary hover:text-primary/80 transition-colors group">
-          <i class="fa fa-star mr-2 transition-transform group-hover:scale-110"></i>
-          <span>项目主页</span>
-        </a>
-      </div>
-    </div>
-  </main>
-
-  <!-- 页脚 - 增强视觉效果和交互 -->
-  <footer class="bg-dark text-white py-10 mt-12 relative overflow-hidden">
-    <!-- 背景装饰 -->
-    <div class="absolute inset-0 opacity-5">
-      <div class="absolute -left-20 -bottom-20 w-64 h-64 rounded-full bg-primary"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-              <i class="fa fa-cloud-server text-white text-xl"></i>
-            </div>
-            <h2 class="text-xl font-bold text-white">云服务资源导航</h2>
-          </div>
-          <p class="text-gray-400 text-sm">
-            精选全球优质免费开发资源，涵盖各类API、工具和服务，详细对比各平台的免费额度、使用限制和适用场景，帮助开发者找到适合的免费资源解决方案。
-          </p>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium mb-4">快速链接</h3>
-          <ul class="space-y-2 text-gray-400">
-            <li><a href="categories.html" class="hover:text-primary transition-colors">资源分类</a></li>
-            <li><a href="index.html" class="hover:text-primary transition-colors">免费资源总览</a></li>
-            <li><a href="ai.html" class="hover:text-primary transition-colors">AI接口资源</a></li>
-            <li><a href="vps.html" class="hover:text-primary transition-colors">免费云服务</a></li>
-            <li><a href="https://github.com/guomengtao/rinuo.com" target="_blank" class="hover:text-primary transition-colors">提交资源</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium mb-4">热门分类</h3>
-          <ul class="space-y-2 text-gray-400">
-            <li><a href="domain.html" class="hover:text-primary transition-colors">域名服务</a></li>
-            <li><a href="cdn.html" class="hover:text-primary transition-colors">CDN服务</a></li>
-            <li><a href="ai.html" class="hover:text-primary transition-colors">人工智能</a></li>
-            <li><a href="icons.html" class="hover:text-primary transition-colors">图标资源</a></li>
-            <li><a href="database.html" class="hover:text-primary transition-colors">数据库</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium mb-4">关注我们</h3>
-          <div class="flex space-x-4">
-            <a href="https://github.com/guomengtao/rinuo.com" target="_blank" class="text-gray-400 hover:text-primary transition-colors text-xl group">
-              <i class="fa fa-github transition-transform group-hover:scale-110"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl group">
-              <i class="fa fa-twitter transition-transform group-hover:scale-110"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl group">
-              <i class="fa fa-linkedin transition-transform group-hover:scale-110"></i>
-            </a>
-          </div>
-          <p class="text-gray-400 text-sm mt-4">
-            订阅更新，获取最新免费资源信息
-          </p>
-          <div class="mt-2 flex" id="subscriptionForm">
-            <input type="email" placeholder="您的邮箱地址" class="px-3 py-2 rounded-l-lg text-dark flex-grow text-sm focus:outline-none focus:ring-2 focus:ring-primary" id="emailInput">
-            <button class="bg-primary hover:bg-primary/90 text-white px-3 py-2 rounded-r-lg transition-colors" id="subscribeBtn">
-              订阅
-            </button>
-          </div>
-          <div id="subscriptionMessage" class="mt-2 text-xs hidden"></div>
-        </div>
-      </div>
-      
-      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
-        <p>© 2025 云服务资源导航. 保留所有权利.</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- 回到顶部按钮 - 增强视觉效果 -->
-  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible z-50 group">
-    <i class="fa fa-chevron-up transition-transform group-hover:scale-110"></i>
-  </button>
-
-  <!-- 通知提示组件 -->
-  <div id="notification" class="fixed top-6 right-6 bg-dark text-white px-4 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 flex items-center z-50 max-w-xs">
-    <i class="fa fa-check-circle text-success mr-2"></i>
-    <span id="notificationText">操作成功</span>
-  </div>
-
-  <script>
-    // 元素引用
-    const categoriesContainer = document.getElementById('categories');
-    const categorySearchInput = document.getElementById('categorySearch');
-    const categorySortSelect = document.getElementById('categorySort');
-    const menuBtn = document.getElementById('menuBtn');
-    const menuIcon = document.getElementById('menuIcon');
-    const mobileMenu = document.getElementById('mobileMenu');
-    const totalCategoriesEl = document.getElementById('totalCategories');
-    const totalResourcesEl = document.getElementById('totalResources');
-    const permanentFreeEl = document.getElementById('permanentFree');
-    const openSourceCountEl = document.getElementById('openSourceCount');
-    const lastUpdatedEl = document.getElementById('lastUpdated');
-    const backToTopBtn = document.getElementById('backToTop');
-    const subscribeBtn = document.getElementById('subscribeBtn');
-    const emailInput = document.getElementById('emailInput');
-    const subscriptionMessage = document.getElementById('subscriptionMessage');
-    const notification = document.getElementById('notification');
-    const notificationText = document.getElementById('notificationText');
-
-    // 分类数据 - 按组组织
-    const categoryGroups = [
-      {
-        "groupName": "云基础设施",
-        "categories": [
-          {"category": "VPS服务", "categorySlug": "vps", "slug": "vps", "updatedAt": "2025-08-31", "serviceCount": 38, "isPopular": true, "icon": "fa-server"},
-          {"category": "CDN服务", "categorySlug": "cdn", "slug": "cdn", "updatedAt": "2025-08-31", "serviceCount": 31, "isPopular": true, "icon": "fa-cloud-download"},
-          {"category": "存储服务", "categorySlug": "storage", "slug": "storage", "updatedAt": "2025-08-31", "serviceCount": 20, "isPopular": false, "icon": "fa-hdd-o"},
-          {"category": "Serverless", "categorySlug": "serverless", "slug": "serverless", "updatedAt": "2025-08-31", "serviceCount": 8, "isPopular": false, "icon": "fa-cloud"}
-        ]
-      },
-      {
-        "groupName": "数据与数据库",
-        "categories": [
-          {"category": "数据库", "categorySlug": "database", "slug": "database", "updatedAt": "2025-08-31", "serviceCount": 19, "isPopular": true, "icon": "fa-database"},
-          {"category": "股票数据", "categorySlug": "stock", "slug": "stock", "updatedAt": "2025-08-31", "serviceCount": 35, "isPopular": false, "icon": "fa-line-chart"},
-          {"category": "日志分析", "categorySlug": "log", "slug": "log", "updatedAt": "2025-08-31", "serviceCount": 18, "isPopular": false, "icon": "fa-list-alt"},
-          {"category": "Supabase", "categorySlug": "supabase", "slug": "supabase", "updatedAt": "2025-08-31", "serviceCount": 18, "isPopular": false, "icon": "fa-database"}
-        ]
-      },
-      {
-        "groupName": "人工智能",
-        "categories": [
-          {"category": "人工智能", "categorySlug": "ai", "slug": "ai", "updatedAt": "2025-08-31", "serviceCount": 26, "isPopular": true, "icon": "fa-brain"},
-          {"category": "AI文本", "categorySlug": "ai-text", "slug": "ai-text", "updatedAt": "2025-08-31", "serviceCount": 24, "isPopular": true, "icon": "fa-file-text"},
-          {"category": "AI图像", "categorySlug": "ai-image", "slug": "ai-image", "updatedAt": "2025-08-31", "serviceCount": 15, "isPopular": true, "icon": "fa-paint-brush"},
-          {"category": "OCR识别", "categorySlug": "ocr", "slug": "ocr", "updatedAt": "2025-08-31", "serviceCount": 26, "isPopular": false, "icon": "fa-file-text-o"}
-        ]
-      },
-      {
-        "groupName": "开发工具与服务",
-        "categories": [
-          {"category": "API服务", "categorySlug": "api", "slug": "api", "updatedAt": "2025-08-31", "serviceCount": 24, "isPopular": true, "icon": "fa-exchange"},
-          {"category": "开发工具", "categorySlug": "devtools", "slug": "devtools", "updatedAt": "2025-08-31", "serviceCount": 26, "isPopular": true, "icon": "fa-code"},
-          {"category": "CI/CD工具", "categorySlug": "cicd", "slug": "cicd", "updatedAt": "2025-08-31", "serviceCount": 17, "isPopular": false, "icon": "fa-refresh"},
-          {"category": "测试工具", "categorySlug": "test", "slug": "test", "updatedAt": "2025-08-31", "serviceCount": 12, "isPopular": false, "icon": "fa-check-square-o"}
-        ]
-      },
-      {
-        "groupName": "内容与媒体",
-        "categories": [
-          {"category": "图标资源", "categorySlug": "icons", "slug": "icons", "updatedAt": "2025-08-31", "serviceCount": 42, "isPopular": true, "icon": "fa-picture-o"},
-          {"category": "字体资源", "categorySlug": "fonts", "slug": "fonts", "updatedAt": "2025-08-31", "serviceCount": 12, "isPopular": false, "icon": "fa-font"},
-          {"category": "图片处理", "categorySlug": "image", "slug": "image", "updatedAt": "2025-08-31", "serviceCount": 18, "isPopular": false, "icon": "fa-picture-o"},
-          {"category": "视频处理", "categorySlug": "video", "slug": "video", "updatedAt": "2025-08-31", "serviceCount": 22, "isPopular": false, "icon": "fa-film"}
-        ]
-      },
-      {
-        "groupName": "通信与通知",
-        "categories": [
-          {"category": "短信服务", "categorySlug": "sms", "slug": "sms", "updatedAt": "2025-08-31", "serviceCount": 28, "isPopular": false, "icon": "fa-mobile"},
-          {"category": "邮件服务", "categorySlug": "email", "slug": "email", "updatedAt": "2025-08-31", "serviceCount": 24, "isPopular": false, "icon": "fa-envelope-o"},
-          {"category": "推送服务", "categorySlug": "push", "slug": "push", "updatedAt": "2025-08-31", "serviceCount": 22, "isPopular": false, "icon": "fa-bell-o"},
-          {"category": "语音服务", "categorySlug": "voice", "slug": "voice", "updatedAt": "2025-08-31", "serviceCount": 16, "isPopular": false, "icon": "fa-microphone"}
-        ]
-      },
-      {
-        "groupName": "信息与定位",
-        "categories": [
-          {"category": "翻译服务", "categorySlug": "translate", "slug": "translate", "updatedAt": "2025-08-31", "serviceCount": 22, "isPopular": true, "icon": "fa-language"},
-          {"category": "地图服务", "categorySlug": "map", "slug": "map", "updatedAt": "2025-08-31", "serviceCount": 22, "isPopular": false, "icon": "fa-map-marker"},
-          {"category": "新闻资讯", "categorySlug": "news", "slug": "news", "updatedAt": "2025-08-31", "serviceCount": 25, "isPopular": false, "icon": "fa-newspaper-o"},
-          {"category": "体育数据", "categorySlug": "sport", "slug": "sport", "updatedAt": "2025-08-31", "serviceCount": 18, "isPopular": false, "icon": "fa-futbol-o"}
-        ]
-      },
-      {
-        "groupName": "其他服务",
-        "categories": [
-          {"category": "域名服务", "categorySlug": "domain", "slug": "domain", "updatedAt": "2025-08-31", "serviceCount": 32, "isPopular": true, "icon": "fa-globe"},
-          {"category": "监控服务", "categorySlug": "monitor", "slug": "monitor", "updatedAt": "2025-08-31", "serviceCount": 15, "isPopular": false, "icon": "fa-eye"},
-          {"category": "支付服务", "categorySlug": "payment", "slug": "payment", "updatedAt": "2025-08-31", "serviceCount": 15, "isPopular": false, "icon": "fa-credit-card"},
-          {"category": "OTP验证", "categorySlug": "otp", "slug": "otp", "updatedAt": "2025-08-31", "serviceCount": 21, "isPopular": false, "icon": "fa-key"},
-          {"category": "法律工具", "categorySlug": "law", "slug": "law", "updatedAt": "2025-08-31", "serviceCount": 26, "isPopular": false, "icon": "fa-gavel"},
-          {"category": "健康医疗", "categorySlug": "health", "slug": "health", "updatedAt": "2025-08-31", "serviceCount": 16, "isPopular": false, "icon": "fa-heartbeat"},
-          {"category": "教育资源", "categorySlug": "education", "slug": "education", "updatedAt": "2025-08-31", "serviceCount": 18, "isPopular": false, "icon": "fa-graduation-cap"},
-          {"category": "日常工具", "categorySlug": "day", "slug": "day", "updatedAt": "2025-08-31", "serviceCount": 6, "isPopular": false, "icon": "fa-wrench"},
-          {"category": "使用指南", "categorySlug": "guide", "slug": "guide", "updatedAt": "2025-08-31", "serviceCount": 5, "isPopular": false, "icon": "fa-book"}
-        ]
-      }
-    ];
-
-    // 服务数据（用于统计）
-    const servicesData = [
-      {"id": "service-1", "title": "示例服务1", "categorySlug": "domain", "isFree": true, "isOpenSource": false},
-      {"id": "service-2", "title": "示例服务2", "categorySlug": "ai", "isFree": true, "isOpenSource": true},
-      {"id": "service-3", "title": "示例服务3", "categorySlug": "cdn", "isFree": false, "isOpenSource": false},
-      {"id": "service-4", "title": "示例服务4", "categorySlug": "icons", "isFree": true, "isOpenSource": true},
-      {"id": "service-5", "title": "示例服务5", "categorySlug": "database", "isFree": false, "isOpenSource": true}
-    ];
-
-    // 所有分类的平面列表（用于搜索和统计）
-    const allCategories = categoryGroups.flatMap(group => group.categories);
-
-    // 护眼暗黑模式切换 - 增强用户体验
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const darkModeToggleMobile = document.getElementById('darkModeToggleMobile');
-    const html = document.documentElement;
-    
-    // 检查本地存储中的护眼模式设置
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if (isDarkMode) {
-      html.classList.add('dark');
-      if (darkModeToggle) darkModeToggle.innerHTML = '<i class="fa fa-sun-o text-lg"></i>';
-      if (darkModeToggleMobile) darkModeToggleMobile.innerHTML = '<i class="fa fa-sun-o text-lg"></i>';
-    }
-    
-    function toggleDarkMode() {
-      html.classList.toggle('dark');
-      const isDark = html.classList.contains('dark');
-      localStorage.setItem('darkMode', isDark);
-      
-      const icon = isDark ? '<i class="fa fa-sun-o text-lg"></i>' : '<i class="fa fa-moon-o text-lg"></i>';
-      if (darkModeToggle) darkModeToggle.innerHTML = icon;
-      if (darkModeToggleMobile) darkModeToggleMobile.innerHTML = icon;
-      
-      // 显示切换提示
-      showNotification(isDark ? '已切换到护眼模式' : '已切换到明亮模式');
-    }
-    
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', toggleDarkMode);
-    }
-    
-    if (darkModeToggleMobile) {
-      darkModeToggleMobile.addEventListener('click', toggleDarkMode);
-    }
-    
-    // 移动端菜单切换 - 增强动画效果
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-      // 切换图标
-      if (mobileMenu.classList.contains('hidden')) {
-        menuIcon.classList.remove('fa-times', 'rotate-90');
-        menuIcon.classList.add('fa-bars');
-      } else {
-        menuIcon.classList.remove('fa-bars');
-        menuIcon.classList.add('fa-times', 'rotate-90');
-      }
-    });
-
-    // 回到顶部按钮逻辑 - 增强交互体验
-    window.addEventListener('scroll', () => {
-      // 显示/隐藏回到顶部按钮
-      if (window.scrollY > 300) {
-        backToTopBtn.classList.remove('opacity-0', 'invisible');
-        backToTopBtn.classList.add('opacity-100', 'visible');
-      } else {
-        backToTopBtn.classList.add('opacity-0', 'invisible');
-        backToTopBtn.classList.remove('opacity-100', 'visible');
-      }
-
-      // 导航栏滚动效果
-      const header = document.querySelector('header');
-      if (window.scrollY > 50) {
-        header.classList.add('py-2', 'shadow');
-        header.classList.remove('py-4', 'shadow-sm');
-      } else {
-        header.classList.add('py-4', 'shadow-sm');
-        header.classList.remove('py-2', 'shadow');
-      }
-    });
-
-    // 回到顶部功能
-    backToTopBtn.addEventListener('click', () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-
-    // 订阅功能实现 - 增强用户反馈
-    subscribeBtn.addEventListener('click', () => {
-      const email = emailInput.value.trim();
-      
-      // 简单的邮箱验证
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      
-      if (!email) {
-        showSubscriptionMessage('请输入您的邮箱地址', 'error');
-        return;
-      }
-      
-      if (!emailRegex.test(email)) {
-        showSubscriptionMessage('请输入有效的邮箱地址', 'error');
-        return;
-      }
-      
-      // 模拟API调用
-      showSubscriptionMessage('正在订阅中...', 'info');
-      
-      // 模拟异步请求
-      setTimeout(() => {
-        // 成功后显示全局通知
-        showNotification('订阅成功！我们会定期发送最新资源信息。');
-        emailInput.value = '';
-        subscriptionMessage.classList.add('hidden');
-        
-        // 实际应用中，这里应该发送请求到后端
-        console.log(`订阅邮箱: ${email}`);
-      }, 1500);
-    });
-
-    // 显示订阅消息
-    function showSubscriptionMessage(text, type) {
-      subscriptionMessage.textContent = text;
-      subscriptionMessage.classList.remove('hidden', 'text-danger', 'text-success', 'text-primary');
-      
-      switch(type) {
-        case 'error':
-          subscriptionMessage.classList.add('text-danger');
-          break;
-        case 'success':
-          subscriptionMessage.classList.add('text-success');
-          break;
-        default:
-          subscriptionMessage.classList.add('text-primary');
-      }
-    }
-
-    // 显示全局通知
-    function showNotification(text, isSuccess = true) {
-      notificationText.textContent = text;
-      
-      // 移除之前的图标类
-      notification.querySelector('i').className = '';
-      
-      // 添加新图标
-      if (isSuccess) {
-        notification.querySelector('i').className = 'fa fa-check-circle text-success mr-2';
-      } else {
-        notification.querySelector('i').className = 'fa fa-exclamation-circle text-warning mr-2';
-      }
-      
-      // 显示通知
-      notification.classList.remove('translate-x-full');
-      
-      // 3秒后隐藏
-      setTimeout(() => {
-        notification.classList.add('translate-x-full');
-      }, 3000);
-    }
-
-    // 渲染分类组 - 每组一行显示相关分类
-    function renderCategoryGroups(groups) {
-      categoriesContainer.innerHTML = '';
-      
-      // 检查是否有匹配的分类
-      const hasCategories = groups.some(group => group.categories.length > 0);
-      
-      if (!hasCategories) {
-        categoriesContainer.innerHTML = `
-          <div class="flex flex-col items-center justify-center py-16 text-center">
-            <i class="fa fa-search text-4xl text-muted mb-3"></i>
-            <p class="text-muted">未找到匹配的分类</p>
-            <button 
-              class="mt-4 px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors"
-              onclick="document.getElementById('categorySearch').value = ''; filterAndSortCategories()"
-            >
-              清除搜索
-            </button>
-          </div>
-        `;
-        return;
-      }
-      
-      groups.forEach((group, groupIndex) => {
-        // 跳过没有分类的组
-        if (group.categories.length === 0) return;
-        
-        const groupElement = document.createElement('div');
-        groupElement.className = 'animate-fade-in';
-        groupElement.style.animationDelay = `${groupIndex * 0.1}s`;
-        
-        // 构建分类项
-        const categoryItems = group.categories.map((category, itemIndex) => `
-          <a href="${category.slug}.html" class="flex items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group">
-            <i class="fa ${category.icon} text-primary mr-2 transition-transform group-hover:scale-110"></i>
-            <span class="font-medium group-hover:text-primary transition-colors">${category.category}</span>
-            <span class="ml-2 text-xs bg-gray-100 dark:bg-gray-700 text-muted px-2 py-0.5 rounded-full">${category.serviceCount}</span>
-            ${category.isPopular ? '<span class="ml-2 text-xs bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 px-2 py-0.5 rounded-full">热门</span>' : ''}
-          </a>
-        `).join('');
-        
-        groupElement.innerHTML = `
-          <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-gray-100 bg-gray-50 dark:bg-gray-800/50">
-              <h3 class="font-semibold text-lg">${group.groupName}</h3>
-            </div>
-            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-              ${categoryItems}
-            </div>
-          </div>
-        `;
-        
-        categoriesContainer.appendChild(groupElement);
-      });
-    }
-
-    // 筛选和排序分类组 - 增强用户体验
-    function filterAndSortCategories() {
-      const searchTerm = categorySearchInput.value.toLowerCase().trim();
-      const sortOption = categorySortSelect.value;
-      
-      // 复制原始分组结构
-      const filteredGroups = JSON.parse(JSON.stringify(categoryGroups));
-      
-      // 筛选每个组中的分类
-      filteredGroups.forEach(group => {
-        group.categories = group.categories.filter(category => 
-          category.category.toLowerCase().includes(searchTerm)
-        );
-        
-        // 对组内分类进行排序
-        sortCategories(group.categories, sortOption);
-      });
-      
-      // 按组名排序所有组
-      filteredGroups.sort((a, b) => a.groupName.localeCompare(b.groupName));
-      
-      renderCategoryGroups(filteredGroups);
-      
-      // 显示筛选结果提示
-      if (searchTerm) {
-        const totalMatched = filteredGroups.reduce((sum, group) => sum + group.categories.length, 0);
-        showNotification(`找到 ${totalMatched} 个匹配的分类`);
-      }
-    }
-
-    // 对分类数组进行排序
-    function sortCategories(categories, sortOption) {
-      switch(sortOption) {
-        case 'name':
-          categories.sort((a, b) => a.category.localeCompare(b.category));
-          break;
-        case 'count-desc':
-          categories.sort((a, b) => b.serviceCount - a.serviceCount);
-          break;
-        case 'count-asc':
-          categories.sort((a, b) => a.serviceCount - b.serviceCount);
-          break;
-        case 'updated':
-          categories.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-          break;
-      }
-    }
-
-    // 计算统计数据
-    function calculateStats() {
-      // 分类总数
-      totalCategoriesEl.textContent = allCategories.length;
-      
-      // 资源总数
-      const totalResources = allCategories.reduce((sum, category) => sum + category.serviceCount, 0);
-      totalResourcesEl.textContent = totalResources;
-      
-      // 永久免费和开源项目统计
-      const permanentFree = servicesData.filter(service => service.isFree).length;
-      const openSource = servicesData.filter(service => service.isOpenSource).length;
-      
-      permanentFreeEl.textContent = permanentFree;
-      openSourceCountEl.textContent = openSource;
-      
-      // 最后更新时间（取最新的）
-      const latestUpdate = new Date(Math.max(...allCategories.map(c => new Date(c.updatedAt))));
-      lastUpdatedEl.textContent = latestUpdate.toLocaleDateString();
-    }
-
-    // 初始化
-    function init() {
-      // 初始渲染所有分类组
-      renderCategoryGroups(categoryGroups);
-      
-      // 计算统计数据
-      calculateStats();
-      
-      // 绑定事件
-      categorySearchInput.addEventListener('input', filterAndSortCategories);
-      categorySortSelect.addEventListener('change', filterAndSortCategories);
-      
-      // 支持按Enter键搜索
-      categorySearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-          filterAndSortCategories();
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云服务资源导航</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        github: {
+                            bg: '#161B22',
+                            sidebar: '#0D1117',
+                            card: '#1E242E',
+                            hover: '#2D333B',
+                            primary: '#2383E2',
+                            success: '#2EA043',
+                            danger: '#CF222E',
+                            text: '#E6EDF3',
+                            textSecondary: '#8B949E',
+                            border: '#30363D'
+                        }
+                    },
+                    fontFamily: {
+                        github: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+                    }
+                }
+            }
         }
-      });
-    }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background-color: rgba(156, 163, 175, 0.5);
+                border-radius: 3px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-github-bg text-github-text font-github min-h-screen flex flex-col">
+    <!-- Header Navigation -->
+    <header class="bg-github-sidebar border-b border-github-border sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo and Search -->
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="text-white text-xl font-bold flex items-center">
+                        <i class="fa fa-cloud mr-2"></i>
+                        <span class="hidden md:inline">云服务资源导航</span>
+                    </a>
+                    
+                    <div class="hidden md:flex relative">
+                        <input type="text" placeholder="搜索资源分类..." 
+                            class="bg-github-card border border-github-border rounded px-3 py-1.5 text-sm w-64 focus:outline-none focus:ring-1 focus:ring-github-primary focus:border-github-primary">
+                        <span class="absolute right-3 top-1.5 text-github-textSecondary text-xs">⌘K</span>
+                    </div>
+                    
+                    <!-- Navigation Links -->
+                    <nav class="hidden md:flex space-x-6">
+                        <a href="#" class="text-sm font-medium hover:text-white transition-colors">首页</a>
+                        <a href="#" class="text-sm font-medium text-white border-b-2 border-github-primary pb-4">资源分类</a>
+                        <a href="#" class="text-sm font-medium hover:text-white transition-colors">网站地图</a>
+                        <a href="#" class="text-sm font-medium hover:text-white transition-colors">API手册</a>
+                        <a href="#" class="text-sm font-medium hover:text-white transition-colors">提交资源</a>
+                    </nav>
+                </div>
+                
+                <!-- Right Side -->
+                <div class="flex items-center space-x-4">
+                    <button class="bg-github-primary hover:bg-opacity-90 text-white text-sm px-3 py-1.5 rounded-md transition-colors hidden sm:block">
+                        提交资源
+                    </button>
+                    
+                    <div class="relative group md:hidden">
+                        <button class="p-2 rounded-full hover:bg-github-hover transition-colors">
+                            <i class="fa fa-bars"></i>
+                        </button>
+                        
+                        <!-- Mobile Menu -->
+                        <div class="absolute right-0 mt-2 w-48 bg-github-card border border-github-border rounded-md shadow-lg py-1 hidden group-hover:block z-10">
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-github-hover">首页</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-github-hover">资源分类</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-github-hover">网站地图</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-github-hover">API手册</a>
+                            <a href="#" class="block px-4 py-2 text-sm hover:bg-github-hover">提交资源</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
 
-    // 启动
-    init();
-  </script>
+    <!-- Main Content -->
+    <main class="flex-1 flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-github-sidebar border-r border-github-border hidden md:block h-[calc(100vh-4rem)] sticky top-16 overflow-y-auto scrollbar-thin">
+            <div class="p-4">
+                <h3 class="text-xs font-semibold text-github-textSecondary uppercase tracking-wider mb-3">快速链接</h3>
+                
+                <div class="space-y-1">
+                    <a href="#" class="flex items-center py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                        <i class="fa fa-home mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                        <span>返回首页</span>
+                    </a>
+                    <a href="#" class="flex items-center py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                        <i class="fa fa-sitemap mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                        <span>网站地图</span>
+                    </a>
+                    <a href="#" class="flex items-center py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                        <i class="fa fa-plus-circle mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                        <span>提交资源</span>
+                    </a>
+                    <a href="#" class="flex items-center py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                        <i class="fa fa-project-diagram mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                        <span>项目主页</span>
+                    </a>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-github-border">
+                    <h3 class="text-xs font-semibold text-github-textSecondary uppercase tracking-wider mb-3">热门分类</h3>
+                    
+                    <div class="space-y-1">
+                        <a href="#" class="flex items-center justify-between py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                            <div class="flex items-center">
+                                <i class="fa fa-globe mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                                <span>域名服务</span>
+                            </div>
+                            <span class="text-xs text-github-textSecondary">32</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                            <div class="flex items-center">
+                                <i class="fa fa-server mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                                <span>CDN服务</span>
+                            </div>
+                            <span class="text-xs text-github-textSecondary">31</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                            <div class="flex items-center">
+                                <i class="fa fa-brain mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                                <span>人工智能</span>
+                            </div>
+                            <span class="text-xs text-github-textSecondary">26</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                            <div class="flex items-center">
+                                <i class="fa fa-icons mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                                <span>图标资源</span>
+                            </div>
+                            <span class="text-xs text-github-textSecondary">42</span>
+                        </a>
+                        <a href="#" class="flex items-center justify-between py-1.5 px-3 rounded-md hover:bg-github-hover text-sm font-medium group">
+                            <div class="flex items-center">
+                                <i class="fa fa-database mr-3 text-github-textSecondary group-hover:text-white transition-colors"></i>
+                                <span>数据库</span>
+                            </div>
+                            <span class="text-xs text-github-textSecondary">19</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-6 border-t border-github-border">
+                    <h3 class="text-xs font-semibold text-github-textSecondary uppercase tracking-wider mb-3">项目介绍</h3>
+                    <p class="text-sm text-github-textSecondary">
+                        云服务资源导航精选全球优质免费开发资源，涵盖各类API、工具和服务，详细对比各平台的免费额度、使用限制和适用场景，帮助开发者找到适合的免费资源解决方案。
+                    </p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 overflow-x-hidden">
+            <!-- Page Header -->
+            <div class="bg-github-sidebar border-b border-github-border">
+                <div class="container mx-auto px-4 py-6">
+                    <h1 class="text-2xl font-bold">资源分类</h1>
+                    <p class="mt-2 text-github-textSecondary">
+                        浏览所有资源分类，快速找到您需要的开发工具和服务。每个分类都包含经过筛选的优质免费资源，帮助您降低项目成本。
+                    </p>
+                    
+                    <div class="mt-4 flex flex-wrap items-center gap-4">
+                        <a href="#" class="inline-flex items-center bg-github-primary hover:bg-opacity-90 text-white text-sm px-3 py-1.5 rounded-md transition-colors">
+                            <i class="fa fa-th-list mr-2"></i>浏览所有分类
+                        </a>
+                        <a href="#" class="inline-flex items-center bg-github-card hover:bg-github-hover text-sm px-3 py-1.5 rounded-md transition-colors">
+                            <i class="fa fa-search mr-2"></i>查看全部资源
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stats Bar -->
+            <div class="bg-github-bg border-b border-github-border">
+                <div class="container mx-auto px-4">
+                    <div class="flex flex-wrap items-center py-3 gap-6">
+                        <div class="flex items-center">
+                            <span class="text-github-textSecondary mr-2">分类总数:</span>
+                            <span class="font-medium">37</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-github-textSecondary mr-2">资源总数:</span>
+                            <span class="font-medium">782</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-github-textSecondary mr-2">永久免费:</span>
+                            <span class="font-medium text-github-success">3</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-github-textSecondary mr-2">开源项目:</span>
+                            <span class="font-medium text-github-success">3</span>
+                        </div>
+                        <div class="ml-auto text-sm text-github-textSecondary">
+                            最后更新：8/31/2025
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content Tabs -->
+            <div class="bg-github-bg border-b border-github-border">
+                <div class="container mx-auto px-4">
+                    <div class="flex flex-wrap items-center py-3">
+                        <div class="flex space-x-4 mr-6">
+                            <a href="#" class="text-sm text-github-textSecondary hover:text-white">首页</a>
+                            <span class="text-github-textSecondary">/</span>
+                            <a href="#" class="text-sm text-github-primary hover:underline">资源分类</a>
+                        </div>
+                        
+                        <div class="relative flex-1 max-w-md mt-2 sm:mt-0">
+                            <input type="text" placeholder="搜索资源分类..." 
+                                class="bg-github-card border border-github-border rounded px-3 py-1.5 text-sm w-full focus:outline-none focus:ring-1 focus:ring-github-primary focus:border-github-primary">
+                            <i class="fa fa-search absolute right-3 top-1.5 text-github-textSecondary"></i>
+                        </div>
+                        
+                        <div class="ml-auto mt-2 sm:mt-0">
+                            <select class="bg-github-card border border-github-border text-sm rounded px-3 py-1.5 focus:outline-none focus:ring-1 focus:ring-github-primary">
+                                <option>按名称排序</option>
+                                <option>按资源数量排序</option>
+                                <option>按热度排序</option>
+                                <option>按更新时间排序</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="container mx-auto px-4 py-6">
+                <div class="bg-github-card rounded-lg border border-github-border p-4 mb-6">
+                    <h2 class="text-lg font-medium mb-2">免费资源分类导航</h2>
+                    <p class="text-github-textSecondary text-sm">
+                        精选各类免费开发者资源，涵盖AI、API、基础设施、开发工具等全品类服务，助力项目开发与创新
+                    </p>
+                </div>
+                
+                <!-- Category Groups -->
+                <div class="space-y-8">
+                    <!-- 云基础设施 -->
+                    <div>
+                        <h3 class="text-lg font-medium mb-4 flex items-center">
+                            <i class="fa fa-cloud text-blue-400 mr-2"></i>
+                            云基础设施
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">VPS服务</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">38</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">CDN服务</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">31</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">存储服务</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">20</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">Serverless</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">8</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据与数据库 -->
+                    <div>
+                        <h3 class="text-lg font-medium mb-4 flex items-center">
+                            <i class="fa fa-database text-green-400 mr-2"></i>
+                            数据与数据库
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">数据库</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">19</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">股票数据</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">35</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">日志分析</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">18</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">Supabase</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">18</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 人工智能 -->
+                    <div>
+                        <h3 class="text-lg font-medium mb-4 flex items-center">
+                            <i class="fa fa-brain text-purple-400 mr-2"></i>
+                            人工智能
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">人工智能</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">26</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">AI文本</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">24</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">AI图像</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">15</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">OCR识别</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">26</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 开发工具与服务 -->
+                    <div>
+                        <h3 class="text-lg font-medium mb-4 flex items-center">
+                            <i class="fa fa-wrench text-yellow-400 mr-2"></i>
+                            开发工具与服务
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">API服务</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">24</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">开发工具</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">26</span>
+                                </div>
+                                <div class="mt-1 flex items-center">
+                                    <span class="bg-github-primary bg-opacity-20 text-github-primary text-xs px-2 py-0.5 rounded-full">热门</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">CI/CD工具</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">17</span>
+                                </div>
+                            </a>
+                            
+                            <a href="#" class="bg-github-card border border-github-border rounded-lg p-4 hover:bg-github-hover transition-colors">
+                                <div class="flex justify-between items-start">
+                                    <div class="font-medium">测试工具</div>
+                                    <span class="bg-github-hover text-github-textSecondary text-xs px-2 py-0.5 rounded-full">12</span>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 更多分类按钮 -->
+                    <div class="text-center">
+                        <button class="bg-github-card hover:bg-github-hover text-sm px-4 py-2 rounded-md transition-colors inline-flex items-center">
+                            <span>查看更多分类</span>
+                            <i class="fa fa-chevron-down ml-2 text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-github-sidebar border-t border-github-border py-6 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center mb-4 md:mb-0">
+                    <a href="#" class="text-white text-xl font-bold flex items-center mr-6">
+                        <i class="fa fa-cloud mr-2"></i>
+                        <span class="hidden sm:inline">云服务资源导航</span>
+                    </a>
+                    
+                    <div class="text-github-textSecondary text-sm flex flex-wrap justify-center gap-x-6 gap-y-2">
+                        <a href="#" class="hover:text-white transition-colors">资源分类</a>
+                        <a href="#" class="hover:text-white transition-colors">免费资源总览</a>
+                        <a href="#" class="hover:text-white transition-colors">AI接口资源</a>
+                        <a href="#" class="hover:text-white transition-colors">免费云服务</a>
+                        <a href="#" class="hover:text-white transition-colors">提交资源</a>
+                    </div>
+                </div>
+                
+                <div class="text-github-textSecondary text-sm">
+                    © 2025 云服务资源导航. 保留所有权利.
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 显示更多分类的交互
+        document.addEventListener('DOMContentLoaded', () => {
+            const showMoreBtn = document.querySelector('button:has(.fa-chevron-down)');
+            if (showMoreBtn) {
+                showMoreBtn.addEventListener('click', function() {
+                    // 这里可以实现加载更多分类的逻辑
+                    this.innerHTML = '<span>加载中...</span><i class="fa fa-spinner fa-spin ml-2 text-xs"></i>';
+                    
+                    // 模拟加载延迟
+                    setTimeout(() => {
+                        this.innerHTML = '<span>收起分类</span><i class="fa fa-chevron-up ml-2 text-xs"></i>';
+                        // 实际项目中这里应该显示更多分类
+                    }, 1000);
+                });
+            }
+        });
+    </script>
 </body>
 </html>
+    

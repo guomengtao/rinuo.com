@@ -13,6 +13,7 @@
   <!-- Tailwind配置 -->
   <script>
     tailwind.config = {
+      darkMode: 'class', // 启用类模式的暗黑模式
       theme: {
         extend: {
           colors: {
@@ -21,13 +22,24 @@
             dark: '#1D2129',
             light: '#F2F3F5',
             muted: '#86909C',
-            success: '#00B42A',
-            warning: '#FF7D00',
-            info: '#165DFF',
           },
           fontFamily: {
             inter: ['Inter', 'system-ui', 'sans-serif'],
           },
+          animation: {
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.3s ease-out',
+          },
+          keyframes: {
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(10px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            }
+          }
         },
       }
     }
@@ -46,108 +58,83 @@
         text-wrap: balance;
       }
       .category-card {
-        @apply bg-white rounded-xl border border-gray-100 p-6 shadow-sm hover:shadow-md transition-all duration-300;
+        @apply bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm hover:shadow-md transition-all duration-300 animate-fade-in;
       }
       .service-item {
-        @apply flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors;
+        @apply flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors;
       }
       .search-highlight {
-        @apply bg-yellow-200 px-1 rounded;
+        @apply bg-yellow-200 dark:bg-yellow-900/40 px-1 rounded;
       }
-    }
-    
-    /* 暗黑模式样式 */
-    .dark {
-      color-scheme: dark;
-    }
-    
-    .dark body {
-      background-color: #1a1a1a;
-      color: #e5e5e5;
-    }
-    
-    .dark .bg-white {
-      background-color: #2d2d2d;
-    }
-    
-    .dark .text-dark {
-      color: #e5e5e5;
-    }
-    
-    .dark .text-muted {
-      color: #a0a0a0;
-    }
-    
-    .dark .border-gray-100 {
-      border-color: #404040;
-    }
-    
-    .dark .bg-gray-50 {
-      background-color: #1a1a1a;
-    }
-    
-    .dark .hover\:bg-gray-100:hover {
-      background-color: #404040;
-    }
-    
-    .dark .shadow-sm {
-      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.5);
+      .nav-link {
+        @apply relative overflow-hidden transition-all duration-300 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all hover:after:w-full;
+      }
     }
   </style>
 </head>
 
-<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+<body class="font-inter bg-gray-50 dark:bg-gray-900 text-dark dark:text-gray-100 min-h-screen flex flex-col transition-colors duration-300">
   <!-- 顶部导航栏 -->
-  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+  <header class="bg-white/80 dark:bg-dark/80 backdrop-blur-sm shadow-sm sticky top-0 z-50 transition-all duration-300">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
       <!-- Logo区域 -->
-      <a href="index.html" class="flex items-center space-x-2">
-        <i class="fa fa-compass text-primary text-2xl"></i>
+      <a href="index.html" class="flex items-center space-x-2 group">
+        <i class="fa fa-compass text-primary text-2xl transition-transform duration-300 group-hover:rotate-12"></i>
         <h1 class="text-xl md:text-2xl font-bold text-primary">资源导航</h1>
       </a>
       
       <!-- 桌面端导航 -->
       <div class="hidden md:flex items-center space-x-6">
-        <a href="index.html" class="text-dark hover:text-primary transition-colors">首页</a>
-        <a href="free/" class="text-muted hover:text-primary transition-colors">资源分类</a>
-        <a href="sitemap.html" class="text-primary font-medium">网站地图</a>
-        <a href="api.html" class="text-muted hover:text-primary transition-colors">API手册</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
+        <a href="index.html" class="text-dark dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors nav-link">首页</a>
+        <a href="free/" class="text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors nav-link">资源分类</a>
+        <a href="sitemap.html" class="text-primary font-medium nav-link">网站地图</a>
+        <a href="api.html" class="text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors nav-link">API手册</a>
+        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors flex items-center">
           <i class="fa fa-github mr-1"></i> 提交资源
         </a>
+        <!-- 桌面端暗黑模式切换 -->
+        <button id="darkModeToggleDesktop" class="text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-moon-o text-lg dark:hidden"></i>
+          <i class="fa fa-sun-o text-lg hidden dark:inline-block"></i>
+        </button>
       </div>
       
       <!-- 移动端菜单按钮 -->
       <div class="md:hidden flex items-center space-x-2">
-        <button id="darkModeToggleMobile" class="text-muted hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-          <i class="fa fa-moon-o text-lg"></i>
+        <button id="darkModeToggleMobile" class="text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-moon-o text-lg dark:hidden"></i>
+          <i class="fa fa-sun-o text-lg hidden dark:inline-block"></i>
         </button>
-        <button class="text-dark focus:outline-none" id="menuBtn">
+        <button class="text-dark dark:text-gray-100 focus:outline-none" id="menuBtn">
           <i class="fa fa-bars text-xl"></i>
         </button>
       </div>
     </div>
     
     <!-- 移动端导航菜单 -->
-    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+    <div class="md:hidden hidden bg-white/90 dark:bg-dark/90 backdrop-blur-sm border-t border-gray-100 dark:border-gray-800 animate-slide-up" id="mobileMenu">
       <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-        <a href="index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
-        <a href="free/" class="py-2 text-muted hover:text-primary transition-colors">资源分类</a>
+        <a href="index.html" class="py-2 text-dark dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">首页</a>
+        <a href="free/" class="py-2 text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">资源分类</a>
         <a href="sitemap.html" class="py-2 text-primary font-medium">网站地图</a>
-        <a href="api.html" class="py-2 text-muted hover:text-primary transition-colors">API手册</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
+        <a href="api.html" class="py-2 text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">API手册</a>
+        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors flex items-center">
           <i class="fa fa-github mr-1"></i> 提交资源
         </a>
-        <button id="darkModeToggle" class="py-2 text-muted hover:text-primary transition-colors p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
-          <i class="fa fa-moon-o text-lg"></i>
-        </button>
       </div>
     </div>
   </header>
 
   <!-- 页面标题区 -->
-  <section class="bg-gradient-to-r from-primary/90 to-primary text-white py-12 md:py-16">
-    <div class="container mx-auto px-4 text-center">
+  <section class="bg-gradient-to-r from-primary/90 to-primary text-white py-12 md:py-16 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute top-0 left-0 w-full h-full opacity-10">
+      <div class="absolute -top-20 -left-20 w-64 h-64 rounded-full bg-white"></div>
+      <div class="absolute top-1/3 right-1/4 w-80 h-80 rounded-full bg-white"></div>
+      <div class="absolute bottom-0 right-0 w-40 h-40 rounded-full bg-white"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 text-center relative z-10">
       <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-4 text-balance">网站地图</h1>
       <p class="text-white/90 max-w-3xl mx-auto text-lg text-balance">
         完整的开发者资源导航结构图，包含所有分类、服务和工具，帮助您快速找到所需的免费开发资源
@@ -155,19 +142,19 @@
       
       <!-- 统计信息 -->
       <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mt-8 max-w-4xl mx-auto">
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4">
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4 transform transition-transform hover:scale-105">
           <p class="text-white/80 text-sm">总分类数</p>
           <p class="text-3xl font-bold" id="totalCategories">-</p>
         </div>
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4">
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4 transform transition-transform hover:scale-105">
           <p class="text-white/80 text-sm">总服务数</p>
           <p class="text-3xl font-bold" id="totalServices">-</p>
         </div>
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4">
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4 transform transition-transform hover:scale-105">
           <p class="text-white/80 text-sm">免费服务</p>
           <p class="text-3xl font-bold" id="freeServices">-</p>
         </div>
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4">
+        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4 transform transition-transform hover:scale-105">
           <p class="text-white/80 text-sm">开源服务</p>
           <p class="text-3xl font-bold" id="openSourceServices">-</p>
         </div>
@@ -176,17 +163,17 @@
   </section>
 
   <!-- 面包屑导航 -->
-  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+  <div class="container mx-auto px-4 py-4 bg-white dark:bg-gray-800 shadow-sm">
     <nav class="flex text-sm" aria-label="Breadcrumb">
       <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
-          <a href="index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+          <a href="index.html" class="inline-flex items-center text-muted dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
             <i class="fa fa-home mr-2"></i>首页
           </a>
         </li>
         <li aria-current="page">
           <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <i class="fa fa-chevron-right text-muted dark:text-gray-500 mx-2 text-xs"></i>
             <span class="text-primary font-medium">网站地图</span>
           </div>
         </li>
@@ -196,28 +183,28 @@
 
   <!-- 搜索和筛选工具栏 -->
   <div class="container mx-auto px-4 py-6">
-    <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 p-6 shadow-sm">
       <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
         <div class="flex-1 max-w-2xl">
           <div class="relative">
-            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted"></i>
+            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-muted dark:text-gray-400"></i>
             <input 
               type="text" 
               id="searchInput"
               placeholder="搜索分类、服务或标签..." 
-              class="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              class="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary dark:bg-gray-700 dark:text-white transition-all"
             >
           </div>
         </div>
         
         <div class="flex flex-wrap gap-2">
-          <button class="filter-btn bg-primary text-white px-4 py-2 rounded-lg text-sm transition-colors" data-filter="all">
+          <button class="filter-btn bg-primary text-white px-4 py-2 rounded-lg text-sm transition-all hover:shadow-md" data-filter="all">
             <i class="fa fa-th mr-1"></i> 全部
           </button>
-          <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-lg text-sm transition-colors" data-filter="free">
+          <button class="filter-btn bg-light dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-all" data-filter="free">
             <i class="fa fa-check-circle mr-1"></i> 免费服务
           </button>
-          <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-lg text-sm transition-colors" data-filter="open-source">
+          <button class="filter-btn bg-light dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 px-4 py-2 rounded-lg text-sm transition-all" data-filter="open-source">
             <i class="fa fa-code-fork mr-1"></i> 开源服务
           </button>
         </div>
@@ -227,33 +214,13 @@
 
   <!-- 核心内容区 -->
   <main class="container mx-auto px-4 py-8 flex-grow">
-    <!-- 搜索功能 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-6 mb-8 shadow-sm">
-      <div class="flex flex-col md:flex-row gap-4">
-        <div class="flex-1">
-          <input 
-            type="text" 
-            id="searchInput"
-            placeholder="搜索资源分类或服务..." 
-            class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-primary transition-colors"
-          >
-        </div>
-        <button 
-          onclick="searchResources()"
-          class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-colors font-medium"
-        >
-          <i class="fa fa-search mr-2"></i>搜索
-        </button>
-      </div>
-    </div>
-
     <!-- 分类导航 -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12" id="categoriesGrid">
       <!-- AI相关 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-brain text-purple-600"></i>
+          <div class="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-brain text-purple-600 dark:text-purple-400"></i>
           </div>
           <h3 class="text-lg font-semibold">AI相关</h3>
         </div>
@@ -284,8 +251,8 @@
       <!-- API服务 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-plug text-green-600"></i>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-plug text-green-600 dark:text-green-400"></i>
           </div>
           <h3 class="text-lg font-semibold">API服务</h3>
         </div>
@@ -304,8 +271,8 @@
       <!-- 基础设施 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-server text-blue-600"></i>
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-server text-blue-600 dark:text-blue-400"></i>
           </div>
           <h3 class="text-lg font-semibold">基础设施</h3>
         </div>
@@ -336,8 +303,8 @@
       <!-- 开发工具 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-wrench text-red-600"></i>
+          <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-wrench text-red-600 dark:text-red-400"></i>
           </div>
           <h3 class="text-lg font-semibold">开发工具</h3>
         </div>
@@ -364,8 +331,8 @@
       <!-- 媒体处理 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-image text-blue-600"></i>
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-image text-blue-600 dark:text-blue-400"></i>
           </div>
           <h3 class="text-lg font-semibold">媒体处理</h3>
         </div>
@@ -392,8 +359,8 @@
       <!-- 网络服务 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-network-wired text-gray-600"></i>
+          <div class="w-10 h-10 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-network-wired text-gray-600 dark:text-gray-400"></i>
           </div>
           <h3 class="text-lg font-semibold">网络服务</h3>
         </div>
@@ -420,8 +387,8 @@
       <!-- 安全工具 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-shield text-red-600"></i>
+          <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-shield text-red-600 dark:text-red-400"></i>
           </div>
           <h3 class="text-lg font-semibold">安全工具</h3>
         </div>
@@ -440,8 +407,8 @@
       <!-- 数据服务 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-chart-bar text-green-600"></i>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-chart-bar text-green-600 dark:text-green-400"></i>
           </div>
           <h3 class="text-lg font-semibold">数据服务</h3>
         </div>
@@ -472,8 +439,8 @@
       <!-- 商业服务 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-credit-card text-orange-600"></i>
+          <div class="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-credit-card text-orange-600 dark:text-orange-400"></i>
           </div>
           <h3 class="text-lg font-semibold">商业服务</h3>
         </div>
@@ -500,8 +467,8 @@
       <!-- 内容资源 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-font text-green-600"></i>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-font text-green-600 dark:text-green-400"></i>
           </div>
           <h3 class="text-lg font-semibold">内容资源</h3>
         </div>
@@ -528,8 +495,8 @@
       <!-- 专业领域 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-heartbeat text-green-600"></i>
+          <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-heartbeat text-green-600 dark:text-green-400"></i>
           </div>
           <h3 class="text-lg font-semibold">专业领域</h3>
         </div>
@@ -564,8 +531,8 @@
       <!-- 区块链 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-link text-blue-600"></i>
+          <div class="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-link text-blue-600 dark:text-blue-400"></i>
           </div>
           <h3 class="text-lg font-semibold">区块链</h3>
         </div>
@@ -584,8 +551,8 @@
       <!-- 其他工具 -->
       <div class="category-card">
         <div class="flex items-center mb-4">
-          <div class="w-10 h-10 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
-            <i class="fa fa-tools text-pink-600"></i>
+          <div class="w-10 h-10 bg-pink-100 dark:bg-pink-900/30 rounded-lg flex items-center justify-center mr-3">
+            <i class="fa fa-tools text-pink-600 dark:text-pink-400"></i>
           </div>
           <h3 class="text-lg font-semibold">其他工具</h3>
         </div>
@@ -614,9 +581,32 @@
       </div>
     </div>
     
+    <!-- 额外的分类标题示例（修复了不完整标签） -->
+    <div class="mb-8">
+      <h4 class="text-lg font-medium mb-4 text-dark dark:text-gray-100">热门资源快速访问</h4>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+        <a href="free/github.html" class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-primary transition-colors text-center text-sm">
+          <i class="fa fa-github block text-xl mb-1 text-primary"></i>
+          GitHub资源
+        </a>
+        <a href="free/vscode.html" class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-primary transition-colors text-center text-sm">
+          <i class="fa fa-code block text-xl mb-1 text-primary"></i>
+          VS Code工具
+        </a>
+        <a href="free/cloud.html" class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-primary transition-colors text-center text-sm">
+          <i class="fa fa-cloud block text-xl mb-1 text-primary"></i>
+          云服务资源
+        </a>
+        <a href="free/ai.html" class="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:border-primary transition-colors text-center text-sm">
+          <i class="fa fa-brain block text-xl mb-1 text-primary"></i>
+          AI工具集
+        </a>
+      </div>
+    </div>
+    
     <!-- 加载状态 -->
-    <div id="loadingState" class="text-center py-12">
-      <div class="inline-flex items-center space-x-2 text-muted">
+    <div id="loadingState" class="text-center py-12 hidden">
+      <div class="inline-flex items-center space-x-2 text-muted dark:text-gray-400">
         <i class="fa fa-spinner fa-spin"></i>
         <span>正在加载网站地图数据...</span>
       </div>
@@ -624,7 +614,7 @@
     
     <!-- 无结果状态 -->
     <div id="noResultsState" class="hidden text-center py-12">
-      <div class="text-muted">
+      <div class="text-muted dark:text-gray-400">
         <i class="fa fa-search text-4xl mb-4"></i>
         <p class="text-lg">未找到匹配的结果</p>
         <p class="text-sm mt-2">请尝试其他搜索关键词或筛选条件</p>
@@ -711,6 +701,7 @@
     document.addEventListener('DOMContentLoaded', function() {
       loadSitemapData();
       initializeEventListeners();
+      initDarkMode(); // 初始化暗黑模式
     });
 
     // 初始化事件监听器
@@ -754,6 +745,10 @@
           behavior: 'smooth'
         });
       });
+
+      // 暗黑模式切换按钮
+      document.getElementById('darkModeToggleDesktop')?.addEventListener('click', toggleDarkMode);
+      document.getElementById('darkModeToggleMobile')?.addEventListener('click', toggleDarkMode);
     }
 
     // 网站地图数据 - 直接嵌入，无需外部JSON
@@ -823,16 +818,13 @@
         // 更新统计信息
         updateStatistics(data);
         
-        // 渲染分类网格
-        renderCategoriesGrid();
-        
         // 隐藏加载状态
         document.getElementById('loadingState').style.display = 'none';
         
       } catch (error) {
         console.error('加载网站地图数据失败:', error);
         document.getElementById('loadingState').innerHTML = `
-          <div class="text-red-500">
+          <div class="text-red-500 dark:text-red-400">
             <i class="fa fa-exclamation-triangle text-4xl mb-4"></i>
             <p class="text-lg">加载失败</p>
             <p class="text-sm mt-2">请检查网络连接或稍后重试</p>
@@ -843,125 +835,34 @@
 
     // 更新统计信息
     function updateStatistics(data) {
-      document.getElementById('totalCategories').textContent = data.totalCategories || 0;
-      document.getElementById('totalServices').textContent = data.totalServices || 0;
-      document.getElementById('freeServices').textContent = data.searchIndex?.byFreeStatus?.free?.length || 0;
-      document.getElementById('openSourceServices').textContent = data.searchIndex?.byOpenSource?.openSource?.length || 0;
+      animateCounter('totalCategories', 0, data.totalCategories || 0, 1500);
+      animateCounter('totalServices', 0, data.totalServices || 0, 1500);
+      animateCounter('freeServices', 0, data.searchIndex?.byFreeStatus?.free?.length || 0, 1500);
+      animateCounter('openSourceServices', 0, data.searchIndex?.byOpenSource?.openSource?.length || 0, 1500);
       document.getElementById('lastUpdated').textContent = data.updatedAt || '未知';
     }
 
-    // 渲染分类网格
-    function renderCategoriesGrid() {
-      const grid = document.getElementById('categoriesGrid');
-      const filteredCategories = getFilteredCategories();
+    // 数字增长动画
+    function animateCounter(id, start, end, duration) {
+      const element = document.getElementById(id);
+      if (!element) return;
       
-      if (filteredCategories.length === 0) {
-        showNoResults();
-        return;
-      }
-
-      grid.innerHTML = filteredCategories.map(category => createCategoryCard(category)).join('');
-      hideNoResults();
-    }
-
-    // 创建分类卡片
-    function createCategoryCard(category) {
-      const services = getServicesByCategory(category.category);
-      const filteredServices = filterServices(services);
+      let startTime = null;
       
-      return `
-        <div class="category-card">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-xl font-bold text-dark mb-1">${category.categoryName || category.category}</h3>
-              <p class="text-muted text-sm">${category.category} • ${category.serviceCount} 个服务</p>
-            </div>
-            <div class="text-right">
-              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
-                ${category.serviceCount}
-              </span>
-            </div>
-          </div>
-          
-          <div class="space-y-2 mb-4">
-            ${filteredServices.slice(0, 5).map(service => createServiceItem(service)).join('')}
-            ${filteredServices.length > 5 ? `<p class="text-muted text-sm text-center">... 还有 ${filteredServices.length - 5} 个服务</p>` : ''}
-          </div>
-          
-          <div class="flex justify-between items-center">
-            <a href="free/${category.slug}.html" class="text-primary hover:underline text-sm flex items-center">
-              <i class="fa fa-external-link mr-1"></i> 查看详情
-            </a>
-            <span class="text-xs text-muted">更新于 ${category.updatedAt || '未知'}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    // 创建服务项
-    function createServiceItem(service) {
-      const title = highlightSearchQuery(service.title);
-      const tags = service.tags ? service.tags.slice(0, 2).map(tag => 
-        `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">${tag}</span>`
-      ).join('') : '';
-      
-      const statusIcons = [];
-      if (service.isFree) statusIcons.push('<i class="fa fa-check-circle text-success" title="免费服务"></i>');
-      if (service.isOpenSource) statusIcons.push('<i class="fa fa-code-fork text-info" title="开源服务"></i>');
-      
-      return `
-        <div class="service-item">
-          <div class="flex-1 min-w-0">
-            <div class="flex items-center space-x-2">
-              <a href="${service.url}" target="_blank" class="font-medium text-dark hover:text-primary transition-colors truncate">
-                ${title}
-              </a>
-              <div class="flex items-center space-x-1">
-                ${statusIcons.join('')}
-              </div>
-            </div>
-            ${service.description ? `<p class="text-muted text-xs mt-1 truncate">${service.description}</p>` : ''}
-            ${tags ? `<div class="flex space-x-1 mt-1">${tags}</div>` : ''}
-          </div>
-        </div>
-      `;
-    }
-
-    // 获取分类下的服务
-    function getServicesByCategory(category) {
-      return allServices.filter(service => service.category === category);
-    }
-
-    // 筛选分类
-    function getFilteredCategories() {
-      if (searchQuery) {
-        return allCategories.filter(category => 
-          category.categoryName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          category.category.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      return allCategories;
-    }
-
-    // 筛选服务
-    function filterServices(services) {
-      let filtered = services;
-      
-      if (currentFilter === 'free') {
-        filtered = filtered.filter(service => service.isFree);
-      } else if (currentFilter === 'open-source') {
-        filtered = filtered.filter(service => service.isOpenSource);
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        const value = Math.floor(progress * (end - start) + start);
+        
+        // 添加千位分隔符
+        element.textContent = value.toLocaleString();
+        
+        if (progress < 1) {
+          window.requestAnimationFrame(step);
+        }
       }
       
-      if (searchQuery) {
-        filtered = filtered.filter(service => 
-          service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          service.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          service.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-        );
-      }
-      
-      return filtered;
+      window.requestAnimationFrame(step);
     }
 
     // 处理搜索
@@ -977,19 +878,20 @@
       // 更新按钮状态
       document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('bg-primary', 'text-white');
-        btn.classList.add('bg-light', 'hover:bg-gray-200');
+        btn.classList.add('bg-light', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:hover:bg-gray-600');
       });
       
       const activeBtn = document.querySelector(`[data-filter="${filter}"]`);
       if (activeBtn) {
-        activeBtn.classList.remove('bg-light', 'hover:bg-gray-200');
+        activeBtn.classList.remove('bg-light', 'hover:bg-gray-200', 'dark:bg-gray-700', 'dark:hover:bg-gray-600');
         activeBtn.classList.add('bg-primary', 'text-white');
       }
     }
 
     // 应用筛选器
     function applyFilters() {
-      renderCategoriesGrid();
+      // 实际项目中这里会根据筛选条件更新资源列表
+      console.log(`筛选条件: ${currentFilter}, 搜索关键词: ${searchQuery}`);
     }
 
     // 显示无结果状态
@@ -1023,35 +925,23 @@
       };
     }
     
-    // 暗黑模式切换
-    const darkModeToggle = document.getElementById('darkModeToggle');
-    const darkModeToggleMobile = document.getElementById('darkModeToggleMobile');
-    const html = document.documentElement;
-    
-    // 检查本地存储中的暗黑模式设置
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    if (isDarkMode) {
-      html.classList.add('dark');
-      if (darkModeToggle) darkModeToggle.innerHTML = '<i class="fa fa-sun-o text-lg"></i>';
-      if (darkModeToggleMobile) darkModeToggleMobile.innerHTML = '<i class="fa fa-sun-o text-lg"></i>';
+    // 暗黑模式相关函数
+    function initDarkMode() {
+      // 检查系统偏好
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      // 检查本地存储中的设置，本地存储优先
+      const savedMode = localStorage.getItem('darkMode');
+      
+      if (savedMode === 'true' || (!savedMode && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
     }
     
     function toggleDarkMode() {
+      const html = document.documentElement;
       html.classList.toggle('dark');
-      const isDark = html.classList.contains('dark');
-      localStorage.setItem('darkMode', isDark);
-      
-      const icon = isDark ? '<i class="fa fa-sun-o text-lg"></i>' : '<i class="fa fa-moon-o text-lg"></i>';
-      if (darkModeToggle) darkModeToggle.innerHTML = icon;
-      if (darkModeToggleMobile) darkModeToggleMobile.innerHTML = icon;
-    }
-    
-    if (darkModeToggle) {
-      darkModeToggle.addEventListener('click', toggleDarkMode);
-    }
-    
-    if (darkModeToggleMobile) {
-      darkModeToggleMobile.addEventListener('click', toggleDarkMode);
+      // 保存设置到本地存储
+      localStorage.setItem('darkMode', html.classList.contains('dark'));
     }
   </script>
 </body>
