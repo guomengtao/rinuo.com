@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +9,10 @@
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
   <script src="../assets/js/email-subscription.js"></script>
   
-  <!-- Tailwind配置 - 保持一致的设计系统 -->
+  <!-- Tailwind配置 - 增加暗黑模式支持 -->
   <script>
     tailwind.config = {
+      darkMode: 'class', // 基于类的暗黑模式
       theme: {
         extend: {
           colors: {
@@ -24,6 +25,12 @@
             warning: '#FF7D00',    // 警告色
             danger: '#F53F3F',     // 危险/限制提示色
             push: '#FF5722',       // 推送服务主题色（橙色系，代表提醒和通知）
+            // 暗黑模式配色
+            darkBg: '#121212',     // 暗黑主背景
+            darkCard: '#1E1E1E',   // 暗黑卡片背景
+            darkBorder: '#2D2D2D', // 暗黑边框色
+            darkText: '#E0E0E0',   // 暗黑文字色
+            darkMuted: '#A0A0A0'   // 暗黑辅助文字色
           },
           fontFamily: {
             inter: ['Inter', 'system-ui', 'sans-serif'],
@@ -33,7 +40,7 @@
     }
   </script>
   
-  <!-- 自定义工具类 -->
+  <!-- 自定义工具类 - 增加暗黑模式适配 -->
   <style type="text/tailwindcss">
     @layer utilities {
       .content-auto {
@@ -43,7 +50,7 @@
         @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
       }
       .feature-card {
-        @apply bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-hover;
+        @apply bg-white dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder p-5 shadow-sm card-hover;
       }
       .text-balance {
         text-wrap: balance;
@@ -54,13 +61,45 @@
       .filter-active {
         @apply bg-primary text-white;
       }
+      .dark-transition {
+        @apply transition-colors duration-300 ease-in-out;
+      }
+    }
+  </style>
+  
+  <!-- 基础样式适配 -->
+  <style>
+    /* 平滑过渡所有颜色变化 */
+    * {
+      transition-property: background-color, border-color, color, fill, stroke;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 300ms;
+    }
+    
+    /* 滚动条暗黑模式适配 */
+    .dark ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    .dark ::-webkit-scrollbar-track {
+      background: #1E1E1E;
+    }
+    
+    .dark ::-webkit-scrollbar-thumb {
+      background: #3D3D3D;
+      border-radius: 4px;
+    }
+    
+    .dark ::-webkit-scrollbar-thumb:hover {
+      background: #555;
     }
   </style>
 </head>
 
-<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+<body class="font-inter bg-gray-50 dark:bg-darkBg text-dark dark:text-darkText min-h-screen flex flex-col dark-transition">
   <!-- 顶部导航栏 -->
-  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
+  <header class="bg-white dark:bg-darkCard shadow-sm dark:shadow-gray-900/20 sticky top-0 z-50 transition-all duration-300 dark-transition">
     <div class="container mx-auto px-4 py-4 flex justify-between items-center">
       <!-- Logo区域 -->
       <a href="../index.html" class="flex items-center space-x-2">
@@ -68,37 +107,48 @@
         <h1 class="text-xl md:text-2xl font-bold text-primary">资源导航</h1>
       </a>
       
-      <!-- 桌面端导航 -->
+      <!-- 桌面端导航 + 暗黑模式切换按钮 -->
       <div class="hidden md:flex items-center space-x-6">
-        <a href="../index.html" class="text-dark hover:text-primary transition-colors">首页</a>
+        <a href="../index.html" class="text-dark dark:text-darkText hover:text-primary dark:hover:text-primary transition-colors">首页</a>
         <a href="#" class="text-primary font-medium">资源分类</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
+        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors flex items-center">
           <i class="fa fa-github mr-1"></i> 提交资源
         </a>
-        <a href="#" class="text-muted hover:text-primary transition-colors">关于我们</a>
+        <a href="#" class="text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors">关于我们</a>
+        <!-- 暗黑模式切换按钮 -->
+        <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none">
+          <i class="fa fa-moon-o dark:hidden text-xl"></i>
+          <i class="fa fa-sun-o hidden dark:inline text-xl"></i>
+        </button>
       </div>
       
-      <!-- 移动端菜单按钮 -->
-      <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
-        <i class="fa fa-bars text-xl"></i>
-      </button>
+      <!-- 移动端菜单按钮 + 暗黑模式切换 -->
+      <div class="md:hidden flex items-center space-x-4">
+        <button id="themeToggleMobile" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors focus:outline-none">
+          <i class="fa fa-moon-o dark:hidden text-xl"></i>
+          <i class="fa fa-sun-o hidden dark:inline text-xl"></i>
+        </button>
+        <button class="text-dark dark:text-darkText focus:outline-none" id="menuBtn">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+      </div>
     </div>
     
     <!-- 移动端导航菜单（默认隐藏） -->
-    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
+    <div class="md:hidden hidden bg-white dark:bg-darkCard border-t border-gray-100 dark:border-darkBorder" id="mobileMenu">
       <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-        <a href="../index.html" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
+        <a href="../index.html" class="py-2 text-dark dark:text-darkText hover:text-primary dark:hover:text-primary transition-colors">首页</a>
         <a href="#" class="py-2 text-primary font-medium">资源分类</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
+        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors flex items-center">
           <i class="fa fa-github mr-1"></i> 提交资源
         </a>
-        <a href="#" class="py-2 text-muted hover:text-primary transition-colors">关于我们</a>
+        <a href="#" class="py-2 text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors">关于我们</a>
       </div>
     </div>
   </header>
 
-  <!-- 页面标题区 -->
-  <section class="bg-gradient-to-r from-push/90 to-push text-white py-10 md:py-16">
+  <!-- 页面标题区 - 暗黑模式渐变调整 -->
+  <section class="bg-gradient-to-r from-push/90 to-push text-white py-10 md:py-16 dark:from-push/80 dark:to-push/60">
     <div class="container mx-auto px-4">
       <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
         <div>
@@ -106,7 +156,7 @@
             <i class="fa fa-bell-o text-3xl"></i>
             <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-balance">免费推送通知服务大全</h2>
           </div>
-          <p class="text-white/90 max-w-2xl text-balance">
+          <p class="text-white/90 max-w-2xl text-balance dark:text-white/80">
             精选全球主流免费推送通知服务，详细对比各平台的免费额度、适用场景和限制条件，帮助开发者快速找到适合的多平台消息推送解决方案
           </p>
           
@@ -120,56 +170,56 @@
           </div>
         </div>
         
-        <!-- 数据概览卡片 -->
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
+        <!-- 数据概览卡片 - 暗黑模式适配 -->
+        <div class="bg-white/15 dark:bg-darkCard/60 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs border border-white/10 dark:border-darkBorder">
           <div class="flex justify-between items-center">
-            <span class="text-white/80">收录服务总数</span>
+            <span class="text-white/80 dark:text-white/70">收录服务总数</span>
             <span class="font-bold">26 项</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-white/80">支持Web推送</span>
+            <span class="text-white/80 dark:text-white/70">支持Web推送</span>
             <span class="font-bold">22 项</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-white/80">支持移动推送</span>
+            <span class="text-white/80 dark:text-white/70">支持移动推送</span>
             <span class="font-bold">18 项</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-white/80">无限免费额度</span>
+            <span class="text-white/80 dark:text-white/70">无限免费额度</span>
             <span class="font-bold">2 项</span>
           </div>
-          <div class="border-t border-white/20 pt-4 mt-2">
-            <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
+          <div class="border-t border-white/20 dark:border-darkBorder pt-4 mt-2">
+            <span class="text-white/90 dark:text-white/80 text-sm">最后更新：2025-08-29</span>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 面包屑导航 -->
-  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
+  <!-- 面包屑导航 - 暗黑模式适配 -->
+  <div class="container mx-auto px-4 py-4 bg-white dark:bg-darkCard shadow-sm dark:shadow-gray-900/10 dark-transition">
     <nav class="flex text-sm" aria-label="Breadcrumb">
       <ol class="inline-flex items-center space-x-1 md:space-x-3">
         <li class="inline-flex items-center">
-          <a href="../index.html" class="inline-flex items-center text-muted hover:text-primary transition-colors">
+          <a href="../index.html" class="inline-flex items-center text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors">
             <i class="fa fa-home mr-2"></i>首页
           </a>
         </li>
         <li>
           <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <a href="#" class="text-muted hover:text-primary transition-colors">资源分类</a>
+            <i class="fa fa-chevron-right text-muted dark:text-darkMuted mx-2 text-xs"></i>
+            <a href="#" class="text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors">资源分类</a>
           </div>
         </li>
         <li>
           <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <a href="#" class="text-muted hover:text-primary transition-colors">API服务</a>
+            <i class="fa fa-chevron-right text-muted dark:text-darkMuted mx-2 text-xs"></i>
+            <a href="#" class="text-muted dark:text-darkMuted hover:text-primary dark:hover:text-primary transition-colors">API服务</a>
           </div>
         </li>
         <li aria-current="page">
           <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
+            <i class="fa fa-chevron-right text-muted dark:text-darkMuted mx-2 text-xs"></i>
             <span class="text-primary font-medium">免费推送通知服务大全</span>
           </div>
         </li>
@@ -180,53 +230,53 @@
   <!-- 核心内容区 -->
   <main class="container mx-auto px-4 py-8 flex-grow">
     <!-- 简介卡片 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+    <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder p-5 md:p-6 mb-8 shadow-sm dark:shadow-gray-900/10 dark-transition">
       <div class="flex items-start">
-        <div class="flex-shrink-0 bg-push/10 p-3 rounded-lg mr-4">
+        <div class="flex-shrink-0 bg-push/10 dark:bg-push/20 p-3 rounded-lg mr-4">
           <i class="fa fa-info-circle text-push text-xl"></i>
         </div>
         <div>
           <h3 class="text-xl font-bold mb-3">关于推送通知服务</h3>
-          <p class="text-muted mb-4">
+          <p class="text-muted dark:text-darkMuted mb-4">
             推送通知服务允许应用程序向用户设备发送实时消息，无需用户打开应用。这些服务广泛应用于移动应用和网站，用于用户唤醒、重要通知、营销推广等场景。不同服务在免费额度、平台支持、功能完整性和集成难度上各有差异，选择时需根据项目需求（Web/移动、用户规模、消息频率等）综合考虑。
           </p>
           <div class="flex flex-wrap gap-2">
-            <span class="service-tag bg-blue-100 text-blue-800">API服务</span>
-            <span class="service-tag bg-orange-100 text-orange-800">实时通知</span>
-            <span class="service-tag bg-green-100 text-green-800">用户互动</span>
-            <span class="service-tag bg-purple-100 text-purple-800">多平台支持</span>
+            <span class="service-tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">API服务</span>
+            <span class="service-tag bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-300">实时通知</span>
+            <span class="service-tag bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">用户互动</span>
+            <span class="service-tag bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">多平台支持</span>
           </div>
         </div>
       </div>
     </div>
 
     <!-- 筛选工具栏 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
+    <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder p-5 mb-8 shadow-sm dark:shadow-gray-900/10 dark-transition">
       <h3 class="text-lg font-medium mb-4">服务筛选</h3>
       <div class="flex flex-wrap gap-2">
         <button class="filter-btn filter-active px-4 py-2 rounded-full text-sm transition-colors" data-filter="all">
           全部服务
         </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="web">
+        <button class="filter-btn bg-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full text-sm transition-colors" data-filter="web">
           Web推送
         </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="mobile">
+        <button class="filter-btn bg-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full text-sm transition-colors" data-filter="mobile">
           移动推送
         </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="unlimited">
+        <button class="filter-btn bg-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full text-sm transition-colors" data-filter="unlimited">
           无限额度
         </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="high-quota">
+        <button class="filter-btn bg-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full text-sm transition-colors" data-filter="high-quota">
           高额度(>10k)
         </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="trial">
+        <button class="filter-btn bg-light dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 px-4 py-2 rounded-full text-sm transition-colors" data-filter="trial">
           试用服务
         </button>
       </div>
     </div>
 
     <!-- 服务对比表格 -->
-    <div id="comparison" class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-10 shadow-sm overflow-hidden">
+    <div id="comparison" class="bg-white dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder p-5 md:p-6 mb-10 shadow-sm dark:shadow-gray-900/10 overflow-hidden dark-transition">
       <h3 class="text-xl font-bold mb-6 flex items-center">
         <i class="fa fa-table text-push mr-2"></i>推送通知服务对比表
       </h3>
@@ -234,612 +284,536 @@
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
           <thead>
-            <tr class="bg-light">
-              <th class="py-3 px-4 text-left border-b">服务名称</th>
-              <th class="py-3 px-4 text-left border-b">官网链接</th>
-              <th class="py-3 px-4 text-left border-b">免费额度 / 限制</th>
-              <th class="py-3 px-4 text-left border-b">支持平台</th>
-              <th class="py-3 px-4 text-left border-b">特点与注意事项</th>
+            <tr class="bg-light dark:bg-gray-800">
+              <th class="py-3 px-4 text-left border-b border-gray-200 dark:border-darkBorder">服务名称</th>
+              <th class="py-3 px-4 text-left border-b border-gray-200 dark:border-darkBorder">官网链接</th>
+              <th class="py-3 px-4 text-left border-b border-gray-200 dark:border-darkBorder">免费额度 / 限制</th>
+              <th class="py-3 px-4 text-left border-b border-gray-200 dark:border-darkBorder">支持平台</th>
+              <th class="py-3 px-4 text-left border-b border-gray-200 dark:border-darkBorder">特点与注意事项</th>
             </tr>
           </thead>
           <tbody>
             <!-- 推荐服务 -->
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile high-quota">
-              <td class="py-3 px-4 border-b font-medium">OneSignal</td>
-              <td class="py-3 px-4 border-b">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web mobile high-quota">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">OneSignal</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
                 <a href="https://onesignal.com/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">每月 10,000 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">每月 10,000 条免费推送</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web, iOS, Android</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
                 多平台支持，集成简单，免费版功能有限制，适合中小应用
               </td>
             </tr>
             
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile unlimited">
-              <td class="py-3 px-4 border-b font-medium">Firebase Cloud Messaging (FCM)</td>
-              <td class="py-3 px-4 border-b">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web mobile unlimited">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">Firebase Cloud Messaging (FCM)</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
                 <a href="https://firebase.google.com/docs/cloud-messaging" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">无限免费额度</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">无限免费额度</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web, iOS, Android</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
                 Google 官方服务，集成方便，需要 Google 账号，适合各种规模应用
               </td>
             </tr>
             
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile high-quota">
-              <td class="py-3 px-4 border-b font-medium">PushEngage</td>
-              <td class="py-3 px-4 border-b">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web mobile high-quota">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">PushEngage</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
                 <a href="https://www.pushengage.com/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">每月 30,000 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">每月 30,000 条免费推送</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web, iOS, Android</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
                 功能丰富，分析工具完善，免费版有功能限制
               </td>
             </tr>
             
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile unlimited">
-              <td class="py-3 px-4 border-b font-medium">TruePush</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.truepush.com/" target="_blank" class="text-primary hover:underline flex items-center">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web high-quota">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">Pushpad</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
+                <a href="https://pushpad.xyz/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">无限免费额度</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
-                免费版有高级功能限制，适合预算有限的项目
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">每月 15,000 条免费推送</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
+                专注Web推送，支持Chrome、Firefox等浏览器，有详细的统计分析
               </td>
             </tr>
             
-            <!-- 其他服务 -->
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web">
-              <td class="py-3 px-4 border-b font-medium">PushAlert</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.pushalert.co/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 150 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web</td>
-              <td class="py-3 px-4 border-b text-sm">
-                免费额度小，付费可扩展，适合小型网站
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web">
-              <td class="py-3 px-4 border-b font-medium">PushAssist</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.pushassist.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 1,000 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web</td>
-              <td class="py-3 px-4 border-b text-sm">
-                专注Web推送，界面友好，适合小型网站
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web high-quota">
-              <td class="py-3 px-4 border-b font-medium">Gravitec.net</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://gravitec.net/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 10,000 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web</td>
-              <td class="py-3 px-4 border-b text-sm">
-                Web推送专业服务，免费版可覆盖小型流量
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web">
-              <td class="py-3 px-4 border-b font-medium">PushOwl</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.pushowl.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 500 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web</td>
-              <td class="py-3 px-4 border-b text-sm">
-                专为 Shopify 设计，与电商平台集成良好
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile high-quota">
-              <td class="py-3 px-4 border-b font-medium">SendPulse</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://sendpulse.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 10,000 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
-                多渠道营销平台，推送只是其中一部分功能
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="mobile high-quota">
-              <td class="py-3 px-4 border-b font-medium">Pusher Beams</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://pusher.com/beams" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 1,000,000 推送 API 调用</td>
-              <td class="py-3 px-4 border-b text-sm">iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
-                专注移动推送，免费额度大但高级功能有限制
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile trial">
-              <td class="py-3 px-4 border-b font-medium">Airship / Urban Airship</td>
-              <td class="py-3 px-4 border-b">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="mobile trial">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">Airship</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
                 <a href="https://www.airship.com/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">免费试用 1,000 条推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
-                企业级应用，功能全面，免费额度少，适合商业项目
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">30天免费试用，无永久免费计划</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">iOS, Android, Web</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
+                企业级推送服务，功能全面，适合有预算的中大型项目
               </td>
             </tr>
             
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile trial">
-              <td class="py-3 px-4 border-b font-medium">Pushover</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://pushover.net/" target="_blank" class="text-primary hover:underline flex items-center">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web mobile high-quota">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">Pusher Beams</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
+                <a href="https://pusher.com/beams/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">7天免费试用</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android, Desktop</td>
-              <td class="py-3 px-4 border-b text-sm">
-                跨设备推送，简单易用，免费试用后需付费订阅
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">每月 100,000 条免费推送</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web, iOS, Android</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
+                易于集成，支持多平台，文档完善，适合开发者快速上手
               </td>
             </tr>
             
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile">
-              <td class="py-3 px-4 border-b font-medium">PushBullet</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.pushbullet.com/" target="_blank" class="text-primary hover:underline flex items-center">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web mobile unlimited">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">Amazon SNS</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
+                <a href="https://aws.amazon.com/sns/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">最多 100 消息 / 月</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android, Desktop</td>
-              <td class="py-3 px-4 border-b text-sm">
-                跨设备同步优秀，免费版限制数量，付费版无限制
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">前100万条/月免费，之后按用量计费</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web, iOS, Android, SMS</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
+                AWS服务之一，适合已有AWS架构的项目，配置相对复杂
               </td>
             </tr>
             
-            <!-- 更多服务 -->
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web">
-              <td class="py-3 px-4 border-b font-medium">Notifier for Web</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://notifier.com/" target="_blank" class="text-primary hover:underline flex items-center">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors service-row" data-category="web">
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder font-medium">Webpushr</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder">
+                <a href="https://webpushr.com/" target="_blank" class="text-primary hover:underline flex items-center">
                   <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
                 </a>
               </td>
-              <td class="py-3 px-4 border-b text-sm">免费使用</td>
-              <td class="py-3 px-4 border-b text-sm">Web</td>
-              <td class="py-3 px-4 border-b text-sm">
-                仅支持Web推送，免费版功能有限
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile">
-              <td class="py-3 px-4 border-b font-medium">WonderPush</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.wonderpush.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 1,000 条免费推送</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
-                支持多平台，免费版功能有限
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="web mobile">
-              <td class="py-3 px-4 border-b font-medium">MoEngage</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.moengage.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">免费计划有限</td>
-              <td class="py-3 px-4 border-b text-sm">Web, iOS, Android</td>
-              <td class="py-3 px-4 border-b text-sm">
-                免费计划限制用户数和消息量，适合小型应用
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">每月 10,000 订阅用户免费</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm">Web</td>
+              <td class="py-3 px-4 border-b border-gray-200 dark:border-darkBorder text-sm text-muted dark:text-darkMuted">
+                专注Web推送，提供详细的分析数据，免费版有品牌标识
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       
-      <div class="bg-light rounded-lg p-4 mt-6">
-        <p class="text-muted">
+      <div class="bg-light dark:bg-gray-800 rounded-lg p-4 mt-6">
+        <p class="text-muted dark:text-darkMuted">
           <i class="fa fa-info-circle text-primary mr-2"></i>
           注意：免费推送服务通常有功能限制或品牌标识要求，商业用途请查看各服务的使用条款。部分服务在达到免费额度后会自动停止推送或转为付费模式。
         </p>
       </div>
     </div>
 
-    <!-- 按分类浏览 -->
-    <div id="categories" class="mb-8">
-      <h3 class="text-xl font-bold mb-6 flex items-center">
-        <i class="fa fa-th-large text-push mr-2"></i>按分类浏览
+    <!-- 按分类浏览服务卡片 -->
+    <div id="categories" class="mb-12">
+      <h3 class="text-2xl font-bold mb-6 flex items-center">
+        <i class="fa fa-th-large text-push mr-2"></i>按分类浏览推送服务
       </h3>
       
-      <!-- 多平台推送服务 -->
-      <div class="mb-8">
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-desktop text-blue-500 mr-2"></i>多平台推送服务
+      <!-- 推荐服务 -->
+      <div class="mb-10">
+        <h4 class="text-xl font-semibold mb-4 flex items-center">
+          <span class="inline-block w-2 h-2 bg-success rounded-full mr-2"></span>推荐服务
         </h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-blue-100 p-2 rounded mr-3">
-                  <i class="fa fa-bell text-blue-600"></i>
-                </div>
-                <h5 class="font-medium">OneSignal</h5>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- OneSignal 卡片 -->
+          <div class="feature-card service-card" data-category="web mobile high-quota">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">OneSignal</h5>
+              <span class="service-tag bg-success/10 text-success">推荐</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              最受欢迎的推送通知服务之一，支持多平台，提供直观的控制台和详细的分析数据。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>每月 10,000 条</span>
               </div>
-              <span class="service-tag bg-purple-100 text-purple-800">推荐</span>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>Web, iOS, Android</span>
+              </div>
             </div>
-            <p class="text-muted text-sm mb-3">每月 10,000 条免费推送，支持 Web、iOS 和 Android，集成简单，适合中小应用。</p></p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-gray-100 text-gray-800">Web</span>
-              <span class="service-tag bg-green-100 text-green-800">iOS</span>
-              <span class="service-tag bg-blue-100 text-blue-800">Android</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://onesignal.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://onesignal.com/" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
           
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-blue-100 p-2 rounded mr-3">
-                  <i class="fa fa-bell text-blue-600"></i>
-                </div>
-                <h5 class="font-medium">Firebase Cloud Messaging</h5>
+          <!-- Firebase Cloud Messaging 卡片 -->
+          <div class="feature-card service-card" data-category="web mobile unlimited">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">Firebase Cloud Messaging</h5>
+              <span class="service-tag bg-success/10 text-success">推荐</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              Google 官方推送服务，与 Firebase 生态系统深度集成，提供无限免费额度。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>无限</span>
               </div>
-              <span class="service-tag bg-purple-100 text-purple-800">推荐</span>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>Web, iOS, Android</span>
+              </div>
             </div>
-            <p class="text-muted text-sm mb-3">无限免费额度，Google 官方服务，支持多平台，集成方便，适合各种规模应用。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-gray-100 text-gray-800">Web</span>
-              <span class="service-tag bg-green-100 text-green-800">iOS</span>
-              <span class="service-tag bg-blue-100 text-blue-800">Android</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://firebase.google.com/docs/cloud-messaging" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://firebase.google.com/docs/cloud-messaging" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
           
-          <div class="feature-card">
-            <div class="flex items-center mb-3">
-              <div class="bg-blue-100 p-2 rounded mr-3">
-                <i class="fa fa-bell text-blue-600"></i>
+          <!-- PushEngage 卡片 -->
+          <div class="feature-card service-card" data-category="web mobile high-quota">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">PushEngage</h5>
+              <span class="service-tag bg-success/10 text-success">推荐</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              功能丰富的推送服务，提供高级分割和自动化工具，适合营销场景。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>每月 30,000 条</span>
               </div>
-              <h5 class="font-medium">PushEngage</h5>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>Web, iOS, Android</span>
+              </div>
             </div>
-            <p class="text-muted text-sm mb-3">每月 30,000 条免费推送，多平台支持，分析工具完善，免费版有功能限制。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-gray-100 text-gray-800">Web</span>
-              <span class="service-tag bg-green-100 text-green-800">iOS</span>
-              <span class="service-tag bg-blue-100 text-blue-800">Android</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.pushengage.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://www.pushengage.com/" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
         </div>
       </div>
       
-      <!-- Web专用推送服务 -->
-      <div class="mb-8">
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-globe text-green-500 mr-2"></i>Web专用推送服务
+      <!-- Web 推送服务 -->
+      <div class="mb-10">
+        <h4 class="text-xl font-semibold mb-4 flex items-center">
+          <span class="inline-block w-2 h-2 bg-blue-500 rounded-full mr-2"></span>Web 推送服务
         </h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="feature-card">
-            <div class="flex items-center mb-3">
-              <div class="bg-green-100 p-2 rounded mr-3">
-                <i class="fa fa-bell text-green-600"></i>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Pushpad 卡片 -->
+          <div class="feature-card service-card" data-category="web high-quota">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">Pushpad</h5>
+              <span class="service-tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">Web</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              专注于Web推送通知，支持主流浏览器，提供强大的API和详细的统计数据。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>每月 15,000 条</span>
               </div>
-              <h5 class="font-medium">Gravitec.net</h5>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>Web</span>
+              </div>
             </div>
-            <p class="text-muted text-sm mb-3">每月 10,000 条免费推送，Web推送专业服务，免费版可覆盖小型流量。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-gray-100 text-gray-800">Web</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://gravitec.net/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://pushpad.xyz/" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
           
-          <div class="feature-card">
-            <div class="flex items-center mb-3">
-              <div class="bg-green-100 p-2 rounded mr-3">
-                <i class="fa fa-bell text-green-600"></i>
+          <!-- Webpushr 卡片 -->
+          <div class="feature-card service-card" data-category="web">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">Webpushr</h5>
+              <span class="service-tag bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">Web</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              专注于网站推送通知，提供易于使用的界面和丰富的分析功能。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>10,000 订阅用户</span>
               </div>
-              <h5 class="font-medium">PushAssist</h5>
-            </div>
-            <p class="text-muted text-sm mb-3">每月 1,000 条免费推送，专注Web推送，界面友好，适合小型网站。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-gray-100 text-gray-800">Web</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.pushassist.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex items-center mb-3">
-              <div class="bg-green-100 p-2 rounded mr-3">
-                <i class="fa fa-bell text-green-600"></i>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>Web</span>
               </div>
-              <h5 class="font-medium">PushOwl</h5>
             </div>
-            <p class="text-muted text-sm mb-3">每月 500 条免费推送，专为 Shopify 设计，与电商平台集成良好。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-gray-100 text-gray-800">Web</span>
-              <span class="service-tag bg-purple-100 text-purple-800">电商</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.pushowl.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://webpushr.com/" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
         </div>
       </div>
       
-      <!-- 移动专用推送服务 -->
+      <!-- 移动推送服务 -->
       <div>
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-mobile text-pink-500 mr-2"></i>移动专用推送服务
+        <h4 class="text-xl font-semibold mb-4 flex items-center">
+          <span class="inline-block w-2 h-2 bg-purple-500 rounded-full mr-2"></span>移动推送服务
         </h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-          <div class="feature-card">
-            <div class="flex items-center mb-3">
-              <div class="bg-pink-100 p-2 rounded mr-3">
-                <i class="fa fa-bell text-pink-600"></i>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Pusher Beams 卡片 -->
+          <div class="feature-card service-card" data-category="web mobile high-quota">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">Pusher Beams</h5>
+              <span class="service-tag bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">移动</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              提供简单的API，让开发者轻松实现跨平台推送，支持丰富的自定义选项。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>每月 100,000 条</span>
               </div>
-              <h5 class="font-medium">Pusher Beams</h5>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>Web, iOS, Android</span>
+              </div>
             </div>
-            <p class="text-muted text-sm mb-3">每月 1,000,000 推送 API 调用，专注移动推送，免费额度大但高级功能有限制。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-green-100 text-green-800">iOS</span>
-              <span class="service-tag bg-blue-100 text-blue-800">Android</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://pusher.com/beams" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://pusher.com/beams/" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
           
-          <div class="feature-card">
-            <div class="flex items-center mb-3">
-              <div class="bg-pink-100 p-2 rounded mr-3">
-                <i class="fa fa-bell text-pink-600"></i>
+          <!-- Amazon SNS 卡片 -->
+          <div class="feature-card service-card" data-category="web mobile unlimited">
+            <div class="flex justify-between items-start mb-4">
+              <h5 class="text-lg font-bold">Amazon SNS</h5>
+              <span class="service-tag bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">移动</span>
+            </div>
+            <p class="text-muted dark:text-darkMuted text-sm mb-4">
+              亚马逊的消息通知服务，可发送推送通知、电子邮件和短信，适合AWS用户。
+            </p>
+            <div class="space-y-2 mb-4">
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">免费额度</span>
+                <span>前100万条/月</span>
               </div>
-              <h5 class="font-medium">Airship</h5>
+              <div class="flex justify-between text-sm">
+                <span class="text-muted dark:text-darkMuted">支持平台</span>
+                <span>多平台</span>
+              </div>
             </div>
-            <p class="text-muted text-sm mb-3">免费试用 1,000 条推送，企业级应用，功能全面，适合商业项目。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-green-100 text-green-800">iOS</span>
-              <span class="service-tag bg-blue-100 text-blue-800">Android</span>
-              <span class="service-tag bg-orange-100 text-orange-800">企业级</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.airship.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
+            <a href="https://aws.amazon.com/sns/" target="_blank" class="inline-flex items-center text-primary hover:underline text-sm">
+              <i class="fa fa-external-link mr-1"></i> 访问官网
+            </a>
           </div>
         </div>
       </div>
     </div>
-
+    
     <!-- 选择建议 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+    <div class="bg-white dark:bg-darkCard rounded-xl border border-gray-100 dark:border-darkBorder p-5 md:p-6 mb-10 shadow-sm dark:shadow-gray-900/10 dark-transition">
       <h3 class="text-xl font-bold mb-5 flex items-center">
-        <i class="fa fa-lightbulb-o text-warning mr-2"></i>选择建议
+        <i class="fa fa-lightbulb-o text-warning mr-2"></i>如何选择适合的推送服务
       </h3>
       
-      <div class="space-y-5">
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-check-circle text-success mr-2"></i>根据开发平台选择
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>全平台应用（Web+移动）：优先选择OneSignal或Firebase Cloud Messaging</li>
-            <li>仅Web应用：考虑Gravitec.net或PushAssist，免费额度足够小型网站使用</li>
-            <li>仅移动应用：Pusher Beams提供大量免费API调用，适合中小规模应用</li>
-            <li>电商网站（特别是Shopify）：PushOwl是专门优化的解决方案</li>
-          </ul>
+      <div class="space-y-4">
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium">1</span>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium mb-1">明确目标平台</h4>
+            <p class="text-muted dark:text-darkMuted text-sm">
+              如果只需Web推送，Pushpad或Webpushr是不错的选择；如果需要覆盖移动平台，OneSignal或FCM更合适。
+            </p>
+          </div>
         </div>
         
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-check-circle text-success mr-2"></i>根据消息量选择
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>低发送量（每月少于1,000条）：大多数服务的免费额度都能满足</li>
-            <li>中等发送量（每月1,000-10,000条）：OneSignal、Gravitec.net或SendPulse</li>
-            <li>高发送量（每月10,000条以上）：Firebase Cloud Messaging（无限免费）或Pusher Beams（100万调用）</li>
-            <li>企业级需求：Airship提供全面功能，但免费额度有限，适合付费使用</li>
-          </ul>
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium">2</span>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium mb-1">评估消息量需求</h4>
+            <p class="text-muted dark:text-darkMuted text-sm">
+              小型项目可选择每月10,000条左右的免费额度，大型项目可考虑FCM(无限)或Pusher Beams(100,000条/月)。
+            </p>
+          </div>
         </div>
         
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-check-circle text-success mr-2"></i>开发测试阶段
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>快速原型开发：OneSignal集成简单，提供完整仪表盘，适合快速验证</li>
-            <li>长期项目：Firebase Cloud Messaging提供无限免费额度，无后顾之忧</li>
-            <li>多平台测试：TruePush的无限免费额度适合多平台兼容性测试</li>
-          </ul>
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium">3</span>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium mb-1">考虑集成难度</h4>
+            <p class="text-muted dark:text-darkMuted text-sm">
+              新手开发者可优先选择OneSignal（简单直观），已有Firebase集成的项目建议使用FCM。
+            </p>
+          </div>
         </div>
         
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-exclamation-circle text-warning mr-2"></i>重要注意事项
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>免费服务通常有品牌标识或功能限制，如需要去除品牌标识需升级付费版</li>
-            <li>推送频率过高可能导致用户卸载应用或关闭通知，需合理规划推送策略</li>
-            <li>不同平台对推送通知有不同的规范和限制，需遵守各平台的政策</li>
-            <li>考虑推送的到达率和延迟，关键业务通知可能需要付费服务保障可靠性</li>
-          </ul>
+        <div class="flex">
+          <div class="flex-shrink-0 mt-1">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-sm font-medium">4</span>
+          </div>
+          <div class="ml-4">
+            <h4 class="text-lg font-medium mb-1">功能需求考量</h4>
+            <p class="text-muted dark:text-darkMuted text-sm">
+              需要高级分析和营销功能可选择PushEngage；需要简单可靠的基础推送功能，FCM是理想选择。
+            </p>
+          </div>
         </div>
       </div>
     </div>
-
-    <!-- 相关资源与链接 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
+    
+    <!-- 相关资源推荐 -->
+    <div>
       <h3 class="text-xl font-bold mb-5 flex items-center">
-        <i class="fa fa-link text-primary mr-2"></i>相关资源与工具
+        <i class="fa fa-link text-primary mr-2"></i>相关资源推荐
       </h3>
       
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="https://github.com/topics/push-notifications" target="_blank" class="flex items-center p-3 bg-light rounded-lg hover:bg-gray-100 transition-colors">
-          <div class="bg-white p-2 rounded mr-3 shadow-sm">
-            <i class="fa fa-github text-push"></i>
-          </div>
-          <div>
-            <h4 class="font-medium">GitHub 推送通知资源</h4>
-            <p class="text-muted text-sm">开源的推送通知客户端和示例代码</p>
-          </div>
-        </a>
-        
-        <a href="https://developers.google.com/web/fundamentals/push-notifications" target="_blank" class="flex items-center p-3 bg-light rounded-lg hover:bg-gray-100 transition-colors">
-          <div class="bg-white p-2 rounded mr-3 shadow-sm">
-            <i class="fa fa-code text-push"></i>
-          </div>
-          <div>
-            <h4 class="font-medium">Web推送开发指南</h4>
-            <p class="text-muted text-sm">Google 提供的 Web 推送通知开发教程</p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <a href="#" class="feature-card block hover:no-underline">
+          <h4 class="text-lg font-medium mb-2">推送通知最佳实践指南</h4>
+          <p class="text-muted dark:text-darkMuted text-sm">
+            学习如何设计有效的推送通知策略，提高用户点击率和参与度，避免用户反感和退订。
+          </p>
+          <div class="mt-3 flex items-center text-primary text-sm">
+            <span>阅读更多</span>
+            <i class="fa fa-arrow-right ml-1"></i>
           </div>
         </a>
         
-        <a href="https://firebase.google.com/docs/cloud-messaging/samples" target="_blank" class="flex items-center p-3 bg-light rounded-lg hover:bg-gray-100 transition-colors">
-          <div class="bg-white p-2 rounded mr-3 shadow-sm">
-            <i class="fa fa-fire text-push"></i>
-          </div>
-          <div>
-            <h4 class="font-medium">FCM 示例代码</h4>
-            <p class="text-muted text-sm">Firebase Cloud Messaging 官方示例</p>
+        <a href="#" class="feature-card block hover:no-underline">
+          <h4 class="text-lg font-medium mb-2">Web推送通知实现教程</h4>
+          <p class="text-muted dark:text-darkMuted text-sm">
+            从零开始学习如何在网站中集成Web推送通知功能，包含前端和后端实现代码示例。
+          </p>
+          <div class="mt-3 flex items-center text-primary text-sm">
+            <span>阅读更多</span>
+            <i class="fa fa-arrow-right ml-1"></i>
           </div>
         </a>
         
-        <a href="https://onesignal.com/blog/push-notification-best-practices/" target="_blank" class="flex items-center p-3 bg-light rounded-lg hover:bg-gray-100 transition-colors">
-          <div class="bg-white p-2 rounded mr-3 shadow-sm">
-            <i class="fa fa-book text-push"></i>
+        <a href="#" class="feature-card block hover:no-underline">
+          <h4 class="text-lg font-medium mb-2">FCM推送通知完整集成指南</h4>
+          <p class="text-muted dark:text-darkMuted text-sm">
+            详细介绍如何在Android和iOS应用中集成Firebase Cloud Messaging，实现高效的推送功能。
+          </p>
+          <div class="mt-3 flex items-center text-primary text-sm">
+            <span>阅读更多</span>
+            <i class="fa fa-arrow-right ml-1"></i>
           </div>
-          <div>
-            <h4 class="font-medium">推送通知最佳实践</h4>
-            <p class="text-muted text-sm">提升推送效果和用户体验的指南</p>
+        </a>
+        
+        <a href="#" class="feature-card block hover:no-underline">
+          <h4 class="text-lg font-medium mb-2">推送通知分析与优化技巧</h4>
+          <p class="text-muted dark:text-darkMuted text-sm">
+            学习如何分析推送通知效果，优化发送时间、内容和频率，提升用户体验和转化率。
+          </p>
+          <div class="mt-3 flex items-center text-primary text-sm">
+            <span>阅读更多</span>
+            <i class="fa fa-arrow-right ml-1"></i>
           </div>
         </a>
       </div>
     </div>
-
-    <!-- 资源贡献区域 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-4 flex items-center">
-        <i class="fa fa-github text-primary mr-2"></i>贡献资源
-      </h3>
-      <p class="text-muted mb-4">
-        知道更多优质的免费推送通知服务？欢迎通过GitHub issues提交补充内容！
-      </p>
-      <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
-        <i class="fa fa-github mr-2"></i> 提交issue
-      </a>
+    
+    <!-- 订阅更新 -->
+    <div class="mt-12 bg-gradient-to-r from-primary/90 to-primary rounded-xl p-6 md:p-8 text-white">
+      <div class="max-w-3xl mx-auto text-center">
+        <h3 class="text-xl md:text-2xl font-bold mb-3">获取推送服务更新通知</h3>
+        <p class="text-white/90 mb-6">
+          订阅我们的通讯，及时获取免费推送服务的最新动态、额度调整和使用技巧
+        </p>
+        
+        <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+          <input type="email" placeholder="输入您的邮箱地址" class="flex-grow px-4 py-3 rounded-lg text-dark focus:outline-none focus:ring-2 focus:ring-white/50" required>
+          <button type="submit" class="bg-white text-primary hover:bg-white/90 px-6 py-3 rounded-lg font-medium transition-colors">
+            立即订阅
+          </button>
+        </form>
+        
+        <p class="text-white/70 text-sm mt-4">
+          我们尊重您的隐私，不会向第三方分享您的信息
+        </p>
+      </div>
     </div>
   </main>
 
   <!-- 页脚 -->
-  <footer class="bg-dark text-white py-10 mt-12">
+  <footer class="bg-dark dark:bg-darkBg text-white dark:text-darkText py-10 mt-12 border-t border-gray-800 dark:border-darkBorder">
     <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- 品牌信息 -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <div>
           <div class="flex items-center space-x-2 mb-4">
-            <i class="fa fa-compass text-secondary text-2xl"></i>
-            <h3 class="text-xl font-bold">资源导航</h3>
+            <i class="fa fa-compass text-primary text-2xl"></i>
+            <h2 class="text-xl font-bold text-white">资源导航</h2>
           </div>
-          <p class="text-gray-400 mb-4">
-            为开发者提供精选免费资源导航，覆盖域名、服务器、API、工具等全品类需求，助力项目开发与创新
+          <p class="text-gray-400 text-sm">
+            精选优质开发者资源，助力开发效率提升。收集整理各类免费工具、API服务和开发资源，方便开发者快速找到所需工具。
           </p>
-          <div class="flex space-x-4">
-            <a href="https://github.com/guomengtao/rinuo.com" target="_blank" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-github text-xl"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-twitter text-xl"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-linkedin text-xl"></i>
-            </a>
-          </div>
         </div>
         
-        <!-- 快速链接 -->
         <div>
-          <h4 class="text-lg font-medium mb-4">快速链接</h4>
-          <ul class="space-y-2">
-            <li><a href="../index.html" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">资源分类</a></li>
-            <li>
-              <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-gray-400 hover:text-white transition-colors flex items-center">
-                <i class="fa fa-github mr-1"></i> 提交资源
-              </a>
-            </li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
+          <h3 class="text-lg font-medium mb-4">资源分类</h3>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors">API服务</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">开发工具</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">设计资源</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">学习资源</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">云服务</a></li>
           </ul>
         </div>
         
-        <!-- 订阅更新 -->
         <div>
-          <h4 class="text-lg font-medium mb-4">订阅资源更新</h4>
-          <p class="text-gray-400 mb-4">获取最新免费资源信息和使用教程</p>
-          <form class="flex flex-col sm:flex-row gap-2">
-            <input type="email" placeholder="输入你的邮箱" class="flex-grow px-4 py-2 rounded-lg focus:outline-none text-dark" required>
-            <button type="submit" class="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
-              立即订阅
-            </button>
-          </form>
+          <h3 class="text-lg font-medium mb-4">快速链接</h3>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#" class="hover:text-primary transition-colors">关于我们</a></li>
+            <li><a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="hover:text-primary transition-colors">提交资源</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">使用条款</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">隐私政策</a></li>
+            <li><a href="#" class="hover:text-primary transition-colors">联系我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h3 class="text-lg font-medium mb-4">关注我们</h3>
+          <div class="flex space-x-4 mb-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-colors">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-colors">
+              <i class="fa fa-linkedin"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary flex items-center justify-center transition-colors">
+              <i class="fa fa-weixin"></i>
+            </a>
+          </div>
+          <p class="text-gray-400 text-sm">
+            订阅我们的周刊，获取最新资源更新
+          </p>
         </div>
       </div>
       
-      <!-- 版权信息 -->
       <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
-        <p>© 2025 开发者资源导航 | 本站资源仅供学习使用，版权归原作者所有</p>
-        <p class="mt-2">本页面最后更新时间：2025-08-29</p>
+        <p>© 2025 开发者资源导航. 保留所有权利.</p>
       </div>
     </div>
   </footer>
 
   <!-- 回到顶部按钮 -->
-  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
+  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible dark:shadow-gray-900/50">
     <i class="fa fa-chevron-up"></i>
   </button>
 
@@ -896,7 +870,7 @@
             behavior: 'smooth'
           });
           
-          // 如果是移动端且菜单打开，则关闭菜单
+          // 移动端菜单关闭
           if (!mobileMenu.classList.contains('hidden')) {
             mobileMenu.classList.add('hidden');
           }
@@ -904,21 +878,22 @@
       });
     });
 
-    // 服务筛选功能
+    // 服务筛选功能 - 同时筛选表格行和服务卡片
     const filterButtons = document.querySelectorAll('.filter-btn');
     const serviceRows = document.querySelectorAll('.service-row');
+    const serviceCards = document.querySelectorAll('.service-card');
     
     filterButtons.forEach(button => {
       button.addEventListener('click', () => {
         // 更新按钮状态
         filterButtons.forEach(btn => btn.classList.remove('filter-active', 'bg-primary', 'text-white'));
-        filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
+        filterButtons.forEach(btn => btn.classList.add('bg-light', 'dark:bg-gray-800', 'hover:bg-gray-200', 'dark:hover:bg-gray-700'));
         button.classList.add('filter-active', 'bg-primary', 'text-white');
-        button.classList.remove('bg-light', 'hover:bg-gray-200');
+        button.classList.remove('bg-light', 'dark:bg-gray-800', 'hover:bg-gray-200', 'dark:hover:bg-gray-700');
         
         const filter = button.getAttribute('data-filter');
         
-        // 筛选服务
+        // 筛选表格行
         serviceRows.forEach(row => {
           if (filter === 'all' || row.getAttribute('data-category').includes(filter)) {
             row.style.display = '';
@@ -926,8 +901,61 @@
             row.style.display = 'none';
           }
         });
+        
+        // 筛选服务卡片
+        serviceCards.forEach(card => {
+          if (filter === 'all' || card.getAttribute('data-category').includes(filter)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
       });
     });
-        } else {
+
+    // 暗黑模式切换功能
+    const themeToggle = document.getElementById('themeToggle');
+    const themeToggleMobile = document.getElementById('themeToggleMobile');
+    const htmlElement = document.documentElement;
+
+    // 初始化主题（优先读取本地存储）
+    if (localStorage.getItem('theme') === 'light' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+      htmlElement.classList.remove('dark');
+    } else {
+      htmlElement.classList.add('dark');
+    }
+
+    // 切换主题的函数
+    function toggleTheme() {
+      htmlElement.classList.toggle('dark');
+      
+      // 保存主题偏好到本地存储
+      if (htmlElement.classList.contains('dark')) {
+        localStorage.setItem('theme', 'dark');
+      } else {
+        localStorage.setItem('theme', 'light');
+      }
+    }
+
+    // 桌面端切换按钮事件
+    themeToggle.addEventListener('click', toggleTheme);
+    // 移动端切换按钮事件
+    themeToggleMobile.addEventListener('click', toggleTheme);
+
+    // 订阅表单处理
+    const subscribeForm = document.querySelector('form');
+    if (subscribeForm) {
+      subscribeForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const emailInput = subscribeForm.querySelector('input[type="email"]');
+        if (emailInput && emailInput.value) {
+          // 这里可以添加实际订阅逻辑（如调用API）
+          alert(`订阅成功！我们会向 ${emailInput.value} 发送资源更新。`);
+          subscribeForm.reset();
+        }
+      });
+    }
+  </script>
 </body>
 </html>
