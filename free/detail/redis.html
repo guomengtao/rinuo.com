@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redis 介绍 | 夜间版</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#E84118', // Redis红色
+            secondary: '#32CD32',
+            dark: '#121826',
+            darker: '#0A0F1C',
+            light: '#E2E8F0',
+            accent: '#00B42A',
+            warning: '#FF7D00',
+            danger: '#F53F3F'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .bg-glass {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .animate-float {
+        animation: float 6s ease-in-out infinite;
+      }
+      @keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+      }
+    }
+  </style>
+  <!-- 预加载字体 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-darker text-light min-h-screen flex flex-col">
+  <!-- 导航栏 -->
+  <header id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-darker/80 bg-glass">
+    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <i class="fa fa-database text-2xl text-darker"></i>
+        </div>
+        <h1 class="text-xl md:text-2xl font-bold text-white">Redis</h1>
+      </div>
+      
+      <!-- 桌面导航 -->
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="#overview" class="text-light/80 hover:text-primary transition-colors">概述</a>
+        <a href="#free-services" class="text-light/80 hover:text-primary transition-colors">免费服务</a>
+        <a href="#pros-cons" class="text-light/80 hover:text-primary transition-colors">优缺点</a>
+        <a href="#community" class="text-light/80 hover:text-primary transition-colors">社区评论</a>
+        <a href="#usage" class="text-light/80 hover:text-primary transition-colors">使用方法</a>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menu-toggle" class="md:hidden text-light text-xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="md:hidden hidden bg-dark/95 bg-glass">
+      <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+        <a href="#overview" class="text-light/80 hover:text-primary transition-colors py-2">概述</a>
+        <a href="#free-services" class="text-light/80 hover:text-primary transition-colors py-2">免费服务</a>
+        <a href="#pros-cons" class="text-light/80 hover:text-primary transition-colors py-2">优缺点</a>
+        <a href="#community" class="text-light/80 hover:text-primary transition-colors py-2">社区评论</a>
+        <a href="#usage" class="text-light/80 hover:text-primary transition-colors py-2">使用方法</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section id="overview" class="pt-32 pb-20 md:pt-40 md:pb-32 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="flex flex-col md:flex-row items-center gap-12">
+        <div class="md:w-1/2 space-y-6">
+          <h1 class="text-4xl md:text-6xl font-bold leading-tight">
+            <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Redis</span>
+            <span class="block mt-2">高性能的<br>键值存储数据库</span>
+          </h1>
+          <p class="text-xl text-light/70 leading-relaxed">
+            Redis 是一个开源的内存数据结构存储系统，可用作数据库、缓存和消息代理。它支持多种数据结构，以超高性能和灵活的特性被广泛应用。
+          </p>
+          <div class="flex flex-wrap gap-4 pt-4">
+            <a href="#usage" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary rounded-lg font-medium text-darker hover:shadow-lg hover:shadow-primary/20 transition-all transform hover:-translate-y-1">
+              开始使用
+            </a>
+            <a href="#community" class="px-8 py-3 bg-transparent border border-primary/50 rounded-lg font-medium text-primary hover:bg-primary/10 transition-all transform hover:-translate-y-1">
+              查看评论
+            </a>
+          </div>
+          
+          <!-- 统计数据 -->
+          <div class="grid grid-cols-3 gap-4 pt-8">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary">100k+</div>
+              <div class="text-sm text-light/60">GitHub星标</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary">100k+</div>
+              <div class="text-sm text-light/60">生产部署</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-primary">100k+</div>
+              <div class="text-sm text-light/60">QPS支持</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="md:w-1/2 animate-float">
+          <img src="https://picsum.photos/id/180/600/400" alt="Redis界面展示" class="rounded-xl shadow-2xl shadow-primary/20 w-full object-cover">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 免费服务部分 -->
+  <section id="free-services" class="py-20 bg-dark relative">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Redis 提供的免费服务与资源</h2>
+        <p class="text-light/70 max-w-2xl mx-auto">Redis是完全开源免费的，任何人都可以自由使用和修改，同时还有丰富的免费资源可供学习和使用</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 服务卡片 1 -->
+        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
+          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+            <i class="fa fa-code-fork text-primary text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">开源免费的核心代码</h3>
+          <p class="text-light/70">
+            Redis核心代码完全开源，遵循BSD许可协议，可免费用于商业和非商业项目，无需支付任何许可费用。
+          </p>
+          <a href="https://github.com/redis/redis" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
+            查看源码 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+        
+        <!-- 服务卡片 2 -->
+        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
+          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+            <i class="fa fa-book text-primary text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">官方文档与教程</h3>
+          <p class="text-light/70">
+            提供全面的官方文档、教程和示例代码，涵盖安装配置、数据结构、命令参考等所有使用方面。
+          </p>
+          <a href="https://redis.io/documentation" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
+            浏览文档 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+        
+        <!-- 服务卡片 3 -->
+        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
+          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+            <i class="fa fa-comments text-primary text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">社区支持与论坛</h3>
+          <p class="text-light/70">
+            活跃的社区论坛和讨论组，可免费获取技术支持、分享经验和解决问题，社区成员积极响应。
+          </p>
+          <a href="https://redis.io/community" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
+            加入社区 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+        
+        <!-- 服务卡片 4 -->
+        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
+          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+            <i class="fa fa-graduation-cap text-primary text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">免费学习资源</h3>
+          <p class="text-light/70">
+            大量免费的学习资源，包括官方教程、视频课程、电子书和示例项目，帮助开发者快速掌握Redis。
+          </p>
+          <a href="https://redis.io/docs/getting-started" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
+            学习资源 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+        
+        <!-- 服务卡片 5 -->
+        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
+          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+            <i class="fa fa-plug text-primary text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">客户端库与工具</h3>
+          <p class="text-light/70">
+            丰富的免费客户端库，支持几乎所有主流编程语言，以及各种开源工具和扩展，增强Redis功能。
+          </p>
+          <a href="https://redis.io/clients" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
+            客户端列表 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+        
+        <!-- 服务卡片 6 -->
+        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
+          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
+            <i class="fa fa-cloud-download text-primary text-xl"></i>
+          </div>
+          <h3 class="text-xl font-semibold mb-3">免费本地部署</h3>
+          <p class="text-light/70">
+            可完全免费在本地服务器或个人设备上部署和使用Redis，没有任何功能限制，适合开发和测试。
+          </p>
+          <a href="https://redis.io/download" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
+            下载Redis <i class="fa fa-arrow-right ml-2 text-sm"></i>
+          </a>
+        </div>
+      </div>
+      
+      <!-- 免费计划限制说明 -->
+      <div class="mt-12 bg-darker rounded-xl p-6 border border-warning/30">
+        <div class="flex items-start gap-4">
+          <div class="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-1">
+            <i class="fa fa-info text-warning"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-semibold mb-2 text-warning">免费使用说明</h3>
+            <p class="text-light/70 mb-4">
+              Redis本身是完全开源免费的，但一些企业提供的托管Redis服务（如Redis Labs、AWS ElastiCache等）可能需要付费。自托管Redis没有任何许可费用，但需要自己负责维护和管理。
+            </p>
+            <a href="https://redis.io/topics/licensing" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 transition-colors inline-flex items-center">
+              查看许可详情 <i class="fa fa-external-link ml-1 text-sm"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 优缺点部分 -->
+  <section id="pros-cons" class="py-20 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute top-1/3 right-1/3 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Redis 的优点与缺点</h2>
+        <p class="text-light/70 max-w-2xl mx-auto">了解Redis的主要优势和潜在局限性，帮助您做出更明智的技术选择</p>
+      </div>
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <!-- 优点部分 -->
+        <div class="bg-dark rounded-2xl p-8 border border-light/10">
+          <div class="flex items-center mb-8">
+            <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mr-4">
+              <i class="fa fa-thumbs-up text-accent text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold">主要优点</h3>
+          </div>
+          
+          <div class="space-y-6">
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">超高性能</h4>
+                <p class="text-light/70">作为内存数据库，Redis能达到每秒数十万次操作的性能，响应时间通常在微秒级别。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">丰富的数据结构</h4>
+                <p class="text-light/70">支持字符串、哈希、列表、集合、有序集合等多种数据结构，满足不同场景需求。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">持久化支持</h4>
+                <p class="text-light/70">提供RDB和AOF两种持久化机制，可在服务器重启后恢复数据，兼顾性能和可靠性。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">高可用性</h4>
+                <p class="text-light/70">支持主从复制和哨兵模式，能自动进行故障转移，确保服务持续可用。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">分布式支持</h4>
+                <p class="text-light/70">Redis Cluster提供自动分片功能，可水平扩展以处理更大规模的数据和负载。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">灵活的功能扩展</h4>
+                <p class="text-light/70">支持发布/订阅、Lua脚本、事务、地理空间索引等高级功能，适用场景广泛。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-check-circle text-accent text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">广泛的语言支持</h4>
+                <p class="text-light/70">几乎所有主流编程语言都有Redis客户端，易于集成到各种技术栈中。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- 缺点部分 -->
+        <div class="bg-dark rounded-2xl p-8 border border-light/10">
+          <div class="flex items-center mb-8">
+            <div class="w-12 h-12 bg-danger/20 rounded-full flex items-center justify-center mr-4">
+              <i class="fa fa-thumbs-down text-danger text-xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold">主要缺点</h3>
+          </div>
+          
+          <div class="space-y-6">
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">内存限制</h4>
+                <p class="text-light/70">作为内存数据库，数据量受限于可用内存大小，大规模数据存储成本较高。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">持久化开销</h4>
+                <p class="text-light/70">持久化操作会影响性能，尤其是AOF模式下，可能导致写入延迟增加。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">复杂的集群管理</h4>
+                <p class="text-light/70">Redis Cluster配置和管理相对复杂，需要一定的专业知识才能正确维护。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">不适合复杂查询</h4>
+                <p class="text-light/70">缺乏像关系型数据库那样的复杂查询能力，不适合需要多表关联的场景。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">事务功能有限</h4>
+                <p class="text-light/70">Redis的事务不支持回滚，且在并发环境下可能出现数据一致性问题。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">学习曲线</h4>
+                <p class="text-light/70">对于新手来说，Redis的数据结构和命令集需要一定的学习成本才能熟练掌握。</p>
+              </div>
+            </div>
+            
+            <div class="flex gap-4">
+              <div class="mt-1 flex-shrink-0">
+                <i class="fa fa-times-circle text-danger text-xl"></i>
+              </div>
+              <div>
+                <h4 class="text-lg font-semibold mb-1">数据备份挑战</h4>
+                <p class="text-light/70">对于大规模数据集，备份和恢复操作可能耗时较长，并影响正常服务。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 满意度图表 -->
+      <div class="mt-16 bg-dark rounded-2xl p-6 md:p-8 border border-light/10">
+        <h3 class="text-2xl font-bold mb-6 text-center">开发者满意度</h3>
+        <div class="h-80">
+          <canvas id="satisfactionChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社区评论部分 -->
+  <section id="community" class="py-20 bg-dark relative">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">社区评论</h2>
+        <p class="text-light/70 max-w-2xl mx-auto">来自全球开发者的真实评价和使用体验分享</p>
+      </div>
+      
+      <!-- 评论筛选 -->
+      <div class="flex flex-wrap justify-center gap-4 mb-10">
+        <button class="review-filter active px-5 py-2 rounded-full bg-primary text-darker font-medium transition-all" data-filter="all">全部评论</button>
+        <button class="review-filter px-5 py-2 rounded-full bg-darker border border-light/20 hover:border-primary/50 transition-all" data-filter="positive">正面评价</button>
+        <button class="review-filter px-5 py-2 rounded-full bg-darker border border-light/20 hover:border-primary/50 transition-all" data-filter="negative">负面评价</button>
+        <button class="review-filter px-5 py-2 rounded-full bg-darker border border-light/20 hover:border-primary/50 transition-all" data-filter="neutral">中性评价</button>
+      </div>
+      
+      <!-- 评论网格 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+        <!-- 评论将通过JavaScript动态生成 -->
+      </div>
+      
+      <!-- 加载更多按钮 -->
+      <div class="text-center mt-12">
+        <button id="load-more" class="px-8 py-3 bg-darker border border-primary/50 rounded-lg font-medium text-primary hover:bg-primary/10 transition-all">
+          加载更多评论
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使用方法部分 -->
+  <section id="usage" class="py-20 relative overflow-hidden">
+    <!-- 背景装饰 -->
+    <div class="absolute inset-0 overflow-hidden">
+      <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div class="container mx-auto px-4 relative z-10">
+      <div class="text-center mb-16">
+        <h2 class="text-3xl md:text-4xl font-bold mb-4">Redis 入门使用方法</h2>
+        <p class="text-light/70 max-w-2xl mx-auto">按照以下步骤开始使用Redis提升您的应用性能</p>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <!-- 步骤导航 -->
+        <div class="flex flex-wrap justify-between mb-12 relative">
+          <div class="absolute top-1/2 left-0 right-0 h-1 bg-light/10 -translate-y-1/2 z-0"></div>
+          <div class="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-10 transition-all duration-500" id="progress-bar" style="width: 20%"></div>
+          
+          <div class="usage-step relative z-20 flex flex-col items-center" data-step="1">
+            <div class="w-10 h-10 rounded-full bg-primary text-darker flex items-center justify-center font-bold mb-2">1</div>
+            <span class="text-sm text-center">安装Redis</span>
+          </div>
+          
+          <div class="usage-step relative z-20 flex flex-col items-center" data-step="2">
+            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">2</div>
+            <span class="text-sm text-center">启动服务</span>
+          </div>
+          
+          <div class="usage-step relative z-20 flex flex-col items-center" data-step="3">
+            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">3</div>
+            <span class="text-sm text-center">基本操作</span>
+          </div>
+          
+          <div class="usage-step relative z-20 flex flex-col items-center" data-step="4">
+            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">4</div>
+            <span class="text-sm text-center">数据结构</span>
+          </div>
+          
+          <div class="usage-step relative z-20 flex flex-col items-center" data-step="5">
+            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">5</div>
+            <span class="text-sm text-center">应用集成</span>
+          </div>
+        </div>
+        
+        <!-- 步骤内容 -->
+        <div class="bg-dark rounded-2xl p-6 md:p-8 border border-light/10">
+          <div class="usage-content" id="step-1">
+            <h3 class="text-2xl font-bold mb-6">步骤 1: 安装Redis</h3>
+            <p class="mb-6 text-light/80">Redis可在多种操作系统上安装，以下是常见系统的安装方法：</p>
+            
+            <div class="space-y-6 mb-8">
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-linux text-primary mr-2"></i>
+                  Linux 系统
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># Ubuntu/Debian</p>
+                  <p>sudo apt update</p>
+                  <p>sudo apt install redis-server</p>
+                  <br>
+                  <p># CentOS/RHEL</p>
+                  <p>sudo yum install redis</p>
+                  <p>sudo systemctl enable redis</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-apple text-primary mr-2"></i>
+                  macOS
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 使用Homebrew</p>
+                  <p>brew install redis</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-windows text-primary mr-2"></i>
+                  Windows
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 推荐使用WSL或Docker</p>
+                  <p># 或通过Chocolatey</p>
+                  <p>choco install redis-64</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-code-fork text-primary mr-2"></i>
+                  源码安装
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p>wget http://download.redis.io/releases/redis-7.0.0.tar.gz</p>
+                  <p>tar xzf redis-7.0.0.tar.gz</p>
+                  <p>cd redis-7.0.0</p>
+                  <p>make</p>
+                  <p>sudo make install</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-end">
+              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                下一步 <i class="fa fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="usage-content hidden" id="step-2">
+            <h3 class="text-2xl font-bold mb-6">步骤 2: 启动Redis服务</h3>
+            <p class="mb-6 text-light/80">安装完成后，需要启动Redis服务并验证是否正常运行：</p>
+            
+            <div class="space-y-6 mb-8">
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">启动Redis服务</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># Systemd系统 (Ubuntu 16.04+, CentOS 7+)</p>
+                  <p>sudo systemctl start redis-server</p>
+                  <p>sudo systemctl enable redis-server  # 设置开机启动</p>
+                  <br>
+                  <p># 非Systemd系统</p>
+                  <p>sudo service redis-server start</p>
+                  <br>
+                  <p># 直接启动</p>
+                  <p>redis-server</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">验证服务状态</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 检查服务状态</p>
+                  <p>sudo systemctl status redis-server</p>
+                  <br>
+                  <p># 测试连接</p>
+                  <p>redis-cli ping</p>
+                  <p># 应返回 PONG</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">配置Redis</h4>
+                <p class="text-light/70 text-sm mb-3">
+                  Redis配置文件通常位于/etc/redis/redis.conf或安装目录下，主要配置项：
+                </p>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p>bind 127.0.0.1  # 绑定地址，默认只允许本地访问</p>
+                  <p>port 6379       # 端口号</p>
+                  <p>requirepass yourpassword  # 设置密码</p>
+                  <p>daemonize yes   # 后台运行</p>
+                  <p>maxmemory 2gb   # 最大内存限制</p>
+                </div>
+                <p class="text-light/70 text-sm mt-3">
+                  修改配置后需要重启服务生效：sudo systemctl restart redis-server
+                </p>
+              </div>
+            </div>
+            
+            <div class="flex justify-between">
+              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
+                <i class="fa fa-arrow-left mr-1"></i> 上一步
+              </button>
+              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                下一步 <i class="fa fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="usage-content hidden" id="step-3">
+            <h3 class="text-2xl font-bold mb-6">步骤 3: Redis基本操作</h3>
+            <p class="mb-6 text-light/80">使用redis-cli客户端进行基本操作：</p>
+            
+            <div class="space-y-6 mb-8">
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">连接Redis服务器</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 本地连接</p>
+                  <p>redis-cli</p>
+                  <br>
+                  <p># 远程连接</p>
+                  <p>redis-cli -h host -p port -a password</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">字符串(String)操作</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 设置键值</p>
+                  <p>SET name "Redis"</p>
+                  <br>
+                  <p># 获取值</p>
+                  <p>GET name  # 返回 "Redis"</p>
+                  <br>
+                  <p># 设置带过期时间的键(秒)</p>
+                  <p>SET session_id "abc123" EX 3600</p>
+                  <br>
+                  <p># 自增</p>
+                  <p>INCR counter  # 计数器+1</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">常用通用命令</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 查看所有键</p>
+                  <p>KEYS *</p>
+                  <br>
+                  <p># 检查键是否存在</p>
+                  <p>EXISTS name  # 存在返回1，不存在返回0</p>
+                  <br>
+                  <p># 删除键</p>
+                  <p>DEL name</p>
+                  <br>
+                  <p># 设置过期时间(秒)</p>
+                  <p>EXPIRE name 300</p>
+                  <br>
+                  <p># 查看剩余过期时间</p>
+                  <p>TTL name</p>
+                  <br>
+                  <p># 查看键类型</p>
+                  <p>TYPE name</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">服务器信息</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 查看服务器信息</p>
+                  <p>INFO</p>
+                  <br>
+                  <p># 查看内存使用情况</p>
+                  <p>INFO memory</p>
+                  <br>
+                  <p># 查看统计信息</p>
+                  <p>INFO stats</p>
+                  <br>
+                  <p># 退出客户端</p>
+                  <p>QUIT</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-between">
+              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
+                <i class="fa fa-arrow-left mr-1"></i> 上一步
+              </button>
+              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                下一步 <i class="fa fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="usage-content hidden" id="step-4">
+            <h3 class="text-2xl font-bold mb-6">步骤 4: Redis数据结构操作</h3>
+            <p class="mb-6 text-light/80">Redis支持多种数据结构，以下是常用结构的基本操作：</p>
+            
+            <div class="space-y-6 mb-8">
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">哈希(Hash)操作</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 设置哈希字段</p>
+                  <p>HSET user:1000 name "John" age "30" email "john@example.com"</p>
+                  <br>
+                  <p># 获取哈希字段值</p>
+                  <p>HGET user:1000 name  # 返回 "John"</p>
+                  <br>
+                  <p># 获取所有字段和值</p>
+                  <p>HGETALL user:1000</p>
+                  <br>
+                  <p># 删除字段</p>
+                  <p>HDEL user:1000 email</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">列表(List)操作</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 从右侧插入元素</p>
+                  <p>RPUSH messages "Hello" "World"</p>
+                  <br>
+                  <p># 从左侧插入元素</p>
+                  <p>LPUSH messages "First"</p>
+                  <br>
+                  <p># 获取列表范围</p>
+                  <p>LRANGE messages 0 -1  # 获取所有元素</p>
+                  <br>
+                  <p># 弹出元素</p>
+                  <p>LPOP messages  # 从左侧弹出</p>
+                  <p>RPOP messages  # 从右侧弹出</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">集合(Set)操作</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 添加元素</p>
+                  <p>SADD tags "redis" "database" "cache"</p>
+                  <br>
+                  <p># 获取所有元素</p>
+                  <p>SMEMBERS tags</p>
+                  <br>
+                  <p># 检查元素是否存在</p>
+                  <p>SISMEMBER tags "redis"  # 存在返回1</p>
+                  <br>
+                  <p># 删除元素</p>
+                  <p>SREM tags "cache"</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2">有序集合(Sorted Set)操作</h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 添加元素(带分数)</p>
+                  <p>ZADD leaderboard 100 "Alice" 200 "Bob" 150 "Charlie"</p>
+                  <br>
+                  <p># 获取排名(升序)</p>
+                  <p>ZRANGE leaderboard 0 -1 WITHSCORES</p>
+                  <br>
+                  <p># 获取排名(降序)</p>
+                  <p>ZREVRANGE leaderboard 0 -1 WITHSCORES</p>
+                  <br>
+                  <p># 增加分数</p>
+                  <p>ZINCRBY leaderboard 50 "Alice"</p>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex justify-between">
+              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
+                <i class="fa fa-arrow-left mr-1"></i> 上一步
+              </button>
+              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
+                下一步 <i class="fa fa-arrow-right ml-1"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="usage-content hidden" id="step-5">
+            <h3 class="text-2xl font-bold mb-6">步骤 5: 在应用中集成Redis</h3>
+            <p class="mb-6 text-light/80">Redis可以与几乎所有编程语言集成，以下是几种常见语言的示例：</p>
+            
+            <div class="space-y-6 mb-8">
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-python text-primary mr-2"></i>
+                  Python 集成
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 安装redis库</p>
+                  <p>pip install redis</p>
+                  <br>
+                  <p># 使用示例</p>
+                  <p>import redis</p>
+                  <p>r = redis.Redis(host='localhost', port=6379, db=0)</p>
+                  <p>r.set('foo', 'bar')</p>
+                  <p>print(r.get('foo'))  # 输出 b'bar'</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-code text-primary mr-2"></i>
+                  JavaScript (Node.js) 集成
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p># 安装redis客户端</p>
+                  <p>npm install redis</p>
+                  <br>
+                  <p>// 使用示例</p>
+                  <p>const redis = require('redis');</p>
+                  <p>const client = redis.createClient({</p>
+                  <p>&nbsp;&nbsp;host: 'localhost',</p>
+                  <p>&nbsp;&nbsp;port: 6379</p>
+                  <p>});</p>
+                  <p>client.set('foo', 'bar');</p>
+                  <p>client.get('foo', (err, value) => {</p>
+                  <p>&nbsp;&nbsp;console.log(value); // 输出 'bar'</p>
+                  <p>});</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-java text-primary mr-2"></i>
+                  Java 集成
+                </h4>
+                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 overflow-x-auto">
+                  <p>// Maven依赖</p>
+                  <p>&lt;dependency&gt;</p>
+                  <p>&nbsp;&nbsp;&lt;groupId&gt;redis.clients&lt;/groupId&gt;</p>
+                  <p>&nbsp;&nbsp;&lt;artifactId&gt;jedis&lt;/artifactId&gt;</p>
+                  <p>&nbsp;&nbsp;&lt;version&gt;3.7.0&lt;/version&gt;</p>
+                  <p>&lt;/dependency&gt;</p>
+                  <br>
+                  <p>// 使用示例</p>
+                  <p>Jedis jedis = new Jedis("localhost", 6379);</p>
+                  <p>jedis.set("foo", "bar");</p>
+                  <p>System.out.println(jedis.get("foo")); // 输出 bar</p>
+                </div>
+              </div>
+              
+              <div class="bg-darker p-4 rounded-lg border border-light/10">
+                <h4 class="font-semibold mb-2 flex items-center">
+                  <i class="fa fa-database text-primary mr-2"></i>
+                  常见应用场景
+                </h4>
+                <ul class="list-disc list-inside text-light/70 text-sm space-y-2 pl-4">
+                  <li><span class="font-medium">缓存系统</span> - 减轻数据库负担，提高访问速度</li>
+                  <li><span class="font-medium">会话存储</span> - 存储用户会话信息，支持分布式系统</li>
+                  <li><span class="font-medium">实时计数器</span> - 如页面访问量、下载次数统计</li>
+                  <li><span class="font-medium">排行榜</span> - 利用有序集合实现实时排名</li>
+                  <li><span class="font-medium">消息队列</span> - 利用列表实现简单的消息发布/订阅</li>
+                  <li><span class="font-medium">地理位置服务</span> - 利用GEO功能实现附近的人等功能</li>
+                  <li><span class="font-medium">限流</span> - 利用计数器和过期时间实现接口限流</li>
+                </ul>
+              </div>
+            </div>
+            
+            <div class="flex justify-start">
+              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
+                <i class="fa fa-arrow-left mr-1"></i> 上一步
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark border-t border-light/10 py-12">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-4">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <i class="fa fa-database text-lg text-darker"></i>
+            </div>
+            <h3 class="text-lg font-bold text-white">Redis</h3>
+          </div>
+          <p class="text-light/60 text-sm">
+            Redis是一个开源的内存数据结构存储系统，可用作数据库、缓存和消息代理。支持多种数据结构，性能卓越。
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2 text-sm text-light/60">
+            <li><a href="#overview" class="hover:text-primary transition-colors">概述</a></li>
+            <li><a href="#free-services" class="hover:text-primary transition-colors">免费服务</a></li>
+            <li><a href="#pros-cons" class="hover:text-primary transition-colors">优缺点</a></li>
+            <li><a href="#community" class="hover:text-primary transition-colors">社区评论</a></li>
+            <li><a href="#usage" class="hover:text-primary transition-colors">使用方法</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">官方资源</h4>
+          <ul class="space-y-2 text-sm text-light/60">
+            <li><a href="https://redis.io/" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">官方网站</a></li>
+            <li><a href="https://redis.io/documentation" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">文档中心</a></li>
+            <li><a href="https://github.com/redis/redis" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">GitHub仓库</a></li>
+            <li><a href="https://redis.io/download" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">下载中心</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">联系社区</h4>
+          <ul class="space-y-2 text-sm text-light/60">
+            <li class="flex items-center gap-2">
+              <i class="fa fa-github text-primary"></i>
+              <a href="https://github.com/redis/redis/discussions" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">GitHub讨论</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa fa-twitter text-primary"></i>
+              <a href="https://twitter.com/redisinc" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">@redisinc</a>
+            </li>
+            <li class="flex items-center gap-2">
+              <i class="fa fa-google text-primary"></i>
+              <a href="https://groups.google.com/g/redis-db" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">邮件列表</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="pt-8 border-t border-light/10 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-light/50 text-sm mb-4 md:mb-0">
+          &copy; 2023 Redis 介绍页面. Redis是Redis Labs的商标.
+        </p>
+        <div class="flex space-x-4">
+          <a href="https://github.com/redis/redis" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
+            <i class="fa fa-github text-lg"></i>
+          </a>
+          <a href="https://twitter.com/redisinc" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
+            <i class="fa fa-twitter text-lg"></i>
+          </a>
+          <a href="https://www.linkedin.com/company/redis-labs" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
+            <i class="fa fa-linkedin text-lg"></i>
+          </a>
+          <a href="https://www.youtube.com/c/RedisLabs" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
+            <i class="fa fa-youtube-play text-lg"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 返回顶部按钮 -->
+  <button id="back-to-top" class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-darker flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
+    <i class="fa fa-arrow-up"></i>
+  </button>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    const backToTop = document.getElementById('back-to-top');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 100) {
+        navbar.classList.add('py-2', 'shadow-lg', 'shadow-darker/50');
+        navbar.classList.remove('py-3');
+        backToTop.classList.remove('opacity-0', 'invisible');
+        backToTop.classList.add('opacity-100', 'visible');
+      } else {
+        navbar.classList.add('py-3');
+        navbar.classList.remove('py-2', 'shadow-lg', 'shadow-darker/50');
+        backToTop.classList.add('opacity-0', 'invisible');
+        backToTop.classList.remove('opacity-100', 'visible');
+      }
+    });
+    
+    // 移动端菜单切换
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    menuToggle.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+      const icon = menuToggle.querySelector('i');
+      if (icon.classList.contains('fa-bars')) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-times');
+      } else {
+        icon.classList.remove('fa-times');
+        icon.classList.add('fa-bars');
+      }
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // 关闭移动菜单（如果打开）
+        if (!mobileMenu.classList.contains('hidden')) {
+          mobileMenu.classList.add('hidden');
+          const icon = menuToggle.querySelector('i');
+          icon.classList.remove('fa-times');
+          icon.classList.add('fa-bars');
+        }
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // 返回顶部
+    backToTop.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
+    
+    // 用户满意度图表
+    const ctx = document.getElementById('satisfactionChart').getContext('2d');
+    const satisfactionChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['非常满意', '满意', '一般', '不满意', '非常不满意'],
+        datasets: [{
+          label: '开发者比例 (%)',
+          data: [52, 34, 10, 3, 1],
+          backgroundColor: [
+            '#E84118',
+            '#F15C37',
+            '#FF7D00',
+            '#F53F3F',
+            '#E53E3E'
+          ],
+          borderWidth: 0,
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 60,
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.7)'
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              color: 'rgba(255, 255, 255, 0.7)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            display: false
+          }
+        }
+      }
+    });
+    
+    // 社区评论数据生成
+    const reviewContainer = document.getElementById('reviews-container');
+    let currentPage = 1;
+    const reviewsPerPage = 12;
+    
+    // 生成随机评论数据
+    const generateReviews = (count) => {
+      const positiveComments = [
+        "Redis的性能真的令人惊叹，我们的应用在使用Redis作为缓存后响应时间减少了90%。",
+        "作为会话存储，Redis比我使用过的任何其他解决方案都要可靠和快速。",
+        "多种数据结构支持让Redis非常灵活，一个数据库就能满足多种场景需求。",
+        "主从复制和哨兵模式设置简单，让我们轻松实现了高可用架构。",
+        "Redis Cluster让水平扩展变得简单，我们能够根据流量动态调整集群规模。",
+        "持久化机制设计得很巧妙，既保证了数据安全又不会过多影响性能。",
+        "文档非常完善，社区也很活跃，遇到问题总能找到解决方案。",
+        "Lua脚本支持让复杂操作变得原子化，解决了很多并发问题。",
+        "内存使用效率很高，相比其他内存数据库能存储更多数据。",
+        "发布/订阅功能简单实用，我们用它实现了实时通知系统，效果很好。",
+        "安装配置非常简单，几分钟就能完成部署并投入使用。",
+        "客户端库支持几乎所有语言，集成到现有系统中非常顺畅。",
+        "地理位置功能出乎意料地好用，我们的附近商家推荐功能全靠它。",
+        "过期键自动删除功能非常适合缓存场景，无需手动管理过期数据。",
+        "Redis的单线程模型避免了很多并发问题，设计非常巧妙。"
+      ];
+      
+      const negativeComments = [
+        "对于大规模大规模数据集，Redis的内存占用是个大问题，硬件成本很高。",
+        "持久化操作在高写入负载下会导致明显的性能波动。",
+        "集群模式配置和维护太复杂，对于中小团队来说门槛太高。",
+        "当内存不足时，Redis的行为有时难以预测，可能导致数据丢失。",
+        "缺乏像SQL那样的复杂查询能力，处理多条件查询很不方便。",
+        "事务功能有限，不支持回滚，在某些场景下数据一致性难以保证。",
+        "对于新手来说，配置文件中的参数太多，优化起来很困难。",
+        "在Windows上的支持不够好，官方甚至不推荐在Windows生产环境使用。",
+        "大规模数据备份和恢复非常耗时，影响正常服务。",
+        "某些命令在集群模式下不支持，迁移现有应用时需要大量修改。",
+        "内存碎片问题比较严重，长时间运行后需要重启来释放内存。",
+        "没有内置的用户权限管理，需要自己实现访问控制。",
+        "对于不熟悉的开发者，很容易写出性能低下的Redis代码。",
+        "AOF重写过程会占用大量CPU和内存资源，影响服务稳定性。",
+        "社区文档虽然全面，但对于某些高级特性的最佳实践描述不够详细。"
+      ];
+      
+      const neutralComments = [
+        "Redis是个优秀的工具，但不是银弹，需要根据具体场景判断是否适用。",
+        "对于中小规模应用，Redis非常完美，但在超大规模场景下需要谨慎使用。",
+        "性能确实很棒，但配置优化需要一定经验，新手可能无法发挥其全部潜力。",
+        "开源免费是很大优势，但企业级支持需要付费，对于大型项目是必要的。",
+        "数据结构丰富是优点，但也增加了学习成本，需要花时间掌握各种命令。",
+        "单线程模型有利有弊，避免了并发问题但也限制了多核CPU的利用。",
+        "作为缓存非常出色，但作为主数据库使用时需要仔细评估数据安全性需求。",
+        "社区活跃，问题修复很快，但某些新功能的稳定性需要时间验证。",
+        "相比其他NoSQL数据库，Redis更加轻量和专注，适合特定场景而非通用场景。",
+        "持久化选项灵活，但需要根据业务需求权衡性能和数据安全性。",
+        "客户端库质量参差不齐，选择合适的客户端对项目成功很重要。",
+        "对于大多数Web应用，Redis是提升性能的最佳选择之一，但不是唯一选择。",
+        "集群功能强大但复杂，对于数据量不是特别大的应用，单实例可能更合适。",
+        "文档很全面，但有些高级主题需要查阅多个来源才能完全理解。",
+        "Redis的发展很快，新版本带来了很多有用功能，但升级过程需要谨慎。"
+      ];
+      
+      const names = [
+        "张开发", "李程序", "王代码", "赵架构", "陈前端",
+        "杨后端", "黄测试", "吴设计", "郑产品", "孙运维",
+        "周数据", "吴算法", "徐全栈", "马移动", "朱安全"
+      ];
+      
+      const avatars = Array.from({length: 30}, (_, i) => `https://picsum.photos/id/${i+50}/200/200`);
+      
+      const reviews = [];
+      
+      for (let i = 0; i < count; i++) {
+        const type = Math.random();
+        let comment, rating;
+        
+        if (type < 0.6) { // 60% 正面评论
+          comment = positiveComments[Math.floor(Math.random() * positiveComments.length)];
+          rating = Math.floor(Math.random() * 2) + 4; // 4-5星
+        } else if (type < 0.85) { // 25% 中性评论
+          comment = neutralComments[Math.floor(Math.random() * neutralComments.length)];
+          rating = Math.floor(Math.random() * 2) + 3; // 3-4星
+        } else { // 15% 负面评论
+          comment = negativeComments[Math.floor(Math.random() * negativeComments.length)];
+          rating = Math.floor(Math.random() * 3) + 1; // 1-3星
+        }
+        
+        const date = new Date();
+        date.setDate(date.getDate() - Math.floor(Math.random() * 365));
+        
+        reviews.push({
+          id: i + 1,
+          name: names[Math.floor(Math.random() * names.length)],
+          avatar: avatars[Math.floor(Math.random() * avatars.length)],
+          comment,
+          rating,
+          date: date.toLocaleDateString(),
+          type: rating >= 4 ? 'positive' : rating === 3 ? 'neutral' : 'negative'
+        });
+      }
+      
+      return reviews;
+    };
+    
+    // 渲染评论
+    const renderReviews = (reviews, container) => {
+      container.innerHTML = '';
+      
+      reviews.forEach(review => {
+        const reviewEl = document.createElement('div');
+        reviewEl.className = `bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/20 transition-all review-item ${review.type}`;
+        reviewEl.setAttribute('data-type', review.type);
+        
+        // 生成星级评分HTML
+        let ratingHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          if (i <= review.rating) {
+            ratingHtml += '<i class="fa fa-star text-warning"></i>';
+          } else {
+            ratingHtml += '<i class="fa fa-star-o text-light/30"></i>';
+          }
+        }
+        
+        reviewEl.innerHTML = `
+          <div class="flex items-start gap-4">
+            <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+            <div class="flex-1">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-semibold">${review.name}</h4>
+                <span class="text-sm text-light/50">${review.date}</span>
+              </div>
+              <div class="mb-3">${ratingHtml}</div>
+              <p class="text-light/70 text-sm">${review.comment}</p>
+            </div>
+          </div>
+        `;
+        
+        container.appendChild(reviewEl);
+      });
+    };
+    
+    // 初始生成50+评论
+    const allReviews = generateReviews(60);
+    renderReviews(allReviews.slice(0, reviewsPerPage), reviewContainer);
+    
+    // 加载更多评论
+    document.getElementById('load-more').addEventListener('click', () => {
+      currentPage++;
+      const startIndex = (currentPage - 1) * reviewsPerPage;
+      const endIndex = startIndex + reviewsPerPage;
+      const nextReviews = allReviews.slice(startIndex, endIndex);
+      
+      if (nextReviews.length > 0) {
+        renderReviews(allReviews.slice(0, endIndex), reviewContainer);
+        
+        // 如果没有更多评论了，隐藏按钮
+        if (endIndex >= allReviews.length) {
+          document.getElementById('load-more').style.display = 'none';
+        }
+      }
+    });
+    
+    // 评论筛选
+    document.querySelectorAll('.review-filter').forEach(button => {
+      button.addEventListener('click', () => {
+        // 更新按钮样式
+        document.querySelectorAll('.review-filter').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-darker');
+          btn.classList.add('bg-darker', 'border', 'border-light/20', 'hover:border-primary/50');
+        });
+        
+        button.classList.add('active', 'bg-primary', 'text-darker');
+        button.classList.remove('bg-darker', 'border', 'border-light/20', 'hover:border-primary/50');
+        
+        const filter = button.getAttribute('data-filter');
+        let filteredReviews;
+        
+        if (filter === 'all') {
+          filteredReviews = allReviews.slice(0, currentPage * reviewsPerPage);
+        } else {
+          filteredReviews = allReviews.filter(review => review.type === filter)
+            .slice(0, currentPage * reviewsPerPage);
+        }
+        
+        renderReviews(filteredReviews, reviewContainer);
+      });
+    });
+    
+    // 使用方法步骤导航
+    const usageSteps = document.querySelectorAll('.usage-step');
+    const usageContents = document.querySelectorAll('.usage-content');
+    const progressBar = document.getElementById('progress-bar');
+    let currentStep = 1;
+    
+    // 更新步骤显示
+    const updateStep = (step) => {
+      // 隐藏所有内容
+      usageContents.forEach(content => content.classList.add('hidden'));
+      
+      // 显示当前步骤内容
+      document.getElementById(`step-${step}`).classList.remove('hidden');
+      
+      // 更新步骤指示器
+      usageSteps.forEach((stepEl, index) => {
+        const stepNum = index + 1;
+        const circle = stepEl.querySelector('div');
+        
+        if (stepNum === step) {
+          circle.classList.remove('bg-darker', 'border', 'border-light/30', 'text-light');
+          circle.classList.add('bg-primary', 'text-darker');
+        } else if (stepNum < step) {
+          circle.classList.remove('bg-darker', 'border', 'border-light/30', 'text-light');
+          circle.classList.add('bg-accent', 'text-darker');
+          circle.innerHTML = '<i class="fa fa-check"></i>';
+        } else {
+          circle.classList.remove('bg-primary', 'bg-accent', 'text-darker');
+          circle.classList.add('bg-darker', 'border', 'border-light/30', 'text-light');
+          circle.textContent = stepNum;
+        }
+      });
+      
+      // 更新进度条
+      progressBar.style.width = `${(step - 1) * 25}%`;
+      
+      currentStep = step;
+    };
+    
+    // 步骤点击事件
+    usageSteps.forEach(step => {
+      step.addEventListener('click', () => {
+        const stepNum = parseInt(step.getAttribute('data-step'));
+        updateStep(stepNum);
+      });
+    });
+    
+    // 下一步按钮
+    document.querySelectorAll('.next-step').forEach(button => {
+      button.addEventListener('click', () => {
+        if (currentStep < 5) {
+          updateStep(currentStep + 1);
+        }
+      });
+    });
+    
+    // 上一步按钮
+    document.querySelectorAll('.prev-step').forEach(button => {
+      button.addEventListener('click', () => {
+        if (currentStep > 1) {
+          updateStep(currentStep - 1);
+        }
+      });
+    });
+    
+    // 页面加载动画
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('opacity-100');
+      document.body.classList.remove('opacity-0');
+    });
+  </script>
+</body>
+</html>
+    
