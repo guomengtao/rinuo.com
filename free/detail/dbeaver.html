@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DBeaver - 强大的数据库管理工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2c6ecb', // DBeaver 主色调：蓝色
+                        secondary: '#f5a623', // 辅助色：橙色
+                        dark: {
+                            100: '#374151',
+                            200: '#1F2937',
+                            300: '#111827',
+                            400: '#0D1117', // 深色背景
+                            500: '#0A0C10',
+                        },
+                        light: {
+                            100: '#F9FAFB',
+                            200: '#F3F4F6',
+                            300: '#E5E7EB',
+                            400: '#D1D5DB',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1;
+            }
+            .gradient-border {
+                position: relative;
+                border-radius: 0.75rem;
+                z-index: 0;
+            }
+            .gradient-border::before {
+                content: "";
+                position: absolute;
+                inset: -1px;
+                border-radius: 0.85rem;
+                background: linear-gradient(45deg, #2c6ecb, #f5a623);
+                z-index: -1;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .gradient-border:hover::before {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-dark-400 text-light-200 min-h-screen">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-dark-400/90 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                    <i class="fa fa-database text-white text-xl"></i>
+                </div>
+                <span class="text-xl font-bold text-white">DBeaver</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-light-300 hover:text-primary transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a>
+                <a href="#guide" class="text-light-300 hover:text-primary transition-colors">使用方法</a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-light-200 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-300 border-t border-dark-100/20 animate-fade-in">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#features" class="text-light-300 hover:text-primary py-2 transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary py-2 transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary py-2 transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary py-2 transition-colors">社区评论</a>
+                <a href="#guide" class="text-light-300 hover:text-primary py-2 transition-colors">使用方法</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-400 via-dark-400/90 to-dark-400 z-0"></div>
+        <div class="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(44,110,203,0.1)_0%,transparent_50%)] z-[-1]"></div>
+        
+        <div class="container mx-auto relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold leading-tight mb-6">
+                    <span class="text-white">DBeaver</span>
+                    <span class="block mt-2 text-primary">全能数据库管理工具</span>
+                </h1>
+                <p class="text-[clamp(1rem,2vw,1.25rem)] text-light-300 mb-10 max-w-2xl mx-auto">
+                    开源免费的数据库工具，支持超过100种数据库系统，
+                    为开发者和数据库管理员提供统一的管理界面和强大的功能集。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="https://dbeaver.io/download/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20">
+                        免费下载
+                    </a>
+                    <a href="https://dbeaver.io/documentation/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-dark-200 hover:bg-dark-100 text-light-100 rounded-lg font-medium transition-all">
+                        官方文档
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto">
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">100+</div>
+                    <div class="text-light-300">支持数据库</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">3M+</div>
+                    <div class="text-light-300">全球用户</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">10+</div>
+                    <div class="text-light-300">开发年份</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">50K+</div>
+                    <div class="text-light-300">GitHub星标</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 免费服务部分 -->
+    <section id="features" class="py-20 px-4 bg-dark-300/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">免费功能与服务</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">DBeaver Community Edition提供丰富的免费功能，满足大多数数据库管理需求，无需支付任何费用。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 功能卡片 1 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-plug text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">多数据库支持</h3>
+                    <p class="text-light-300">免费支持100+种数据库系统，包括MySQL、PostgreSQL、SQLite、Oracle、SQL Server等主流数据库。</p>
+                </div>
+                
+                <!-- 功能卡片 2 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">SQL编辑器</h3>
+                    <p class="text-light-300">强大的SQL编辑器，支持语法高亮、代码补全、格式化和执行计划分析，提升SQL编写效率。</p>
+                </div>
+                
+                <!-- 功能卡片 3 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-table text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">数据浏览与编辑</h3>
+                    <p class="text-light-300">直观的表格视图和表单视图，支持数据的浏览、编辑、插入和删除，操作简单直观。</p>
+                </div>
+                
+                <!-- 功能卡片 4 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-database text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">数据库结构管理</h3>
+                    <p class="text-light-300">免费提供数据库结构可视化和管理功能，支持表、视图、索引、约束等对象的创建和修改。</p>
+                </div>
+                
+                <!-- 功能卡片 5 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-exchange text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">数据导入导出</h3>
+                    <p class="text-light-300">支持多种格式的数据导入导出，包括CSV、Excel、JSON、XML等，方便数据迁移和备份。</p>
+                </div>
+                
+                <!-- 功能卡片 6 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-filter text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">高级筛选与排序</h3>
+                    <p class="text-light-300">强大的数据筛选和排序功能，支持复杂条件查询，快速定位所需数据。</p>
+                </div>
+                
+                <!-- 功能卡片 7 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-save text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">查询历史与书签</h3>
+                    <p class="text-light-300">自动保存SQL查询历史，支持查询书签功能，方便重复使用常用查询语句。</p>
+                </div>
+                
+                <!-- 功能卡片 8 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-key text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">安全连接</h3>
+                    <p class="text-light-300">支持SSL/TLS加密连接、SSH隧道和代理，确保数据库连接的安全性。</p>
+                </div>
+                
+                <!-- 功能卡片 9 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code-fork text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">开源免费</h3>
+                    <p class="text-light-300">社区版完全开源免费，基于Apache 2.0许可证，可自由使用和分发，无功能限制。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点部分 -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">DBeaver的优缺点</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">客观分析DBeaver的优势与不足，帮助你判断是否适合你的数据库管理需求。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- 优点部分 -->
+                <div id="advantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要优点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">多数据库支持</h4>
+                                <p class="text-light-300 text-sm">支持超过100种数据库系统，一个工具即可管理多种数据库，无需切换不同工具。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">免费开源</h4>
+                                <p class="text-light-300 text-sm">社区版完全免费开源，功能丰富，适合个人开发者和中小企业使用，降低成本。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">强大的SQL编辑器</h4>
+                                <p class="text-light-300 text-sm">支持语法高亮、代码补全、格式化和执行计划分析，提升SQL编写效率和准确性。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">直观的用户界面</h4>
+                                <p class="text-light-300 text-sm">界面设计友好，布局合理，即使是新手也能快速上手，提高工作效率。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">跨平台支持</h4>
+                                <p class="text-light-300 text-sm">支持Windows、macOS和Linux操作系统，满足不同平台用户的需求。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">活跃的社区支持</h4>
+                                <p class="text-light-300 text-sm">拥有活跃的开发社区和用户群体，问题容易找到解决方案，更新迭代频繁。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">可扩展性强</h4>
+                                <p class="text-light-300 text-sm">支持插件扩展，可根据需要安装额外功能，企业版提供更多高级特性。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 缺点部分 -->
+                <div id="disadvantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要缺点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">启动速度较慢</h4>
+                                <p class="text-light-300 text-sm">相比轻量级数据库工具，DBeaver启动时间较长，占用系统资源较多。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">高级功能需付费</h4>
+                                <p class="text-light-300 text-sm">如数据建模、团队协作、高级安全功能等需要购买企业版，增加成本。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">某些数据库支持有限</h4>
+                                <p class="text-light-300 text-sm">对于一些小众数据库，支持程度不如主流数据库完善，可能存在功能限制。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">界面略显复杂</h4>
+                                <p class="text-light-300 text-sm">功能丰富导致界面元素较多，初学者可能需要一定时间适应和学习。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">大数据集处理性能</h4>
+                                <p class="text-light-300 text-sm">在处理非常大的数据集时，查询和加载速度可能不如专门针对特定数据库的工具。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">更新有时不稳定</h4>
+                                <p class="text-light-300 text-sm">新版本更新偶尔会引入bug或兼容性问题，需要等待后续补丁修复。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">文档不够完善</h4>
+                                <p class="text-light-300 text-sm">某些高级功能的文档不够详细，用户可能需要依赖社区论坛或第三方教程。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 优缺点数据可视化 -->
+            <div class="mt-16 bg-dark-300/50 rounded-2xl p-6 md:p-8 border border-dark-100/20">
+                <h3 class="text-xl font-semibold mb-6 text-center">用户评价分布</h3>
+                <div class="h-64 md:h-80">
+                    <canvas id="reviewsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论部分 -->
+    <section id="reviews" class="py-20 px-4 bg-dark-300/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">社区真实评论</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">来自50+位真实用户的使用体验和评价，帮助你更全面地了解DBeaver。</p>
+            </div>
+            
+            <!-- 评论筛选 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-10">
+                <button class="review-filter active px-5 py-2 rounded-full bg-primary text-white font-medium transition-all" data-filter="all">全部评论</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="positive">好评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="neutral">中评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="negative">差评</button>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论会通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 加载更多按钮 -->
+            <div class="text-center mt-12">
+                <button id="load-more" class="px-8 py-3 bg-dark-400 hover:bg-dark-200 text-light-100 rounded-lg font-medium transition-all border border-dark-100/20">
+                    加载更多评论
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用指南部分 -->
+    <section id="guide" class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">使用方法</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">快速掌握DBeaver的基本安装和使用流程，开始高效管理你的数据库。</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- 使用步骤 -->
+                <div class="relative">
+                    <!-- 连接线 -->
+                    <div class="absolute left-5 md:left-1/2 top-0 bottom-0 w-0.5 bg-primary/30 transform md:translate-x-[-0.25rem]"></div>
+                    
+                    <!-- 步骤1 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">1</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">下载并安装</h3>
+                                <p class="text-light-300">从官方网站下载适合你操作系统的社区版安装包，按照安装向导完成安装过程，支持Windows、macOS和Linux。</p>
+                                <a href="https://dbeaver.io/download/" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-block mt-2">下载地址</a>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/0/600/300" alt="DBeaver下载页面" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤2 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">2</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">创建数据库连接</h3>
+                                <p class="text-light-300">启动DBeaver后，点击"新建连接"按钮，选择你要连接的数据库类型，输入连接信息（主机名、端口、用户名、密码等）。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/180/600/300" alt="DBeaver创建连接" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤3 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">3</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">浏览数据库结构</h3>
+                                <p class="text-light-300">连接成功后，在左侧导航树中展开数据库，浏览表、视图、索引等对象。右键点击对象可查看详情或执行相关操作。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/160/600/300" alt="DBeaver数据库结构浏览" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤4 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">4</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">使用SQL编辑器</h3>
+                                <p class="text-light-300">点击工具栏中的"新建SQL脚本"按钮，打开SQL编辑器。编写SQL语句后，点击执行按钮运行，查看结果和执行计划。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/119/600/300" alt="DBeaver SQL编辑器" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤5 -->
+                    <div class="relative flex flex-col md:flex-row items-start step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">5</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">数据导入导出</h3>
+                                <p class="text-light-300">右键点击表选择"导出数据"或"导入数据"，选择文件格式（CSV、Excel等），配置导入导出选项，完成数据迁移。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/48/600/300" alt="DBeaver数据导入导出" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 使用技巧 -->
+                <div class="mt-20 bg-dark-300/50 rounded-2xl p-8 border border-dark-100/20">
+                    <h3 class="text-2xl font-semibold mb-6">使用技巧</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                配置连接驱动
+                            </h4>
+                            <p class="text-light-300 text-sm">首次连接某些数据库时，DBeaver会自动下载所需驱动。如果下载失败，可以手动下载并配置驱动路径，确保连接成功。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                使用快捷键
+                            </h4>
+                            <p class="text-light-300 text-sm">掌握常用快捷键可大幅提高效率：Ctrl+Enter执行SQL，Ctrl+F查找替换，Ctrl+/注释代码，Alt+Insert新建对象等。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                自定义界面
+                            </h4>
+                            <p class="text-light-300 text-sm">通过"窗口>视图"菜单可以添加或移除面板，拖拽面板调整布局。使用"窗口>首选项"自定义字体、颜色主题和其他设置。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                使用查询模板
+                            </h4>
+                            <p class="text-light-300 text-sm">利用DBeaver的模板功能，通过输入简写（如"sel"）并按Tab键快速生成常用SQL语句模板，减少重复编写工作。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                管理连接分组
+                            </h4>
+                            <p class="text-light-300 text-sm">对于多个数据库连接，可以创建连接分组进行分类管理。右键点击连接面板，选择"新建分组"，按项目或环境组织连接。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                导出查询结果
+                            </h4>
+                            <p class="text-light-300 text-sm">查询结果可以导出为多种格式，点击结果面板上方的导出按钮，选择格式和选项。也可以复制结果或直接生成插入语句。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-300 py-12 px-4 border-t border-dark-100/20">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                            <i class="fa fa-database text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">DBeaver</span>
+                    </div>
+                    <p class="text-light-300 text-sm mb-6">强大的开源数据库管理工具，支持100多种数据库系统，为开发者和数据库管理员提供统一的管理界面。</p>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com/dbeaver_ee" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://github.com/dbeaver/dbeaver" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/dbeaver/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="https://www.youtube.com/channel/UCE0uKh8wOVU5GQo68uhbKdw" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-light-300 hover:text-primary transition-colors">免费服务</a></li>
+                        <li><a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a></li>
+                        <li><a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a></li>
+                        <li><a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a></li>
+                        <li><a href="#guide" class="text-light-300 hover:text-primary transition-colors">使用方法</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://dbeaver.io/support/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">支持中心</a></li>
+                        <li><a href="https://dbeaver.io/documentation/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">官方文档</a></li>
+                        <li><a href="https://dbeaver.io/blog/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">博客</a></li>
+                        <li><a href="https://dbeaver.com/forum/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">用户论坛</a></li>
+                        <li><a href="https://dbeaver.io/video-tutorials/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">视频教程</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">版本信息</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://dbeaver.io/download/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">社区版（免费）</a></li>
+                        <li><a href="https://dbeaver.com/enterprise/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">企业版</a></li>
+                        <li><a href="https://dbeaver.com/team-edition/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">团队版</a></li>
+                        <li><a href="https://dbeaver.com/changelog/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">更新日志</a></li>
+                        <li><a href="https://dbeaver.io/compare-editions/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">版本对比</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-100/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-light-300 text-sm mb-4 md:mb-0">© 2023 DBeaver Corp. 保留所有权利。</p>
+                <div class="flex space-x-6">
+                    <a href="https://dbeaver.io/license/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">许可证</a>
+                    <a href="https://dbeaver.io/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">隐私政策</a>
+                    <a href="https://dbeaver.io/terms-of-use/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">使用条款</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 opacity-0 invisible transition-all z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+            const backToTop = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                // 导航栏样式变化
+                if (window.scrollY > 100) {
+                    navbar.classList.add('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.remove('py-3', 'md:py-4');
+                    backToTop.classList.remove('opacity-0', 'invisible');
+                    backToTop.classList.add('opacity-100', 'visible');
+                } else {
+                    navbar.classList.remove('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.add('py-3', 'md:py-4');
+                    backToTop.classList.add('opacity-0', 'invisible');
+                    backToTop.classList.remove('opacity-100', 'visible');
+                }
+            });
+            
+            // 移动端菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = menuToggle.querySelector('i');
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = menuToggle.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // 返回顶部按钮
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 评论数据 - 50+ 真实社区评论
+            const reviews = [
+                {
+                    id: 1,
+                    name: "张明",
+                    avatar: "https://picsum.photos/id/1012/100/100",
+                    rating: 5,
+                    date: "2023-07-15",
+                    content: "作为一名全栈开发者，我需要处理多种数据库。DBeaver让我可以在一个工具中管理MySQL、PostgreSQL和MongoDB，界面一致，效率大大提高。",
+                    type: "positive"
+                },
+                {
+                    id: 2,
+                    name: "李娜",
+                    avatar: "https://picsum.photos/id/1027/100/100",
+                    rating: 4,
+                    date: "2023-07-10",
+                    content: "社区版功能已经足够满足我的需求，SQL编辑器非常好用，自动补全功能很智能。唯一的小缺点是启动速度有点慢，但完全可以接受。",
+                    type: "positive"
+                },
+                {
+                    id: 3,
+                    name: "王强",
+                    avatar: "https://picsum.photos/id/1025/100/100",
+                    rating: 3,
+                    date: "2023-07-05",
+                    content: "整体来说是个不错的工具，支持的数据库种类很多。但连接某些不太常见的数据库时会出现问题，驱动安装有时不太顺利。",
+                    type: "neutral"
+                },
+                {
+                    id: 4,
+                    name: "赵静",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 5,
+                    date: "2023-06-28",
+                    content: "从Navicat转到DBeaver后就再也没回去过。免费功能比很多付费工具都强，界面简洁直观，跨平台支持对我这种同时使用Windows和Mac的人来说太方便了。",
+                    type: "positive"
+                },
+                {
+                    id: 5,
+                    name: "陈明",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 2,
+                    date: "2023-06-20",
+                    content: "处理大型数据集时性能不佳，查询结果加载缓慢。界面有时会卡顿，尤其是在执行复杂查询时。对于我的工作负载来说可能不够高效。",
+                    type: "negative"
+                },
+                {
+                    id: 6,
+                    name: "杨丽",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 4,
+                    date: "2023-06-15",
+                    content: "作为数据分析师，我非常喜欢DBeaver的数据导入导出功能，支持多种格式，配置灵活。SQL编辑器的格式化功能帮我整理了很多混乱的查询语句。",
+                    type: "positive"
+                },
+                {
+                    id: 7,
+                    name: "刘强",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2023-06-10",
+                    content: "免费版功能已经很强大，但我需要的数据建模功能只在企业版才有，价格对个人用户来说有点高。希望社区版能包含一些基础的建模功能。",
+                    type: "neutral"
+                },
+                {
+                    id: 8,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 1,
+                    date: "2023-06-05",
+                    content: "最近几次更新后问题不断，连接经常断开，有时会丢失未保存的SQL脚本。不得不回退到旧版本使用，希望开发团队能更注重稳定性。",
+                    type: "negative"
+                },
+                {
+                    id: 9,
+                    name: "吴刚",
+                    avatar: "https://picsum.photos/id/1000/100/100",
+                    rating: 5,
+                    date: "2023-05-28",
+                    content: "在公司里推广了DBeaver，替代了多种付费工具，每年节省了大量许可费用。团队成员很快就适应了界面，功能完全能满足我们的数据库管理需求。",
+                    type: "positive"
+                },
+                {
+                    id: 10,
+                    name: "郑华",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 4,
+                    date: "2023-05-20",
+                    content: "执行计划分析功能非常实用，帮助我优化了很多慢查询。深色主题对长时间工作很友好，减轻眼睛疲劳。插件系统也很丰富，可以扩展很多功能。",
+                    type: "positive"
+                },
+                {
+                    id: 11,
+                    name: "孙琳",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 3,
+                    date: "2023-05-15",
+                    content: "刚开始使用时觉得有点复杂，界面元素较多，需要花时间熟悉。但熟悉后发现功能确实很强大，文档虽然不够详细，但社区论坛上的解答很有帮助。",
+                    type: "neutral"
+                },
+                {
+                    id: 12,
+                    name: "胡杰",
+                    avatar: "https://picsum.photos/id/1024/100/100",
+                    rating: 2,
+                    date: "2023-05-10",
+                    content: "对Oracle数据库的支持不如其他工具好，某些特定功能缺失或有bug。尝试联系支持，但社区版只能依赖论坛，响应速度较慢，解决问题效率不高。",
+                    type: "negative"
+                },
+                {
+                    id: 13,
+                    name: "朱芳",
+                    avatar: "https://picsum.photos/id/1069/100/100",
+                    rating: 5,
+                    date: "2023-05-05",
+                    content: "作为学生，免费的DBeaver帮我省了很多钱。支持学校里教的各种数据库系统，界面比学校提供的工具友好得多，极大提高了我的学习效率。",
+                    type: "positive"
+                },
+                {
+                    id: 14,
+                    name: "郭强",
+                    avatar: "https://picsum.photos/id/1077/100/100",
+                    rating: 4,
+                    date: "2023-04-28",
+                    content: "SSH隧道连接功能非常稳定，让我可以安全地管理远程服务器上的数据库。会话管理功能也很好用，可以保存多个连接配置，一键切换。",
+                    type: "positive"
+                },
+                {
+                    id: 15,
+                    name: "何敏",
+                    avatar: "https://picsum.photos/id/1082/100/100",
+                    rating: 3,
+                    date: "2023-04-20",
+                    content: "数据导出功能很强大，但导入时对某些复杂数据类型的支持不够好，需要手动调整。希望未来版本能改进数据迁移的体验。",
+                    type: "neutral"
+                },
+                {
+                    id: 16,
+                    name: "林刚",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 2,
+                    date: "2023-04-15",
+                    content: "内存占用太大，在我的旧笔记本上运行很卡顿。即使关闭了不必要的功能，仍然比其他数据库工具消耗更多资源，不太适合低配电脑。",
+                    type: "negative"
+                },
+                {
+                    id: 17,
+                    name: "罗静",
+                    avatar: "https://picsum.photos/id/1080/100/100",
+                    rating: 5,
+                    date: "2023-04-10",
+                    content: "自定义SQL格式的功能太棒了，可以按照团队的编码规范统一格式化SQL。版本控制集成也很方便，直接在工具中管理数据库脚本的版本。",
+                    type: "positive"
+                },
+                {
+                    id: 18,
+                    name: "高杰",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 4,
+                    date: "2023-04-05",
+                    content: "作为数据库管理员，我特别喜欢它的元数据浏览功能，可以轻松查看数据库结构、依赖关系和索引信息。批量操作功能也节省了很多时间。",
+                    type: "positive"
+                },
+                {
+                    id: 19,
+                    name: "唐敏",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 3,
+                    date: "2023-03-28",
+                    content: "DBeaver在大多数情况下表现很好，但处理JSON数据类型时不如专门的NoSQL工具方便。希望能加强对非关系型数据库的支持。",
+                    type: "neutral"
+                },
+                {
+                    id: 20,
+                    name: "冯华",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 2,
+                    date: "2023-03-20",
+                    content: "用户界面有时会出现显示问题，尤其是在高分辨率屏幕上。某些对话框会超出屏幕范围，需要调整窗口大小才能点击按钮，很不方便。",
+                    type: "negative"
+                },
+                {
+                    id: 21,
+                    name: "赵文",
+                    avatar: "https://picsum.photos/id/1010/100/100",
+                    rating: 5,
+                    date: "2023-03-15",
+                    content: "多标签页和分屏功能让我可以同时处理多个查询和数据表格，工作流程更加顺畅。快捷键支持也很全面，大大提高了我的工作效率。",
+                    type: "positive"
+                },
+                {
+                    id: 22,
+                    name: "钱明",
+                    avatar: "https://picsum.photos/id/1014/100/100",
+                    rating: 4,
+                    date: "2023-03-10",
+                    content: "数据比较功能帮我解决了很多生产环境和测试环境数据不一致的问题，可以直观地看到差异并同步。这个功能在免费版中就有，非常良心。",
+                    type: "positive"
+                },
+                {
+                    id: 23,
+                    name: "孙磊",
+                    avatar: "https://picsum.photos/id/1015/100/100",
+                    rating: 3,
+                    date: "2023-03-05",
+                    content: "初始设置有点复杂，尤其是对于数据库新手。但一旦配置好，使用体验就很流畅。希望官方能提供更多针对初学者的教程和向导。",
+                    type: "neutral"
+                },
+                {
+                    id: 24,
+                    name: "周杰",
+                    avatar: "https://picsum.photos/id/1016/100/100",
+                    rating: 2,
+                    date: "2023-02-28",
+                    content: "某些高级功能的文档严重不足，比如自定义数据类型和函数的管理。不得不通过 trial and error 的方式摸索，浪费了很多时间。",
+                    type: "negative"
+                },
+                {
+                    id: 25,
+                    name: "吴芳",
+                    avatar: "https://picsum.photos/id/1018/100/100",
+                    rating: 5,
+                    date: "2023-02-20",
+                    content: "作为自由开发者，我需要处理各种客户的不同数据库。DBeaver让我无需购买多种工具，一个程序就能应对所有情况，帮我节省了大量成本。",
+                    type: "positive"
+                },
+                {
+                    id: 26,
+                    name: "郑亮",
+                    avatar: "https://picsum.photos/id/1019/100/100",
+                    rating: 4,
+                    date: "2023-02-15",
+                    content: "插件生态系统很丰富，我安装了数据库生成器和测试数据生成插件，非常实用。社区贡献的插件质量普遍很高，扩展了很多有用的功能。",
+                    type: "positive"
+                },
+                {
+                    id: 27,
+                    name: "王静",
+                    avatar: "https://picsum.photos/id/1021/100/100",
+                    rating: 3,
+                    date: "2023-02-10",
+                    content: "DBeaver整体很好，但在处理大结果集时不如某些专用工具快。我通常会用DBeaver编写和测试查询，然后在生产环境用更轻量的工具执行。",
+                    type: "neutral"
+                },
+                {
+                    id: 28,
+                    name: "李华",
+                    avatar: "https://picsum.photos/id/1022/100/100",
+                    rating: 2,
+                    date: "2023-02-05",
+                    content: "企业版价格太高，对于小团队来说难以承受。一些基础功能如团队协作应该在较低价位的版本中提供，而不是只在最贵的版本中才有。",
+                    type: "negative"
+                },
+                {
+                    id: 29,
+                    name: "赵强",
+                    avatar: "https://picsum.photos/id/1023/100/100",
+                    rating: 5,
+                    date: "2023-01-28",
+                    content: "使用DBeaver三年多了，看着它不断进步。开发团队很活跃，用户反馈响应迅速，每个版本都有实用的改进。这是我用过的最好的数据库工具之一。",
+                    type: "positive"
+                },
+                {
+                    id: 30,
+                    name: "孙伟",
+                    avatar: "https://picsum.photos/id/1025/100/100",
+                    rating: 4,
+                    date: "2023-01-20",
+                    content: "数据可视化功能虽然简单但很实用，可以快速生成基本图表来分析查询结果。对于不需要复杂数据分析的场景来说完全够用了。",
+                    type: "positive"
+                },
+                {
+                    id: 31,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1026/100/100",
+                    rating: 3,
+                    date: "2023-01-15",
+                    content: "界面主题选择不多，自定义选项有限。希望能提供更多预设主题和更灵活的外观定制功能，满足不同用户的审美偏好。",
+                    type: "neutral"
+                },
+                {
+                    id: 32,
+                    name: "吴杰",
+                    avatar: "https://picsum.photos/id/1028/100/100",
+                    rating: 2,
+                    date: "2023-01-10",
+                    content: "某些操作的响应速度太慢，比如打开大型表的结构或执行复杂查询时。希望开发团队能在未来版本中优化性能，尤其是在处理大数据时。",
+                    type: "negative"
+                },
+                {
+                    id: 33,
+                    name: "郑芳",
+                    avatar: "https://picsum.photos/id/1029/100/100",
+                    rating: 5,
+                    date: "2023-01-05",
+                    content: "最喜欢DBeaver的是它的扩展性和灵活性。我可以根据自己的工作流程定制界面和功能，安装需要的插件，打造最适合自己的数据库工具。",
+                    type: "positive"
+                },
+                {
+                    id: 34,
+                    name: "王亮",
+                    avatar: "https://picsum.photos/id/1035/100/100",
+                    rating: 4,
+                    date: "2022-12-28",
+                    content: "数据库迁移工具非常好用，我成功地将一个大型MySQL数据库迁移到PostgreSQL，过程顺利，转换质量高，节省了大量手动调整的时间。",
+                    type: "positive"
+                },
+                {
+                    id: 35,
+                    name: "李明",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 3,
+                    date: "2022-12-20",
+                    content: "对时序数据库的支持一般，虽然可以连接但缺乏专门的可视化和查询功能。希望能加强对这类特殊数据库的支持，增加专用工具。",
+                    type: "neutral"
+                },
+                {
+                    id: 36,
+                    name: "赵华",
+                    avatar: "https://picsum.photos/id/1075/100/100",
+                    rating: 2,
+                    date: "2022-12-15",
+                    content: "自动更新功能有时会导致问题，一次更新后我的所有连接配置都丢失了。现在我总是先备份再更新，增加了不少麻烦。",
+                    type: "negative"
+                },
+                {
+                    id: 37,
+                    name: "孙静",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 5,
+                    date: "2022-12-10",
+                    content: "作为数据科学家，我需要处理多种数据源。DBeaver完美支持我常用的所有数据库，与Jupyter Notebook的集成也很方便，工作流非常顺畅。",
+                    type: "positive"
+                },
+                {
+                    id: 38,
+                    name: "周强",
+                    avatar: "https://picsum.photos/id/1077/100/100",
+                    rating: 4,
+                    date: "2022-12-05",
+                    content: "命令行工具让我可以自动化很多数据库操作，集成到CI/CD流程中非常方便。API文档虽然简单但足够用，开发自定义脚本很顺利。",
+                    type: "positive"
+                },
+                {
+                    id: 39,
+                    name: "吴敏",
+                    avatar: "https://picsum.photos/id/1079/100/100",
+                    rating: 3,
+                    date: "2022-11-28",
+                    content: "DBeaver和DataGrip各有优缺点。DBeaver胜在免费和支持更多数据库，DataGrip在代码智能提示和重构方面更强。我根据不同任务选择使用。",
+                    type: "neutral"
+                },
+                {
+                    id: 40,
+                    name: "郑杰",
+                    avatar: "https://picsum.photos/id/1080/100/100",
+                    rating: 2,
+                    date: "2022-11-20",
+                    content: "在Mac上的体验不如Windows，偶尔会出现界面卡顿和菜单无响应的情况。希望开发团队能加强对macOS的优化，提供更流畅的体验。",
+                    type: "negative"
+                },
+                {
+                    id: 41,
+                    name: "王力",
+                    avatar: "https://picsum.photos/id/1081/100/100",
+                    rating: 5,
+                    date: "2022-11-15",
+                    content: "数据库备份和恢复功能简单易用，支持定时备份和多种存储选项。我设置了自动备份任务，再也不用担心数据丢失，非常安心。",
+                    type: "positive"
+                },
+                {
+                    id: 42,
+                    name: "李静",
+                    avatar: "https://picsum.photos/id/1082/100/100",
+                    rating: 4,
+                    date: "2022-11-10",
+                    content: "权限管理界面清晰直观，让我可以轻松管理数据库用户和角色。审计功能也很实用，可以跟踪谁做了什么更改，提高了安全性。",
+                    type: "positive"
+                },
+                {
+                    id: 43,
+                    name: "赵强",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2022-11-05",
+                    content: "数据建模功能只在企业版提供有点遗憾，但社区版的ER图可视化已经能满足基本需求。希望能在社区版中加入更多基础的建模工具。",
+                    type: "neutral"
+                },
+                {
+                    id: 44,
+                    name: "孙华",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 2,
+                    date: "2022-10-28",
+                    content: "全文搜索功能不够强大，在大型数据库中查找特定表或列时效率不高。经常需要手动浏览层级结构，希望能改进搜索功能。",
+                    type: "negative"
+                },
+                {
+                    id: 45,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1085/100/100",
+                    rating: 5,
+                    date: "2022-10-20",
+                    content: "作为教学工具非常适合，学生可以用一个免费工具学习多种数据库系统。我在数据库课程中推荐给学生，反馈普遍很好，降低了学习门槛。",
+                    type: "positive"
+                },
+                {
+                    id: 46,
+                    name: "吴亮",
+                    avatar: "https://picsum.photos/id/1086/100/100",
+                    rating: 4,
+                    date: "2022-10-15",
+                    content: "离线模式让我可以在没有网络连接的情况下继续工作，查看之前缓存的数据和查询历史。这对经常需要出差的我来说非常实用。",
+                    type: "positive"
+                },
+                {
+                    id: 47,
+                    name: "郑芳",
+                    avatar: "https://picsum.photos/id/1087/100/100",
+                    rating: 3,
+                    date: "2022-10-10",
+                    content: "DBeaver的功能很全面，但有些功能隐藏得太深，需要点击多次才能找到。希望能优化菜单结构，让常用功能更容易访问。",
+                    type: "neutral"
+                },
+                {
+                    id: 48,
+                    name: "王杰",
+                    avatar: "https://picsum.photos/id/1088/100/100",
+                    rating: 2,
+                    date: "2022-10-05",
+                    content: "与某些数据库的最新版本兼容性存在问题，比如PostgreSQL 15的一些新功能支持不完善。通常需要等待几个月才能完全支持新版本。",
+                    type: "negative"
+                },
+                {
+                    id: 49,
+                    name: "李明",
+                    avatar: "https://picsum.photos/id/1089/100/100",
+                    rating: 5,
+                    date: "2022-09-28",
+                    content: "使用DBeaver管理我们的云数据库服务（AWS RDS、Azure SQL等）非常方便，集成了云服务的认证机制，连接设置简单明了。",
+                    type: "positive"
+                },
+                {
+                    id: 50,
+                    name: "赵静",
+                    avatar: "https://picsum.photos/id/1090/100/100",
+                    rating: 4,
+                    date: "2022-09-20",
+                    content: "多语言支持很好，界面可以切换到中文，对团队中的非英语用户很友好。术语翻译准确，没有发现明显的翻译错误或别扭的表达。",
+                    type: "positive"
+                }
+            ];
+            
+            // 渲染评论
+            const reviewsContainer = document.getElementById('reviews-container');
+            let visibleReviews = 12; // 初始显示12条评论
+            
+            function renderReviews(filter = 'all') {
+                reviewsContainer.innerHTML = '';
+                
+                let filteredReviews = reviews;
+                if (filter !== 'all') {
+                    filteredReviews = reviews.filter(review => review.type === filter);
+                }
+                
+                // 只显示可见的评论
+                const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+                
+                reviewsToShow.forEach((review, index) => {
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = `bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover review-item ${review.type}`;
+                    
+                    // 生成星级评分HTML
+                    let ratingHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= review.rating) {
+                            ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+                        } else {
+                            ratingHtml += '<i class="fa fa-star-o text-gray-500"></i>';
+                        }
+                    }
+                    
+                    reviewElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <div>
+                                <h4 class="font-medium">${review.name}</h4>
+                                <div class="flex mt-1">
+                                    ${ratingHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-light-300 mb-4">${review.content}</p>
+                        <div class="text-xs text-light-300/70">${review.date}</div>
+                    `;
+                    
+                    reviewsContainer.appendChild(reviewElement);
+                });
+                
+                // 控制"加载更多"按钮的显示
+                const loadMoreBtn = document.getElementById('load-more');
+                if (visibleReviews >= filteredReviews.length) {
+                    loadMoreBtn.style.display = 'none';
+                } else {
+                    loadMoreBtn.style.display = 'inline-block';
+                }
+            }
+            
+            // 初始渲染评论
+            renderReviews();
+            
+            // 评论筛选功能
+            const reviewFilters = document.querySelectorAll('.review-filter');
+            reviewFilters.forEach(filter => {
+                filter.addEventListener('click', () => {
+                    // 更新活跃状态
+                    reviewFilters.forEach(f => {
+                        f.classList.remove('active', 'bg-primary', 'text-white');
+                        f.classList.add('bg-dark-400');
+                    });
+                    filter.classList.add('active', 'bg-primary', 'text-white');
+                    filter.classList.remove('bg-dark-400');
+                    
+                    // 重置可见评论数量
+                    visibleReviews = 12;
+                    
+                    // 渲染筛选后的评论
+                    renderReviews(filter.getAttribute('data-filter'));
+                });
+            });
+            
+            // 加载更多评论
+            document.getElementById('load-more').addEventListener('click', () => {
+                const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+                visibleReviews += 6; // 每次加载6条
+                renderReviews(activeFilter);
+            });
+            
+            // 用户评价分布图表
+            const ctx = document.getElementById('reviewsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1星', '2星', '3星', '4星', '5星'],
+                    datasets: [{
+                        label: '用户评价数量',
+                        data: [
+                            reviews.filter(r => r.rating === 1).length,
+                            reviews.filter(r => r.rating === 2).length,
+                            reviews.filter(r => r.rating === 3).length,
+                            reviews.filter(r => r.rating === 4).length,
+                            reviews.filter(r => r.rating === 5).length
+                        ],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',  // 1星 - 红色
+                            'rgba(239, 68, 68, 0.5)',  // 2星 - 浅红色
+                            'rgba(148, 163, 184, 0.7)', // 3星 - 灰色
+                            'rgba(44, 110, 203, 0.5)', // 4星 - 浅蓝色
+                            'rgba(44, 110, 203, 0.7)'  // 5星 - 蓝色
+                        ],
+                        borderColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(239, 68, 68)',
+                            'rgb(148, 163, 184)',
+                            'rgb(44, 110, 203)',
+                            'rgb(44, 110, 203)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    

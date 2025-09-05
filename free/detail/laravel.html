@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laravel 框架指南 | 夜间版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        // Tailwind 配置：夜间主题色与自定义样式
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0F1115', // 主背景
+                            800: '#1A1C23', // 卡片背景
+                            700: '#2D2F3A', // 边框/分割线
+                            600: '#383A47', // 次要背景
+                            500: '#8A8F98', // 次要文本
+                            400: '#B0B4BC', // 主要文本
+                            300: '#E2E8F0', // 高亮文本
+                            accent: '#6366F1', // 强调色（靛蓝色）
+                            success: '#10B981', // 成功色
+                            danger: '#EF4444',  // 危险色
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.1), 0 8px 10px -6px rgba(99, 102, 241, 0.1);
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 6px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background-color: theme('colors.dark.600');
+                border-radius: 3px;
+            }
+            .code-block {
+                background-color: theme('colors.dark.800');
+                border-radius: 0.5rem;
+                padding: 1rem;
+                overflow-x: auto;
+                font-family: theme('fontFamily.mono');
+                font-size: 0.875rem;
+                line-height: 1.5;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="bg-dark-900 text-dark-400 font-sans min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50 bg-dark-900/95 backdrop-blur-md border-b border-dark-700 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
+            <a href="#hero" class="flex items-center gap-2">
+                <i class="fa fa-code text-dark-accent text-2xl"></i>
+                <span class="text-xl font-bold text-dark-300">Laravel 指南</span>
+            </a>
+            <div class="hidden md:flex gap-8">
+                <a href="#free-services" class="hover:text-dark-accent transition-colors">免费服务</a>
+                <a href="#pros-cons" class="hover:text-dark-accent transition-colors">优缺点</a>
+                <a href="#community" class="hover:text-dark-accent transition-colors">社区评论</a>
+                <a href="#usage" class="hover:text-dark-accent transition-colors">使用方法</a>
+            </div>
+            <button class="md:hidden text-dark-400" id="menuBtn">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-dark-800 border-b border-dark-700">
+            <div class="container mx-auto px-4 py-2 flex flex-col gap-3">
+                <a href="#free-services" class="py-2 hover:text-dark-accent transition-colors">免费服务</a>
+                <a href="#pros-cons" class="py-2 hover:text-dark-accent transition-colors">优缺点</a>
+                <a href="#community" class="py-2 hover:text-dark-accent transition-colors">社区评论</a>
+                <a href="#usage" class="py-2 hover:text-dark-accent transition-colors">使用方法</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section id="hero" class="relative h-[70vh] flex items-center justify-center overflow-hidden">
+        <!-- 背景代码动画 -->
+        <div class="absolute inset-0 bg-dark-900 opacity-80" id="codeBackground"></div>
+        <div class="container mx-auto px-4 z-10 text-center">
+            <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold text-dark-300 mb-6 text-shadow leading-tight">
+                <span class="text-dark-accent">Laravel</span> 框架
+            </h1>
+            <p class="text-[clamp(1rem,3vw,1.25rem)] text-dark-500 max-w-2xl mx-auto mb-8">
+                优雅的 PHP Web 开发框架，为开发者提供简洁、优雅的语法和丰富的功能生态
+            </p>
+            <a href="#free-services" class="inline-flex items-center gap-2 bg-dark-accent/10 text-dark-accent border border-dark-accent/30 px-6 py-3 rounded-full hover:bg-dark-accent/20 transition-colors">
+                开始探索 <i class="fa fa-arrow-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- 免费服务 -->
+    <section id="free-services" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Laravel 的 <span class="text-dark-accent">免费服务与工具</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 服务 1 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-rocket text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">Laravel 框架核心</h3>
+                    <p class="text-dark-500 mb-4">
+                        完整的 MVC 架构、路由系统、Eloquent ORM、中间件等核心功能完全免费开源，基于 MIT 许可证发布。
+                    </p>
+                    <a href="https://laravel.com/docs" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        查看文档 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 2 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-database text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">Laravel Breeze</h3>
+                    <p class="text-dark-500 mb-4">
+                        轻量级身份验证系统，提供基本的登录、注册、密码重置功能，可快速集成到项目中，完全免费。
+                    </p>
+                    <a href="https://laravel.com/docs/10.x/starter-kits#breeze" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        了解更多 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 3 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code-fork text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">Laravel Valet</h3>
+                    <p class="text-dark-500 mb-4">
+                        为 Mac 开发人员提供的极简主义开发环境，自动配置 Nginx 并为项目提供本地域名，免费使用。
+                    </p>
+                    <a href="https://laravel.com/docs/10.x/valet" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        安装指南 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 4 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-cogs text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">Artisan 命令行工具</h3>
+                    <p class="text-dark-500 mb-4">
+                        强大的命令行接口，提供代码生成、数据库迁移、测试运行等功能，随框架免费提供。
+                    </p>
+                    <a href="https://laravel.com/docs/10.x/artisan" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        命令列表 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 5 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-pencil-square-o text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">Laravel 文档</h3>
+                    <p class="text-dark-500 mb-4">
+                        详尽的官方文档，包含从入门到高级的所有内容，提供多种语言版本，完全免费访问。
+                    </p>
+                    <a href="https://laravel.com/docs" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        浏览文档 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 6 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-users text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">社区支持</h3>
+                    <p class="text-dark-500 mb-4">
+                        活跃的 GitHub 社区、论坛和 Discord 服务器，免费获取技术支持和交流机会。
+                    </p>
+                    <a href="https://laravel.com/community" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        加入社区 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点 -->
+    <section id="pros-cons" class="py-20 bg-gradient-to-b from-dark-900 to-dark-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Laravel 的 <span class="text-dark-accent">优点与缺点</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- 优点 -->
+                <div>
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-full bg-dark-success/20 flex items-center justify-center">
+                            <i class="fa fa-thumbs-up text-dark-success"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-dark-300">主要优点</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 优雅简洁的语法
+                            </h4>
+                            <p class="text-dark-500">
+                                Laravel 提供了直观且优雅的语法，使代码更具可读性和可维护性，大大提高开发效率。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 完整的生态系统
+                            </h4>
+                            <p class="text-dark-500">
+                                包含 ORM、路由、认证、缓存、队列等全方位功能，无需大量第三方库即可构建复杂应用。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 强大的数据库迁移工具
+                            </h4>
+                            <p class="text-dark-500">
+                                数据库迁移系统使团队协作和版本控制变得简单，轻松管理数据库结构变更。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 丰富的文档和教程
+                            </h4>
+                            <p class="text-dark-500">
+                                详尽的官方文档和大量社区教程，使新手能够快速入门，解决问题更加便捷。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 活跃的社区支持
+                            </h4>
+                            <p class="text-dark-500">
+                                全球范围内拥有庞大的开发者社区，问题能够快速得到解答，插件和扩展丰富。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 缺点 -->
+                <div>
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-full bg-dark-danger/20 flex items-center justify-center">
+                            <i class="fa fa-thumbs-down text-dark-danger"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-dark-300">主要缺点</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 性能开销较大
+                            </h4>
+                            <p class="text-dark-500">
+                                相比 Slim 等轻量级框架，Laravel 资源消耗更高，对于简单应用可能显得过于臃肿。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 学习曲线较陡
+                            </h4>
+                            <p class="text-dark-500">
+                                对于 PHP 新手而言，Laravel 的众多概念和功能需要一定时间才能完全掌握。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 版本更新较快
+                            </h4>
+                            <p class="text-dark-500">
+                                框架版本迭代相对频繁，有时会引入不兼容变更，升级旧项目可能需要额外工作。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 对服务器要求较高
+                            </h4>
+                            <p class="text-dark-500">
+                                运行 Laravel 需要较新的 PHP 版本和更多的服务器资源，老旧环境可能不适用。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 过度封装的问题
+                            </h4>
+                            <p class="text-dark-500">
+                                高度封装的特性有时会隐藏底层实现细节，对于需要深入定制的场景可能不够灵活。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论 -->
+    <section id="community" class="py-20 bg-dark-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Laravel <span class="text-dark-accent">社区真实评论</span>
+            </h2>
+            
+            <div class="mb-10 flex justify-center gap-4 flex-wrap">
+                <button class="filter-btn active px-5 py-2 rounded-full bg-dark-accent text-dark-900 font-medium transition-colors" data-filter="all">全部评论</button>
+                <button class="filter-btn px-5 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="positive">正面评价</button>
+                <button class="filter-btn px-5 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="negative">负面评价</button>
+                <button class="filter-btn px-5 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="neutral">中性评价</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="commentsContainer">
+                <!-- 评论将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="mt-10 text-center">
+                <button id="loadMore" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 rounded-full transition-colors flex items-center gap-2 mx-auto">
+                    <span>加载更多评论</span>
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用方法 -->
+    <section id="usage" class="py-20 bg-gradient-to-b from-dark-800 to-dark-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Laravel <span class="text-dark-accent">使用方法与入门指南</span>
+            </h2>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- 步骤导航 -->
+                <div class="flex overflow-x-auto scrollbar-thin mb-10 pb-2 gap-2 md:justify-center">
+                    <button class="step-btn active whitespace-nowrap px-4 py-2 rounded-full bg-dark-accent text-dark-900 font-medium transition-colors" data-step="1">1. 环境准备</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="2">2. 安装框架</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="3">3. 配置数据库</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="4">4. 创建第一个页面</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="5">5. 运行应用</button>
+                </div>
+                
+                <!-- 步骤内容 -->
+                <div class="step-content active" data-step="1">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">1. 环境准备</h3>
+                        
+                        <p class="text-dark-500 mb-6">
+                            在安装 Laravel 之前，需要确保你的系统满足以下要求：
+                        </p>
+                        
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-check text-dark-accent mt-1"></i>
+                                <span>PHP 8.1 或更高版本</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-check text-dark-accent mt-1"></i>
+                                <span>BCMath、Ctype、JSON、Mbstring、OpenSSL、PDO、Tokenizer、XML 扩展</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-check text-dark-accent mt-1"></i>
+                                <span>Composer（PHP 包管理器）</span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-check text-dark-accent mt-1"></i>
+                                <span>数据库（MySQL、PostgreSQL、SQLite 或 SQL Server）</span>
+                            </li>
+                        </ul>
+                        
+                        <p class="text-dark-500 mb-4">
+                            安装 Composer（如未安装）：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-4 bg-dark-900">
+                            <pre>curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer</pre>
+                        </div>
+                        
+                        <p class="text-dark-500">
+                            验证 Composer 安装：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre>composer --version</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="2">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">2. 安装 Laravel 框架</h3>
+                        
+                        <p class="text-dark-500 mb-4">
+                            使用 Composer 创建新的 Laravel 项目：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>composer create-project laravel/laravel my-laravel-app</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            或者，如果你安装了 Laravel 安装器：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>composer global require laravel/installer
+laravel new my-laravel-app</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            进入项目目录：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre>cd my-laravel-app</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="3">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">3. 配置数据库</h3>
+                        
+                        <p class="text-dark-500 mb-4">
+                            编辑项目根目录下的 <code>.env</code> 文件，配置数据库连接信息：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=laravel_db
+DB_USERNAME=root
+DB_PASSWORD=your_password</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            创建数据库迁移文件（示例）：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>php artisan make:migration create_posts_table</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            运行数据库迁移：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre>php artisan migrate</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="4">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">4. 创建第一个页面</h3>
+                        
+                        <p class="text-dark-500 mb-4">
+                            创建控制器：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>php artisan make:controller HomeController</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            编辑 <code>app/Http/Controllers/HomeController.php</code>：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>&lt;?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\Request;
+
+class HomeController extends Controller
+{
+    public function index()
+    {
+        return view('welcome');
+    }
+    
+    public function about()
+    {
+        return view('about', [
+            'title' => '关于我们',
+            'content' => '这是一个 Laravel 示例应用'
+        ]);
+    }
+}</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            定义路由，编辑 <code>routes/web.php</code>：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>&lt;?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index']);
+Route::get('/about', [HomeController::class, 'about'])->name('about');</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            创建视图文件 <code>resources/views/about.blade.php</code>：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre>@extends('layouts.app')
+
+@section('content')
+    &lt;h1&gt;{{ $title }}&lt;/h1&gt;
+    &lt;p&gt;{{ $content }}&lt;/p&gt;
+@endsection</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="5">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">5. 运行应用</h3>
+                        
+                        <p class="text-dark-500 mb-4">
+                            使用 Laravel 内置开发服务器：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>php artisan serve</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-6">
+                            打开浏览器访问 <code>http://localhost:8000</code> 即可看到你的 Laravel 应用。
+                        </p>
+                        
+                        <p class="text-dark-500 mb-4">
+                            其他常用 Artisan 命令：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-4 bg-dark-900">
+                            <pre># 生成模型
+php artisan make:model Post
+
+# 生成中间件
+php artisan make:middleware CheckAge
+
+# 清除缓存
+php artisan cache:clear
+
+# 生成密钥（首次安装必要）
+php artisan key:generate</pre>
+                        </div>
+                        
+                        <p class="text-dark-500">
+                            更多命令可以通过 <code>php artisan list</code> 查看。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button id="prevStep" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 rounded-full transition-colors flex items-center gap-2 opacity-50 cursor-not-allowed">
+                        <i class="fa fa-arrow-left"></i>
+                        <span>上一步</span>
+                    </button>
+                    
+                    <button id="nextStep" class="px-6 py-3 bg-dark-accent hover:bg-dark-accent/80 text-dark-900 rounded-full transition-colors flex items-center gap-2">
+                        <span>下一步</span>
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 总结区域 -->
+    <section class="py-20 bg-dark-900 border-t border-dark-700">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-8 text-center">
+                <span class="text-dark-accent">总结</span>
+            </h2>
+            <div class="bg-dark-800/50 rounded-2xl p-8 border border-dark-700">
+                <p class="text-dark-400 leading-relaxed mb-6">
+                    Laravel 作为最受欢迎的 PHP 框架之一，凭借其优雅的语法、完整的功能生态和活跃的社区支持，成为许多开发者构建 Web 应用的首选。
+                </p>
+                <p class="text-dark-400 leading-relaxed mb-6">
+                    虽然存在性能开销较大、学习曲线较陡等缺点，但对于中大型项目而言，Laravel 提供的开发效率提升和代码可维护性优势通常会超过这些不足。
+                </p>
+                <p class="text-dark-400 leading-relaxed">
+                    对于 PHP 开发者来说，学习 Laravel 是一项有价值的投资，它不仅能提高开发效率，还能帮助开发者养成良好的编程习惯和架构思维。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-900 border-t border-dark-700 py-10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-code text-dark-accent text-2xl"></i>
+                    <span class="text-xl font-bold text-dark-300">Laravel 指南</span>
+                </div>
+                <div class="text-dark-500 text-sm">
+                    <p>© 2024 Laravel 指南. 所有内容仅供教育目的。</p>
+                    <p class="mt-1">信息来源：Laravel 官方文档及社区。</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="https://laravel.com" target="_blank" rel="noopener" class="text-dark-500 hover:text-dark-accent transition-colors">
+                        <i class="fa fa-globe text-xl"></i>
+                    </a>
+                    <a href="https://github.com/laravel/laravel" target="_blank" rel="noopener" class="text-dark-500 hover:text-dark-accent transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="https://twitter.com/laravelphp" target="_blank" rel="noopener" class="text-dark-500 hover:text-dark-accent transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 社区评论数据
+        const comments = [
+            {
+                id: 1,
+                name: "张明",
+                avatar: "https://picsum.photos/id/1012/100/100",
+                role: "全栈开发者",
+                content: "使用 Laravel 已经有5年了，从最初的懵懂到现在能够熟练运用，这个框架真的改变了我对 PHP 开发的看法。它的设计理念非常优雅，让代码变得整洁而有组织性。",
+                rating: 5,
+                date: "2024-08-15",
+                type: "positive"
+            },
+            {
+                id: 2,
+                name: "李华",
+                avatar: "https://picsum.photos/id/1005/100/100",
+                role: "后端开发",
+                content: "对于中小型项目来说，Laravel 确实能提高开发效率，但对于高并发场景，我还是会选择更轻量的框架。性能开销是它最大的问题。",
+                rating: 3,
+                date: "2024-08-10",
+                type: "neutral"
+            },
+            {
+                id: 3,
+                name: "王芳",
+                avatar: "https://picsum.photos/id/1027/100/100",
+                role: "PHP 开发者",
+                content: "作为一个从 CodeIgniter 转过来的开发者，Laravel 的学习曲线确实有点陡，但一旦掌握，你会发现它的强大之处。文档非常完善，社区也很活跃。",
+                rating: 4,
+                date: "2024-08-05",
+                type: "positive"
+            },
+            {
+                id: 4,
+                name: "赵伟",
+                avatar: "https://picsum.photos/id/1074/100/100",
+                role: "系统架构师",
+                content: "Laravel 的 ORM 是我用过的最好的 PHP ORM 之一，大大简化了数据库操作。但有时过于封装也会带来麻烦，需要深入底层时会比较困难。",
+                rating: 4,
+                date: "2024-07-28",
+                type: "neutral"
+            },
+            {
+                id: 5,
+                name: "陈静",
+                avatar: "https://picsum.photos/id/1062/100/100",
+                role: "Web 开发者",
+                content: "版本更新太快了，我们公司的一个项目还在用 Laravel 8，现在都已经出到 10 了，升级成本有点高。希望官方能提供更平滑的升级路径。",
+                rating: 2,
+                date: "2024-07-20",
+                type: "negative"
+            },
+            {
+                id: 6,
+                name: "刘强",
+                avatar: "https://picsum.photos/id/1025/100/100",
+                role: "自由开发者",
+                content: "Artisan 命令行工具太方便了，节省了大量重复工作的时间。迁移系统也很棒，团队协作时数据库版本控制变得非常简单。",
+                rating: 5,
+                date: "2024-07-15",
+                type: "positive"
+            },
+            {
+                id: 7,
+                name: "杨丽",
+                avatar: "https://picsum.photos/id/1066/100/100",
+                role: "全栈工程师",
+                content: "Laravel 生态系统非常完善，从认证到队列，从缓存到事件，几乎你需要的所有功能都有现成的解决方案，这让开发变得很轻松。",
+                rating: 5,
+                date: "2024-07-10",
+                type: "positive"
+            },
+            {
+                id: 8,
+                name: "周杰",
+                avatar: "https://picsum.photos/id/1083/100/100",
+                role: "后端工程师",
+                content: "对于新手来说可能有点复杂，但一旦理解了服务容器、依赖注入这些概念，你会发现 Laravel 的设计非常精妙，能写出高质量的代码。",
+                rating: 4,
+                date: "2024-07-05",
+                type: "positive"
+            },
+            {
+                id: 9,
+                name: "吴敏",
+                avatar: "https://picsum.photos/id/1000/100/100",
+                role: "PHP 程序员",
+                content: "我觉得 Laravel 有点过度设计了，很多简单的功能被复杂化。对于小型项目，我更倾向于使用 Slim 这样的轻量级框架。",
+                rating: 2,
+                date: "2024-06-30",
+                type: "negative"
+            },
+            {
+                id: 10,
+                name: "郑浩",
+                avatar: "https://picsum.photos/id/1076/100/100",
+                role: "技术负责人",
+                content: "在团队开发中，Laravel 的规范能保证代码风格的一致性，这非常重要。文档也很全面，新成员上手速度很快。",
+                rating: 5,
+                date: "2024-06-25",
+                type: "positive"
+            },
+            {
+                id: 11,
+                name: "孙琳",
+                avatar: "https://picsum.photos/id/1069/100/100",
+                role: "Web 开发",
+                content: "Laravel 的路由系统设计得非常直观，中间件功能也很强大，能够轻松实现各种过滤和验证逻辑。",
+                rating: 4,
+                date: "2024-06-20",
+                type: "positive"
+            },
+            {
+                id: 12,
+                name: "马明",
+                avatar: "https://picsum.photos/id/1010/100/100",
+                role: "后端开发",
+                content: "有时候觉得 Laravel 太“重”了，启动速度不如其他框架快。但对于功能复杂的项目，这些牺牲是值得的。",
+                rating: 3,
+                date: "2024-06-15",
+                type: "neutral"
+            },
+            {
+                id: 13,
+                name: "朱婷",
+                avatar: "https://picsum.photos/id/1003/100/100",
+                role: "全栈开发者",
+                content: "Blade 模板引擎非常灵活，既可以写原生 PHP，又有很多方便的指令，让视图开发变得很高效。",
+                rating: 5,
+                date: "2024-06-10",
+                type: "positive"
+            },
+            {
+                id: 14,
+                name: "胡强",
+                avatar: "https://picsum.photos/id/1079/100/100",
+                role: "系统开发",
+                content: "Laravel 的缓存系统支持多种驱动，配置简单，在需要优化性能时非常有用。队列系统也很稳定，处理异步任务很方便。",
+                rating: 4,
+                date: "2024-06-05",
+                type: "positive"
+            },
+            {
+                id: 15,
+                name: "林小雨",
+                avatar: "https://picsum.photos/id/1068/100/100",
+                role: "PHP 开发",
+                content: "Composer 集成得很好，安装和管理依赖非常方便。Packagist 上有大量的 Laravel 扩展包，几乎什么功能都能找到。",
+                rating: 5,
+                date: "2024-05-30",
+                type: "positive"
+            },
+            {
+                id: 16,
+                name: "郭杰",
+                avatar: "https://picsum.photos/id/1080/100/100",
+                role: "后端工程师",
+                content: "我遇到过几次 Laravel 升级后兼容性问题，不得不花时间修改代码。希望官方能更注重向后兼容。",
+                rating: 3,
+                date: "2024-05-25",
+                type: "negative"
+            },
+            {
+                id: 17,
+                name: "何静",
+                avatar: "https://picsum.photos/id/1059/100/100",
+                role: "Web 开发",
+                content: "Laravel 的事件系统让代码解耦变得很容易，能够写出更灵活、更易于维护的代码。",
+                rating: 4,
+                date: "2024-05-20",
+                type: "positive"
+            },
+            {
+                id: 18,
+                name: "高伟",
+                avatar: "https://picsum.photos/id/1077/100/100",
+                role: "技术总监",
+                content: "在我用过的所有 PHP 框架中，Laravel 的文档是最完善的，这大大降低了学习成本，也方便团队成员查阅。",
+                rating: 5,
+                date: "2024-05-15",
+                type: "positive"
+            },
+            {
+                id: 19,
+                name: "罗琳",
+                avatar: "https://picsum.photos/id/1082/100/100",
+                role: "全栈开发",
+                content: "Laravel 对 PHP 版本要求比较高，有时候客户的服务器环境比较旧，部署起来会遇到一些麻烦。",
+                rating: 3,
+                date: "2024-05-10",
+                type: "negative"
+            },
+            {
+                id: 20,
+                name: "黄明",
+                avatar: "https://picsum.photos/id/1024/100/100",
+                role: "后端开发",
+                content: "Eloquent ORM 真的很强大，复杂的查询也能写得很简洁。但有时候生成的 SQL 不够优化，需要手动调整。",
+                rating: 4,
+                date: "2024-05-05",
+                type: "neutral"
+            },
+            {
+                id: 21,
+                name: "徐婷",
+                avatar: "https://picsum.photos/id/1067/100/100",
+                role: "Web 开发者",
+                content: "Laravel 的表单验证功能非常好用，一行代码就能实现复杂的验证逻辑，省去了很多重复工作。",
+                rating: 5,
+                date: "2024-04-30",
+                type: "positive"
+            },
+            {
+                id: 22,
+                name: "孙亮",
+                avatar: "https://picsum.photos/id/1071/100/100",
+                role: "PHP 程序员",
+                content: "我觉得 Laravel 有点被过度吹捧了，它确实不错，但并没有好到碾压其他框架的程度。选择框架还是要根据项目需求。",
+                rating: 3,
+                date: "2024-04-25",
+                type: "neutral"
+            },
+            {
+                id: 23,
+                name: "赵静",
+                avatar: "https://picsum.photos/id/1084/100/100",
+                role: "全栈工程师",
+                content: "Laravel Mix 让前端资源管理变得很简单，即使是后端开发者也能轻松处理 CSS 和 JavaScript 的编译打包。",
+                rating: 4,
+                date: "2024-04-20",
+                type: "positive"
+            },
+            {
+                id: 24,
+                name: "吴强",
+                avatar: "https://picsum.photos/id/1073/100/100",
+                role: "系统架构师",
+                content: "在大型项目中，Laravel 的模块化设计能让代码结构更清晰。服务提供者和门面模式的设计非常巧妙。",
+                rating: 5,
+                date: "2024-04-15",
+                type: "positive"
+            },
+            {
+                id: 25,
+                name: "郑琳",
+                avatar: "https://picsum.photos/id/1065/100/100",
+                role: "Web 开发",
+                content: "有时候觉得 Laravel 的错误提示不够明确，特别是对于新手来说，可能需要花很多时间调试。",
+                rating: 3,
+                date: "2024-04-10",
+                type: "negative"
+            },
+            {
+                id: 26,
+                name: "王浩",
+                avatar: "https://picsum.photos/id/1075/100/100",
+                role: "后端开发",
+                content: "Laravel 的测试工具非常完善，支持单元测试和功能测试，能帮助我们写出更健壮的代码。",
+                rating: 5,
+                date: "2024-04-05",
+                type: "positive"
+            },
+            {
+                id: 27,
+                name: "冯婷",
+                avatar: "https://picsum.photos/id/1081/100/100",
+                role: "PHP 开发者",
+                content: "Laravel 的社区非常活跃，遇到问题很容易找到解决方案。各种教程和文章也很多，学习资源丰富。",
+                rating: 4,
+                date: "2024-03-30",
+                type: "positive"
+            },
+            {
+                id: 28,
+                name: "陈明",
+                avatar: "https://picsum.photos/id/1070/100/100",
+                role: "全栈开发",
+                content: "我希望 Laravel 能更注重性能优化，虽然可以通过各种手段改善，但原生性能如果能更好就完美了。",
+                rating: 3,
+                date: "2024-03-25",
+                type: "neutral"
+            },
+            {
+                id: 29,
+                name: "杨丽",
+                avatar: "https://picsum.photos/id/1064/100/100",
+                role: "Web 开发者",
+                content: "Laravel 的本地化功能非常强大，轻松实现多语言网站，这对于面向国际用户的项目来说非常有用。",
+                rating: 5,
+                date: "2024-03-20",
+                type: "positive"
+            },
+            {
+                id: 30,
+                name: "刘强",
+                avatar: "https://picsum.photos/id/1063/100/100",
+                role: "后端工程师",
+                content: "有时候觉得 Laravel 的文档虽然全面，但对于一些高级功能的解释不够深入，需要自己摸索或看源码。",
+                rating: 3,
+                date: "2024-03-15",
+                type: "negative"
+            },
+            {
+                id: 31,
+                name: "赵静",
+                avatar: "https://picsum.photos/id/1061/100/100",
+                role: "全栈开发者",
+                content: "Laravel 的密码重置、邮件验证等功能开箱即用，大大节省了开发时间，不用重复造轮子。",
+                rating: 5,
+                date: "2024-03-10",
+                type: "positive"
+            },
+            {
+                id: 32,
+                name: "钱明",
+                avatar: "https://picsum.photos/id/1060/100/100",
+                role: "PHP 程序员",
+                content: "对于习惯了其他框架的开发者来说，Laravel 的一些设计可能需要适应，比如 Facade 模式就有争议。",
+                rating: 3,
+                date: "2024-03-05",
+                type: "neutral"
+            },
+            {
+                id: 33,
+                name: "孙琳",
+                avatar: "https://picsum.photos/id/1058/100/100",
+                role: "Web 开发",
+                content: "Laravel 的任务调度系统非常方便，不用手动设置 cron 任务，在代码中就能定义各种定时任务。",
+                rating: 4,
+                date: "2024-03-01",
+                type: "positive"
+            },
+            {
+                id: 34,
+                name: "周强",
+                avatar: "https://picsum.photos/id/1057/100/100",
+                role: "后端开发",
+                content: "Laravel 的扩展包生态非常丰富，几乎所有你需要的功能都能找到现成的包，这大大提高了开发效率。",
+                rating: 5,
+                date: "2024-02-25",
+                type: "positive"
+            },
+            {
+                id: 35,
+                name: "吴婷",
+                avatar: "https://picsum.photos/id/1056/100/100",
+                role: "全栈工程师",
+                content: "我遇到过几次因为 Composer 依赖冲突导致的问题，解决起来比较麻烦，希望 Laravel 能在这方面做得更好。",
+                rating: 3,
+                date: "2024-02-20",
+                type: "negative"
+            },
+            {
+                id: 36,
+                name: "郑浩",
+                avatar: "https://picsum.photos/id/1055/100/100",
+                role: "技术负责人",
+                content: "在团队中推广 Laravel 后，代码质量明显提高，开发效率也提升了不少，这是一个值得投资学习的框架。",
+                rating: 5,
+                date: "2024-02-15",
+                type: "positive"
+            },
+            {
+                id: 37,
+                name: "王敏",
+                avatar: "https://picsum.photos/id/1054/100/100",
+                role: "PHP 开发者",
+                content: "Laravel 的路由模型绑定功能非常实用，能简化代码，减少很多重复的查询操作。",
+                rating: 4,
+                date: "2024-02-10",
+                type: "positive"
+            },
+            {
+                id: 38,
+                name: "冯亮",
+                avatar: "https://picsum.photos/id/1053/100/100",
+                role: "Web 开发",
+                content: "对于简单的 API 项目，Laravel 可能有点重，但它的 API 资源功能设计得非常好，能轻松格式化响应数据。",
+                rating: 3,
+                date: "2024-02-05",
+                type: "neutral"
+            },
+            {
+                id: 39,
+                name: "陈婷",
+                avatar: "https://picsum.photos/id/1052/100/100",
+                role: "全栈开发",
+                content: "Laravel 的事件广播功能让实时应用开发变得很简单，结合 Pusher 或 Socket.io 能轻松实现聊天等功能。",
+                rating: 5,
+                date: "2024-02-01",
+                type: "positive"
+            },
+            {
+                id: 40,
+                name: "杨明",
+                avatar: "https://picsum.photos/id/1051/100/100",
+                role: "后端工程师",
+                content: "Laravel 的缓存标签功能非常实用，能更精确地控制缓存失效，这在复杂项目中很有价值。",
+                rating: 4,
+                date: "2024-01-25",
+                type: "positive"
+            },
+            {
+                id: 41,
+                name: "黄静",
+                avatar: "https://picsum.photos/id/1050/100/100",
+                role: "PHP 程序员",
+                content: "我觉得 Laravel 的文档虽然全面，但示例不够多，特别是对于一些复杂功能，有时候还是需要查第三方教程。",
+                rating: 3,
+                date: "2024-01-20",
+                type: "negative"
+            },
+            {
+                id: 42,
+                name: "赵强",
+                avatar: "https://picsum.photos/id/1049/100/100",
+                role: "Web 开发者",
+                content: "Laravel 的文件存储系统抽象得很好，切换本地存储、S3 或其他存储服务非常方便，不用修改业务代码。",
+                rating: 5,
+                date: "2024-01-15",
+                type: "positive"
+            },
+            {
+                id: 43,
+                name: "孙浩",
+                avatar: "https://picsum.photos/id/1048/100/100",
+                role: "全栈工程师",
+                content: "对于初学者来说，Laravel 可能有点复杂，但一旦掌握了核心概念，你会发现它比其他框架更易于使用。",
+                rating: 4,
+                date: "2024-01-10",
+                type: "positive"
+            },
+            {
+                id: 44,
+                name: "周敏",
+                avatar: "https://picsum.photos/id/1047/100/100",
+                role: "后端开发",
+                content: "Laravel 的依赖注入系统让代码更易于测试和维护，这是现代框架应该具备的重要特性。",
+                rating: 5,
+                date: "2024-01-05",
+                type: "positive"
+            },
+            {
+                id: 45,
+                name: "吴亮",
+                avatar: "https://picsum.photos/id/1046/100/100",
+                role: "PHP 开发者",
+                content: "Laravel 的更新速度很快，这既是优点也是缺点。新功能不断加入，但也意味着需要不断学习新东西。",
+                rating: 3,
+                date: "2024-01-01",
+                type: "neutral"
+            },
+            {
+                id: 46,
+                name: "郑婷",
+                avatar: "https://picsum.photos/id/1045/100/100",
+                role: "Web 开发",
+                content: "Laravel 的邮件发送功能非常强大，支持多种驱动，模板系统也很灵活，能轻松发送各种邮件。",
+                rating: 4,
+                date: "2023-12-25",
+                type: "positive"
+            },
+            {
+                id: 47,
+                name: "王强",
+                avatar: "https://picsum.photos/id/1044/100/100",
+                role: "全栈开发",
+                content: "我希望 Laravel 能提供更多的官方扩展，而不是依赖社区包，这样能保证更好的兼容性和稳定性。",
+                rating: 3,
+                date: "2023-12-20",
+                type: "negative"
+            },
+            {
+                id: 48,
+                name: "冯浩",
+                avatar: "https://picsum.photos/id/1043/100/100",
+                role: "后端工程师",
+                content: "Laravel 的查询构建器非常强大，能写出几乎所有复杂的 SQL 查询，同时保持代码的可读性。",
+                rating: 5,
+                date: "2023-12-15",
+                type: "positive"
+            },
+            {
+                id: 49,
+                name: "陈静",
+                avatar: "https://picsum.photos/id/1042/100/100",
+                role: "PHP 程序员",
+                content: "Laravel 的集合类提供了很多实用的方法，让数组操作变得非常简单，大大减少了代码量。",
+                rating: 4,
+                date: "2023-12-10",
+                type: "positive"
+            },
+            {
+                id: 50,
+                name: "杨丽",
+                avatar: "https://picsum.photos/id/1041/100/100",
+                role: "Web 开发者",
+                content: "对于共享主机环境，部署 Laravel 有时候会遇到权限问题，需要一些额外的配置，希望能更简化。",
+                rating: 3,
+                date: "2023-12-05",
+                type: "negative"
+            },
+            {
+                id: 51,
+                name: "赵明",
+                avatar: "https://picsum.photos/id/1040/100/100",
+                role: "全栈工程师",
+                content: "Laravel 的命令总线功能让复杂业务逻辑的组织变得更清晰，能写出更易于维护的代码。",
+                rating: 5,
+                date: "2023-12-01",
+                type: "positive"
+            },
+            {
+                id: 52,
+                name: "孙强",
+                avatar: "https://picsum.photos/id/1039/100/100",
+                role: "后端开发",
+                content: "我认为 Laravel 最大的优势是它的生态系统和社区支持，这让开发过程中遇到的问题都能快速解决。",
+                rating: 5,
+                date: "2023-11-25",
+                type: "positive"
+            }
+        ];
+
+        // 当前显示的评论数量
+        let displayedComments = 15;
+        // 每次加载更多的数量
+        const loadMoreCount = 10;
+
+        // 生成星级评分HTML
+        function generateRating(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    html += '<i class="fa fa-star text-yellow-400"></i>';
+                } else {
+                    html += '<i class="fa fa-star-o text-dark-600"></i>';
+                }
+            }
+            return html;
+        }
+
+        // 渲染评论
+        function renderComments(filter = 'all') {
+            const container = document.getElementById('commentsContainer');
+            container.innerHTML = '';
+            
+            let filteredComments = comments;
+            if (filter !== 'all') {
+                filteredComments = comments.filter(comment => comment.type === filter);
+            }
+            
+            // 只显示部分评论
+            const commentsToShow = filteredComments.slice(0, displayedComments);
+            
+            commentsToShow.forEach(comment => {
+                const commentEl = document.createElement('div');
+                commentEl.className = `bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover ${comment.type}`;
+                commentEl.innerHTML = `
+                    <div class="flex items-start gap-4 mb-4">
+                        <img src="${comment.avatar}" alt="${comment.name}" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-semibold text-dark-300">${comment.name}</h4>
+                            <p class="text-dark-500 text-sm">${comment.role}</p>
+                            <div class="flex mt-1">
+                                ${generateRating(comment.rating)}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-dark-400 mb-4">${comment.content}</p>
+                    <p class="text-dark-500 text-sm">${comment.date}</p>
+                `;
+                container.appendChild(commentEl);
+            });
+            
+            // 控制加载更多按钮显示
+            const loadMoreBtn = document.getElementById('loadMore');
+            if (displayedComments >= filteredComments.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'flex';
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染评论
+            renderComments();
+            
+            // 移动端菜单切换
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // 评论过滤
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 重置显示数量
+                    displayedComments = 15;
+                    
+                    // 移除所有激活状态
+                    filterBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-dark-accent', 'text-dark-900');
+                        b.classList.add('bg-dark-700', 'hover:bg-dark-600');
+                    });
+                    
+                    // 添加当前激活状态
+                    btn.classList.add('active', 'bg-dark-accent', 'text-dark-900');
+                    btn.classList.remove('bg-dark-700', 'hover:bg-dark-600');
+                    
+                    const filter = btn.getAttribute('data-filter');
+                    renderComments(filter);
+                });
+            });
+            
+            // 加载更多评论
+            document.getElementById('loadMore').addEventListener('click', function() {
+                displayedComments += loadMoreCount;
+                const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                renderComments(activeFilter);
+            });
+            
+            // 步骤导航
+            const stepBtns = document.querySelectorAll('.step-btn');
+            const stepContents = document.querySelectorAll('.step-content');
+            const prevBtn = document.getElementById('prevStep');
+            const nextBtn = document.getElementById('nextStep');
+            let currentStep = 1;
+            const totalSteps = stepBtns.length;
+            
+            // 更新步骤按钮状态
+            function updateStepButtons() {
+                if (currentStep === 1) {
+                    prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    prevBtn.classList.remove('hover:bg-dark-600');
+                } else {
+                    prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    prevBtn.classList.add('hover:bg-dark-600');
+                }
+                
+                if (currentStep === totalSteps) {
+                    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    nextBtn.classList.remove('hover:bg-dark-accent/80');
+                } else {
+                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    nextBtn.classList.add('hover:bg-dark-accent/80');
+                }
+            }
+            
+            // 切换步骤
+            function goToStep(step) {
+                if (step < 1 || step > totalSteps) return;
+                
+                currentStep = step;
+                
+                // 更新按钮状态
+                stepBtns.forEach(btn => {
+                    const btnStep = parseInt(btn.getAttribute('data-step'));
+                    if (btnStep === currentStep) {
+                        btn.classList.add('active', 'bg-dark-accent', 'text-dark-900');
+                        btn.classList.remove('bg-dark-700', 'hover:bg-dark-600');
+                    } else {
+                        btn.classList.remove('active', 'bg-dark-accent', 'text-dark-900');
+                        btn.classList.add('bg-dark-700', 'hover:bg-dark-600');
+                    }
+                });
+                
+                // 更新内容显示
+                stepContents.forEach(content => {
+                    const contentStep = parseInt(content.getAttribute('data-step'));
+                    if (contentStep === currentStep) {
+                        content.classList.remove('hidden');
+                        content.classList.add('active');
+                    } else {
+                        content.classList.add('hidden');
+                        content.classList.remove('active');
+                    }
+                });
+                
+                // 更新导航按钮状态
+                updateStepButtons();
+            }
+            
+            // 步骤按钮点击事件
+            stepBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const step = parseInt(btn.getAttribute('data-step'));
+                    goToStep(step);
+                });
+            });
+            
+            // 上一步/下一步按钮
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                        // 关闭移动端菜单
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+            
+            // 代码背景动画
+            function createCodeBackground() {
+                const container = document.getElementById('codeBackground');
+                const linesCount = 50;
+                const codeChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}()[];.,<>+=*-&^%$#@!~';
+                
+                for (let i = 0; i < linesCount; i++) {
+                    const line = document.createElement('div');
+                    const lineLength = Math.floor(Math.random() * 30) + 10;
+                    let code = '';
+                    
+                    for (let j = 0; j < lineLength; j++) {
+                        code += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
+                    }
+                    
+                    const left = Math.random() * 100;
+                    const top = (i / linesCount) * 100;
+                    const opacity = Math.random() * 0.1 + 0.05;
+                    const fontSize = Math.random() * 4 + 8;
+                    const animationDuration = Math.random() * 10 + 5;
+                    
+                    line.style.cssText = `
+                        position: absolute;
+                        left: ${left}%;
+                        top: ${top}%;
+                        color: rgba(99, 102, 241, ${opacity});
+                        font-family: monospace;
+                        font-size: ${fontSize}px;
+                        white-space: nowrap;
+                        transform: translateX(-50%);
+                        animation: float ${animationDuration}s infinite linear;
+                    `;
+                    line.textContent = code;
+                    container.appendChild(line);
+                }
+            }
+            
+            // 添加浮动动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% { transform: translateX(-50%) translateY(0); }
+                    50% { transform: translateX(-50%) translateY(-10px); }
+                    100% { transform: translateX(-50%) translateY(0); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 创建代码背景
+            createCodeBackground();
+            
+            // 滚动时导航栏样式变化
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('nav');
+                if (window.scrollY > 50) {
+                    nav.classList.add('shadow-lg');
+                    nav.classList.remove('border-b');
+                } else {
+                    nav.classList.remove('shadow-lg');
+                    nav.classList.add('border-b');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

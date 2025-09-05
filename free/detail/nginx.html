@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx 指南 | 夜间版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        // Tailwind 配置：夜间主题色与自定义样式
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            900: '#0F1115', // 主背景
+                            800: '#1A1C23', // 卡片背景
+                            700: '#2D2F3A', // 边框/分割线
+                            600: '#383A47', // 次要背景
+                            500: '#8A8F98', // 次要文本
+                            400: '#B0B4BC', // 主要文本
+                            300: '#E2E8F0', // 高亮文本
+                            accent: '#0EA5E9', // 强调色（亮蓝色）
+                            success: '#10B981', // 成功色
+                            danger: '#EF4444',  // 危险色
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.1), 0 8px 10px -6px rgba(14, 165, 233, 0.1);
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 6px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background-color: theme('colors.dark.600');
+                border-radius: 3px;
+            }
+            .code-block {
+                background-color: theme('colors.dark.800');
+                border-radius: 0.5rem;
+                padding: 1rem;
+                overflow-x: auto;
+                font-family: theme('fontFamily.mono');
+                font-size: 0.875rem;
+                line-height: 1.5;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body class="bg-dark-900 text-dark-400 font-sans min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="sticky top-0 z-50 bg-dark-900/95 backdrop-blur-md border-b border-dark-700 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
+            <a href="#hero" class="flex items-center gap-2">
+                <i class="fa fa-server text-dark-accent text-2xl"></i>
+                <span class="text-xl font-bold text-dark-300">Nginx 指南</span>
+            </a>
+            <div class="hidden md:flex gap-8">
+                <a href="#free-services" class="hover:text-dark-accent transition-colors">免费服务</a>
+                <a href="#pros-cons" class="hover:text-dark-accent transition-colors">优缺点</a>
+                <a href="#community" class="hover:text-dark-accent transition-colors">社区评论</a>
+                <a href="#usage" class="hover:text-dark-accent transition-colors">使用方法</a>
+            </div>
+            <button class="md:hidden text-dark-400" id="menuBtn">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-dark-800 border-b border-dark-700">
+            <div class="container mx-auto px-4 py-2 flex flex-col gap-3">
+                <a href="#free-services" class="py-2 hover:text-dark-accent transition-colors">免费服务</a>
+                <a href="#pros-cons" class="py-2 hover:text-dark-accent transition-colors">优缺点</a>
+                <a href="#community" class="py-2 hover:text-dark-accent transition-colors">社区评论</a>
+                <a href="#usage" class="py-2 hover:text-dark-accent transition-colors">使用方法</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 英雄区域 -->
+    <section id="hero" class="relative h-[70vh] flex items-center justify-center overflow-hidden">
+        <!-- 背景代码动画 -->
+        <div class="absolute inset-0 bg-dark-900 opacity-80" id="codeBackground"></div>
+        <div class="container mx-auto px-4 z-10 text-center">
+            <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold text-dark-300 mb-6 text-shadow leading-tight">
+                <span class="text-dark-accent">Nginx</span> 服务器
+            </h1>
+            <p class="text-[clamp(1rem,3vw,1.25rem)] text-dark-500 max-w-2xl mx-auto mb-8">
+                高性能的 HTTP 和反向代理服务器，以其稳定性、丰富的功能集和低资源消耗而闻名
+            </p>
+            <a href="#free-services" class="inline-flex items-center gap-2 bg-dark-accent/10 text-dark-accent border border-dark-accent/30 px-6 py-3 rounded-full hover:bg-dark-accent/20 transition-colors">
+                开始探索 <i class="fa fa-arrow-down"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- 免费服务 -->
+    <section id="free-services" class="py-20 bg-dark-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Nginx 的 <span class="text-dark-accent">免费服务与功能</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 服务 1 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-globe text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">HTTP 服务器</h3>
+                    <p class="text-dark-500 mb-4">
+                        Nginx 核心功能，完全免费提供高性能的 HTTP 服务，支持静态资源托管、虚拟主机配置等。
+                    </p>
+                    <a href="https://nginx.org/en/docs/http/ngx_http_core_module.html" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        查看文档 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 2 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-exchange text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">反向代理</h3>
+                    <p class="text-dark-500 mb-4">
+                        强大的反向代理功能，支持 HTTP、HTTPS、WebSocket 等协议，可用于负载均衡和请求转发。
+                    </p>
+                    <a href="https://nginx.org/en/docs/http/ngx_http_proxy_module.html" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        了解更多 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 3 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-random text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">负载均衡</h3>
+                    <p class="text-dark-500 mb-4">
+                        免费提供多种负载均衡算法，包括轮询、IP 哈希、最少连接等，提升应用可用性和性能。
+                    </p>
+                    <a href="https://nginx.org/en/docs/http/load_balancing.html" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        配置指南 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 4 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-shield text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">SSL/TLS 支持</h3>
+                    <p class="text-dark-500 mb-4">
+                        完全免费支持 HTTPS，包括 TLS 1.3、SNI、OCSP  stapling 等现代安全特性。
+                    </p>
+                    <a href="https://nginx.org/en/docs/http/ngx_http_ssl_module.html" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        安全配置 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 5 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-compress text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">压缩与缓存</h3>
+                    <p class="text-dark-500 mb-4">
+                        内置 Gzip 和 Brotli 压缩支持，以及强大的缓存机制，显著提升网站加载速度。
+                    </p>
+                    <a href="https://nginx.org/en/docs/http/ngx_http_gzip_module.html" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        性能优化 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+                
+                <!-- 服务 6 -->
+                <div class="bg-dark-800 rounded-xl p-6 border border-dark-700 card-hover">
+                    <div class="w-12 h-12 bg-dark-accent/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code text-dark-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-dark-300 mb-3">模块化架构</h3>
+                    <p class="text-dark-500 mb-4">
+                        开源社区提供大量免费模块，可扩展功能，如 HTTP/2 支持、Lua 脚本、安全防护等。
+                    </p>
+                    <a href="https://nginx.org/en/docs/modules.html" target="_blank" rel="noopener" class="text-dark-accent hover:underline flex items-center gap-1">
+                        模块列表 <i class="fa fa-external-link text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点 -->
+    <section id="pros-cons" class="py-20 bg-gradient-to-b from-dark-900 to-dark-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Nginx 的 <span class="text-dark-accent">优点与缺点</span>
+            </h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- 优点 -->
+                <div>
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-full bg-dark-success/20 flex items-center justify-center">
+                            <i class="fa fa-thumbs-up text-dark-success"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-dark-300">主要优点</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 高性能与高并发
+                            </h4>
+                            <p class="text-dark-500">
+                                采用事件驱动架构，能够高效处理数万并发连接，资源消耗远低于 Apache 等服务器。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 低内存占用
+                            </h4>
+                            <p class="text-dark-500">
+                                在处理相同负载时，Nginx 内存占用通常只有 Apache 的 1/5 到 1/10，适合资源受限环境。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 灵活的配置
+                            </h4>
+                            <p class="text-dark-500">
+                                简洁的配置语法，支持平滑重载配置，无需重启服务即可应用更改，减少停机时间。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 强大的反向代理能力
+                            </h4>
+                            <p class="text-dark-500">
+                                优秀的反向代理和负载均衡功能，能轻松分发流量到多个后端服务器，提高系统可用性。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-check-circle text-dark-success"></i> 活跃的社区支持
+                            </h4>
+                            <p class="text-dark-500">
+                                拥有庞大的开源社区和丰富的文档资源，问题能够快速得到解答，更新维护及时。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 缺点 -->
+                <div>
+                    <div class="flex items-center gap-3 mb-8">
+                        <div class="w-10 h-10 rounded-full bg-dark-danger/20 flex items-center justify-center">
+                            <i class="fa fa-thumbs-down text-dark-danger"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold text-dark-300">主要缺点</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 配置复杂性
+                            </h4>
+                            <p class="text-dark-500">
+                                对于初学者来说，Nginx 配置文件的语法和结构可能不如 Apache 的 .htaccess 直观。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 动态内容处理较弱
+                            </h4>
+                            <p class="text-dark-500">
+                                本身处理动态内容的能力有限，通常需要与 PHP-FPM 等处理器配合使用。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 模块兼容性问题
+                            </h4>
+                            <p class="text-dark-500">
+                                第三方模块可能与新版本不兼容，升级 Nginx 时需要重新编译模块，增加维护成本。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> 错误日志不够详细
+                            </h4>
+                            <p class="text-dark-500">
+                                默认错误日志信息相对简略，有时难以快速定位问题根源，需要额外配置调试。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-dark-900/60 p-5 rounded-xl border border-dark-700">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-2 flex items-center gap-2">
+                                <i class="fa fa-times-circle text-dark-danger"></i> Windows 支持有限
+                            </h4>
+                            <p class="text-dark-500">
+                                虽然有 Windows 版本，但功能完整性和性能表现不如 Linux 版本，官方支持也相对有限。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论 -->
+    <section id="community" class="py-20 bg-dark-800">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Nginx <span class="text-dark-accent">社区真实评论</span>
+            </h2>
+            
+            <div class="mb-10 flex justify-center gap-4 flex-wrap">
+                <button class="filter-btn active px-5 py-2 rounded-full bg-dark-accent text-dark-900 font-medium transition-colors" data-filter="all">全部评论</button>
+                <button class="filter-btn px-5 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="positive">正面评价</button>
+                <button class="filter-btn px-5 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="negative">负面评价</button>
+                <button class="filter-btn px-5 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-filter="neutral">中性评价</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="commentsContainer">
+                <!-- 评论将通过JavaScript动态生成 -->
+            </div>
+            
+            <div class="mt-10 text-center">
+                <button id="loadMore" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 rounded-full transition-colors flex items-center gap-2 mx-auto">
+                    <span>加载更多评论</span>
+                    <i class="fa fa-refresh"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用方法 -->
+    <section id="usage" class="py-20 bg-gradient-to-b from-dark-800 to-dark-900">
+        <div class="container mx-auto px-4">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-12 text-center">
+                Nginx <span class="text-dark-accent">使用方法与入门指南</span>
+            </h2>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- 步骤导航 -->
+                <div class="flex overflow-x-auto scrollbar-thin mb-10 pb-2 gap-2 md:justify-center">
+                    <button class="step-btn active whitespace-nowrap px-4 py-2 rounded-full bg-dark-accent text-dark-900 font-medium transition-colors" data-step="1">1. 安装</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="2">2. 基本配置</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="3">3. 虚拟主机</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="4">4. 反向代理</button>
+                    <button class="step-btn whitespace-nowrap px-4 py-2 rounded-full bg-dark-700 hover:bg-dark-600 transition-colors" data-step="5">5. 性能优化</button>
+                </div>
+                
+                <!-- 步骤内容 -->
+                <div class="step-content active" data-step="1">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">1. 安装 Nginx</h3>
+                        
+                        <p class="text-dark-500 mb-6">
+                            Nginx 可在多种操作系统上安装，以下是常见系统的安装方法：
+                        </p>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-3">Ubuntu / Debian</h4>
+                            <div class="code-block text-dark-400 mb-4 bg-dark-900">
+                                <pre>sudo apt update
+sudo apt install nginx</pre>
+                            </div>
+                            <p class="text-dark-500 text-sm mb-2">启动并设置开机自启：</p>
+                            <div class="code-block text-dark-400 bg-dark-900">
+                                <pre>sudo systemctl start nginx
+sudo systemctl enable nginx</pre>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-lg font-semibold text-dark-300 mb-3">CentOS / RHEL</h4>
+                            <div class="code-block text-dark-400 mb-4 bg-dark-900">
+                                <pre>sudo yum install nginx</pre>
+                            </div>
+                            <p class="text-dark-500 text-sm mb-2">启动并设置开机自启：</p>
+                            <div class="code-block text-dark-400 bg-dark-900">
+                                <pre>sudo systemctl start nginx
+sudo systemctl enable nginx</pre>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-lg font-semibold text-dark-300 mb-3">macOS（使用 Homebrew）</h4>
+                            <div class="code-block text-dark-400 mb-4 bg-dark-900">
+                                <pre>brew install nginx</pre>
+                            </div>
+                            <p class="text-dark-500 text-sm mb-2">启动服务：</p>
+                            <div class="code-block text-dark-400 bg-dark-900">
+                                <pre>brew services start nginx</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="2">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">2. 基本配置</h3>
+                        
+                        <p class="text-dark-500 mb-6">
+                            Nginx 主要配置文件位置：
+                        </p>
+                        
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-file-text-o text-dark-accent mt-1"></i>
+                                <span>主配置文件：<code class="bg-dark-700 px-1 rounded">/etc/nginx/nginx.conf</code></span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-folder-open-o text-dark-accent mt-1"></i>
+                                <span>站点配置目录：<code class="bg-dark-700 px-1 rounded">/etc/nginx/sites-available/</code></span>
+                            </li>
+                            <li class="flex items-start gap-3">
+                                <i class="fa fa-link text-dark-accent mt-1"></i>
+                                <span>启用的站点：<code class="bg-dark-700 px-1 rounded">/etc/nginx/sites-enabled/</code>（通常是符号链接）</span>
+                            </li>
+                        </ul>
+                        
+                        <p class="text-dark-500 mb-4">
+                            基本命令：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre># 检查配置文件语法
+sudo nginx -t
+
+# 重新加载配置
+sudo nginx -s reload
+
+# 停止服务
+sudo nginx -s stop
+
+# 启动服务
+sudo nginx</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            默认网页根目录：<code class="bg-dark-700 px-1 rounded">/var/www/html</code>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="3">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">3. 配置虚拟主机</h3>
+                        
+                        <p class="text-dark-500 mb-6">
+                            虚拟主机允许在单个 Nginx 服务器上托管多个网站：
+                        </p>
+                        
+                        <p class="text-dark-500 mb-4">
+                            1. 创建网站目录并设置权限：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>sudo mkdir -p /var/www/example.com/html
+sudo chown -R $USER:$USER /var/www/example.com/html
+sudo chmod -R 755 /var/www</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            2. 创建测试页面：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>nano /var/www/example.com/html/index.html</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            添加以下内容：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Welcome to example.com!&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Success! The example.com virtual host is working!&lt;/h1&gt;
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            3. 创建虚拟主机配置文件：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>sudo nano /etc/nginx/sites-available/example.com</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            添加以下配置：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>server {
+    listen 80;
+    listen [::]:80;
+
+    root /var/www/example.com/html;
+    index index.html index.htm index.nginx-debian.html;
+
+    server_name example.com www.example.com;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            4. 启用站点并测试配置：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre>sudo ln -s /etc/nginx/sites-available/example.com /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl reload nginx</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="4">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">4. 配置反向代理</h3>
+                        
+                        <p class="text-dark-500 mb-6">
+                            Nginx 作为反向代理可以将请求转发到后端应用服务器：
+                        </p>
+                        
+                        <p class="text-dark-500 mb-4">
+                            示例：代理到运行在 3000 端口的 Node.js 应用：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>server {
+    listen 80;
+    server_name example.com;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-6">
+                            示例：配置负载均衡，分发请求到多个后端服务器：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>http {
+    upstream myapp1 {
+        server srv1.example.com;
+        server srv2.example.com;
+        server srv3.example.com;
+    }
+
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://myapp1;
+        }
+    }
+}</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            常用负载均衡策略：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre># IP 哈希（同一客户端始终定向到同一服务器）
+upstream myapp1 {
+    ip_hash;
+    server srv1.example.com;
+    server srv2.example.com;
+}
+
+# 权重分配（权重高的服务器接收更多请求）
+upstream myapp1 {
+    server srv1.example.com weight=3;
+    server srv2.example.com;
+}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="step-content hidden" data-step="5">
+                    <div class="bg-dark-800 rounded-xl p-8 border border-dark-700 mb-6">
+                        <h3 class="text-2xl font-semibold text-dark-300 mb-6">5. 性能优化配置</h3>
+                        
+                        <p class="text-dark-500 mb-6">
+                            以下配置可显著提升 Nginx 性能：
+                        </p>
+                        
+                        <p class="text-dark-500 mb-4">
+                            1. 启用 Gzip 压缩：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>gzip on;
+gzip_comp_level 5;
+gzip_min_length 256;
+gzip_proxied any;
+gzip_types
+  application/javascript
+  application/json
+  application/x-javascript
+  text/css
+  text/javascript
+  text/plain;
+gzip_vary on;</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            2. 配置缓存控制：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>location ~* \.(jpg|jpeg|png|gif|ico|css|js)$ {
+    expires 30d;
+    add_header Cache-Control "public, max-age=2592000";
+}</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            3. 优化连接设置：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 mb-6 bg-dark-900">
+                            <pre>worker_processes auto;
+worker_connections 10240;
+multi_accept on;
+
+keepalive_timeout 30;
+keepalive_requests 100000;
+
+client_body_buffer_size 10K;
+client_header_buffer_size 1k;
+client_max_body_size 8m;
+large_client_header_buffers 4 4k;</pre>
+                        </div>
+                        
+                        <p class="text-dark-500 mb-4">
+                            4. 启用 TCP 快速打开：
+                        </p>
+                        
+                        <div class="code-block text-dark-400 bg-dark-900">
+                            <pre>server {
+    listen 80 fastopen=3 reuseport;
+    # 其他配置...
+}</pre>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-between mt-8">
+                    <button id="prevStep" class="px-6 py-3 bg-dark-700 hover:bg-dark-600 rounded-full transition-colors flex items-center gap-2 opacity-50 cursor-not-allowed">
+                        <i class="fa fa-arrow-left"></i>
+                        <span>上一步</span>
+                    </button>
+                    
+                    <button id="nextStep" class="px-6 py-3 bg-dark-accent hover:bg-dark-accent/80 text-dark-900 rounded-full transition-colors flex items-center gap-2">
+                        <span>下一步</span>
+                        <i class="fa fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 总结区域 -->
+    <section class="py-20 bg-dark-900 border-t border-dark-700">
+        <div class="container mx-auto px-4 max-w-4xl">
+            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-dark-300 mb-8 text-center">
+                <span class="text-dark-accent">总结</span>
+            </h2>
+            <div class="bg-dark-800/50 rounded-2xl p-8 border border-dark-700">
+                <p class="text-dark-400 leading-relaxed mb-6">
+                    Nginx 作为一款高性能的 Web 服务器和反向代理，凭借其出色的并发处理能力、低资源消耗和灵活的配置，已成为现代 Web 架构中的重要组成部分。
+                </p>
+                <p class="text-dark-400 leading-relaxed mb-6">
+                    虽然配置学习曲线较陡，动态内容处理能力有限，但对于需要处理高并发请求的场景，Nginx 仍然是首选解决方案之一。其免费开源的特性和活跃的社区支持，也使其在各种规模的项目中都能发挥重要作用。
+                </p>
+                <p class="text-dark-400 leading-relaxed">
+                    无论是作为静态资源服务器、反向代理、负载均衡器还是邮件代理，Nginx 都能提供稳定高效的服务，是每个系统管理员和开发人员都应该掌握的工具。
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-900 border-t border-dark-700 py-10">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div class="flex items-center gap-2">
+                    <i class="fa fa-server text-dark-accent text-2xl"></i>
+                    <span class="text-xl font-bold text-dark-300">Nginx 指南</span>
+                </div>
+                <div class="text-dark-500 text-sm">
+                    <p>© 2024 Nginx 指南. 所有内容仅供教育目的。</p>
+                    <p class="mt-1">信息来源：Nginx 官方文档及社区。</p>
+                </div>
+                <div class="flex gap-4">
+                    <a href="https://nginx.org/" target="_blank" rel="noopener" class="text-dark-500 hover:text-dark-accent transition-colors">
+                        <i class="fa fa-globe text-xl"></i>
+                    </a>
+                    <a href="https://github.com/nginx/nginx" target="_blank" rel="noopener" class="text-dark-500 hover:text-dark-accent transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="https://twitter.com/nginx" target="_blank" rel="noopener" class="text-dark-500 hover:text-dark-accent transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 社区评论数据
+        const comments = [
+            {
+                id: 1,
+                name: "张伟",
+                avatar: "https://picsum.photos/id/1012/100/100",
+                role: "系统管理员",
+                content: "使用 Nginx 已经有6年了，从最初的 Apache 迁移过来后，服务器负载明显降低，尤其是在处理静态资源方面，性能提升非常明显。配置虽然不如 Apache 直观，但一旦熟悉后会觉得更灵活。",
+                rating: 5,
+                date: "2024-08-15",
+                type: "positive"
+            },
+            {
+                id: 2,
+                name: "李娜",
+                avatar: "https://picsum.photos/id/1005/100/100",
+                role: "DevOps 工程师",
+                content: "Nginx 的反向代理和负载均衡功能非常强大，我们用它来分发流量到多个后端服务，稳定性很好。不过配置错误时的提示信息不够友好，新手可能需要花些时间调试。",
+                rating: 4,
+                date: "2024-08-10",
+                type: "positive"
+            },
+            {
+                id: 3,
+                name: "王浩",
+                avatar: "https://picsum.photos/id/1027/100/100",
+                role: "Web 开发者",
+                content: "从 Apache 转用 Nginx 初期确实有些不适应，特别是 .htaccess 相关的配置需要重新学习。但现在已经离不开它了，内存占用低，处理并发能力强，非常适合我们的高流量网站。",
+                rating: 5,
+                date: "2024-08-05",
+                type: "positive"
+            },
+            {
+                id: 4,
+                name: "赵静",
+                avatar: "https://picsum.photos/id/1074/100/100",
+                role: "网络架构师",
+                content: "Nginx 的事件驱动模型在处理大量并发连接时表现出色，比 Apache 的多进程模型高效得多。我们在生产环境中用它作为前端代理，后面再挂 Apache 处理 PHP，兼顾了性能和兼容性。",
+                rating: 4,
+                date: "2024-07-28",
+                type: "neutral"
+            },
+            {
+                id: 5,
+                name: "陈明",
+                avatar: "https://picsum.photos/id/1062/100/100",
+                role: "Linux 管理员",
+                content: "Nginx 本身很稳定，但第三方模块的兼容性总是个问题。每次升级 Nginx 都需要重新编译模块，这增加了维护成本。希望官方能集成更多常用功能。",
+                rating: 3,
+                date: "2024-07-20",
+                type: "negative"
+            },
+            {
+                id: 6,
+                name: "刘强",
+                avatar: "https://picsum.photos/id/1025/100/100",
+                role: "全栈开发者",
+                content: "作为开发者，我非常喜欢 Nginx 的配置方式，结构化且易于理解。特别是虚拟主机的配置比 Apache 简洁得多。结合 Let's Encrypt 配置 HTTPS 也很方便。",
+                rating: 5,
+                date: "2024-07-15",
+                type: "positive"
+            },
+            {
+                id: 7,
+                name: "杨丽",
+                avatar: "https://picsum.photos/id/1066/100/100",
+                role: "系统工程师",
+                content: "Nginx 的性能确实没话说，但 Windows 版本功能不全，性能也差很多。我们有部分业务不得不在 Windows 上运行，只能用 IIS，体验差远了。希望官方能重视 Windows 平台。",
+                rating: 3,
+                date: "2024-07-10",
+                type: "negative"
+            },
+            {
+                id: 8,
+                name: "周杰",
+                avatar: "https://picsum.photos/id/1083/100/100",
+                role: "安全专家",
+                rating: 4,
+                content: "从安全角度看，Nginx 的默认配置比 Apache 更安全，减少了很多潜在风险。模块化设计也让我们可以按需添加安全模块，如 ModSecurity。更新及时，漏洞修复快。",
+                date: "2024-07-05",
+                type: "positive"
+            },
+            {
+                id: 9,
+                name: "吴敏",
+                avatar: "https://picsum.photos/id/1000/100/100",
+                role: "网站管理员",
+                content: "对于简单的静态网站，Nginx 确实很棒。但处理复杂的动态内容时，需要配合 FastCGI 或其他处理器，配置起来比较麻烦。对于新手来说，学习曲线有点陡。",
+                rating: 3,
+                date: "2024-06-30",
+                type: "neutral"
+            },
+            {
+                id: 10,
+                name: "郑浩",
+                avatar: "https://picsum.photos/id/1076/100/100",
+                role: "技术总监",
+                content: "在高并发场景下，Nginx 是无可替代的。我们的电商网站在促销活动期间每秒处理数千请求，Nginx 表现稳定，资源占用始终保持在低位。值得每个技术团队学习和掌握。",
+                rating: 5,
+                date: "2024-06-25",
+                type: "positive"
+            },
+            {
+                id: 11,
+                name: "孙琳",
+                avatar: "https://picsum.photos/id/1069/100/100",
+                role: "云架构师",
+                content: "在容器化和微服务架构中，Nginx 作为入口网关非常合适。我们用它来处理路由、负载均衡和SSL终结，配合 Consul 实现服务发现，整个架构非常灵活高效。",
+                rating: 5,
+                date: "2024-06-20",
+                type: "positive"
+            },
+            {
+                id: 12,
+                name: "马明",
+                avatar: "https://picsum.photos/id/1010/100/100",
+                role: "运维工程师",
+                content: "Nginx 的信号控制非常方便，可以平滑重启而不中断服务，这对生产环境至关重要。日志格式灵活，配合 ELK 栈可以很方便地进行日志分析和监控。",
+                rating: 4,
+                date: "2024-06-15",
+                type: "positive"
+            },
+            {
+                id: 13,
+                name: "朱婷",
+                avatar: "https://picsum.photos/id/1003/100/100",
+                role: "前端开发者",
+                content: "作为前端开发者，我最欣赏 Nginx 的缓存和压缩功能。正确配置后，静态资源加载速度明显提升，对前端性能优化帮助很大。希望能有更简单的配置方式。",
+                rating: 4,
+                date: "2024-06-10",
+                type: "positive"
+            },
+            {
+                id: 14,
+                name: "胡强",
+                avatar: "https://picsum.photos/id/1079/100/100",
+                role: "网络工程师",
+                content: "Nginx 的反向代理功能支持几乎所有主流协议，包括 WebSocket，这对实时应用非常重要。我们用它来代理我们的聊天服务，稳定性和性能都很满意。",
+                rating: 5,
+                date: "2024-06-05",
+                type: "positive"
+            },
+            {
+                id: 15,
+                name: "林小雨",
+                avatar: "https://picsum.photos/id/1068/100/100",
+                role: "系统管理员",
+                content: "Nginx 的文档非常全面，但对于初学者来说可能过于技术化。我花了不少时间才弄明白各种配置指令的含义和使用场景。建议新手从简单配置开始，逐步学习。",
+                rating: 3,
+                date: "2024-05-30",
+                type: "neutral"
+            },
+            {
+                id: 16,
+                name: "郭杰",
+                avatar: "https://picsum.photos/id/1080/100/100",
+                role: "DevOps 专家",
+                content: "在自动化部署流程中，Nginx 可以很方便地通过 API 或配置文件进行管理。我们用 Ansible 来管理数百台服务器的 Nginx 配置，一致性和可靠性都很好。",
+                rating: 4,
+                date: "2024-05-25",
+                type: "positive"
+            },
+            {
+                id: 17,
+                name: "何静",
+                avatar: "https://picsum.photos/id/1059/100/100",
+                role: "安全工程师",
+                content: "Nginx 的安全特性很全面，支持现代 TLS 协议和密码套件。我们通过配置 HSTS、CSP 等安全头，显著提高了网站的安全性。漏洞响应也很及时。",
+                rating: 5,
+                date: "2024-05-20",
+                type: "positive"
+            },
+            {
+                id: 18,
+                name: "高伟",
+                avatar: "https://picsum.photos/id/1077/100/100",
+                role: "性能优化专家",
+                content: "Nginx 的性能优化空间很大，通过调整 worker 进程数、连接数和缓存设置，可以显著提升性能。我们的测试显示，经过优化的 Nginx 可以处理比默认配置多 30% 的请求。",
+                rating: 5,
+                date: "2024-05-15",
+                type: "positive"
+            },
+            {
+                id: 19,
+                name: "罗琳",
+                avatar: "https://picsum.photos/id/1082/100/100",
+                role: "技术支持",
+                content: "很多客户在使用 Nginx 时遇到配置问题，主要是因为对配置指令理解不深。错误日志信息不够详细，很难快速定位问题。希望未来版本能改进这一点。",
+                rating: 3,
+                date: "2024-05-10",
+                type: "negative"
+            },
+            {
+                id: 20,
+                name: "黄明",
+                avatar: "https://picsum.photos/id/1024/100/100",
+                role: "架构师",
+                content: "Nginx 加上 Lua 模块可以实现非常复杂的业务逻辑，我们用它来实现动态路由、A/B 测试和流量控制等功能，大大减少了应用服务器的负担。",
+                rating: 5,
+                date: "2024-05-05",
+                type: "positive"
+            },
+            {
+                id: 21,
+                name: "徐婷",
+                avatar: "https://picsum.photos/id/1067/100/100",
+                role: "Web 开发者",
+                content: "Nginx 对 HTTP/2 和 HTTP/3 的支持很好，这对现代网站性能至关重要。我们迁移到 HTTP/2 后，页面加载时间减少了近 40%，用户体验明显提升。",
+                rating: 5,
+                date: "2024-04-30",
+                type: "positive"
+            },
+            {
+                id: 22,
+                name: "孙亮",
+                avatar: "https://picsum.photos/id/1071/100/100",
+                role: "系统管理员",
+                content: "Nginx 和 Apache 各有优势，不能一概而论。对于静态内容多、并发高的场景，Nginx 更适合；而对于需要大量模块和 .htaccess 的场景，Apache 可能更方便。",
+                rating: 4,
+                date: "2024-04-25",
+                type: "neutral"
+            },
+            {
+                id: 23,
+                name: "赵静",
+                avatar: "https://picsum.photos/id/1084/100/100",
+                role: "云平台工程师",
+                content: "在 Kubernetes 环境中，Nginx Ingress Controller 是事实标准，功能强大且稳定。它可以很方便地与 cert-manager 集成，实现自动 HTTPS，大大简化了配置流程。",
+                rating: 5,
+                date: "2024-04-20",
+                type: "positive"
+            },
+            {
+                id: 24,
+                name: "吴强",
+                avatar: "https://picsum.photos/id/1073/100/100",
+                role: "网络安全专家",
+                content: "Nginx 作为 WAF（Web 应用防火墙）的基础非常出色，配合第三方模块可以实现强大的安全防护。我们用它来防御 SQL 注入、XSS 和 DDoS 攻击，效果显著。",
+                rating: 4,
+                date: "2024-04-15",
+                type: "positive"
+            },
+            {
+                id: 25,
+                name: "郑琳",
+                avatar: "https://picsum.photos/id/1065/100/100",
+                role: "技术文档工程师",
+                content: "Nginx 的官方文档虽然全面，但组织结构不够友好，查找特定配置项需要花不少时间。社区文档质量参差不齐，有时会误导新手。",
+                rating: 3,
+                date: "2024-04-10",
+                type: "negative"
+            },
+            {
+                id: 26,
+                name: "王浩",
+                avatar: "https://picsum.photos/id/1075/100/100",
+                role: "系统架构师",
+                content: "Nginx 的模块化设计非常优雅，核心保持精简，同时允许通过模块扩展功能。我们根据业务需求定制了几个模块，集成过程比预期的要简单。",
+                rating: 5,
+                date: "2024-04-05",
+                type: "positive"
+            },
+            {
+                id: 27,
+                name: "冯婷",
+                avatar: "https://picsum.photos/id/1081/100/100",
+                role: "运维经理",
+                content: "Nginx 的稳定性令人印象深刻，我们的生产环境可以连续运行数月不重启。资源消耗稳定，不会出现内存泄漏等问题，大大减少了维护工作量。",
+                rating: 5,
+                date: "2024-03-30",
+                type: "positive"
+            },
+            {
+                id: 28,
+                name: "陈明",
+                avatar: "https://picsum.photos/id/1070/100/100",
+                role: "性能测试工程师",
+                content: "在高负载测试中，Nginx 的表现始终优于其他 Web 服务器。即使在超过设计容量的情况下，也能优雅降级，而不是突然崩溃。这对保障服务可用性非常重要。",
+                rating: 4,
+                date: "2024-03-25",
+                type: "positive"
+            },
+            {
+                id: 29,
+                name: "杨丽",
+                avatar: "https://picsum.photos/id/1064/100/100",
+                role: "多语言网站管理员",
+                content: "Nginx 的国际化支持很好，可以很方便地配置基于语言的内容协商和重定向。我们用它来实现多语言网站的自动切换，配置简单且高效。",
+                rating: 4,
+                date: "2024-03-20",
+                type: "positive"
+            },
+            {
+                id: 30,
+                name: "刘强",
+                avatar: "https://picsum.photos/id/1063/100/100",
+                role: "开发运维工程师",
+                content: "Nginx 的动态模块加载功能很实用，但并不是所有模块都支持动态加载，这限制了它的灵活性。希望未来能有更多官方模块支持动态加载。",
+                rating: 3,
+                date: "2024-03-15",
+                type: "negative"
+            },
+            {
+                id: 31,
+                name: "赵静",
+                avatar: "https://picsum.photos/id/1061/100/100",
+                role: "边缘计算工程师",
+                content: "在边缘节点部署 Nginx 非常合适，资源占用低但性能强大。我们用它来实现内容缓存、请求过滤和本地负载均衡，大大提升了用户体验。",
+                rating: 5,
+                date: "2024-03-10",
+                type: "positive"
+            },
+            {
+                id: 32,
+                name: "钱明",
+                avatar: "https://picsum.photos/id/1060/100/100",
+                role: "Web 服务器专家",
+                content: "Nginx 和 Apache 各有所长，选择哪个取决于具体需求。Nginx 在性能和资源效率上占优，而 Apache 在功能丰富度和兼容性上更强。我通常会根据项目特点混合使用。",
+                rating: 4,
+                date: "2024-03-05",
+                type: "neutral"
+            },
+            {
+                id: 33,
+                name: "孙琳",
+                avatar: "https://picsum.photos/id/1058/100/100",
+                role: "CDN 工程师",
+                content: "Nginx 是构建 CDN 节点的理想选择，缓存功能强大且灵活。我们用它来缓存静态资源和 API 响应，命中率高达 85% 以上，显著减轻了源站压力。",
+                rating: 5,
+                date: "2024-03-01",
+                type: "positive"
+            },
+            {
+                id: 34,
+                name: "周强",
+                avatar: "https://picsum.photos/id/1057/100/100",
+                role: "视频流媒体工程师",
+                content: "Nginx 配合 RTMP 模块可以构建高性能的流媒体服务器，我们用它来直播活动，支持数千并发观看，延迟低且稳定。比专用的流媒体服务器成本低很多。",
+                rating: 5,
+                date: "2024-02-25",
+                type: "positive"
+            },
+            {
+                id: 35,
+                name: "吴婷",
+                avatar: "https://picsum.photos/id/1056/100/100",
+                role: "移动应用后端工程师",
+                content: "作为移动 API 的网关，Nginx 表现出色。我们用它来实现请求限流、认证和响应压缩，大大简化了后端服务的复杂性。配置也相对简单。",
+                rating: 4,
+                date: "2024-02-20",
+                type: "positive"
+            },
+            {
+                id: 36,
+                name: "郑浩",
+                avatar: "https://picsum.photos/id/1055/100/100",
+                role: "技术培训师",
+                content: "教授 Nginx 时发现，初学者最困难的是理解配置文件的结构和指令之间的关系。官方文档虽然全面，但缺乏循序渐进的教程。社区提供的教程质量参差不齐。",
+                rating: 3,
+                date: "2024-02-15",
+                type: "negative"
+            },
+            {
+                id: 37,
+                name: "王敏",
+                avatar: "https://picsum.photos/id/1054/100/100",
+                role: "微服务架构师",
+                content: "在微服务架构中，Nginx 作为 API 网关非常合适，支持服务发现、负载均衡和协议转换。我们用它来整合数十个微服务，为客户端提供统一的 API 入口。",
+                rating: 5,
+                date: "2024-02-10",
+                type: "positive"
+            },
+            {
+                id: 38,
+                name: "冯亮",
+                avatar: "https://picsum.photos/id/1053/100/100",
+                role: "游戏服务器工程师",
+                content: "Nginx 作为游戏服务器的前端代理非常出色，支持长连接和 WebSocket，性能稳定。我们用它来分发玩家连接到不同的游戏服务器，实现无缝扩容。",
+                rating: 4,
+                date: "2024-02-05",
+                type: "positive"
+            },
+            {
+                id: 39,
+                name: "陈婷",
+                avatar: "https://picsum.photos/id/1052/100/100",
+                role: "大数据工程师",
+                content: "在大数据处理管道中，Nginx 可以作为数据收集端点，接收来自各种设备的数据。我们用它配合 Lua 模块实现数据预处理和路由，灵活性很高。",
+                rating: 4,
+                date: "2024-02-01",
+                type: "positive"
+            },
+            {
+                id: 40,
+                name: "杨明",
+                avatar: "https://picsum.photos/id/1051/100/100",
+                role: "安全研究员",
+                content: "Nginx 的安全记录总体良好，但偶尔也会出现严重漏洞。值得称赞的是，开发团队通常能在短时间内发布补丁，并且提供清晰的升级指南。",
+                rating: 4,
+                date: "2024-01-25",
+                type: "positive"
+            },
+            {
+                id: 41,
+                name: "黄静",
+                avatar: "https://picsum.photos/id/1050/100/100",
+                role: "网站性能优化师",
+                content: "Nginx 的图片处理模块非常实用，可以在服务器端实现图片裁剪、压缩和格式转换，减少了前端的工作量。配合缓存使用，效果更佳。",
+                rating: 5,
+                date: "2024-01-20",
+                type: "positive"
+            },
+            {
+                id: 42,
+                name: "赵强",
+                avatar: "https://picsum.photos/id/1049/100/100",
+                role: "高可用性专家",
+                content: "Nginx 配合 Keepalived 可以实现高可用架构，自动故障转移时间通常在秒级。我们的关键业务系统用这种架构实现了 99.99% 的可用性。",
+                rating: 5,
+                date: "2024-01-15",
+                type: "positive"
+            },
+            {
+                id: 43,
+                name: "孙浩",
+                avatar: "https://picsum.photos/id/1048/100/100",
+                role: "物联网架构师",
+                content: "在物联网平台中，Nginx 作为设备连接的入口点非常合适，资源占用低但能处理大量并发连接。我们用它来接收来自数千台设备的数据，稳定性很好。",
+                rating: 4,
+                date: "2024-01-10",
+                type: "positive"
+            },
+            {
+                id: 44,
+                name: "周敏",
+                avatar: "https://picsum.photos/id/1047/100/100",
+                role: "数据库管理员",
+                content: "Nginx 可以作为数据库的反向代理和负载均衡器，我们用它来分发读请求到多个从库，提高了查询性能。配置简单且稳定。",
+                rating: 4,
+                date: "2024-01-05",
+                type: "positive"
+            },
+            {
+                id: 45,
+                name: "吴亮",
+                avatar: "https://picsum.photos/id/1046/100/100",
+                role: "开源软件爱好者",
+                content: "Nginx 的开源模式非常健康，社区活跃，贡献者众多。商业版本提供了更多高级功能，但免费版本已经能满足大多数需求。这种模式值得其他开源项目借鉴。",
+                rating: 5,
+                date: "2024-01-01",
+                type: "positive"
+            },
+            {
+                id: 46,
+                name: "郑婷",
+                avatar: "https://picsum.photos/id/1045/100/100",
+                role: "内容管理系统专家",
+                content: "在内容管理系统中，Nginx 是理想的前端服务器。我们用它来缓存页面、处理静态资源和实现 URL 重写，大大提高了系统性能和安全性。",
+                rating: 4,
+                date: "2023-12-25",
+                type: "positive"
+            },
+            {
+                id: 47,
+                name: "王强",
+                avatar: "https://picsum.photos/id/1044/100/100",
+                role: "企业架构师",
+                content: "在企业环境中部署 Nginx 需要考虑与现有系统的集成，这有时会遇到挑战。特别是与微软的 IIS 和 .NET 系统集成时，需要额外的配置和测试。",
+                rating: 3,
+                date: "2023-12-20",
+                type: "neutral"
+            },
+            {
+                id: 48,
+                name: "冯浩",
+                avatar: "https://picsum.photos/id/1043/100/100",
+                role: "网络监控专家",
+                content: "Nginx 的监控指标丰富，配合 Prometheus 和 Grafana 可以构建全面的监控系统。我们通过监控连接数、请求时间和错误率，提前发现并解决了多个潜在问题。",
+                rating: 5,
+                date: "2023-12-15",
+                type: "positive"
+            },
+            {
+                id: 49,
+                name: "陈静",
+                avatar: "https://picsum.photos/id/1042/100/100",
+                role: "API 开发工程师",
+                content: "Nginx 作为 API 网关可以实现请求限流、认证和授权，减轻了后端服务的负担。我们用它来保护我们的公共 API，防止滥用和攻击。",
+                rating: 4,
+                date: "2023-12-10",
+                type: "positive"
+            },
+            {
+                id: 50,
+                name: "杨丽",
+                avatar: "https://picsum.photos/id/1041/100/100",
+                role: "教育机构技术主管",
+                content: "在教育机构中，Nginx 帮助我们应对了在线教学高峰期的流量压力。学生访问学习资源的速度明显提升，系统稳定性也大大改善。维护成本比以前低很多。",
+                rating: 5,
+                date: "2023-12-05",
+                type: "positive"
+            },
+            {
+                id: 51,
+                name: "赵明",
+                avatar: "https://picsum.photos/id/1040/100/100",
+                role: "政府网站管理员",
+                content: "政府网站对安全性和稳定性要求很高，Nginx 很好地满足了这些需求。我们用它来保护敏感信息，同时确保公众能够随时访问政府服务。",
+                rating: 4,
+                date: "2023-12-01",
+                type: "positive"
+            },
+            {
+                id: 52,
+                name: "孙强",
+                avatar: "https://picsum.photos/id/1039/100/100",
+                role: "电子商务平台架构师",
+                content: "在电商平台的黑色星期五等促销活动中，Nginx 的表现令人印象深刻。它帮助我们处理了平时 10 倍以上的流量，订单处理能力显著提升，没有出现任何故障。",
+                rating: 5,
+                date: "2023-11-25",
+                type: "positive"
+            }
+        ];
+
+        // 当前显示的评论数量
+        let displayedComments = 15;
+        // 每次加载更多的数量
+        const loadMoreCount = 10;
+
+        // 生成星级评分HTML
+        function generateRating(rating) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= rating) {
+                    html += '<i class="fa fa-star text-yellow-400"></i>';
+                } else {
+                    html += '<i class="fa fa-star-o text-dark-600"></i>';
+                }
+            }
+            return html;
+        }
+
+        // 渲染评论
+        function renderComments(filter = 'all') {
+            const container = document.getElementById('commentsContainer');
+            container.innerHTML = '';
+            
+            let filteredComments = comments;
+            if (filter !== 'all') {
+                filteredComments = comments.filter(comment => comment.type === filter);
+            }
+            
+            // 只显示部分评论
+            const commentsToShow = filteredComments.slice(0, displayedComments);
+            
+            commentsToShow.forEach(comment => {
+                const commentEl = document.createElement('div');
+                commentEl.className = `bg-dark-900 rounded-xl p-6 border border-dark-700 card-hover ${comment.type}`;
+                commentEl.innerHTML = `
+                    <div class="flex items-start gap-4 mb-4">
+                        <img src="${comment.avatar}" alt="${comment.name}" class="w-12 h-12 rounded-full object-cover">
+                        <div>
+                            <h4 class="font-semibold text-dark-300">${comment.name}</h4>
+                            <p class="text-dark-500 text-sm">${comment.role}</p>
+                            <div class="flex mt-1">
+                                ${generateRating(comment.rating)}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-dark-400 mb-4">${comment.content}</p>
+                    <p class="text-dark-500 text-sm">${comment.date}</p>
+                `;
+                container.appendChild(commentEl);
+            });
+            
+            // 控制加载更多按钮显示
+            const loadMoreBtn = document.getElementById('loadMore');
+            if (displayedComments >= filteredComments.length) {
+                loadMoreBtn.style.display = 'none';
+            } else {
+                loadMoreBtn.style.display = 'flex';
+            }
+        }
+
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', function() {
+            // 渲染评论
+            renderComments();
+            
+            // 移动端菜单切换
+            const menuBtn = document.getElementById('menuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            menuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // 评论过滤
+            const filterBtns = document.querySelectorAll('.filter-btn');
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // 重置显示数量
+                    displayedComments = 15;
+                    
+                    // 移除所有激活状态
+                    filterBtns.forEach(b => {
+                        b.classList.remove('active', 'bg-dark-accent', 'text-dark-900');
+                        b.classList.add('bg-dark-700', 'hover:bg-dark-600');
+                    });
+                    
+                    // 添加当前激活状态
+                    btn.classList.add('active', 'bg-dark-accent', 'text-dark-900');
+                    btn.classList.remove('bg-dark-700', 'hover:bg-dark-600');
+                    
+                    const filter = btn.getAttribute('data-filter');
+                    renderComments(filter);
+                });
+            });
+            
+            // 加载更多评论
+            document.getElementById('loadMore').addEventListener('click', function() {
+                displayedComments += loadMoreCount;
+                const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-filter');
+                renderComments(activeFilter);
+            });
+            
+            // 步骤导航
+            const stepBtns = document.querySelectorAll('.step-btn');
+            const stepContents = document.querySelectorAll('.step-content');
+            const prevBtn = document.getElementById('prevStep');
+            const nextBtn = document.getElementById('nextStep');
+            let currentStep = 1;
+            const totalSteps = stepBtns.length;
+            
+            // 更新步骤按钮状态
+            function updateStepButtons() {
+                if (currentStep === 1) {
+                    prevBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    prevBtn.classList.remove('hover:bg-dark-600');
+                } else {
+                    prevBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    prevBtn.classList.add('hover:bg-dark-600');
+                }
+                
+                if (currentStep === totalSteps) {
+                    nextBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    nextBtn.classList.remove('hover:bg-dark-accent/80');
+                } else {
+                    nextBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    nextBtn.classList.add('hover:bg-dark-accent/80');
+                }
+            }
+            
+            // 切换步骤
+            function goToStep(step) {
+                if (step < 1 || step > totalSteps) return;
+                
+                currentStep = step;
+                
+                // 更新按钮状态
+                stepBtns.forEach(btn => {
+                    const btnStep = parseInt(btn.getAttribute('data-step'));
+                    if (btnStep === currentStep) {
+                        btn.classList.add('active', 'bg-dark-accent', 'text-dark-900');
+                        btn.classList.remove('bg-dark-700', 'hover:bg-dark-600');
+                    } else {
+                        btn.classList.remove('active', 'bg-dark-accent', 'text-dark-900');
+                        btn.classList.add('bg-dark-700', 'hover:bg-dark-600');
+                    }
+                });
+                
+                // 更新内容显示
+                stepContents.forEach(content => {
+                    const contentStep = parseInt(content.getAttribute('data-step'));
+                    if (contentStep === currentStep) {
+                        content.classList.remove('hidden');
+                        content.classList.add('active');
+                    } else {
+                        content.classList.add('hidden');
+                        content.classList.remove('active');
+                    }
+                });
+                
+                // 更新导航按钮状态
+                updateStepButtons();
+            }
+            
+            // 步骤按钮点击事件
+            stepBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const step = parseInt(btn.getAttribute('data-step'));
+                    goToStep(step);
+                });
+            });
+            
+            // 上一步/下一步按钮
+            prevBtn.addEventListener('click', () => {
+                if (currentStep > 1) {
+                    goToStep(currentStep - 1);
+                }
+            });
+            
+            nextBtn.addEventListener('click', () => {
+                if (currentStep < totalSteps) {
+                    goToStep(currentStep + 1);
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                        // 关闭移动端菜单
+                        if (!mobileMenu.classList.contains('hidden')) {
+                            mobileMenu.classList.add('hidden');
+                        }
+                    }
+                });
+            });
+            
+            // 代码背景动画
+            function createCodeBackground() {
+                const container = document.getElementById('codeBackground');
+                const linesCount = 50;
+                const codeChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789{}()[];.,<>+=*-&^%$#@!~';
+                
+                for (let i = 0; i < linesCount; i++) {
+                    const line = document.createElement('div');
+                    const lineLength = Math.floor(Math.random() * 30) + 10;
+                    let code = '';
+                    
+                    for (let j = 0; j < lineLength; j++) {
+                        code += codeChars.charAt(Math.floor(Math.random() * codeChars.length));
+                    }
+                    
+                    const left = Math.random() * 100;
+                    const top = (i / linesCount) * 100;
+                    const opacity = Math.random() * 0.1 + 0.05;
+                    const fontSize = Math.random() * 4 + 8;
+                    const animationDuration = Math.random() * 10 + 5;
+                    
+                    line.style.cssText = `
+                        position: absolute;
+                        left: ${left}%;
+                        top: ${top}%;
+                        color: rgba(14, 165, 233, ${opacity});
+                        font-family: monospace;
+                        font-size: ${fontSize}px;
+                        white-space: nowrap;
+                        transform: translateX(-50%);
+                        animation: float ${animationDuration}s infinite linear;
+                    `;
+                    line.textContent = code;
+                    container.appendChild(line);
+                }
+            }
+            
+            // 添加浮动动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes float {
+                    0% { transform: translateX(-50%) translateY(0); }
+                    50% { transform: translateX(-50%) translateY(-10px); }
+                    100% { transform: translateX(-50%) translateY(0); }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            // 创建代码背景
+            createCodeBackground();
+            
+            // 滚动时导航栏样式变化
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('nav');
+                if (window.scrollY > 50) {
+                    nav.classList.add('shadow-lg');
+                    nav.classList.remove('border-b');
+                } else {
+                    nav.classList.remove('shadow-lg');
+                    nav.classList.add('border-b');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

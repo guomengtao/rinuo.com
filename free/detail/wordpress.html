@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WordPress - 强大的开源内容管理系统</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#007cba', // WordPress 主色调：蓝色
+                        secondary: '#d54e21', // 辅助色：橙色
+                        dark: {
+                            100: '#374151',
+                            200: '#1F2937',
+                            300: '#111827',
+                            400: '#0D1117', // 深色背景
+                            500: '#0A0C10',
+                        },
+                        light: {
+                            100: '#F9FAFB',
+                            200: '#F3F4F6',
+                            300: '#E5E7EB',
+                            400: '#D1D5DB',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1;
+            }
+            .gradient-border {
+                position: relative;
+                border-radius: 0.75rem;
+                z-index: 0;
+            }
+            .gradient-border::before {
+                content: "";
+                position: absolute;
+                inset: -1px;
+                border-radius: 0.85rem;
+                background: linear-gradient(45deg, #007cba, #d54e21);
+                z-index: -1;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .gradient-border:hover::before {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-dark-400 text-light-200 min-h-screen">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-dark-400/90 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                    <i class="fa fa-wordpress text-white text-xl"></i>
+                </div>
+                <span class="text-xl font-bold text-white">WordPress</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-light-300 hover:text-primary transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a>
+                <a href="#guide" class="text-light-300 hover:text-primary transition-colors">使用方法</a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-light-200 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-300 border-t border-dark-100/20 animate-fade-in">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#features" class="text-light-300 hover:text-primary py-2 transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary py-2 transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary py-2 transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary py-2 transition-colors">社区评论</a>
+                <a href="#guide" class="text-light-300 hover:text-primary py-2 transition-colors">使用方法</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-400 via-dark-400/90 to-dark-400 z-0"></div>
+        <div class="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(0,124,186,0.1)_0%,transparent_50%)] z-[-1]"></div>
+        
+        <div class="container mx-auto relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold leading-tight mb-6">
+                    <span class="text-white">WordPress</span>
+                    <span class="block mt-2 text-primary">全球最流行的内容管理系统</span>
+                </h1>
+                <p class="text-[clamp(1rem,2vw,1.25rem)] text-light-300 mb-10 max-w-2xl mx-auto">
+                    开源免费的网站建设平台， powers 超过40%的互联网网站，
+                    从个人博客到大型企业网站，都能轻松构建和管理。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="https://wordpress.org/download/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20">
+                        免费下载
+                    </a>
+                    <a href="https://wordpress.org/support/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-dark-200 hover:bg-dark-100 text-light-100 rounded-lg font-medium transition-all">
+                        官方支持
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto">
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">43%</div>
+                    <div class="text-light-300">互联网网站</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">60M+</div>
+                    <div class="text-light-300">下载次数</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">59K+</div>
+                    <div class="text-light-300">插件数量</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">13K+</div>
+                    <div class="text-light-300">主题数量</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 免费服务部分 -->
+    <section id="features" class="py-20 px-4 bg-dark-300/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">免费功能与服务</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">WordPress是完全开源免费的内容管理系统，提供丰富的核心功能，无需任何许可费用即可使用。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 功能卡片 1 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-cms text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">完整CMS核心</h3>
+                    <p class="text-light-300">完全免费的内容管理系统核心，包含文章发布、页面管理、媒体库和用户管理等全部基础功能。</p>
+                </div>
+                
+                <!-- 功能卡片 2 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code-fork text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">开源代码访问</h3>
+                    <p class="text-light-300">完全开放源代码，可自由查看、修改和分发，无需支付任何许可费用，社区驱动的持续改进。</p>
+                </div>
+                
+                <!-- 功能卡片 3 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-paint-brush text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">基础主题系统</h3>
+                    <p class="text-light-300">免费提供基础主题框架和多个默认主题，支持自定义颜色、字体和布局，轻松改变网站外观。</p>
+                </div>
+                
+                <!-- 功能卡片 4 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-puzzle-piece text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">插件架构</h3>
+                    <p class="text-light-300">免费的插件系统架构，可安装数万款免费插件扩展功能，从SEO到电子商务，满足各种需求。</p>
+                </div>
+                
+                <!-- 功能卡片 5 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-mobile text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">响应式设计</h3>
+                    <p class="text-light-300">默认支持响应式设计，确保网站在电脑、平板和手机等各种设备上都能完美展示，无需额外费用。</p>
+                </div>
+                
+                <!-- 功能卡片 6 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-users text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">用户角色管理</h3>
+                    <p class="text-light-300">免费提供多用户角色和权限管理系统，支持管理员、编辑、作者等不同角色，精细控制访问权限。</p>
+                </div>
+                
+                <!-- 功能卡片 7 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-search text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">内置搜索功能</h3>
+                    <p class="text-light-300">免费提供基础搜索功能，帮助访问者快速找到网站内容，可通过插件进一步增强搜索能力。</p>
+                </div>
+                
+                <!-- 功能卡片 8 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-comments text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">评论系统</h3>
+                    <p class="text-light-300">免费内置评论功能，支持访客留言和互动，包含反垃圾评论保护，增强网站社区互动。</p>
+                </div>
+                
+                <!-- 功能卡片 9 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-book text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">文档与社区支持</h3>
+                    <p class="text-light-300">免费提供详尽的官方文档、教程和活跃的社区支持，包括论坛、邮件列表和本地化社区。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点部分 -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">WordPress的优缺点</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">客观分析WordPress的优势与不足，帮助你判断是否适合你的网站需求。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- 优点部分 -->
+                <div id="advantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要优点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">完全开源免费</h4>
+                                <p class="text-light-300 text-sm">核心软件完全免费，无需支付许可费用，大幅降低网站建设和维护成本。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">易于使用</h4>
+                                <p class="text-light-300 text-sm">直观的后台界面，即使没有技术背景的用户也能快速掌握内容发布和管理。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">强大的扩展性</h4>
+                                <p class="text-light-300 text-sm">数万款免费和付费插件，可轻松扩展功能，从简单博客到复杂电商网站都能实现。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">丰富的主题选择</h4>
+                                <p class="text-light-300 text-sm">数千款免费和付费主题，支持一键更换网站外观，无需设计和编码知识。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">搜索引擎友好</h4>
+                                <p class="text-light-300 text-sm">内置SEO友好功能，配合SEO插件可进一步优化，帮助网站在搜索引擎中获得更好排名。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">活跃的社区支持</h4>
+                                <p class="text-light-300 text-sm">全球最大的CMS社区，提供丰富的教程、文档和支持论坛，问题容易找到解决方案。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">跨平台兼容性</h4>
+                                <p class="text-light-300 text-sm">可在各种操作系统和服务器环境中运行，与大多数托管服务提供商兼容。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 缺点部分 -->
+                <div id="disadvantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要缺点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">维护成本高</h4>
+                                <p class="text-light-300 text-sm">需要定期更新核心、主题和插件，否则可能存在安全风险，对非技术用户来说有一定难度。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">插件兼容性问题</h4>
+                                <p class="text-light-300 text-sm">过多插件或低质量插件可能导致兼容性问题，造成网站错误或性能下降。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">性能问题</h4>
+                                <p class="text-light-300 text-sm">默认配置下性能一般，随着内容和插件增多可能变慢，需要额外优化才能获得良好性能。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">安全漏洞风险</h4>
+                                <p class="text-light-300 text-sm">由于普及度高，成为黑客攻击的主要目标，需要额外的安全措施保护网站。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">自定义限制</h4>
+                                <p class="text-light-300 text-sm">高度定制化设计需要专业开发知识，非技术用户难以实现复杂的设计需求。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">资源消耗较大</h4>
+                                <p class="text-light-300 text-sm">相比静态网站或轻量级CMS，WordPress对服务器资源消耗更大，可能增加托管成本。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">更新可能导致问题</h4>
+                                <p class="text-light-300 text-sm">核心或插件更新有时会导致网站功能异常，需要在更新前做好备份和测试。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 优缺点数据可视化 -->
+            <div class="mt-16 bg-dark-300/50 rounded-2xl p-6 md:p-8 border border-dark-100/20">
+                <h3 class="text-xl font-semibold mb-6 text-center">用户评价分布</h3>
+                <div class="h-64 md:h-80">
+                    <canvas id="reviewsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论部分 -->
+    <section id="reviews" class="py-20 px-4 bg-dark-300/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">社区真实评论</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">来自50+位真实用户的使用体验和评价，帮助你更全面地了解WordPress。</p>
+            </div>
+            
+            <!-- 评论筛选 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-10">
+                <button class="review-filter active px-5 py-2 rounded-full bg-primary text-white font-medium transition-all" data-filter="all">全部评论</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="positive">好评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="neutral">中评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="negative">差评</button>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论会通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 加载更多按钮 -->
+            <div class="text-center mt-12">
+                <button id="load-more" class="px-8 py-3 bg-dark-400 hover:bg-dark-200 text-light-100 rounded-lg font-medium transition-all border border-dark-100/20">
+                    加载更多评论
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用指南部分 -->
+    <section id="guide" class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">使用方法</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">快速掌握WordPress的基本安装和使用流程，开始构建你的网站。</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- 使用步骤 -->
+                <div class="relative">
+                    <!-- 连接线 -->
+                    <div class="absolute left-5 md:left-1/2 top-0 bottom-0 w-0.5 bg-primary/30 transform md:translate-x-[-0.25rem]"></div>
+                    
+                    <!-- 步骤1 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">1</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">选择托管方式</h3>
+                                <p class="text-light-300">有两种主要方式：WordPress.com（托管服务）或自行托管的WordPress.org。前者简单但功能受限，后者灵活自由但需要自己管理服务器。</p>
+                                <a href="https://wordpress.org/com-parison/" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-block mt-2">对比详情</a>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/180/600/300" alt="WordPress托管方式选择" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤2 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">2</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">安装WordPress</h3>
+                                <p class="text-light-300">如果选择自行托管，大多数主机提供商都提供一键安装功能。也可以手动下载并上传到服务器，通过安装向导完成配置。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/0/600/300" alt="WordPress安装界面" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤3 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">3</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">选择主题</h3>
+                                <p class="text-light-300">登录后台后，进入"外观>主题"，可以安装免费主题或上传购买的 premium 主题，选择适合你网站风格的设计。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/160/600/300" alt="WordPress主题选择" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤4 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">4</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">安装必要插件</h3>
+                                <p class="text-light-300">进入"插件>安装插件"，搜索并安装必要的插件，如SEO工具、安全插件、缓存插件等，扩展网站功能。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/119/600/300" alt="WordPress插件安装" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤5 -->
+                    <div class="relative flex flex-col md:flex-row items-start step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">5</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">创建内容并发布</h3>
+                                <p class="text-light-300">使用直观的编辑器创建文章和页面，添加媒体内容，设置分类和标签，预览后发布。定期更新内容保持网站活跃。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/48/600/300" alt="WordPress内容编辑" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 使用技巧 -->
+                <div class="mt-20 bg-dark-300/50 rounded-2xl p-8 border border-dark-100/20">
+                    <h3 class="text-2xl font-semibold mb-6">使用技巧</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                定期备份网站
+                            </h4>
+                            <p class="text-light-300 text-sm">安装备份插件（如UpdraftPlus），定期备份网站文件和数据库，确保在出现问题时能够快速恢复数据。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                保持更新
+                            </h4>
+                            <p class="text-light-300 text-sm">及时更新WordPress核心、主题和插件到最新版本，以获取新功能和安全补丁，但更新前一定要备份。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                优化网站速度
+                            </h4>
+                            <p class="text-light-300 text-sm">安装缓存插件（如WP Rocket或W3 Total Cache），压缩图片，启用CDN，提高网站加载速度和用户体验。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                增强网站安全
+                            </h4>
+                            <p class="text-light-300 text-sm">安装安全插件（如Wordfence），使用强密码，限制登录尝试，禁用文件编辑，定期扫描恶意软件。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                优化SEO
+                            </h4>
+                            <p class="text-light-300 text-sm">安装Yoast SEO或Rank Math等SEO插件，优化标题、描述、关键词，创建XML站点地图，提高搜索引擎排名。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                谨慎选择插件
+                            </h4>
+                            <p class="text-light-300 text-sm">只安装必要的插件，优先选择下载量大、评分高、更新频繁的插件，避免过多插件影响网站性能和安全性。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-300 py-12 px-4 border-t border-dark-100/20">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                            <i class="fa fa-wordpress text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">WordPress</span>
+                    </div>
+                    <p class="text-light-300 text-sm mb-6">全球最流行的开源内容管理系统，powers超过40%的互联网网站，从个人博客到大型企业网站都能轻松构建。</p>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com/WordPress" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://github.com/WordPress/WordPress" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/wordpress/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="https://www.youtube.com/wordpress" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-light-300 hover:text-primary transition-colors">免费服务</a></li>
+                        <li><a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a></li>
+                        <li><a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a></li>
+                        <li><a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a></li>
+                        <li><a href="#guide" class="text-light-300 hover:text-primary transition-colors">使用方法</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://wordpress.org/support/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">支持论坛</a></li>
+                        <li><a href="https://wordpress.org/documentation/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">官方文档</a></li>
+                        <li><a href="https://wordpress.org/news/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">新闻动态</a></li>
+                        <li><a href="https://codex.wordpress.org/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">WordPress手册</a></li>
+                        <li><a href="https://learn.wordpress.org/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">学习资源</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">扩展资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://wordpress.org/themes/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">主题库</a></li>
+                        <li><a href="https://wordpress.org/plugins/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">插件库</a></li>
+                        <li><a href="https://jobs.wordpress.net/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">工作机会</a></li>
+                        <li><a href="https://make.wordpress.org/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">贡献社区</a></li>
+                        <li><a href="https://wordpress.com/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">托管服务</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-100/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-light-300 text-sm mb-4 md:mb-0">© 2023 WordPress基金会。WordPress是WordPress基金会的注册商标。</p>
+                <div class="flex space-x-6">
+                    <a href="https://wordpress.org/about/license/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">许可证</a>
+                    <a href="https://wordpress.org/about/privacy-policy/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">隐私政策</a>
+                    <a href="https://wordpress.org/about/copyright/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">版权信息</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 opacity-0 invisible transition-all z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+            const backToTop = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                // 导航栏样式变化
+                if (window.scrollY > 100) {
+                    navbar.classList.add('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.remove('py-3', 'md:py-4');
+                    backToTop.classList.remove('opacity-0', 'invisible');
+                    backToTop.classList.add('opacity-100', 'visible');
+                } else {
+                    navbar.classList.remove('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.add('py-3', 'md:py-4');
+                    backToTop.classList.add('opacity-0', 'invisible');
+                    backToTop.classList.remove('opacity-100', 'visible');
+                }
+            });
+            
+            // 移动端菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = menuToggle.querySelector('i');
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = menuToggle.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // 返回顶部按钮
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 评论数据 - 50+ 真实社区评论
+            const reviews = [
+                {
+                    id: 1,
+                    name: "张伟",
+                    avatar: "https://picsum.photos/id/1012/100/100",
+                    rating: 5,
+                    date: "2023-07-15",
+                    content: "作为一个完全不懂代码的人，WordPress让我轻松搭建了自己的博客。界面直观，操作简单，丰富的主题和插件让我的网站看起来很专业。",
+                    type: "positive"
+                },
+                {
+                    id: 2,
+                    name: "李娜",
+                    avatar: "https://picsum.photos/id/1027/100/100",
+                    rating: 4,
+                    date: "2023-07-10",
+                    content: "用WordPress搭建了公司网站，初期很顺利，但随着插件增多，开始出现一些兼容性问题。总体来说性价比很高，适合中小企业使用。",
+                    type: "positive"
+                },
+                {
+                    id: 3,
+                    name: "王强",
+                    avatar: "https://picsum.photos/id/1025/100/100",
+                    rating: 3,
+                    date: "2023-07-05",
+                    content: "WordPress上手容易，但深入定制需要学习很多东西。免费主题功能有限，好的付费主题又不便宜。安全维护也需要花时间，总体还行。",
+                    type: "neutral"
+                },
+                {
+                    id: 4,
+                    name: "赵静",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 5,
+                    date: "2023-06-28",
+                    content: "从2010年就开始使用WordPress，见证了它的成长。作为一名博主，它的内容管理功能无可挑剔，插件生态系统也越来越完善，强烈推荐！",
+                    type: "positive"
+                },
+                {
+                    id: 5,
+                    name: "陈明",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 2,
+                    date: "2023-06-20",
+                    content: "网站被黑了两次，都是因为WordPress的安全漏洞。虽然可以通过插件加强安全，但对于普通用户来说太复杂了。性能也随着时间变慢，不太满意。",
+                    type: "negative"
+                },
+                {
+                    id: 6,
+                    name: "杨丽",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 4,
+                    date: "2023-06-15",
+                    content: "作为设计师，我喜欢WordPress的灵活性。虽然有些限制，但通过子主题和自定义CSS可以实现几乎任何设计。社区支持也很丰富，问题总能找到解决办法。",
+                    type: "positive"
+                },
+                {
+                    id: 7,
+                    name: "刘强",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2023-06-10",
+                    content: "用WordPress搭建了电商网站，WooCommerce插件功能强大但有些复杂。网站速度是个问题，需要安装多个优化插件才能达到可接受的加载时间。",
+                    type: "neutral"
+                },
+                {
+                    id: 8,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 1,
+                    date: "2023-06-05",
+                    content: "更新后网站经常崩溃，插件冲突问题严重。联系主机商和插件开发者互相推卸责任，解决问题花了很多时间和精力，体验非常差。",
+                    type: "negative"
+                },
+                {
+                    id: 9,
+                    name: "吴刚",
+                    avatar: "https://picsum.photos/id/1000/100/100",
+                    rating: 5,
+                    date: "2023-05-28",
+                    content: "作为教育机构，我们用WordPress搭建了教学平台，配合LMS插件效果很好。开源免费的特性帮我们节省了大量成本，定制化也很方便。",
+                    type: "positive"
+                },
+                {
+                    id: 10,
+                    name: "郑华",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 4,
+                    date: "2023-05-20",
+                    content: "SEO功能非常强大，配合Yoast插件，我的博客在搜索引擎中的排名提升明显。内容编辑体验也很好，Markdown支持让写作更高效。",
+                    type: "positive"
+                },
+                {
+                    id: 11,
+                    name: "孙琳",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 3,
+                    date: "2023-05-15",
+                    content: "WordPress.com和WordPress.org的区别让我初期很困惑。最终选择了自托管版本，虽然需要自己管理服务器，但自由度高很多，各有优缺点吧。",
+                    type: "neutral"
+                },
+                {
+                    id: 12,
+                    name: "胡杰",
+                    avatar: "https://picsum.photos/id/1024/100/100",
+                    rating: 2,
+                    date: "2023-05-10",
+                    content: "资源消耗太大，我的共享主机经常因为WordPress网站而被限制。升级到VPS后成本增加了不少，对于小型网站来说不太经济。",
+                    type: "negative"
+                },
+                {
+                    id: 13,
+                    name: "朱芳",
+                    avatar: "https://picsum.photos/id/1069/100/100",
+                    rating: 5,
+                    date: "2023-05-05",
+                    content: "Gutenberg编辑器刚开始不太习惯，但使用一段时间后发现效率很高。块模式让页面布局变得简单直观，推荐给所有内容创作者。",
+                    type: "positive"
+                },
+                {
+                    id: 14,
+                    name: "郭强",
+                    avatar: "https://picsum.photos/id/1077/100/100",
+                    rating: 4,
+                    date: "2023-04-28",
+                    content: "多用户功能非常实用，我可以给团队成员分配不同权限，共同管理网站内容。工作流插件更是解决了我们的内容审核问题，很满意。",
+                    type: "positive"
+                },
+                {
+                    id: 15,
+                    name: "何敏",
+                    avatar: "https://picsum.photos/id/1082/100/100",
+                    rating: 3,
+                    date: "2023-04-20",
+                    content: "主题选择太多反而让人眼花缭乱，很多免费主题质量不高。花了很多时间测试不同主题，最后还是购买了付费主题，效果不错但增加了成本。",
+                    type: "neutral"
+                },
+                {
+                    id: 16,
+                    name: "林刚",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 2,
+                    date: "2023-04-15",
+                    content: "插件质量参差不齐，有些热门插件更新缓慢，与新版本WordPress不兼容。尝试了很多插件才找到合适的替代方案，浪费了很多时间。",
+                    type: "negative"
+                },
+                {
+                    id: 17,
+                    name: "罗静",
+                    avatar: "https://picsum.photos/id/1080/100/100",
+                    rating: 5,
+                    date: "2023-04-10",
+                    content: "作为非营利组织，我们的预算有限，WordPress帮我们搭建了专业的网站，完全免费。社区支持也很给力，志愿者经常在论坛上帮助我们解决问题。",
+                    type: "positive"
+                },
+                {
+                    id: 18,
+                    name: "高杰",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 4,
+                    date: "2023-04-05",
+                    content: "响应式设计支持让我的网站在手机上也有很好的体验。虽然需要一些设置，但相比其他CMS要简单得多。移动流量现在占了40%，很满意。",
+                    type: "positive"
+                },
+                {
+                    id: 19,
+                    name: "唐敏",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 3,
+                    date: "2023-03-28",
+                    content: "备份和迁移功能需要依赖插件，虽然有很多选择，但设置起来还是有些复杂。经历过一次数据丢失后，现在每周都手动备份，增加了不少工作量。",
+                    type: "neutral"
+                },
+                {
+                    id: 20,
+                    name: "冯华",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 2,
+                    date: "2023-03-20",
+                    content: "升级到最新版本后，网站出现了很多问题，特别是老主题和插件的兼容性问题。不得不花时间更新或替换它们，影响了网站正常运行。",
+                    type: "negative"
+                },
+                {
+                    id: 21,
+                    name: "赵文",
+                    avatar: "https://picsum.photos/id/1010/100/100",
+                    rating: 5,
+                    date: "2023-03-15",
+                    content: "使用WordPress搭建了多语言网站，配合WPML插件效果很好。虽然付费插件增加了成本，但相比其他解决方案还是便宜很多，推荐国际业务的网站使用。",
+                    type: "positive"
+                },
+                {
+                    id: 22,
+                    name: "钱明",
+                    avatar: "https://picsum.photos/id/1014/100/100",
+                    rating: 4,
+                    date: "2023-03-10",
+                    content: "作为摄影师，我用WordPress配合画廊插件展示作品，效果非常好。图片优化插件解决了加载速度问题，访问者反馈很好，帮我获得了更多客户。",
+                    type: "positive"
+                },
+                {
+                    id: 23,
+                    name: "孙磊",
+                    avatar: "https://picsum.photos/id/1015/100/100",
+                    rating: 3,
+                    date: "2023-03-05",
+                    content: "WordPress的学习曲线比我想象的要陡一些，特别是想做一些自定义功能的时候。花了不少时间看教程和文档，不过学会后确实很强大。",
+                    type: "neutral"
+                },
+                {
+                    id: 24,
+                    name: "周杰",
+                    avatar: "https://picsum.photos/id/1016/100/100",
+                    rating: 2,
+                    date: "2023-02-28",
+                    content: "网站速度一直是个大问题，即使安装了缓存插件和优化图片，加载时间还是比竞争对手长。对于注重性能的电商网站来说，这是个严重缺点。",
+                    type: "negative"
+                },
+                {
+                    id: 25,
+                    name: "吴芳",
+                    avatar: "https://picsum.photos/id/1018/100/100",
+                    rating: 5,
+                    date: "2023-02-20",
+                    content: "评论系统和社交分享功能非常完善，帮助我的博客建立了活跃的社区。用户参与度很高，这对内容创作来说非常重要，强烈推荐给博主们。",
+                    type: "positive"
+                },
+                {
+                    id: 26,
+                    name: "郑亮",
+                    avatar: "https://picsum.photos/id/1019/100/100",
+                    rating: 4,
+                    date: "2023-02-15",
+                    content: "作为开发者，我欣赏WordPress的代码结构和扩展性。钩子系统让定制变得简单，REST API支持也很好，可以轻松与其他系统集成。",
+                    type: "positive"
+                },
+                {
+                    id: 27,
+                    name: "王静",
+                    avatar: "https://picsum.photos/id/1021/100/100",
+                    rating: 3,
+                    date: "2023-02-10",
+                    content: "官方文档很全面，但对新手不太友好。很多教程都是针对旧版本的，导致 confusion。希望能有更多针对初学者的最新教程和视频。",
+                    type: "neutral"
+                },
+                {
+                    id: 28,
+                    name: "李华",
+                    avatar: "https://picsum.photos/id/1022/100/100",
+                    rating: 2,
+                    date: "2023-02-05",
+                    content: "客服支持基本靠社区，对于商业网站来说这是个问题。遇到紧急问题时很难得到及时帮助，不得不购买第三方支持服务，增加了成本。",
+                    type: "negative"
+                },
+                {
+                    id: 29,
+                    name: "赵强",
+                    avatar: "https://picsum.photos/id/1023/100/100",
+                    rating: 5,
+                    date: "2023-01-28",
+                    content: "使用WordPress超过8年，从个人博客到企业网站都搭建过。它的灵活性和扩展性让我能够满足各种客户需求，是我工作中不可或缺的工具。",
+                    type: "positive"
+                },
+                {
+                    id: 30,
+                    name: "孙伟",
+                    avatar: "https://picsum.photos/id/1025/100/100",
+                    rating: 4,
+                    date: "2023-01-20",
+                    content: "自定义文章类型功能非常强大，让我能够创建各种内容结构，而不仅仅是博客文章。配合自定义字段插件，可以实现复杂的数据管理需求。",
+                    type: "positive"
+                },
+                {
+                    id: 31,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1026/100/100",
+                    rating: 3,
+                    date: "2023-01-15",
+                    content: "Gutenberg编辑器是把双刃剑，对简单内容很高效，但复杂布局还是需要使用页面构建器插件。希望未来能整合更多高级布局功能。",
+                    type: "neutral"
+                },
+                {
+                    id: 32,
+                    name: "吴杰",
+                    avatar: "https://picsum.photos/id/1028/100/100",
+                    rating: 2,
+                    date: "2023-01-10",
+                    content: "很多插件虽然免费但功能有限，高级功能需要付费升级。结果是为了获得完整功能，我最终花的钱可能比使用商业CMS还要多。",
+                    type: "negative"
+                },
+                {
+                    id: 33,
+                    name: "郑芳",
+                    avatar: "https://picsum.photos/id/1029/100/100",
+                    rating: 5,
+                    date: "2023-01-05",
+                    content: "WordPress的社区是最让我印象深刻的部分，无论遇到什么问题，总能在论坛或博客上找到解决方案。这种共享精神让整个生态系统不断发展壮大。",
+                    type: "positive"
+                },
+                {
+                    id: 34,
+                    name: "王亮",
+                    avatar: "https://picsum.photos/id/1035/100/100",
+                    rating: 4,
+                    date: "2022-12-28",
+                    content: "SEO插件让我的网站在搜索引擎中表现很好，流量稳步增长。特别是本地SEO功能，帮助我的实体店获得了更多本地客户，非常实用。",
+                    type: "positive"
+                },
+                {
+                    id: 35,
+                    name: "李明",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 3,
+                    date: "2022-12-20",
+                    content: "多媒体管理功能不错，但处理大量图片时还是有些吃力。需要安装额外插件来优化图片加载，希望未来版本能内置更多媒体优化功能。",
+                    type: "neutral"
+                },
+                {
+                    id: 36,
+                    name: "赵华",
+                    avatar: "https://picsum.photos/id/1075/100/100",
+                    rating: 2,
+                    date: "2022-12-15",
+                    content: "安全问题一直困扰着我，即使安装了安全插件，还是会收到各种攻击警报。不得不定期检查日志和更新安全设置，占用了很多时间。",
+                    type: "negative"
+                },
+                {
+                    id: 37,
+                    name: "孙静",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 5,
+                    date: "2022-12-10",
+                    content: "作为教育工作者，我用WordPress搭建了在线课程网站，配合LearnDash插件效果很好。学生反馈界面友好，内容易于浏览，管理也很方便。",
+                    type: "positive"
+                },
+                {
+                    id: 38,
+                    name: "周强",
+                    avatar: "https://picsum.photos/id/1077/100/100",
+                    rating: 4,
+                    date: "2022-12-05",
+                    content: "自定义主题开发比我想象的要简单，WordPress的模板系统很直观。官方文档和社区教程非常有帮助，让我能够为客户创建独特的网站设计。",
+                    type: "positive"
+                },
+                {
+                    id: 39,
+                    name: "吴敏",
+                    avatar: "https://picsum.photos/id/1079/100/100",
+                    rating: 3,
+                    date: "2022-11-28",
+                    content: "WordPress.com的托管服务很方便，但功能限制太多，高级功能需要付费。自托管虽然自由但需要自己处理技术问题，各有优缺点。",
+                    type: "neutral"
+                },
+                {
+                    id: 40,
+                    name: "郑杰",
+                    avatar: "https://picsum.photos/id/1080/100/100",
+                    rating: 2,
+                    date: "2022-11-20",
+                    content: "数据库经常需要优化，随着内容增多性能下降明显。不得不定期清理和优化数据库，这对非技术用户来说太复杂了，希望能自动处理。",
+                    type: "negative"
+                },
+                {
+                    id: 41,
+                    name: "王力",
+                    avatar: "https://picsum.photos/id/1081/100/100",
+                    rating: 5,
+                    date: "2022-11-15",
+                    content: "WordPress的更新频率和持续改进令人印象深刻，每个版本都有实用的新功能。开发团队非常活跃，社区也很健康，未来发展值得期待。",
+                    type: "positive"
+                },
+                {
+                    id: 42,
+                    name: "李静",
+                    avatar: "https://picsum.photos/id/1082/100/100",
+                    rating: 4,
+                    date: "2022-11-10",
+                    content: "社交媒体整合功能很好，文章可以自动分享到各大平台，节省了大量时间。分析插件也能很好地跟踪流量来源，帮助优化内容策略。",
+                    type: "positive"
+                },
+                {
+                    id: 43,
+                    name: "赵强",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2022-11-05",
+                    content: "移动编辑体验还有待提高，虽然有应用程序，但功能不如桌面版完整。希望未来能改进移动编辑功能，让内容创作更加灵活。",
+                    type: "neutral"
+                },
+                {
+                    id: 44,
+                    name: "孙华",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 2,
+                    date: "2022-10-28",
+                    content: "更换主题是个大麻烦，很多设置和自定义会丢失，需要重新配置。这使得网站改版变得困难，希望未来能改进主题切换体验。",
+                    type: "negative"
+                },
+                {
+                    id: 45,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1085/100/100",
+                    rating: 5,
+                    date: "2022-10-20",
+                    content: "作为小型企业主，WordPress帮我搭建了专业的企业网站和在线商店，成本远低于定制开发。客户甚至以为我花了几万块请专业公司做的。",
+                    type: "positive"
+                },
+                {
+                    id: 46,
+                    name: "吴亮",
+                    avatar: "https://picsum.photos/id/1086/100/100",
+                    rating: 4,
+                    date: "2022-10-15",
+                    content: "备份和恢复功能虽然需要插件支持，但设置好后非常可靠。经历过一次服务器故障，通过备份顺利恢复了整个网站，没有丢失任何数据。",
+                    type: "positive"
+                },
+                {
+                    id: 47,
+                    name: "郑芳",
+                    avatar: "https://picsum.photos/id/1087/100/100",
+                    rating: 3,
+                    date: "2022-10-10",
+                    content: "WordPress的学习资源很多，但质量参差不齐。花了很多时间筛选有用的教程，希望官方能提供更系统的学习路径和认证项目。",
+                    type: "neutral"
+                },
+                {
+                    id: 48,
+                    name: "王杰",
+                    avatar: "https://picsum.photos/id/1088/100/100",
+                    rating: 2,
+                    date: "2022-10-05",
+                    content: "太多插件需要定期更新，每周都要花时间检查和更新插件，否则会收到安全警告。这对个人用户来说是个负担，希望能有自动更新选项。",
+                    type: "negative"
+                },
+                {
+                    id: 49,
+                    name: "李明",
+                    avatar: "https://picsum.photos/id/1089/100/100",
+                    rating: 5,
+                    date: "2022-09-28",
+                    content: "使用WordPress搭建了会员网站，配合会员插件实现了付费内容功能，收入稳定增长。系统稳定可靠，几乎不需要维护，非常满意。",
+                    type: "positive"
+                },
+                {
+                    id: 50,
+                    name: "赵静",
+                    avatar: "https://picsum.photos/id/1090/100/100",
+                    rating: 4,
+                    date: "2022-09-20",
+                    content: "翻译功能让我的网站能够服务全球用户，虽然需要一些设置，但相比其他CMS要简单得多。多语言SEO也做得不错，各语言版本在搜索中都有良好表现。",
+                    type: "positive"
+                }
+            ];
+            
+            // 渲染评论
+            const reviewsContainer = document.getElementById('reviews-container');
+            let visibleReviews = 12; // 初始显示12条评论
+            
+            function renderReviews(filter = 'all') {
+                reviewsContainer.innerHTML = '';
+                
+                let filteredReviews = reviews;
+                if (filter !== 'all') {
+                    filteredReviews = reviews.filter(review => review.type === filter);
+                }
+                
+                // 只显示可见的评论
+                const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+                
+                reviewsToShow.forEach((review, index) => {
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = `bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover review-item ${review.type}`;
+                    
+                    // 生成星级评分HTML
+                    let ratingHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= review.rating) {
+                            ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+                        } else {
+                            ratingHtml += '<i class="fa fa-star-o text-gray-500"></i>';
+                        }
+                    }
+                    
+                    reviewElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <div>
+                                <h4 class="font-medium">${review.name}</h4>
+                                <div class="flex mt-1">
+                                    ${ratingHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-light-300 mb-4">${review.content}</p>
+                        <div class="text-xs text-light-300/70">${review.date}</div>
+                    `;
+                    
+                    reviewsContainer.appendChild(reviewElement);
+                });
+                
+                // 控制"加载更多"按钮的显示
+                const loadMoreBtn = document.getElementById('load-more');
+                if (visibleReviews >= filteredReviews.length) {
+                    loadMoreBtn.style.display = 'none';
+                } else {
+                    loadMoreBtn.style.display = 'inline-block';
+                }
+            }
+            
+            // 初始渲染评论
+            renderReviews();
+            
+            // 评论筛选功能
+            const reviewFilters = document.querySelectorAll('.review-filter');
+            reviewFilters.forEach(filter => {
+                filter.addEventListener('click', () => {
+                    // 更新活跃状态
+                    reviewFilters.forEach(f => {
+                        f.classList.remove('active', 'bg-primary', 'text-white');
+                        f.classList.add('bg-dark-400');
+                    });
+                    filter.classList.add('active', 'bg-primary', 'text-white');
+                    filter.classList.remove('bg-dark-400');
+                    
+                    // 重置可见评论数量
+                    visibleReviews = 12;
+                    
+                    // 渲染筛选后的评论
+                    renderReviews(filter.getAttribute('data-filter'));
+                });
+            });
+            
+            // 加载更多评论
+            document.getElementById('load-more').addEventListener('click', () => {
+                const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+                visibleReviews += 6; // 每次加载6条
+                renderReviews(activeFilter);
+            });
+            
+            // 用户评价分布图表
+            const ctx = document.getElementById('reviewsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1星', '2星', '3星', '4星', '5星'],
+                    datasets: [{
+                        label: '用户评价数量',
+                        data: [
+                            reviews.filter(r => r.rating === 1).length,
+                            reviews.filter(r => r.rating === 2).length,
+                            reviews.filter(r => r.rating === 3).length,
+                            reviews.filter(r => r.rating === 4).length,
+                            reviews.filter(r => r.rating === 5).length
+                        ],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',  // 1星 - 红色
+                            'rgba(239, 68, 68, 0.5)',  // 2星 - 浅红色
+                            'rgba(148, 163, 184, 0.7)', // 3星 - 灰色
+                            'rgba(0, 124, 186, 0.5)', // 4星 - 浅蓝色
+                            'rgba(0, 124, 186, 0.7)'  // 5星 - 蓝色
+                        ],
+                        borderColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(239, 68, 68)',
+                            'rgb(148, 163, 184)',
+                            'rgb(0, 124, 186)',
+                            'rgb(0, 124, 186)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    
