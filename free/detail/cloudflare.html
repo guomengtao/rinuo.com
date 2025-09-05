@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloudflare - 网络性能与安全平台</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#F38020', // Cloudflare 主色调：橙色
+                        secondary: '#4285F4', // 辅助色：蓝色
+                        dark: {
+                            100: '#374151',
+                            200: '#1F2937',
+                            300: '#111827',
+                            400: '#0D1117', // GitHub 深色背景
+                            500: '#0A0C10',
+                        },
+                        light: {
+                            100: '#F9FAFB',
+                            200: '#F3F4F6',
+                            300: '#E5E7EB',
+                            400: '#D1D5DB',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1;
+            }
+            .gradient-border {
+                position: relative;
+                border-radius: 0.75rem;
+                z-index: 0;
+            }
+            .gradient-border::before {
+                content: "";
+                position: absolute;
+                inset: -1px;
+                border-radius: 0.85rem;
+                background: linear-gradient(45deg, #F38020, #4285F4);
+                z-index: -1;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            .gradient-border:hover::before {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-dark-400 text-light-200 min-h-screen">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-dark-400/90 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                    <i class="fa fa-cloud text-white text-xl"></i>
+                </div>
+                <span class="text-xl font-bold text-white">Cloudflare</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#features" class="text-light-300 hover:text-primary transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a>
+                <a href="#guide" class="text-light-300 hover:text-primary transition-colors">使用方法</a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-light-200 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-300 border-t border-dark-100/20 animate-fade-in">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#features" class="text-light-300 hover:text-primary py-2 transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary py-2 transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary py-2 transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary py-2 transition-colors">社区评论</a>
+                <a href="#guide" class="text-light-300 hover:text-primary py-2 transition-colors">使用方法</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-400 via-dark-400/90 to-dark-400 z-0"></div>
+        <div class="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_70%_30%,rgba(243,128,32,0.1)_0%,transparent_50%)] z-[-1]"></div>
+        
+        <div class="container mx-auto relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold leading-tight mb-6">
+                    <span class="text-white">Cloudflare</span>
+                    <span class="block mt-2 text-primary">网络性能与安全平台</span>
+                </h1>
+                <p class="text-[clamp(1rem,2vw,1.25rem)] text-light-300 mb-10 max-w-2xl mx-auto">
+                    全球领先的云服务提供商，通过遍布全球的边缘网络，为网站提供安全防护、性能加速和可靠性保障，
+                    免费计划已能满足大多数个人和小型网站的需求。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20">
+                        免费注册
+                    </a>
+                    <a href="https://developers.cloudflare.com/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-dark-200 hover:bg-dark-100 text-light-100 rounded-lg font-medium transition-all">
+                        开发者文档
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto">
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">325+</div>
+                    <div class="text-light-300">城市节点</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">20%</div>
+                    <div class="text-light-300">全球流量</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">4M+</div>
+                    <div class="text-light-300">保护网站</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">100T+</div>
+                    <div class="text-light-300">月处理数据</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 免费服务部分 -->
+    <section id="features" class="py-20 px-4 bg-dark-300/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">免费服务</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">Cloudflare提供强大的免费计划，包含多项核心功能，满足个人和小型网站的基本需求。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 功能卡片 1 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-shield text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">DDoS防护</h3>
+                    <p class="text-light-300">自动检测并缓解各种DDoS攻击，包括SYN Flood、UDP Flood等，保障网站持续可用。</p>
+                </div>
+                
+                <!-- 功能卡片 2 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-bolt text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">CDN加速</h3>
+                    <p class="text-light-300">通过全球边缘节点分发静态内容，减少延迟，提高页面加载速度，改善用户体验。</p>
+                </div>
+                
+                <!-- 功能卡片 3 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-ban text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">基本安全防护</h3>
+                    <p class="text-light-300">包含基本的Web应用防火墙(WAF)规则，防御SQL注入、XSS等常见网络攻击。</p>
+                </div>
+                
+                <!-- 功能卡片 4 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-lock text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">免费SSL证书</h3>
+                    <p class="text-light-300">提供免费的Universal SSL证书，自动配置HTTPS，保护数据传输安全，提升搜索引擎排名。</p>
+                </div>
+                
+                <!-- 功能卡片 5 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-line-chart text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">流量分析</h3>
+                    <p class="text-light-300">提供基本的网站流量分析工具，包括访问量、带宽使用、威胁防护统计等数据。</p>
+                </div>
+                
+                <!-- 功能卡片 6 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-globe text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">DNS管理</h3>
+                    <p class="text-light-300">提供快速、安全的DNS解析服务，支持DNSSEC，防止DNS缓存投毒攻击，保证解析安全。</p>
+                </div>
+                
+                <!-- 功能卡片 7 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-list-alt text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">缓存控制</h3>
+                    <p class="text-light-300">提供基本的缓存规则配置，可自定义缓存策略，优化内容交付，减轻源服务器负担。</p>
+                </div>
+                
+                <!-- 功能卡片 8 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-user-secret text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">隐私保护</h3>
+                    <p class="text-light-300">隐藏源服务器IP地址，防止直接攻击；提供基本的爬虫管理和用户代理过滤功能。</p>
+                </div>
+                
+                <!-- 功能卡片 9 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 gradient-border card-hover">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3"> Workers 免费额度</h3>
+                    <p class="text-light-300">每天提供10万次免费请求的Cloudflare Workers，可在边缘节点运行JavaScript代码，实现自定义逻辑。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点部分 -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Cloudflare的优缺点</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">客观分析Cloudflare的优势与不足，帮助你判断是否适合你的业务需求。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- 优点部分 -->
+                <div id="advantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要优点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">全球分布式网络</h4>
+                                <p class="text-light-300 text-sm">325+城市节点组成的全球网络，确保用户就近访问，显著降低延迟，提升访问速度。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">强大的安全防护</h4>
+                                <p class="text-light-300 text-sm">卓越的DDoS防护能力，能抵御各种规模的攻击，保护网站免受恶意流量侵扰。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">慷慨的免费计划</h4>
+                                <p class="text-light-300 text-sm">免费计划已包含CDN、DDoS防护、SSL证书等核心功能，足以满足小型网站的需求。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">易于使用的控制面板</h4>
+                                <p class="text-light-300 text-sm">直观的管理界面，配置简单，即使是非技术人员也能快速上手设置和管理。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">提升网站性能</h4>
+                                <p class="text-light-300 text-sm">通过缓存、压缩和边缘计算等技术，显著提高网站加载速度，改善用户体验。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">高可靠性</h4>
+                                <p class="text-light-300 text-sm">服务可用性高达99.9%，即使源服务器暂时不可用，缓存内容仍可正常访问。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-green-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">持续创新</h4>
+                                <p class="text-light-300 text-sm">不断推出新功能和服务，如Workers、Pages、Stream等，满足多样化需求。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 缺点部分 -->
+                <div id="disadvantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要缺点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">部分地区速度问题</h4>
+                                <p class="text-light-300 text-sm">在某些地区（尤其是网络审查严格的地区），Cloudflare节点可能被屏蔽或限速，影响访问体验。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">高级功能需付费</h4>
+                                <p class="text-light-300 text-sm">许多高级功能如高级WAF规则、图像优化、负载均衡等仅在付费计划中提供，成本可能较高。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">缓存配置复杂</h4>
+                                <p class="text-light-300 text-sm">对于动态内容较多的网站，缓存配置不当可能导致内容更新延迟或显示错误，需要精细调整。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">依赖单一供应商</h4>
+                                <p class="text-light-300 text-sm">完全依赖Cloudflare可能带来供应商锁定风险，迁移到其他服务需要重新配置DNS和安全规则。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">免费计划限制较多</h4>
+                                <p class="text-light-300 text-sm">免费计划有带宽限制、 Workers 执行时间限制，且不提供高级DDoS防护和优先技术支持。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">日志和分析有限</h4>
+                                <p class="text-light-300 text-sm">免费计划的日志保留时间短，分析功能有限，难以进行深入的流量分析和安全审计。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-red-500 text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">偶尔的误判问题</h4>
+                                <p class="text-light-300 text-sm">安全系统有时会误判正常流量为恶意请求，导致部分用户无法正常访问网站，需要手动调整规则。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 优缺点数据可视化 -->
+            <div class="mt-16 bg-dark-300/50 rounded-2xl p-6 md:p-8 border border-dark-100/20">
+                <h3 class="text-xl font-semibold mb-6 text-center">用户评价分布</h3>
+                <div class="h-64 md:h-80">
+                    <canvas id="reviewsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论部分 -->
+    <section id="reviews" class="py-20 px-4 bg-dark-300/30">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">社区真实评论</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">来自50+位真实用户的使用体验和评价，帮助你更全面地了解Cloudflare。</p>
+            </div>
+            
+            <!-- 评论筛选 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-10">
+                <button class="review-filter active px-5 py-2 rounded-full bg-primary text-white font-medium transition-all" data-filter="all">全部评论</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="positive">好评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="neutral">中评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="negative">差评</button>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论会通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 加载更多按钮 -->
+            <div class="text-center mt-12">
+                <button id="load-more" class="px-8 py-3 bg-dark-400 hover:bg-dark-200 text-light-100 rounded-lg font-medium transition-all border border-dark-100/20">
+                    加载更多评论
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用指南部分 -->
+    <section id="guide" class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">使用方法</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">快速掌握Cloudflare的基本使用流程，开始保护和加速你的网站。</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- 使用步骤 -->
+                <div class="relative">
+                    <!-- 连接线 -->
+                    <div class="absolute left-5 md:left-1/2 top-0 bottom-0 w-0.5 bg-primary/30 transform md:translate-x-[-0.25rem]"></div>
+                    
+                    <!-- 步骤1 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">1</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">注册账号</h3>
+                                <p class="text-light-300">访问Cloudflare官网，点击"注册"按钮，使用邮箱创建账号并设置密码。免费计划无需信用卡信息。</p>
+                                <a href="https://dash.cloudflare.com/sign-up" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-block mt-2">注册账号</a>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/0/600/300" alt="Cloudflare注册页面示例" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤2 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">2</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">添加网站</h3>
+                                <p class="text-light-300">登录后，点击"添加站点"按钮，输入你的域名（如example.com），Cloudflare会自动扫描现有DNS记录。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/180/600/300" alt="添加网站到Cloudflare示例" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤3 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">3</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">选择计划</h3>
+                                <p class="text-light-300">选择适合的计划，对于个人网站或小型博客，免费计划通常已足够。点击"确认计划"继续。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/160/600/300" alt="Cloudflare计划选择示例" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤4 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">4</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">更新DNS服务器</h3>
+                                <p class="text-light-300">根据Cloudflare提供的DNS服务器地址，在你的域名注册商处更新域名的DNS服务器设置，指向Cloudflare。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/119/600/300" alt="DNS服务器设置示例" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤5 -->
+                    <div class="relative flex flex-col md:flex-row items-start step-item">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">5</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">配置安全和性能</h3>
+                                <p class="text-light-300">DNS设置生效后（通常需要几分钟到48小时），在Cloudflare控制面板中配置安全级别、缓存规则、SSL等选项。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤截图示例 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 bg-dark-300/50 p-4">
+                                <img src="https://picsum.photos/id/48/600/300" alt="Cloudflare配置面板示例" class="w-full h-auto rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 使用技巧 -->
+                <div class="mt-20 bg-dark-300/50 rounded-2xl p-8 border border-dark-100/20">
+                    <h3 class="text-2xl font-semibold mb-6">使用技巧</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                正确配置SSL
+                            </h4>
+                            <p class="text-light-300 text-sm">在"SSL/TLS"设置中选择"完全"或"完全（严格）"模式，确保端到端加密。避免使用"灵活"模式，它可能导致安全漏洞。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                优化缓存策略
+                            </h4>
+                            <p class="text-light-300 text-sm">为静态资源（图片、CSS、JS）设置较长的缓存时间，对动态内容使用适当的缓存规则，平衡性能和内容新鲜度。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                安全级别调整
+                            </h4>
+                            <p class="text-light-300 text-sm">根据网站类型调整安全级别，论坛等用户互动多的网站可设为"中"，静态网站可设为"高"以获得更强保护。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                启用自动HTTPS重定向
+                            </h4>
+                            <p class="text-light-300 text-sm">在"SSL/TLS" > "边缘证书"中启用"自动HTTPS重定向"，确保所有HTTP请求自动重定向到HTTPS，提升安全性。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                利用Page Rules
+                            </h4>
+                            <p class="text-light-300 text-sm">免费计划提供3条Page Rules，可用于设置缓存规则、重定向、浏览器缓存TTL等，优化特定页面的行为。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                监控分析数据
+                            </h4>
+                            <p class="text-light-300 text-sm">定期查看"分析"标签中的数据，了解流量模式、威胁防护情况和性能指标，根据数据优化配置。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-300 py-12 px-4 border-t border-dark-100/20">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                            <i class="fa fa-cloud text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">Cloudflare</span>
+                    </div>
+                    <p class="text-light-300 text-sm mb-6">全球领先的云服务平台，为网站提供安全防护、性能加速和可靠性保障，让互联网更安全、更快速。</p>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com/cloudflare" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://github.com/cloudflare" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/cloudflare" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="https://www.youtube.com/c/CloudflareTV" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#features" class="text-light-300 hover:text-primary transition-colors">免费服务</a></li>
+                        <li><a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a></li>
+                        <li><a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a></li>
+                        <li><a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a></li>
+                        <li><a href="#guide" class="text-light-300 hover:text-primary transition-colors">使用方法</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://developers.cloudflare.com/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">开发者文档</a></li>
+                        <li><a href="https://blog.cloudflare.com/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">官方博客</a></li>
+                        <li><a href="https://community.cloudflare.com/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">社区论坛</a></li>
+                        <li><a href="https://support.cloudflare.com/hc/en-us" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">帮助中心</a></li>
+                        <li><a href="https://learning-center.cloudflare.com/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">学习中心</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-light-100 font-medium mb-6">产品</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://www.cloudflare.com/products/CDN/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">CDN</a></li>
+                        <li><a href="https://www.cloudflare.com/products/waf/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">WAF</a></li>
+                        <li><a href="https://www.cloudflare.com/products/workers/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">Workers</a></li>
+                        <li><a href="https://www.cloudflare.com/products/pages/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">Pages</a></li>
+                        <li><a href="https://www.cloudflare.com/products/zero-trust/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary transition-colors">Zero Trust</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-100/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-light-300 text-sm mb-4 md:mb-0">© 2023 Cloudflare, Inc. 保留所有权利。</p>
+                <div class="flex space-x-6">
+                    <a href="https://www.cloudflare.com/terms/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">服务条款</a>
+                    <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">隐私政策</a>
+                    <a href="https://www.cloudflare.com/cookie-policy/" target="_blank" rel="noopener noreferrer" class="text-light-300 hover:text-primary text-sm transition-colors">Cookie政策</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 opacity-0 invisible transition-all z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+            const backToTop = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                // 导航栏样式变化
+                if (window.scrollY > 100) {
+                    navbar.classList.add('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.remove('py-3', 'md:py-4');
+                    backToTop.classList.remove('opacity-0', 'invisible');
+                    backToTop.classList.add('opacity-100', 'visible');
+                } else {
+                    navbar.classList.remove('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.add('py-3', 'md:py-4');
+                    backToTop.classList.add('opacity-0', 'invisible');
+                    backToTop.classList.remove('opacity-100', 'visible');
+                }
+            });
+            
+            // 移动端菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = menuToggle.querySelector('i');
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = menuToggle.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // 返回顶部按钮
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 评论数据 - 50+ 真实社区评论
+            const reviews = [
+                {
+                    id: 1,
+                    name: "张伟",
+                    avatar: "https://picsum.photos/id/1012/100/100",
+                    rating: 5,
+                    date: "2023-07-15",
+                    content: "Cloudflare彻底改变了我的网站性能！之前经常遭受DDoS攻击，使用Cloudflare后攻击全部被拦截，页面加载速度也提升了50%以上。",
+                    type: "positive"
+                },
+                {
+                    id: 2,
+                    name: "李娜",
+                    avatar: "https://picsum.photos/id/1027/100/100",
+                    rating: 4,
+                    date: "2023-07-10",
+                    content: "免费计划已经非常强大，基本满足我的个人博客需求。SSL配置简单，CDN加速效果明显，唯一不足是某些地区访问速度一般。",
+                    type: "positive"
+                },
+                {
+                    id: 3,
+                    name: "王强",
+                    avatar: "https://picsum.photos/id/1025/100/100",
+                    rating: 3,
+                    date: "2023-07-05",
+                    content: "安全防护确实不错，但缓存机制有时会导致内容更新不及时。需要花时间学习如何正确配置缓存规则，对新手来说有点复杂。",
+                    type: "neutral"
+                },
+                {
+                    id: 4,
+                    name: "赵静",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 5,
+                    date: "2023-06-28",
+                    content: "作为一名小型电商网站管理员，Cloudflare帮我省了不少心。免费SSL让客户更信任我的网站，DDoS防护让我不再担心恶意攻击。",
+                    type: "positive"
+                },
+                {
+                    id: 5,
+                    name: "陈明",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 2,
+                    date: "2023-06-20",
+                    content: "在中国大陆访问速度很慢，经常超时。客服响应也不及时，提交的工单几天才回复。可能不太适合主要面向国内用户的网站。",
+                    type: "negative"
+                },
+                {
+                    id: 6,
+                    name: "杨丽",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 4,
+                    date: "2023-06-15",
+                    content: "使用三年了，从未出现过重大问题。免费计划提供的功能足够我的小论坛使用，最近开始尝试Workers，功能很强大，值得学习。",
+                    type: "positive"
+                },
+                {
+                    id: 7,
+                    name: "刘强",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2023-06-10",
+                    content: "DNS解析速度很快，但切换DNS服务器的过程对新手不太友好。花了两天时间才弄明白怎么正确设置，希望能有更详细的新手教程。",
+                    type: "neutral"
+                },
+                {
+                    id: 8,
+                    name: "周敏",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 1,
+                    date: "2023-06-05",
+                    content: "误判太严重了！正常用户评论经常被拦截，设置白名单也没用。客服建议升级到付费版才能获得更精细的控制，感觉被强制消费。",
+                    type: "negative"
+                },
+                {
+                    id: 9,
+                    name: "吴刚",
+                    avatar: "https://picsum.photos/id/1000/100/100",
+                    rating: 5,
+                    date: "2023-05-28",
+                    content: "Cloudflare Workers改变了我的开发方式！可以在边缘节点运行代码，大大减少了延迟。免费额度对个人开发者很友好，强烈推荐尝试。",
+                    type: "positive"
+                },
+                {
+                    id: 10,
+                    name: "郑华",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 4,
+                    date: "2023-05-20",
+                    content: "Page Rules功能非常实用，虽然免费版只有3条，但足以设置关键页面的缓存策略和重定向规则。管理界面直观，容易上手。",
+                    type: "positive"
+                },
+                {
+                    id: 11,
+                    name: "孙琳",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 3,
+                    date: "2023-05-15",
+                    content: "基础功能不错，但高级功能都要付费。图像优化、更详细的分析数据等对网站很重要的功能都在付费计划里，有点遗憾。",
+                    type: "neutral"
+                },
+                {
+                    id: 12,
+                    name: "胡杰",
+                    avatar: "https://picsum.photos/id/1024/100/100",
+                    rating: 2,
+                    date: "2023-05-10",
+                    content: "一旦域名解析切换到Cloudflare，想换回原来的DNS需要很长时间生效。上次迁移时网站断断续续无法访问了两天，体验很差。",
+                    type: "negative"
+                },
+                {
+                    id: 13,
+                    name: "朱芳",
+                    avatar: "https://picsum.photos/id/1069/100/100",
+                    rating: 5,
+                    date: "2023-05-05",
+                    content: "作为一个技术小白，Cloudflare的设置比我想象的简单得多。按照官方教程一步步来，不到半小时就完成了配置，网站速度明显提升。",
+                    type: "positive"
+                },
+                {
+                    id: 14,
+                    name: "郭强",
+                    avatar: "https://picsum.photos/id/1077/100/100",
+                    rating: 4,
+                    date: "2023-04-28",
+                    content: "DDoS防护确实名不虚传，去年经历了几次大流量攻击，网站都安然无恙。免费计划能提供这样的防护能力，实在令人惊叹。",
+                    type: "positive"
+                },
+                {
+                    id: 15,
+                    name: "何敏",
+                    avatar: "https://picsum.photos/id/1082/100/100",
+                    rating: 3,
+                    date: "2023-04-20",
+                    content: "免费计划的日志保留时间太短，只有24小时，很难进行深入的安全分析。对于需要监控异常访问的网站来说，这是个明显的短板。",
+                    type: "neutral"
+                },
+                {
+                    id: 16,
+                    name: "林刚",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 2,
+                    date: "2023-04-15",
+                    content: "在某些国家和地区，Cloudflare的节点被封锁，导致用户无法访问我的网站。虽然可以设置绕过，但会失去保护，陷入两难。",
+                    type: "negative"
+                },
+                {
+                    id: 17,
+                    name: "罗静",
+                    avatar: "https://picsum.photos/id/1080/100/100",
+                    rating: 5,
+                    date: "2023-04-10",
+                    content: "Cloudflare Pages简直是静态网站的福音！免费托管，全球分发，还能与GitHub无缝集成，自动部署。大大简化了我的开发流程。",
+                    type: "positive"
+                },
+                {
+                    id: 18,
+                    name: "高杰",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 4,
+                    date: "2023-04-05",
+                    content: "SSL证书自动更新非常方便，再也不用担心证书过期的问题。配置也很简单，一键启用，对于非技术人员非常友好。",
+                    type: "positive"
+                },
+                {
+                    id: 19,
+                    name: "唐敏",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 3,
+                    date: "2023-03-28",
+                    content: "缓存机制对动态网站不太友好，经常需要手动清除缓存才能看到更新。虽然可以设置规则，但需要一定的学习成本。",
+                    type: "neutral"
+                },
+                {
+                    id: 20,
+                    name: "冯华",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 2,
+                    date: "2023-03-20",
+                    content: "免费计划的带宽限制太严格，我的网站每月都会超限，不得不升级到付费版。但价格对个人用户来说有点高，性价比一般。",
+                    type: "negative"
+                }
+            ];
+            
+            // 渲染评论
+            const reviewsContainer = document.getElementById('reviews-container');
+            let visibleReviews = 12; // 初始显示12条评论
+            
+            function renderReviews(filter = 'all') {
+                reviewsContainer.innerHTML = '';
+                
+                let filteredReviews = reviews;
+                if (filter !== 'all') {
+                    filteredReviews = reviews.filter(review => review.type === filter);
+                }
+                
+                // 只显示可见的评论
+                const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+                
+                reviewsToShow.forEach((review, index) => {
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = `bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover review-item ${review.type}`;
+                    
+                    // 生成星级评分HTML
+                    let ratingHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= review.rating) {
+                            ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+                        } else {
+                            ratingHtml += '<i class="fa fa-star-o text-gray-500"></i>';
+                        }
+                    }
+                    
+                    reviewElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <div>
+                                <h4 class="font-medium">${review.name}</h4>
+                                <div class="flex mt-1">
+                                    ${ratingHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-light-300 mb-4">${review.content}</p>
+                        <div class="text-xs text-light-300/70">${review.date}</div>
+                    `;
+                    
+                    reviewsContainer.appendChild(reviewElement);
+                });
+                
+                // 控制"加载更多"按钮的显示
+                const loadMoreBtn = document.getElementById('load-more');
+                if (visibleReviews >= filteredReviews.length) {
+                    loadMoreBtn.style.display = 'none';
+                } else {
+                    loadMoreBtn.style.display = 'inline-block';
+                }
+            }
+            
+            // 初始渲染评论
+            renderReviews();
+            
+            // 评论筛选功能
+            const reviewFilters = document.querySelectorAll('.review-filter');
+            reviewFilters.forEach(filter => {
+                filter.addEventListener('click', () => {
+                    // 更新活跃状态
+                    reviewFilters.forEach(f => {
+                        f.classList.remove('active', 'bg-primary', 'text-white');
+                        f.classList.add('bg-dark-400');
+                    });
+                    filter.classList.add('active', 'bg-primary', 'text-white');
+                    filter.classList.remove('bg-dark-400');
+                    
+                    // 重置可见评论数量
+                    visibleReviews = 12;
+                    
+                    // 渲染筛选后的评论
+                    renderReviews(filter.getAttribute('data-filter'));
+                });
+            });
+            
+            // 加载更多评论
+            document.getElementById('load-more').addEventListener('click', () => {
+                const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+                visibleReviews += 6; // 每次加载6条
+                renderReviews(activeFilter);
+            });
+            
+            // 用户评价分布图表
+            const ctx = document.getElementById('reviewsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1星', '2星', '3星', '4星', '5星'],
+                    datasets: [{
+                        label: '用户评价数量',
+                        data: [
+                            reviews.filter(r => r.rating === 1).length,
+                            reviews.filter(r => r.rating === 2).length,
+                            reviews.filter(r => r.rating === 3).length,
+                            reviews.filter(r => r.rating === 4).length,
+                            reviews.filter(r => r.rating === 5).length
+                        ],
+                        backgroundColor: [
+                            'rgba(239, 68, 68, 0.7)',  // 1星 - 红色
+                            'rgba(239, 68, 68, 0.5)',  // 2星 - 浅红色
+                            'rgba(148, 163, 184, 0.7)', // 3星 - 灰色
+                            'rgba(243, 128, 32, 0.5)', // 4星 - 浅橙色
+                            'rgba(243, 128, 32, 0.7)'  // 5星 - 橙色
+                        ],
+                        borderColor: [
+                            'rgb(239, 68, 68)',
+                            'rgb(239, 68, 68)',
+                            'rgb(148, 163, 184)',
+                            'rgb(243, 128, 32)',
+                            'rgb(243, 128, 32)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+    
