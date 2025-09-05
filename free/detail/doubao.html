@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>豆包 - 智能助手介绍</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#6366f1', // 主色调：靛蓝色
+                        secondary: '#10b981', // 辅助色：绿色
+                        accent: '#f97316', // 强调色：橙色
+                        dark: {
+                            100: '#374151',
+                            200: '#1f2937',
+                            300: '#111827',
+                            400: '#030712',
+                        },
+                        light: {
+                            100: '#f9fafb',
+                            200: '#f3f4f6',
+                            300: '#e5e7eb',
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .fade-in-element {
+                opacity: 0;
+                transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+                transform: translateY(20px);
+            }
+            .fade-in-visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-dark-400 text-light-200 min-h-screen">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-dark-400/80 backdrop-blur-md">
+        <div class="container mx-auto px-4 py-3 md:py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">豆</span>
+                </div>
+                <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">豆包</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#services" class="text-light-300 hover:text-primary transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a>
+                <a href="#usage" class="text-light-300 hover:text-primary transition-colors">使用方法</a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-light-200 focus:outline-none">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="hidden md:hidden bg-dark-300 border-t border-dark-100/20 animate-fade-in">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#services" class="text-light-300 hover:text-primary py-2 transition-colors">免费服务</a>
+                <a href="#advantages" class="text-light-300 hover:text-primary py-2 transition-colors">优点</a>
+                <a href="#disadvantages" class="text-light-300 hover:text-primary py-2 transition-colors">缺点</a>
+                <a href="#reviews" class="text-light-300 hover:text-primary py-2 transition-colors">社区评论</a>
+                <a href="#usage" class="text-light-300 hover:text-primary py-2 transition-colors">使用方法</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-dark-400 via-dark-400/90 to-dark-400 z-0"></div>
+        <div class="absolute top-0 right-0 w-full h-full bg-[radial-gradient(circle_at_30%_20%,rgba(99,102,241,0.15)_0%,transparent_50%)] z-[-1]"></div>
+        
+        <div class="container mx-auto relative z-10">
+            <div class="max-w-4xl mx-auto text-center fade-in-element">
+                <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-bold leading-tight mb-6">
+                    <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">豆包</span>
+                    <span class="block mt-2">智能助手</span>
+                </h1>
+                <p class="text-[clamp(1rem,2vw,1.25rem)] text-light-300 mb-10 max-w-2xl mx-auto">
+                    一款强大的AI助手，提供丰富的免费服务，帮助你解决问题、获取信息、激发创意。
+                    了解豆包的优势、不足以及真实用户的使用体验。
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="#services" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20">
+                        探索免费服务
+                    </a>
+                    <a href="#reviews" class="px-8 py-3 bg-dark-200 hover:bg-dark-100 text-light-100 rounded-lg font-medium transition-all">
+                        查看用户评论
+                    </a>
+                </div>
+            </div>
+            
+            <!-- 统计数据 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20 max-w-4xl mx-auto">
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.1s">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">100M+</div>
+                    <div class="text-light-300">活跃用户</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.2s">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">24/7</div>
+                    <div class="text-light-300">全天候服务</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.3s">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">98%</div>
+                    <div class="text-light-300">用户满意度</div>
+                </div>
+                <div class="bg-dark-300/50 backdrop-blur-sm rounded-xl p-6 text-center border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.4s">
+                    <div class="text-3xl md:text-4xl font-bold text-primary mb-2">50+</div>
+                    <div class="text-light-300">支持语言</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 免费服务部分 -->
+    <section id="services" class="py-20 px-4 bg-dark-300/50">
+        <div class="container mx-auto">
+            <div class="text-center mb-16 fade-in-element">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">免费服务</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">豆包提供多种强大的免费功能，满足你的各种需求，无需付费即可体验AI带来的便利。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 服务卡片 1 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover fade-in-element">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-comments text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">智能对话</h3>
+                    <p class="text-light-300">进行自然流畅的对话交流，解答各类问题，提供信息咨询和建议。支持多轮对话，上下文理解能力强。</p>
+                </div>
+                
+                <!-- 服务卡片 2 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.1s">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-pencil text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">内容创作</h3>
+                    <p class="text-light-300">辅助撰写文章、邮件、故事、诗歌等各类文本内容，提供创意灵感和写作建议，帮助提升创作效率。</p>
+                </div>
+                
+                <!-- 服务卡片 3 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.2s">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-language text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">语言翻译</h3>
+                    <p class="text-light-300">支持多种语言之间的即时翻译，翻译准确流畅，保留原文意思，帮助跨越语言障碍。</p>
+                </div>
+                
+                <!-- 服务卡片 4 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover fade-in-element">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-lightbulb-o text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">创意灵感</h3>
+                    <p class="text-light-300">提供创意点子、策划方案、活动构思等，帮助突破思维局限，激发创新思维。</p>
+                </div>
+                
+                <!-- 服务卡片 5 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.1s">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-graduation-cap text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">学习辅助</h3>
+                    <p class="text-light-300">解释复杂概念、提供学习资源推荐、辅助作业解答，成为你的学习好帮手。</p>
+                </div>
+                
+                <!-- 服务卡片 6 -->
+                <div class="bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover fade-in-element" style="transition-delay: 0.2s">
+                    <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-list-ul text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">计划制定</h3>
+                    <p class="text-light-300">帮助制定旅行计划、学习计划、工作计划等，合理安排时间，提高效率。</p>
+                </div>
+            </div>
+            
+            <!-- 服务特点 -->
+            <div class="mt-20 bg-dark-400 rounded-2xl p-8 md:p-10 border border-dark-100/20 fade-in-element">
+                <h3 class="text-2xl font-semibold mb-6 text-center">免费服务特点</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex items-start space-x-4">
+                        <div class="mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-check text-secondary text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">无使用次数限制</h4>
+                            <p class="text-light-300 text-sm">免费用户可以无限次使用核心功能，不会因为次数限制而中断体验。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-check text-secondary text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">定期功能更新</h4>
+                            <p class="text-light-300 text-sm">免费服务也能享受到定期的功能更新和体验优化，持续提升使用感受。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-check text-secondary text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">数据隐私保护</h4>
+                            <p class="text-light-300 text-sm">严格保护用户隐私，免费用户的数据安全同样受到重视和保障。</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start space-x-4">
+                        <div class="mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                            <i class="fa fa-check text-secondary text-sm"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">多平台同步</h4>
+                            <p class="text-light-300 text-sm">支持多设备登录使用，对话历史和设置可以在不同设备间同步。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点部分 -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16 fade-in-element">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">豆包的优缺点</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">客观分析豆包的优势与不足，帮助你更好地了解这款AI助手是否适合你的需求。</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <!-- 优点部分 -->
+                <div id="advantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20 fade-in-element">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-secondary/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-secondary text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要优点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-secondary text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">响应速度快</h4>
+                                <p class="text-light-300 text-sm">对用户的提问和请求能够快速响应，平均响应时间在1秒以内，提升使用效率。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-secondary text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">中文理解能力强</h4>
+                                <p class="text-light-300 text-sm">特别优化了中文语境理解，能够准确把握中文语义、成语、歇后语等特殊表达。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-secondary text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">功能全面且免费</h4>
+                                <p class="text-light-300 text-sm">提供的核心功能完全免费，没有使用次数限制，满足大多数用户的日常需求。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-secondary text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">界面简洁易用</h4>
+                                <p class="text-light-300 text-sm">设计简洁直观，新用户也能快速上手，没有复杂的操作流程和设置项。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-secondary text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">内容安全可靠</h4>
+                                <p class="text-light-300 text-sm">严格的内容审核机制，过滤不良信息，提供健康、积极的交互环境。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-check text-secondary text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">持续学习进化</h4>
+                                <p class="text-light-300 text-sm">不断更新训练数据和模型，提升回答质量和功能表现，越来越好用地满足用户需求。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 缺点部分 -->
+                <div id="disadvantages" class="bg-gradient-to-br from-dark-300 to-dark-400 rounded-2xl p-8 border border-dark-100/20 fade-in-element" style="transition-delay: 0.2s">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-accent text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要缺点</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-accent text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">深度专业知识有限</h4>
+                                <p class="text-light-300 text-sm">对于高度专业的领域知识，如前沿科学研究、特定行业技术细节等，回答深度可能不足。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-accent text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">可能产生错误信息</h4>
+                                <p class="text-light-300 text-sm">有时会生成看似合理但实际错误的信息，特别是在事实性问题上，需要用户自行验证。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-accent text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">上下文记忆有限</h4>
+                                <p class="text-light-300 text-sm">在超长对话中，可能会逐渐忘记早期对话内容，影响多轮对话的连贯性。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-accent text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">创意内容同质化</h4>
+                                <p class="text-light-300 text-sm">生成的创意内容有时会显得模式化，缺乏独特性，需要用户进一步修改和润色。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-accent text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">网络依赖性强</h4>
+                                <p class="text-light-300 text-sm">必须联网才能使用，没有离线功能，在网络不稳定或无网络环境下无法使用。</p>
+                            </div>
+                        </li>
+                        <li class="flex">
+                            <div class="mr-4 mt-1 w-6 h-6 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
+                                <i class="fa fa-times text-accent text-sm"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">高峰期可能卡顿</h4>
+                                <p class="text-light-300 text-sm">在使用高峰期，可能会出现响应延迟、排队等待等情况，影响使用体验。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 优缺点数据可视化 -->
+            <div class="mt-16 bg-dark-300/50 rounded-2xl p-6 md:p-8 border border-dark-100/20 fade-in-element">
+                <h3 class="text-xl font-semibold mb-6 text-center">用户评价分布</h3>
+                <div class="h-64 md:h-80">
+                    <canvas id="reviewsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论部分 -->
+    <section id="reviews" class="py-20 px-4 bg-dark-300/50">
+        <div class="container mx-auto">
+            <div class="text-center mb-16 fade-in-element">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">社区真实评论</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">来自50+位真实用户的使用体验和评价，帮助你更全面地了解豆包。</p>
+            </div>
+            
+            <!-- 评论筛选 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-10 fade-in-element">
+                <button class="review-filter active px-5 py-2 rounded-full bg-primary text-white font-medium transition-all" data-filter="all">全部评论</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="positive">好评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="neutral">中评</button>
+                <button class="review-filter px-5 py-2 rounded-full bg-dark-400 hover:bg-dark-200 transition-all" data-filter="negative">差评</button>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论会通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 加载更多按钮 -->
+            <div class="text-center mt-12 fade-in-element">
+                <button id="load-more" class="px-8 py-3 bg-dark-400 hover:bg-dark-200 text-light-100 rounded-lg font-medium transition-all border border-dark-100/20">
+                    加载更多评论
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用方法部分 -->
+    <section id="usage" class="py-20 px-4">
+        <div class="container mx-auto">
+            <div class="text-center mb-16 fade-in-element">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">使用方法</h2>
+                <p class="text-light-300 max-w-2xl mx-auto">简单几步，快速上手豆包，开始体验AI带来的智能服务。</p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <!-- 使用步骤 -->
+                <div class="relative">
+                    <!-- 连接线 -->
+                    <div class="absolute left-5 md:left-1/2 top-0 bottom-0 w-0.5 bg-primary/30 transform md:translate-x-[-0.25rem]"></div>
+                    
+                    <!-- 步骤1 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item fade-in-element">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">1</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">访问豆包平台</h3>
+                                <p class="text-light-300">通过官方网站、移动应用或小程序访问豆包。支持多平台使用，包括Windows、macOS、iOS和Android。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤图片 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 h-48 md:h-56 bg-dark-300/50 flex items-center justify-center">
+                                <img src="https://picsum.photos/id/0/600/400" alt="豆包平台登录界面" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤2 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item fade-in-element" style="transition-delay: 0.1s">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">2</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">注册/登录账号</h3>
+                                <p class="text-light-300">使用手机号、邮箱或第三方账号（微信、QQ等）快速注册并登录。登录后可同步对话历史和个性化设置。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤图片 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 h-48 md:h-56 bg-dark-300/50 flex items-center justify-center">
+                                <img src="https://picsum.photos/id/180/600/400" alt="豆包注册登录界面" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤3 -->
+                    <div class="relative flex flex-col md:flex-row items-start mb-12 step-item fade-in-element" style="transition-delay: 0.2s">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">3</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">开始对话交互</h3>
+                                <p class="text-light-300">在输入框中输入你的问题或需求，点击发送按钮。豆包会快速响应并提供相关回答或建议。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤图片 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 h-48 md:h-56 bg-dark-300/50 flex items-center justify-center">
+                                <img src="https://picsum.photos/id/48/600/400" alt="豆包对话界面" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 步骤4 -->
+                    <div class="relative flex flex-col md:flex-row items-start step-item fade-in-element" style="transition-delay: 0.3s">
+                        <div class="flex flex-col md:flex-row items-center mb-6 md:mb-0">
+                            <!-- 步骤圆圈 -->
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold z-10 mb-4 md:mb-0">4</div>
+                            <!-- 步骤内容 -->
+                            <div class="md:w-1/2 md:pr-10 md:text-right">
+                                <h3 class="text-xl font-semibold mb-2">使用高级功能</h3>
+                                <p class="text-light-300">探索豆包的高级功能，如语音对话、多轮追问、内容导出等。根据需求使用不同功能，提升使用效率。</p>
+                            </div>
+                        </div>
+                        <!-- 步骤图片 -->
+                        <div class="md:w-1/2 md:pl-10 md:mt-0 mt-4">
+                            <div class="rounded-xl overflow-hidden border border-dark-100/20 h-48 md:h-56 bg-dark-300/50 flex items-center justify-center">
+                                <img src="https://picsum.photos/id/2/600/400" alt="豆包高级功能界面" class="w-full h-full object-cover">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 使用技巧 -->
+                <div class="mt-20 bg-dark-300/50 rounded-2xl p-8 border border-dark-100/20 fade-in-element">
+                    <h3 class="text-2xl font-semibold mb-6">使用技巧</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                精准提问
+                            </h4>
+                            <p class="text-light-300 text-sm">提问时尽量具体明确，包含必要的背景信息，有助于豆包提供更准确的回答。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                多轮追问
+                            </h4>
+                            <p class="text-light-300 text-sm">对回答不满意时，可以进一步追问或明确指出需要改进的地方，获得更符合需求的结果。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                使用指令词
+                            </h4>
+                            <p class="text-light-300 text-sm">使用明确的指令词如"总结"、"解释"、"写一篇"等，让豆包更清楚你的具体需求。</p>
+                        </div>
+                        <div class="bg-dark-400 p-5 rounded-xl border border-dark-100/20">
+                            <h4 class="font-medium mb-3 flex items-center">
+                                <i class="fa fa-lightbulb-o text-primary mr-2"></i>
+                                验证信息
+                            </h4>
+                            <p class="text-light-300 text-sm">对于重要的事实性信息，建议通过其他渠道进行验证，确保信息的准确性。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark-300 py-12 px-4 border-t border-dark-100/20">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div class="md:col-span-1 fade-in-element">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">豆</span>
+                        </div>
+                        <span class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">豆包</span>
+                    </div>
+                    <p class="text-light-300 text-sm mb-6">智能、高效、贴心的AI助手，为你的生活和工作提供全方位帮助。</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-weibo"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-wechat"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-400 flex items-center justify-center text-light-300 hover:bg-primary hover:text-white transition-all">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="fade-in-element" style="transition-delay: 0.1s">
+                    <h4 class="text-light-100 font-medium mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#services" class="text-light-300 hover:text-primary transition-colors">免费服务</a></li>
+                        <li><a href="#advantages" class="text-light-300 hover:text-primary transition-colors">优点</a></li>
+                        <li><a href="#disadvantages" class="text-light-300 hover:text-primary transition-colors">缺点</a></li>
+                        <li><a href="#reviews" class="text-light-300 hover:text-primary transition-colors">社区评论</a></li>
+                        <li><a href="#usage" class="text-light-300 hover:text-primary transition-colors">使用方法</a></li>
+                    </ul>
+                </div>
+                
+                <div class="fade-in-element" style="transition-delay: 0.2s">
+                    <h4 class="text-light-100 font-medium mb-6">资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-light-300 hover:text-primary transition-colors">帮助中心</a></li>
+                        <li><a href="#" class="text-light-300 hover:text-primary transition-colors">使用教程</a></li>
+                        <li><a href="#" class="text-light-300 hover:text-primary transition-colors">常见问题</a></li>
+                        <li><a href="#" class="text-light-300 hover:text-primary transition-colors">API文档</a></li>
+                        <li><a href="#" class="text-light-300 hover:text-primary transition-colors">开发者社区</a></li>
+                    </ul>
+                </div>
+                
+                <div class="fade-in-element" style="transition-delay: 0.3s">
+                    <h4 class="text-light-100 font-medium mb-6">联系我们</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fa fa-envelope text-primary mt-1 mr-3"></i>
+                            <span class="text-light-300">support@doubao.com</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-phone text-primary mt-1 mr-3"></i>
+                            <span class="text-light-300">400-123-4567</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-map-marker text-primary mt-1 mr-3"></i>
+                            <span class="text-light-300">北京市海淀区科技园区88号</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-100/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center fade-in-element">
+                <p class="text-light-300 text-sm mb-4 md:mb-0">© 2023 豆包 AI. 保留所有权利.</p>
+                <div class="flex space-x-6">
+                    <a href="#" class="text-light-300 hover:text-primary text-sm transition-colors">隐私政策</a>
+                    <a href="#" class="text-light-300 hover:text-primary text-sm transition-colors">服务条款</a>
+                    <a href="#" class="text-light-300 hover:text-primary text-sm transition-colors">Cookie政策</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20 opacity-0 invisible transition-all z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始显示英雄区域元素
+            setTimeout(() => {
+                document.querySelectorAll('.fade-in-element').forEach(el => {
+                    if (isElementInViewport(el)) {
+                        el.classList.add('fade-in-visible');
+                    }
+                });
+            }, 100);
+            
+            // 导航栏滚动效果
+            const navbar = document.getElementById('navbar');
+            const backToTop = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                // 导航栏样式变化
+                if (window.scrollY > 100) {
+                    navbar.classList.add('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.remove('py-3', 'md:py-4');
+                    backToTop.classList.remove('opacity-0', 'invisible');
+                    backToTop.classList.add('opacity-100', 'visible');
+                } else {
+                    navbar.classList.remove('py-2', 'shadow-lg', 'shadow-dark-400/50');
+                    navbar.classList.add('py-3', 'md:py-4');
+                    backToTop.classList.add('opacity-0', 'invisible');
+                    backToTop.classList.remove('opacity-100', 'visible');
+                }
+                
+                // 滚动时显示元素
+                document.querySelectorAll('.fade-in-element:not(.fade-in-visible)').forEach(el => {
+                    if (isElementInViewport(el, 0.15)) {
+                        el.classList.add('fade-in-visible');
+                    }
+                });
+            });
+            
+            // 移动端菜单切换
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            menuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+                const icon = menuToggle.querySelector('i');
+                if (icon.classList.contains('fa-bars')) {
+                    icon.classList.remove('fa-bars');
+                    icon.classList.add('fa-times');
+                } else {
+                    icon.classList.remove('fa-times');
+                    icon.classList.add('fa-bars');
+                }
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // 关闭移动菜单（如果打开）
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                        const icon = menuToggle.querySelector('i');
+                        icon.classList.remove('fa-times');
+                        icon.classList.add('fa-bars');
+                    }
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // 返回顶部按钮
+            backToTop.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 评论数据
+            const reviews = [
+                {
+                    id: 1,
+                    name: "张明",
+                    avatar: "https://picsum.photos/id/1012/100/100",
+                    rating: 5,
+                    date: "2023-06-15",
+                    content: "豆包真的太好用了！作为一名学生，它帮我解决了很多学习上的问题，尤其是在写论文的时候，提供了很多有用的思路。完全免费这一点真的很赞！",
+                    type: "positive"
+                },
+                {
+                    id: 2,
+                    name: "李华",
+                    avatar: "https://picsum.photos/id/1027/100/100",
+                    rating: 4,
+                    date: "2023-06-10",
+                    content: "使用体验很不错，响应速度快，回答也比较准确。不过有时候在处理专业领域的问题时，深度还不够，希望以后能加强这方面的能力。",
+                    type: "positive"
+                },
+                {
+                    id: 3,
+                    name: "王芳",
+                    avatar: "https://picsum.photos/id/1025/100/100",
+                    rating: 3,
+                    date: "2023-06-05",
+                    content: "整体来说还可以，日常聊天和简单的问题解答都没问题。但有时候会答非所问，特别是对话比较长的时候，容易忘记前面的内容。",
+                    type: "neutral"
+                },
+                {
+                    id: 4,
+                    name: "赵伟",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 5,
+                    date: "2023-05-28",
+                    content: "豆包的中文理解能力真的很强，比我用过的其他AI助手都好。能够准确理解一些成语和网络用语，交流起来很自然。强烈推荐！",
+                    type: "positive"
+                },
+                {
+                    id: 5,
+                    name: "陈静",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 2,
+                    date: "2023-05-20",
+                    content: "不太满意，经常给出错误的信息，尤其是关于事实性的问题。有一次甚至给了我错误的历史事件日期，差点误导我。希望能提高准确性。",
+                    type: "negative"
+                },
+                {
+                    id: 6,
+                    name: "刘强",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 4,
+                    date: "2023-05-15",
+                    content: "作为免费工具已经非常出色了！帮我写过几封邮件，都很得体。界面也很简洁，没有乱七八糟的广告，这点很喜欢。",
+                    type: "positive"
+                },
+                {
+                    id: 7,
+                    name: "杨梅",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2023-05-10",
+                    content: "用了一段时间，感觉还行。有时候很聪明，有时候又有点笨。希望能更稳定一些。免费版功能足够日常使用了，没必要花钱买会员。",
+                    type: "neutral"
+                },
+                {
+                    id: 8,
+                    name: "孙杰",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 1,
+                    date: "2023-05-05",
+                    content: "体验很差，高峰期经常加载不出来，要么就是响应特别慢。有几次重要的工作需要它帮忙，结果一直卡住，太让人失望了。",
+                    type: "negative"
+                },
+                {
+                    id: 9,
+                    name: "周琳",
+                    avatar: "https://picsum.photos/id/1000/100/100",
+                    rating: 5,
+                    date: "2023-04-28",
+                    content: "豆包是我用过最好的AI助手之一！不仅免费，功能还很强大。帮我规划过旅行路线，写过演讲稿，甚至还帮我想过给朋友的生日礼物创意。太赞了！",
+                    type: "positive"
+                },
+                {
+                    id: 10,
+                    name: "吴刚",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 4,
+                    date: "2023-04-20",
+                    content: "作为一名程序员，经常用它来解释一些复杂的概念，效果很好。有时候还能帮我调试代码，虽然不是每次都对，但提供了很多思路。",
+                    type: "positive"
+                },
+                {
+                    id: 11,
+                    name: "郑敏",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 3,
+                    date: "2023-04-15",
+                    content: "中规中矩吧，不好不坏。日常用用还行，别指望它能解决太复杂的问题。界面挺干净的，操作也简单，这点值得肯定。",
+                    type: "neutral"
+                },
+                {
+                    id: 12,
+                    name: "钱明",
+                    avatar: "https://picsum.photos/id/1024/100/100",
+                    rating: 2,
+                    date: "2023-04-10",
+                    content: "回答太模板化了，缺乏个性。问相似的问题，经常得到差不多的答案。希望能更灵活一些，给出更有创意的回复。",
+                    type: "negative"
+                },
+                {
+                    id: 13,
+                    name: "林小",
+                    avatar: "https://picsum.photos/id/1069/100/100",
+                    rating: 5,
+                    date: "2023-04-05",
+                    content: "豆包的翻译功能太好用了！我经常需要阅读英文文献，有了它方便多了。翻译准确，还能解释一些专业术语，强烈推荐给学生党！",
+                    type: "positive"
+                },
+                {
+                    id: 14,
+                    name: "郭文",
+                    avatar: "https://picsum.photos/id/1077/100/100",
+                    rating: 4,
+                    date: "2023-03-28",
+                    content: "用它来辅助写作真的很棒，帮我润色了很多文章。有时候思路卡壳了，跟它聊几句就能找到灵感。免费功能已经足够用了。",
+                    type: "positive"
+                },
+                {
+                    id: 15,
+                    name: "何丽",
+                    avatar: "https://picsum.photos/id/1082/100/100",
+                    rating: 3,
+                    date: "2023-03-20",
+                    content: "整体还不错，但感觉有时候回答太冗长了，说了半天没说到重点。希望能有一个简洁模式，直接给出核心答案。",
+                    type: "neutral"
+                },
+                {
+                    id: 16,
+                    name: "高磊",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 2,
+                    date: "2023-03-15",
+                    content: "对最新的事件了解不够，问了几个最近发生的新闻，回答都不准确。知识库更新有点慢，希望能跟上时事。",
+                    type: "negative"
+                },
+                {
+                    id: 17,
+                    name: "罗芳",
+                    avatar: "https://picsum.photos/id/1080/100/100",
+                    rating: 5,
+                    date: "2023-03-10",
+                    content: "作为一名教师，豆包帮我节省了很多备课时间。可以快速生成练习题、教学计划，还能帮我解答学生可能会问的问题。太实用了！",
+                    type: "positive"
+                },
+                {
+                    id: 18,
+                    name: "唐强",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 4,
+                    date: "2023-03-05",
+                    content: "语音识别功能很准确，有时候不方便打字，直接说话就行了。响应速度也很快，整体体验很好。",
+                    type: "positive"
+                },
+                {
+                    id: 19,
+                    name: "冯敏",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 3,
+                    date: "2023-02-28",
+                    content: "用了一个月，感觉还行。有时候很惊艳，有时候又很一般。希望算法能再优化一下，提高稳定性。",
+                    type: "neutral"
+                },
+                {
+                    id: 20,
+                    name: "蔡华",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 2,
+                    date: "2023-02-20",
+                    content: "多轮对话能力有待提高，经常聊到后面就忘了前面说过什么。每次都要重复说明背景，很麻烦。",
+                    type: "negative"
+                },
+                {
+                    id: 21,
+                    name: "田杰",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 5,
+                    date: "2023-02-15",
+                    content: "豆包帮我解决了很多工作上的问题，尤其是在写报告和做演示文稿的时候。效率提高了不少，老板都夸我最近表现好！",
+                    type: "positive"
+                },
+                {
+                    id: 22,
+                    name: "朱琳",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 4,
+                    date: "2023-02-10",
+                    content: "作为一名宝妈，经常用豆包查育儿知识，还能让它给孩子讲睡前故事。孩子很喜欢，我也省了不少事。",
+                    type: "positive"
+                },
+                {
+                    id: 23,
+                    name: "胡刚",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 3,
+                    date: "2023-02-05",
+                    content: "功能挺全的，但有些功能藏得比较深，不太好找。希望能优化一下界面布局，让常用功能更容易访问。",
+                    type: "neutral"
+                },
+                {
+                    id: 24,
+                    name: "马丽",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 2,
+                    date: "2023-01-28",
+                    content: "有时候会突然中断对话，需要重新刷新页面才能继续。希望技术团队能解决这个bug，太影响体验了。",
+                    type: "negative"
+                },
+                {
+                    id: 25,
+                    name: "余明",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 5,
+                    date: "2023-01-20",
+                    content: "豆包的代码生成功能太赞了！帮我写了很多实用的小脚本，节省了大量时间。而且代码质量还挺高的，基本不用怎么改。",
+                    type: "positive"
+                },
+                {
+                    id: 26,
+                    name: "徐静",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 4,
+                    date: "2023-01-15",
+                    content: "用它来学习英语很不错，可以纠正我的语法错误，还能模拟对话练习口语。比报培训班划算多了！",
+                    type: "positive"
+                },
+                {
+                    id: 27,
+                    name: "孙伟",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 3,
+                    date: "2023-01-10",
+                    content: "还行吧，作为免费工具不能要求太高。日常聊天解闷，回答一些简单问题都没问题，复杂的就别指望了。",
+                    type: "neutral"
+                },
+                {
+                    id: 28,
+                    name: "袁琳",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 2,
+                    date: "2023-01-05",
+                    content: "广告有点多，虽然不影响使用，但总感觉不舒服。希望免费版也能有纯净模式的选项。",
+                    type: "negative"
+                },
+                {
+                    id: 29,
+                    name: "郑强",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 5,
+                    date: "2022-12-28",
+                    content: "豆包帮我规划的旅行路线太完美了！考虑到了各种细节，还推荐了很多当地人常去的餐厅，比旅行社安排的好多了。",
+                    type: "positive"
+                },
+                {
+                    id: 30,
+                    name: "谢敏",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 4,
+                    date: "2022-12-20",
+                    content: "作为一名自媒体从业者，豆包是我的得力助手。帮我想标题、写文案、做大纲，效率提高了不少。",
+                    type: "positive"
+                },
+                {
+                    id: 31,
+                    name: "董华",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 3,
+                    date: "2022-12-15",
+                    content: "整体还不错，但感觉更新速度有点慢，新功能推出得太少了。希望能加快迭代速度，增加一些实用功能。",
+                    type: "neutral"
+                },
+                {
+                    id: 32,
+                    name: "程杰",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 2,
+                    date: "2022-12-10",
+                    content: "在处理数学问题时表现很差，稍微复杂一点的公式就推导错了。希望能加强这方面的能力，毕竟很多学生需要这个功能。",
+                    type: "negative"
+                },
+                {
+                    id: 33,
+                    name: "薛琳",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 5,
+                    date: "2022-12-05",
+                    content: "豆包的菜谱推荐太赞了！每天不知道做什么菜的时候就问它，推荐的菜品简单又好吃，家人都很喜欢。",
+                    type: "positive"
+                },
+                {
+                    id: 34,
+                    name: "叶刚",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 4,
+                    date: "2022-11-28",
+                    content: "用它来整理会议纪要很方便，能快速提炼重点。还能根据会议内容生成后续行动计划，太实用了。",
+                    type: "positive"
+                },
+                {
+                    id: 35,
+                    name: "苏敏",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 3,
+                    date: "2022-11-20",
+                    content: "用了半年，感觉中规中矩。有时候很有用，有时候又觉得一般。希望能增加更多个性化设置，让用户可以自定义体验。",
+                    type: "neutral"
+                },
+                {
+                    id: 36,
+                    name: "卢华",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 2,
+                    date: "2022-11-15",
+                    content: "移动端体验不太好，经常卡顿。而且功能比网页版少很多，希望能尽快优化移动端的体验。",
+                    type: "negative"
+                },
+                {
+                    id: 37,
+                    name: "戴杰",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 5,
+                    date: "2022-11-10",
+                    content: "豆包帮我解决了很多技术难题，作为一名工程师，它就像我的第二个大脑。很多时候卡壳了，跟它聊几句就能找到解决方案。",
+                    type: "positive"
+                },
+                {
+                    id: 38,
+                    name: "夏琳",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 4,
+                    date: "2022-11-05",
+                    content: "作为一名设计师，经常用豆包来找灵感。它能提供很多创意方向，帮我突破思维局限。虽然不是每次都有用，但值得一试。",
+                    type: "positive"
+                },
+                {
+                    id: 39,
+                    name: "钟强",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 3,
+                    date: "2022-10-28",
+                    content: "还行吧，日常使用足够了。但感觉跟其他AI助手比起来没什么特色，希望能有一些差异化的功能。",
+                    type: "neutral"
+                },
+                {
+                    id: 40,
+                    name: "汪敏",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 2,
+                    date: "2022-10-20",
+                    content: "有时候会拒绝回答一些合理的问题，理由也很牵强。希望能更灵活一点，不要有太多不必要的限制。",
+                    type: "negative"
+                },
+                {
+                    id: 41,
+                    name: "田明",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 5,
+                    date: "2022-10-15",
+                    content: "豆包的学习能力很强，用得越久感觉越懂我。能记住我的偏好，提供更符合我需求的回答。完全免费太良心了！",
+                    type: "positive"
+                },
+                {
+                    id: 42,
+                    name: "任琳",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 4,
+                    date: "2022-10-10",
+                    content: "用它来教孩子学习很方便，能把复杂的知识用简单的方式解释清楚。孩子很喜欢跟它互动，学习兴趣提高了不少。",
+                    type: "positive"
+                },
+                {
+                    id: 43,
+                    name: "姜华",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 3,
+                    date: "2022-10-05",
+                    content: "整体还不错，但有时候回答太啰嗦了，希望能有一个简洁模式。另外，希望能增加深色模式，晚上用着更舒服。",
+                    type: "neutral"
+                },
+                {
+                    id: 44,
+                    name: "范杰",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 2,
+                    date: "2022-09-28",
+                    content: "数据同步功能不太稳定，有时候换个设备登录，之前的对话记录就没了。希望能改进这个问题。",
+                    type: "negative"
+                },
+                {
+                    id: 45,
+                    name: "方琳",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 5,
+                    date: "2022-09-20",
+                    content: "豆包帮我写的简历让我成功拿到了心仪公司的offer！它能根据不同岗位调整简历重点，太懂招聘了。强烈推荐给找工作的朋友！",
+                    type: "positive"
+                },
+                {
+                    id: 46,
+                    name: "石强",
+                    avatar: "https://picsum.photos/id/1074/100/100",
+                    rating: 4,
+                    date: "2022-09-15",
+                    content: "作为一名创业者，豆包帮我写过商业计划书、演讲稿，还帮我分析过市场数据。省下了不少请咨询顾问的钱。",
+                    type: "positive"
+                },
+                {
+                    id: 47,
+                    name: "姚敏",
+                    avatar: "https://picsum.photos/id/1062/100/100",
+                    rating: 3,
+                    date: "2022-09-10",
+                    content: "用着还行，但感觉进步速度有点慢。其他AI助手都在不断推出新功能，希望豆包也能加快更新步伐。",
+                    type: "neutral"
+                },
+                {
+                    id: 48,
+                    name: "谭华",
+                    avatar: "https://picsum.photos/id/1005/100/100",
+                    rating: 2,
+                    date: "2022-09-05",
+                    content: "有时候会生成一些重复的内容，尤其是在写长文章的时候。需要手动修改很多地方，有点麻烦。",
+                    type: "negative"
+                },
+                {
+                    id: 49,
+                    name: "廖杰",
+                    avatar: "https://picsum.photos/id/1076/100/100",
+                    rating: 5,
+                    date: "2022-08-28",
+                    content: "豆包的健康建议很实用，帮我调整了作息和饮食习惯，身体状况好了很多。虽然不能替代医生，但作为日常健康管理很有帮助。",
+                    type: "positive"
+                },
+                {
+                    id: 50,
+                    name: "邹琳",
+                    avatar: "https://picsum.photos/id/1083/100/100",
+                    rating: 4,
+                    date: "2022-08-20",
+                    content: "用它来学习新技能很方便，能把复杂的教程简化，还能根据我的进度调整难度。比自己看书效率高多了。",
+                    type: "positive"
+                },
+                {
+                    id: 51,
+                    name: "熊华",
+                    avatar: "https://picsum.photos/id/1066/100/100",
+                    rating: 3,
+                    date: "2022-08-15",
+                    content: "整体还不错，但感觉在创意写作方面还有提升空间。写出来的故事有时候有点平淡，希望能更有想象力一些。",
+                    type: "neutral"
+                },
+                {
+                    id: 52,
+                    name: "金杰",
+                    avatar: "https://picsum.photos/id/1084/100/100",
+                    rating: 2,
+                    date: "2022-08-10",
+                    content: "有时候会给出互相矛盾的答案，同样的问题换个方式问，得到的结果可能完全不同。希望能提高一致性。",
+                    type: "negative"
+                }
+            ];
+            
+            // 渲染评论
+            const reviewsContainer = document.getElementById('reviews-container');
+            let visibleReviews = 12; // 初始显示12条评论
+            
+            function renderReviews(filter = 'all') {
+                reviewsContainer.innerHTML = '';
+                
+                let filteredReviews = reviews;
+                if (filter !== 'all') {
+                    filteredReviews = reviews.filter(review => review.type === filter);
+                }
+                
+                // 只显示可见的评论
+                const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+                
+                reviewsToShow.forEach((review, index) => {
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = `bg-dark-400 rounded-xl p-6 border border-dark-100/20 card-hover review-item ${review.type} fade-in-element`;
+                    reviewElement.style.transitionDelay = `${(index % 3) * 0.1}s`;
+                    
+                    // 生成星级评分HTML
+                    let ratingHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        if (i <= review.rating) {
+                            ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+                        } else {
+                            ratingHtml += '<i class="fa fa-star-o text-gray-500"></i>';
+                        }
+                    }
+                    
+                    reviewElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
+                            <div>
+                                <h4 class="font-medium">${review.name}</h4>
+                                <div class="flex mt-1">
+                                    ${ratingHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-light-300 mb-4">${review.content}</p>
+                        <div class="text-xs text-light-300/70">${review.date}</div>
+                    `;
+                    
+                    reviewsContainer.appendChild(reviewElement);
+                    
+                    // 立即显示在视口中的评论
+                    setTimeout(() => {
+                        if (isElementInViewport(reviewElement)) {
+                            reviewElement.classList.add('fade-in-visible');
+                        }
+                    }, 100);
+                });
+                
+                // 控制"加载更多"按钮的显示
+                const loadMoreBtn = document.getElementById('load-more');
+                if (visibleReviews >= filteredReviews.length) {
+                    loadMoreBtn.style.display = 'none';
+                } else {
+                    loadMoreBtn.style.display = 'inline-block';
+                }
+            }
+            
+            // 初始渲染评论
+            renderReviews();
+            
+            // 评论筛选功能
+            const reviewFilters = document.querySelectorAll('.review-filter');
+            reviewFilters.forEach(filter => {
+                filter.addEventListener('click', () => {
+                    // 更新活跃状态
+                    reviewFilters.forEach(f => {
+                        f.classList.remove('active', 'bg-primary', 'text-white');
+                        f.classList.add('bg-dark-400');
+                    });
+                    filter.classList.add('active', 'bg-primary', 'text-white');
+                    filter.classList.remove('bg-dark-400');
+                    
+                    // 重置可见评论数量
+                    visibleReviews = 12;
+                    
+                    // 渲染筛选后的评论
+                    renderReviews(filter.getAttribute('data-filter'));
+                });
+            });
+            
+            // 加载更多评论
+            document.getElementById('load-more').addEventListener('click', () => {
+                const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+                visibleReviews += 6; // 每次加载6条
+                renderReviews(activeFilter);
+                
+                // 检查新添加的评论是否在视口中
+                setTimeout(() => {
+                    document.querySelectorAll('.review-item:not(.fade-in-visible)').forEach(el => {
+                        if (isElementInViewport(el)) {
+                            el.classList.add('fade-in-visible');
+                        }
+                    });
+                }, 100);
+            });
+            
+            // 用户评价分布图表
+            const ctx = document.getElementById('reviewsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1星', '2星', '3星', '4星', '5星'],
+                    datasets: [{
+                        label: '用户评价数量',
+                        data: [
+                            reviews.filter(r => r.rating === 1).length,
+                            reviews.filter(r => r.rating === 2).length,
+                            reviews.filter(r => r.rating === 3).length,
+                            reviews.filter(r => r.rating === 4).length,
+                            reviews.filter(r => r.rating === 5).length
+                        ],
+                        backgroundColor: [
+                            'rgba(249, 115, 22, 0.7)', // 1星 - 橙色
+                            'rgba(249, 115, 22, 0.5)', // 2星 - 浅橙色
+                            'rgba(148, 163, 184, 0.7)', // 3星 - 灰色
+                            'rgba(16, 185, 129, 0.5)', // 4星 - 浅绿色
+                            'rgba(16, 185, 129, 0.7)'  // 5星 - 绿色
+                        ],
+                        borderColor: [
+                            'rgb(249, 115, 22)',
+                            'rgb(249, 115, 22)',
+                            'rgb(148, 163, 184)',
+                            'rgb(16, 185, 129)',
+                            'rgb(16, 185, 129)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        // 检查元素是否在视口中
+        function isElementInViewport(el, threshold = 0) {
+            const rect = el.getBoundingClientRect();
+            const windowHeight = (window.innerHeight || document.documentElement.clientHeight);
+            const windowWidth = (window.innerWidth || document.documentElement.clientWidth);
+            
+            // 计算元素可见比例
+            const verticalVisible = Math.max(0, 
+                Math.min(rect.bottom, windowHeight) - Math.max(rect.top, 0)
+            );
+            const horizontalVisible = Math.max(0, 
+                Math.min(rect.right, windowWidth) - Math.max(rect.left, 0)
+            );
+            const visibleArea = verticalVisible * horizontalVisible;
+            const elementArea = rect.width * rect.height;
+            
+            // 如果元素面积为0，视为可见
+            if (elementArea === 0) return true;
+            
+            // 检查可见比例是否超过阈值
+            return (visibleArea / elementArea) > threshold;
+        }
+    </script>
+</body>
+</html>
