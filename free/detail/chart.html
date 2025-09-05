@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chart.js - 强大的JavaScript图表库</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入Chart.js用于演示 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#36A2EB',
+                        secondary: '#4BC0C0',
+                        accent: '#FF6384',
+                        dark: '#121212',
+                        darker: '#0A0A0A',
+                        'dark-card': '#1E1E1E',
+                        'dark-hover': '#2D2D2D'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-hover {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+    
+    <style>
+        /* 基础动画 */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease forwards;
+        }
+        
+        /* 滚动触发动画 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-gray-200 font-sans">
+    <!-- 导航栏 -->
+    <header class="fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
+        <nav class="bg-darker/80 backdrop-blur-md border-b border-gray-800">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-bar-chart text-primary text-2xl"></i>
+                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">Chart.js</span>
+                </div>
+                
+                <!-- 桌面导航 -->
+                <ul class="hidden md:flex space-x-8">
+                    <li><a href="#about" class="hover:text-primary transition-colors">关于</a></li>
+                    <li><a href="#features" class="hover:text-primary transition-colors">优缺点</a></li>
+                    <li><a href="#reviews" class="hover:text-primary transition-colors">社区评论</a></li>
+                    <li><a href="#usage" class="hover:text-primary transition-colors">使用方法</a></li>
+                    <li><a href="https://www.chartjs.org/" target="_blank" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">官网</a></li>
+                </ul>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="menu-toggle" class="md:hidden text-gray-300 hover:text-white">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端导航菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden bg-dark-card border-t border-gray-800">
+                <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
+                    <a href="#about" class="hover:text-primary transition-colors py-2">关于</a>
+                    <a href="#features" class="hover:text-primary transition-colors py-2">优缺点</a>
+                    <a href="#reviews" class="hover:text-primary transition-colors py-2">社区评论</a>
+                    <a href="#usage" class="hover:text-primary transition-colors py-2">使用方法</a>
+                    <a href="https://www.chartjs.org/" target="_blank" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors text-center">官网</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-28 pb-20 bg-gradient-to-b from-darker to-dark">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-10 md:mb-0 animate-fade-in" style="animation-delay: 0.1s">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-6">
+                        用 <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Chart.js</span>
+                        <br>创建令人惊艳的图表
+                    </h1>
+                    <p class="text-gray-300 text-lg mb-8 max-w-lg">
+                        简单而灵活的JavaScript图表库，让数据可视化变得轻松简单，适用于各种项目场景。
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#usage" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all shadow-lg shadow-primary/20">
+                            开始使用 <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                        <a href="https://www.chartjs.org/docs/latest/" target="_blank" class="bg-dark-card hover:bg-dark-hover border border-gray-700 px-6 py-3 rounded-lg transition-all">
+                            查看文档 <i class="fa fa-book ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="md:w-1/2 animate-fade-in" style="animation-delay: 0.3s">
+                    <div class="bg-dark-card p-4 rounded-xl shadow-xl border border-gray-800">
+                        <canvas id="heroChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 关键数据 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
+                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal">
+                    <div class="text-primary text-3xl font-bold mb-2">100%</div>
+                    <div class="text-gray-400">免费开源</div>
+                </div>
+                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal" style="transition-delay: 0.1s">
+                    <div class="text-secondary text-3xl font-bold mb-2">8M+</div>
+                    <div class="text-gray-400">每周下载</div>
+                </div>
+                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal" style="transition-delay: 0.2s">
+                    <div class="text-accent text-3xl font-bold mb-2">15+</div>
+                    <div class="text-gray-400">图表类型</div>
+                </div>
+                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal" style="transition-delay: 0.3s">
+                    <div class="text-green-400 text-3xl font-bold mb-2">24k+</div>
+                    <div class="text-gray-400">GitHub星标</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 关于部分 -->
+    <section id="about" class="py-20 bg-dark">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">关于 Chart.js</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                    Chart.js 是一个简单、灵活的开源JavaScript图表库，让开发者能够轻松创建各种交互式图表。
+                </p>
+            </div>
+            
+            <div class="bg-dark-card rounded-2xl border border-gray-800 p-8 md:p-10 shadow-xl reveal">
+                <div class="flex flex-col md:flex-row gap-10">
+                    <div class="md:w-1/2">
+                        <h3 class="text-2xl font-bold mb-6 text-primary">免费服务内容</h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                <span>完整的图表库，无功能限制，可用于商业和非商业项目</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                <span>所有图表类型完全免费使用，包括折线图、柱状图、饼图等</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                <span>完整的文档和示例，帮助快速上手</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                <span>活跃的社区支持和定期更新</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                <span>可自由定制和扩展，支持插件系统</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
+                                <span>无隐藏费用，无需注册账号即可使用</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="md:w-1/2">
+                        <h3 class="text-2xl font-bold mb-6 text-secondary">适用场景</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
+                                <i class="fa fa-line-chart text-primary mb-3"></i>
+                                <h4 class="font-semibold mb-2">数据仪表盘</h4>
+                                <p class="text-gray-400 text-sm">创建实时更新的数据监控面板</p>
+                            </div>
+                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
+                                <i class="fa fa-bar-chart text-secondary mb-3"></i>
+                                <h4 class="font-semibold mb-2">业务分析</h4>
+                                <p class="text-gray-400 text-sm">可视化业务数据和关键指标</p>
+                            </div>
+                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
+                                <i class="fa fa-pie-chart text-accent mb-3"></i>
+                                <h4 class="font-semibold mb-2">报告展示</h4>
+                                <p class="text-gray-400 text-sm">在报告中呈现清晰的数据图表</p>
+                            </div>
+                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
+                                <i class="fa fa-area-chart text-green-400 mb-3"></i>
+                                <h4 class="font-semibold mb-2">学术研究</h4>
+                                <p class="text-gray-400 text-sm">展示研究数据和统计结果</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8">
+                            <h4 class="font-semibold mb-3">授权协议</h4>
+                            <p class="text-gray-400 mb-2">Chart.js 使用 MIT 许可证发布，这意味着：</p>
+                            <ul class="text-gray-400 text-sm space-y-1 ml-6 list-disc">
+                                <li>可以自由使用、复制和修改软件</li>
+                                <li>可以用于私人、教育、商业或非商业目的</li>
+                                <li>只需保留原始版权和许可声明</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点部分 -->
+    <section id="features" class="py-20 bg-gradient-to-b from-dark to-darker">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">优缺点分析</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                    了解 Chart.js 的优势和局限性，帮助您决定是否适合您的项目需求。
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <!-- 优点 -->
+                <div class="reveal">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">主要优点</h3>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-green-400">易于使用</h4>
+                            <p class="text-gray-300">API 设计简洁直观，文档完善，即使是初学者也能快速上手。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-green-400">轻量级</h4>
+                            <p class="text-gray-300">核心库体积小（约 11KB gzip 压缩后），不会显著增加页面加载时间。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-green-400">高度可定制</h4>
+                            <p class="text-gray-300">几乎所有图表元素都可以自定义，从颜色到动画效果，满足各种设计需求。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-green-400">响应式设计</h4>
+                            <p class="text-gray-300">自动适应不同屏幕尺寸，在移动设备和桌面设备上都有良好表现。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-green-400">丰富的交互性</h4>
+                            <p class="text-gray-300">支持悬停提示、点击交互、缩放和平移等功能，提升用户体验。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-green-400">良好的兼容性</h4>
+                            <p class="text-gray-300">支持所有现代浏览器，包括 Chrome、Firefox、Safari 和 Edge。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 缺点 -->
+                <div class="reveal" style="transition-delay: 0.2s">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">主要缺点</h3>
+                    </div>
+                    
+                    <div class="space-y-5">
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-red-400">图表类型有限</h4>
+                            <p class="text-gray-300">虽然包含常用图表类型，但相比其他库（如 D3.js），高级图表类型较少。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-red-400">定制深度有限</h4>
+                            <p class="text-gray-300">对于非常复杂的可视化需求，定制能力不如更底层的库（如 D3.js）灵活。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-red-400">大数据性能问题</h4>
+                            <p class="text-gray-300">在处理非常大的数据集时，性能可能会下降，不如专门的大数据可视化库。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-red-400">缺乏3D图表支持</h4>
+                            <p class="text-gray-300">原生不支持3D图表，需要依赖第三方插件或扩展。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-red-400">导出功能有限</h4>
+                            <p class="text-gray-300">图表导出为图片或PDF需要额外工作，不如一些商业解决方案便捷。</p>
+                        </div>
+                        
+                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
+                            <h4 class="font-bold text-lg mb-2 text-red-400">学习曲线对复杂需求陡峭</h4>
+                            <p class="text-gray-300">基础使用简单，但实现复杂交互和定制时，需要深入学习文档。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论部分 -->
+    <section id="reviews" class="py-20 bg-darker">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">社区评论</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                    来自全球开发者的真实评价，了解他们如何使用 Chart.js 解决实际问题。
+                </p>
+            </div>
+            
+            <!-- 评论筛选 -->
+            <div class="flex flex-wrap justify-center gap-4 mb-10 reveal">
+                <button class="review-filter active px-4 py-2 rounded-full bg-primary text-white" data-filter="all">全部评论</button>
+                <button class="review-filter px-4 py-2 rounded-full bg-dark-card hover:bg-dark-hover transition-colors" data-filter="positive">正面评价</button>
+                <button class="review-filter px-4 py-2 rounded-full bg-dark-card hover:bg-dark-hover transition-colors" data-filter="negative">负面评价</button>
+                <button class="review-filter px-4 py-2 rounded-full bg-dark-card hover:bg-dark-hover transition-colors" data-filter="neutral">中立评价</button>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+                <!-- 评论将通过JavaScript动态生成 -->
+            </div>
+            
+            <!-- 加载更多按钮 -->
+            <div class="text-center mt-12 reveal">
+                <button id="load-more" class="bg-dark-card hover:bg-dark-hover border border-gray-700 px-6 py-3 rounded-lg transition-all flex items-center mx-auto">
+                    <i class="fa fa-refresh mr-2"></i> 加载更多评论
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用方法部分 -->
+    <section id="usage" class="py-20 bg-gradient-to-b from-darker to-dark">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">使用方法</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
+                    只需几个简单步骤，即可在您的项目中集成 Chart.js 并创建漂亮的图表。
+                </p>
+            </div>
+            
+            <div class="bg-dark-card rounded-2xl border border-gray-800 overflow-hidden shadow-xl reveal">
+                <!-- 步骤导航 -->
+                <div class="flex flex-wrap border-b border-gray-800">
+                    <button class="usage-tab active px-6 py-4 font-medium" data-tab="installation">安装</button>
+                    <button class="usage-tab px-6 py-4 font-medium" data-tab="basic-example">基础示例</button>
+                    <button class="usage-tab px-6 py-4 font-medium" data-tab="customization">定制化</button>
+                    <button class="usage-tab px-6 py-4 font-medium" data-tab="advanced">高级用法</button>
+                </div>
+                
+                <!-- 步骤内容 -->
+                <div class="p-8">
+                    <!-- 安装步骤 -->
+                    <div class="usage-content active" id="installation">
+                        <h3 class="text-2xl font-bold mb-6">安装 Chart.js</h3>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-primary">方法 1: 使用 CDN</h4>
+                                <p class="mb-4">最简单的方式是通过 CDN 引入 Chart.js：</p>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto">
+                                    <pre class="text-gray-300"><code>&lt;script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"&gt;&lt;/script&gt;</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-primary">方法 2: 使用 npm 安装</h4>
+                                <p class="mb-4">对于现代前端项目，可以使用 npm 安装：</p>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto mb-4">
+                                    <pre class="text-gray-300"><code>npm install chart.js --save</code></pre>
+                                </div>
+                                <p class="mb-4">安装后在项目中引入：</p>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto">
+                                    <pre class="text-gray-300"><code>// ES6 模块引入
+import Chart from 'chart.js/auto';
+
+// 或者 CommonJS 引入
+const Chart = require('chart.js/auto');</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-primary">方法 3: 下载源码</h4>
+                                <p class="mb-4">从官网下载源码并手动引入：</p>
+                                <ol class="list-decimal ml-6 space-y-2 mb-4">
+                                    <li>访问 <a href="https://www.chartjs.org/" target="_blank" class="text-primary hover:underline">Chart.js 官网</a></li>
+                                    <li>下载最新版本的 Chart.js</li>
+                                    <li>解压并将 chart.umd.min.js 文件放到您的项目目录</li>
+                                    <li>在 HTML 中引入该文件</li>
+                                </ol>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto">
+                                    <pre class="text-gray-300"><code>&lt;script src="path/to/chart.umd.min.js"&gt;&lt;/script&gt;</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 基础示例 -->
+                    <div class="usage-content hidden" id="basic-example">
+                        <h3 class="text-2xl font-bold mb-6">创建第一个图表</h3>
+                        
+                        <p class="mb-6">以下是创建一个简单柱状图的完整示例：</p>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-secondary">HTML 部分</h4>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto mb-6">
+                                    <pre class="text-gray-300"><code>&lt;!-- 准备一个canvas元素作为图表容器 --&gt;
+&lt;div class="chart-container" style="position: relative; height:400px; width:100%"&gt;
+  &lt;canvas id="myChart"&gt;&lt;/canvas&gt;
+&lt;/div&gt;</code></pre>
+                                </div>
+                                
+                                <h4 class="text-xl font-semibold mb-4 text-secondary">JavaScript 部分</h4>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto">
+                                    <pre class="text-gray-300"><code>// 获取canvas元素
+const ctx = document.getElementById('myChart').getContext('2d');
+
+// 创建图表
+const myChart = new Chart(ctx, {
+  type: 'bar', // 图表类型
+  data: {
+    labels: ['一月', '二月', '三月', '四月', '五月', '六月'], // x轴标签
+    datasets: [{
+      label: '销售额', // 数据集名称
+      data: [65, 59, 80, 81, 56, 55], // 数据
+      backgroundColor: [
+        'rgba(54, 162, 235, 0.5)',
+        'rgba(75, 192, 192, 0.5)',
+        'rgba(255, 99, 132, 0.5)',
+        'rgba(255, 159, 64, 0.5)',
+        'rgba(255, 205, 86, 0.5)',
+        'rgba(153, 102, 255, 0.5)'
+      ],
+      borderColor: [
+        'rgba(54, 162, 235, 1)',
+        'rgba(75, 192, 192, 1)',
+        'rgba(255, 99, 132, 1)',
+        'rgba(255, 159, 64, 1)',
+        'rgba(255, 205, 86, 1)',
+        'rgba(153, 102, 255, 1)'
+      ],
+      borderWidth: 1
+    }]
+  },
+  options: {
+    responsive: true, // 响应式
+    scales: {
+      y: {
+        beginAtZero: true // y轴从0开始
+      }
+    }
+  }
+});</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-secondary">效果展示</h4>
+                                <div class="bg-darker p-4 rounded-lg h-full flex flex-col">
+                                    <div class="chart-container flex-grow" style="position: relative; height:0; min-height: 300px;">
+                                        <canvas id="exampleChart"></canvas>
+                                    </div>
+                                    <div class="mt-6 text-gray-400 text-sm">
+                                        <p>这个示例创建了一个简单的柱状图，展示了六个月的销售额数据。</p>
+                                        <p class="mt-2">您可以通过修改 <code class="bg-dark px-1 py-0.5 rounded">type</code> 属性来尝试其他图表类型，如：</p>
+                                        <ul class="list-disc ml-5 mt-1">
+                                            <li><code class="bg-dark px-1 py-0.5 rounded">'line'</code> - 折线图</li>
+                                            <li><code class="bg-dark px-1 py-0.5 rounded">'pie'</code> - 饼图</li>
+                                            <li><code class="bg-dark px-1 py-0.5 rounded">'doughnut'</code> - 环形图</li>
+                                            <li><code class="bg-dark px-1 py-0.5 rounded">'radar'</code> - 雷达图</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 定制化 -->
+                    <div class="usage-content hidden" id="customization">
+                        <h3 class="text-2xl font-bold mb-6">定制图表外观和行为</h3>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-accent">自定义颜色和样式</h4>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto mb-4">
+                                    <pre class="text-gray-300"><code>const myChart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: ['A', 'B', 'C', 'D', 'E'],
+    datasets: [{
+      label: '数据集 1',
+      data: [12, 19, 3, 5, 2],
+      // 线条颜色
+      borderColor: '#36A2EB',
+      // 填充颜色
+      backgroundColor: 'rgba(54, 162, 235, 0.1)',
+      // 线条宽度
+      borderWidth: 2,
+      // 点的样式
+      pointBackgroundColor: '#36A2EB',
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      // 是否填充区域
+      fill: true,
+      // 线条张力
+      tension: 0.4
+    }]
+  },
+  options: {
+    // 自定义配置
+  }
+});</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-accent">添加交互和动画</h4>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto mb-4">
+                                    <pre class="text-gray-300"><code>options: {
+  // 动画配置
+  animation: {
+    duration: 2000, // 动画持续时间（毫秒）
+    easing: 'easeOutQuart' // 动画缓动函数
+  },
+  
+  // 交互配置
+  interaction: {
+    mode: 'index', // 交互模式
+    intersect: false // 是否只在鼠标与元素相交时触发
+  },
+  
+  // 悬停配置
+  plugins: {
+    tooltip: {
+      backgroundColor: 'rgba(17, 25, 40, 0.9)',
+      titleColor: '#fff',
+      bodyColor: '#ccc',
+      borderColor: '#444',
+      borderWidth: 1,
+      padding: 12,
+      displayColors: false,
+      callbacks: {
+        // 自定义提示文本
+        label: function(context) {
+          return `值: ${context.parsed.y} (${context.parsed.y * 100}%)`;
+        }
+      }
+    }
+  }
+}</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-accent">自定义坐标轴</h4>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto">
+                                    <pre class="text-gray-300"><code>options: {
+  scales: {
+    x: {
+      // X轴配置
+      title: {
+        display: true,
+        text: '类别',
+        color: '#ccc',
+        font: {
+          size: 14,
+          weight: 'bold'
+        }
+      },
+      ticks: {
+        color: '#999'
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.05)'
+      }
+    },
+    y: {
+      // Y轴配置
+      title: {
+        display: true,
+        text: '数值',
+        color: '#ccc'
+      },
+      min: 0,
+      max: 100,
+      ticks: {
+        color: '#999',
+        callback: function(value) {
+          return value + '%'; // 在数值后添加百分号
+        }
+      },
+      grid: {
+        color: 'rgba(255, 255, 255, 0.05)'
+      }
+    }
+  }
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 高级用法 -->
+                    <div class="usage-content hidden" id="advanced">
+                        <h3 class="text-2xl font-bold mb-6">高级用法和最佳实践</h3>
+                        
+                        <div class="space-y-8">
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-green-400">动态更新数据</h4>
+                                <p class="mb-4">Chart.js 允许您动态更新图表数据：</p>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto mb-4">
+                                    <pre class="text-gray-300"><code>// 更新数据集数据
+myChart.data.datasets[0].data = [25, 30, 45, 50, 70];
+// 更新标签
+myChart.data.labels = ['周一', '周二', '周三', '周四', '周五'];
+// 触发更新
+myChart.update();
+
+// 或者使用更精细的更新
+myChart.data.datasets.push({
+  label: '新数据集',
+  data: [10, 20, 30, 40, 50],
+  borderColor: '#4BC0C0'
+});
+myChart.update('none'); // 无动画
+// myChart.update('resize'); // 只更新尺寸
+// myChart.update('reset'); // 重置动画</code></pre>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-green-400">使用插件扩展功能</h4>
+                                <p class="mb-4">Chart.js 支持插件系统，可以扩展其功能：</p>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto mb-4">
+                                    <pre class="text-gray-300"><code>// 注册一个简单的插件
+Chart.register({
+  id: 'customPlugin',
+  // 在绘制前执行
+  beforeDraw: (chart) => {
+    const {ctx, chartArea} = chart;
+    if (!chartArea) return;
+    
+    // 在图表顶部添加文本
+    ctx.save();
+    ctx.font = 'bold 16px sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'center';
+    ctx.fillText('月度报告', chartArea.centerX, chartArea.top - 20);
+    ctx.restore();
+  }
+});
+
+// 使用第三方插件
+// import ChartDataLabels from 'chartjs-plugin-datalabels';
+// Chart.register(ChartDataLabels);</code></pre>
+                                </div>
+                                <p class="text-gray-400">
+                                    一些流行的第三方插件：
+                                    <a href="https://chartjs-plugin-datalabels.netlify.app/" target="_blank" class="text-primary hover:underline">chartjs-plugin-datalabels</a>（数据标签）、
+                                    <a href="https://www.chartjs.org/chartjs-plugin-zoom/latest/" target="_blank" class="text-primary hover:underline">chartjs-plugin-zoom</a>（缩放功能）、
+                                    <a href="https://github.com/chartjs/chartjs-adapter-moment" target="_blank" class="text-primary hover:underline">chartjs-adapter-moment</a>（日期处理）
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h4 class="text-xl font-semibold mb-4 text-green-400">性能优化</h4>
+                                <p class="mb-4">处理大量数据时的优化技巧：</p>
+                                <div class="bg-darker p-4 rounded-lg overflow-x-auto">
+                                    <pre class="text-gray-300"><code>options: {
+  // 关闭不必要的动画
+  animation: false,
+  
+  // 限制数据点数量
+  // 或者使用数据采样
+  parsing: {
+    // 自定义解析函数，减少数据点
+  },
+  
+  // 禁用不必要的交互
+  interaction: {
+    intersect: false,
+    mode: 'index'
+  },
+  
+  // 优化渲染
+  elements: {
+    line: {
+      tension: 0, // 直线比曲线渲染更快
+      borderWidth: 1
+    },
+    point: {
+      radius: 0, // 隐藏点
+      hoverRadius: 4 // 只在悬停时显示
+    }
+  },
+  
+  // 减少更新频率
+  // 使用 throttle 或 debounce 控制更新
+}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 更多资源 -->
+            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
+                <a href="https://www.chartjs.org/docs/latest/" target="_blank" class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover flex flex-col h-full">
+                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-book text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">官方文档</h3>
+                    <p class="text-gray-400 flex-grow">详细的API参考和使用指南，帮助您深入了解Chart.js的所有功能。</p>
+                    <div class="mt-4 text-primary flex items-center">
+                        查看文档 <i class="fa fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+                
+                <a href="https://www.chartjs.org/samples/latest/" target="_blank" class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover flex flex-col h-full">
+                    <div class="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-code text-secondary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">示例集合</h3>
+                    <p class="text-gray-400 flex-grow">丰富的示例代码，覆盖各种图表类型和使用场景，可直接参考和复用。</p>
+                    <div class="mt-4 text-secondary flex items-center">
+                        浏览示例 <i class="fa fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+                
+                <a href="https://github.com/chartjs/Chart.js" target="_blank" class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover flex flex-col h-full">
+                    <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-github text-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">GitHub 仓库</h3>
+                    <p class="text-gray-400 flex-grow">访问源代码仓库，提交issues，参与贡献，或查看最新的开发动态。</p>
+                    <div class="mt-4 text-accent flex items-center">
+                        访问仓库 <i class="fa fa-arrow-right ml-2"></i>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-darker border-t border-gray-800 py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-10">
+                <div class="flex items-center mb-6 md:mb-0">
+                    <i class="fa fa-bar-chart text-primary text-2xl mr-2"></i>
+                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">Chart.js</span>
+                </div>
+                <div class="flex space-x-6">
+                    <a href="https://github.com/chartjs/Chart.js" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="https://twitter.com/chartjs" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                    <a href="https://discord.gg/chartjs" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-comments text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">资源</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://www.chartjs.org/docs/latest/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">文档</a></li>
+                        <li><a href="https://www.chartjs.org/samples/latest/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">示例</a></li>
+                        <li><a href="https://github.com/chartjs/awesome" target="_blank" class="text-gray-400 hover:text-primary transition-colors">精选资源</a></li>
+                        <li><a href="https://blog.chartjs.org/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">博客</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">社区</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://github.com/chartjs/Chart.js/issues" target="_blank" class="text-gray-400 hover:text-primary transition-colors">Issues</a></li>
+                        <li><a href="https://discord.gg/chartjs" target="_blank" class="text-gray-400 hover:text-primary transition-colors">Discord</a></li>
+                        <li><a href="https://stackoverflow.com/questions/tagged/chart.js" target="_blank" class="text-gray-400 hover:text-primary transition-colors">Stack Overflow</a></li>
+                        <li><a href="https://github.com/chartjs/Chart.js/blob/master/CONTRIBUTING.md" target="_blank" class="text-gray-400 hover:text-primary transition-colors">贡献指南</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">相关</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://github.com/chartjs/Chart.js/releases" target="_blank" class="text-gray-400 hover:text-primary transition-colors">更新日志</a></li>
+                        <li><a href="https://github.com/chartjs/Chart.js/blob/master/LICENSE.md" target="_blank" class="text-gray-400 hover:text-primary transition-colors">许可证</a></li>
+                        <li><a href="https://www.jsdelivr.com/package/npm/chart.js" target="_blank" class="text-gray-400 hover:text-primary transition-colors">CDN</a></li>
+                        <li><a href="https://npmcharts.com/compare/chart.js?minimal=true" target="_blank" class="text-gray-400 hover:text-primary transition-colors">下载统计</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">关于</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://www.chartjs.org/docs/latest/faq/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">常见问题</a></li>
+                        <li><a href="https://www.chartjs.org/docs/latest/support/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">支持</a></li>
+                        <li><a href="https://github.com/chartjs/Chart.js/blob/master/SECURITY.md" target="_blank" class="text-gray-400 hover:text-primary transition-colors">安全政策</a></li>
+                        <li><a href="https://www.chartjs.org/team/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">开发团队</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
+                <p>© 2023 Chart.js. 本网站仅作介绍用途，Chart.js 是开源项目的商标。</p>
+                <p class="mt-2">内容基于 <a href="https://www.chartjs.org/" target="_blank" class="hover:text-primary transition-colors">Chart.js 官方网站</a> 信息整理。</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 导航栏滚动效果
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-darker/95');
+                navbar.classList.remove('bg-transparent');
+            } else {
+                navbar.classList.remove('bg-darker/95');
+            }
+        });
+        
+        // 移动端菜单切换
+        document.getElementById('menu-toggle').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 滚动动画
+        function revealElements() {
+            const reveals = document.querySelectorAll('.reveal');
+            const windowHeight = window.innerHeight;
+            
+            reveals.forEach(reveal => {
+                const revealTop = reveal.getBoundingClientRect().top;
+                const revealPoint = 150;
+                
+                if (revealTop < windowHeight - revealPoint) {
+                    reveal.classList.add('active');
+                }
+            });
+        }
+        
+        window.addEventListener('scroll', revealElements);
+        window.addEventListener('load', revealElements);
+        
+        // 英雄区域图表
+        window.addEventListener('load', function() {
+            const ctx = document.getElementById('heroChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月'],
+                    datasets: [
+                        {
+                            label: '用户增长',
+                            data: [1200, 1900, 3000, 5000, 8000, 12000, 15000, 18000, 22000],
+                            borderColor: '#36A2EB',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: '活跃度',
+                            data: [65, 59, 80, 81, 56, 55, 72, 78, 85],
+                            borderColor: '#FF6384',
+                            backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                            tension: 0.4,
+                            fill: true,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Chart.js 数据可视化示例',
+                            color: '#e5e7eb',
+                            font: {
+                                size: 16
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            grid: {
+                                drawOnChartArea: false
+                            },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // 示例图表
+            const exampleCtx = document.getElementById('exampleChart').getContext('2d');
+            new Chart(exampleCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['一月', '二月', '三月', '四月', '五月', '六月'],
+                    datasets: [{
+                        label: '销售额',
+                        data: [65, 59, 80, 81, 56, 55],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.5)',
+                            'rgba(75, 192, 192, 0.5)',
+                            'rgba(255, 99, 132, 0.5)',
+                            'rgba(255, 159, 64, 0.5)',
+                            'rgba(255, 205, 86, 0.5)',
+                            'rgba(153, 102, 255, 0.5)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.05)'
+                            },
+                            ticks: {
+                                color: '#9ca3af'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#e5e7eb'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+        
+        // 社区评论数据
+        const reviews = [
+            {
+                name: '张明',
+                avatar: 'https://picsum.photos/id/1/100/100',
+                role: '前端开发者',
+                content: 'Chart.js 是我用过的最简单直观的图表库，API设计非常友好，文档也很完善。对于大多数数据可视化需求来说完全够用了。',
+                rating: 5,
+                date: '2023-05-12',
+                type: 'positive'
+            },
+            {
+                name: '李华',
+                avatar: 'https://picsum.photos/id/2/100/100',
+                role: '全栈工程师',
+                content: '轻量级是最大优势，加载速度快，不会拖慢页面。但处理大量数据时性能有些不足，希望未来版本能改进。',
+                rating: 4,
+                date: '2023-06-20',
+                type: 'neutral'
+            },
+            {
+                name: '王芳',
+                avatar: 'https://picsum.photos/id/3/100/100',
+                role: 'UI设计师',
+                content: '图表样式美观，自定义选项丰富，能够很好地匹配我们的设计系统。客户对数据展示效果非常满意。',
+                rating: 5,
+                date: '2023-04-05',
+                type: 'positive'
+            },
+            {
+                name: '赵伟',
+                avatar: 'https://picsum.photos/id/4/100/100',
+                role: '数据分析师',
+                content: '对于简单的图表展示很方便，但高级统计图表支持不足，复杂的数据可视化还是得用D3.js。',
+                rating: 3,
+                date: '2023-07-18',
+                type: 'neutral'
+            },
+            {
+                name: '陈静',
+                avatar: 'https://picsum.photos/id/5/100/100',
+                role: '前端架构师',
+                content: '在多个项目中使用过Chart.js，稳定性很好，更新也比较及时。社区活跃，遇到问题容易找到解决方案。',
+                rating: 5,
+                date: '2023-03-29',
+                type: 'positive'
+            },
+            {
+                name: '刘强',
+                avatar: 'https://picsum.photos/id/6/100/100',
+                role: '开发工程师',
+                content: '文档虽然全面，但有些高级用法的示例不够详细，需要自己摸索。希望能增加更多复杂场景的教程。',
+                rating: 3,
+                date: '2023-08-03',
+                type: 'neutral'
+            },
+            {
+                name: '周敏',
+                avatar: 'https://picsum.photos/id/7/100/100',
+                role: '产品经理',
+                content: '开发团队用这个库快速实现了我们的数据仪表盘，迭代速度很快，可视化效果也不错，大大提升了用户体验。',
+                rating: 5,
+                date: '2023-02-15',
+                type: 'positive'
+            },
+            {
+                name: '吴杰',
+                avatar: 'https://picsum.photos/id/8/100/100',
+                role: '前端开发者',
+                content: '移动端适配做得很好，图表在各种设备上都能正常显示。动画效果也很流畅，不会显得卡顿。',
+                rating: 4,
+                date: '2023-09-10',
+                type: 'positive'
+            },
+            {
+                name: '郑琳',
+                avatar: 'https://picsum.photos/id/9/100/100',
+                role: 'UI工程师',
+                content: '自定义主题的能力有限，想要完全匹配设计规范需要写不少额外代码。希望能提供更强大的主题定制功能。',
+                rating: 2,
+                date: '2023-01-22',
+                type: 'negative'
+            },
+            {
+                name: '孙浩',
+                avatar: 'https://picsum.photos/id/10/100/100',
+                role: '技术负责人',
+                content: '作为一个开源免费的库，Chart.js的功能已经相当出色了。对于中小项目完全足够，大型项目可能需要更专业的解决方案。',
+                rating: 4,
+                date: '2023-07-05',
+                type: 'neutral'
+            },
+            {
+                name: '朱婷',
+                avatar: 'https://picsum.photos/id/11/100/100',
+                role: '前端开发',
+                content: '上手非常快，基本上看一下示例就能开始使用。API设计很直观，不像有些库那样需要记住很多复杂的配置。',
+                rating: 5,
+                date: '2023-06-18',
+                type: 'positive'
+            },
+            {
+                name: '马强',
+                avatar: 'https://picsum.photos/id/12/100/100',
+                role: '全栈开发',
+                content: '升级到新版本时遇到了一些兼容性问题，文档中没有明确说明，花了不少时间调试。希望版本迁移能更平滑一些。',
+                rating: 3,
+                date: '2023-08-25',
+                type: 'neutral'
+            },
+            {
+                name: '林小',
+                avatar: 'https://picsum.photos/id/13/100/100',
+                role: '前端工程师',
+                content: '插件生态还不够丰富，很多特殊需求需要自己开发。如果能有更多官方维护的插件就好了。',
+                rating: 3,
+                date: '2023-04-30',
+                type: 'neutral'
+            },
+            {
+                name: '杨光',
+                avatar: 'https://picsum.photos/id/14/100/100',
+                role: '数据可视化专家',
+                content: '图表类型相对基础，对于科研或复杂数据分析场景来说功能不足。但对于一般的业务展示已经足够。',
+                rating: 3,
+                date: '2023-05-17',
+                type: 'neutral'
+            },
+            {
+                name: '刘芳',
+                avatar: 'https://picsum.photos/id/15/100/100',
+                role: '前端开发',
+                content: '和React、Vue等框架集成很方便，有很多现成的组件可以使用。社区也有很多最佳实践可以参考。',
+                rating: 5,
+                date: '2023-03-12',
+                type: 'positive'
+            },
+            {
+                name: '黄勇',
+                avatar: 'https://picsum.photos/id/16/100/100',
+                role: '开发经理',
+                content: '团队成员学习成本低，培训新员工使用Chart.js只需要半天时间就能上手。维护起来也很方便。',
+                rating: 4,
+                date: '2023-09-08',
+                type: 'positive'
+            },
+            {
+                name: '周杰',
+                avatar: 'https://picsum.photos/id/17/100/100',
+                role: '前端工程师',
+                content: '在处理实时数据更新时有些性能问题，图表频繁刷新会导致页面卡顿。希望能优化这方面的性能。',
+                rating: 2,
+                date: '2023-07-22',
+                type: 'negative'
+            },
+            {
+                name: '吴佳',
+                avatar: 'https://picsum.photos/id/18/100/100',
+                role: 'UX设计师',
+                content: '交互体验设计得很好，悬停、点击等操作都很流畅自然。用户反馈数据查看体验比以前用的库要好很多。',
+                rating: 5,
+                date: '2023-02-05',
+                type: 'positive'
+            },
+            {
+                name: '郑华',
+                avatar: 'https://picsum.photos/id/19/100/100',
+                role: '前端开发',
+                content: '打印和导出功能比较弱，需要额外开发才能实现图表导出为图片或PDF的功能，希望官方能提供原生支持。',
+                rating: 2,
+                date: '2023-06-30',
+                type: 'negative'
+            },
+            {
+                name: '王强',
+                avatar: 'https://picsum.photos/id/20/100/100',
+                role: '技术总监',
+                content: '作为一个免费开源的库，Chart.js的表现超出预期。对于预算有限的项目来说是个很好的选择，功能足够用，又能节省成本。',
+                rating: 4,
+                date: '2023-08-15',
+                type: 'positive'
+            },
+            {
+                name: '赵敏',
+                avatar: 'https://picsum.photos/id/21/100/100',
+                role: '前端开发',
+                content: '文档中的示例代码有时会过时，特别是版本更新后，需要结合源码才能正确使用新功能。',
+                rating: 3,
+                date: '2023-05-02',
+                type: 'neutral'
+            },
+            {
+                name: '孙琳',
+                avatar: 'https://picsum.photos/id/22/100/100',
+                role: '全栈开发',
+                content: '和后端API集成很方便，数据格式转换简单，不需要写太多额外代码。大大提高了开发效率。',
+                rating: 5,
+                date: '2023-04-18',
+                type: 'positive'
+            },
+            {
+                name: '陈杰',
+                avatar: 'https://picsum.photos/id/23/100/100',
+                role: '前端工程师',
+                content: '自定义 tooltip 的样式太麻烦了，API不够灵活，希望能提供更简单的方式来定制提示框。',
+                rating: 2,
+                date: '2023-07-08',
+                type: 'negative'
+            },
+            {
+                name: '林华',
+                avatar: 'https://picsum.photos/id/24/100/100',
+                role: '开发工程师',
+                content: '在低版本浏览器上有兼容性问题，需要额外引入polyfill。对于需要支持旧浏览器的项目来说是个麻烦。',
+                rating: 3,
+                date: '2023-03-25',
+                type: 'neutral'
+            },
+            {
+                name: '刘敏',
+                avatar: 'https://picsum.photos/id/25/100/100',
+                role: '前端开发',
+                content: '社区非常活跃，GitHub上的issues响应很快，提出的bug能及时得到修复。这一点比很多商业库都要好。',
+                rating: 5,
+                date: '2023-09-02',
+                type: 'positive'
+            },
+            {
+                name: '黄婷',
+                avatar: 'https://picsum.photos/id/26/100/100',
+                role: 'UI工程师',
+                content: '图表的动画效果很精致，不会过于花哨但又能提升用户体验。可以通过配置调整动画速度和方式。',
+                rating: 4,
+                date: '2023-06-12',
+                type: 'positive'
+            },
+            {
+                name: '周强',
+                avatar: 'https://picsum.photos/id/27/100/100',
+                role: '前端架构师',
+                content: '模块化设计很好，可以按需导入需要的组件，减小打包体积。对于注重性能的项目很友好。',
+                rating: 5,
+                date: '2023-05-28',
+                type: 'positive'
+            },
+            {
+                name: '吴华',
+                avatar: 'https://picsum.photos/id/28/100/100',
+                role: '开发工程师',
+                content: '雷达图和极坐标图的功能比较基础，定制化选项有限，对于需要复杂展示的场景不太够用。',
+                rating: 3,
+                date: '2023-08-20',
+                type: 'neutral'
+            },
+            {
+                name: '郑杰',
+                avatar: 'https://picsum.photos/id/29/100/100',
+                role: '前端开发',
+                content: '学习曲线平缓，对于新手很友好。官方文档结构清晰，从入门到高级用法都有覆盖。',
+                rating: 5,
+                date: '2023-04-08',
+                type: 'positive'
+            },
+            {
+                name: '王琳',
+                avatar: 'https://picsum.photos/id/30/100/100',
+                role: '数据分析师',
+                content: '缺少一些高级统计功能，如回归分析、趋势预测等。需要自己实现这些功能然后集成到图表中。',
+                rating: 2,
+                date: '2023-07-15',
+                type: 'negative'
+            },
+            {
+                name: '赵婷',
+                avatar: 'https://picsum.photos/id/31/100/100',
+                role: '前端工程师',
+                content: '响应式设计做得很好，图表能自动适应不同尺寸的容器。在响应式网站中使用非常方便。',
+                rating: 4,
+                date: '2023-03-18',
+                type: 'positive'
+            },
+            {
+                name: '孙强',
+                avatar: 'https://picsum.photos/id/32/100/100',
+                role: '全栈开发',
+                content: '和TypeScript的集成体验一般，类型定义有时不够准确，希望能改进TypeScript支持。',
+                rating: 3,
+                date: '2023-09-12',
+                type: 'neutral'
+            },
+            {
+                name: '陈华',
+                avatar: 'https://picsum.photos/id/33/100/100',
+                role: '前端开发',
+                content: '主题系统不够强大，想要统一整个应用中的图表样式需要写很多重复代码。希望能支持全局主题配置。',
+                rating: 2,
+                date: '2023-06-05',
+                type: 'negative'
+            },
+            {
+                name: '林敏',
+                avatar: 'https://picsum.photos/id/34/100/100',
+                role: 'UI设计师',
+                content: '颜色方案设计得很和谐，默认样式就很好看，不需要太多定制就能满足大多数设计需求。',
+                rating: 4,
+                date: '2023-05-10',
+                type: 'positive'
+            },
+            {
+                name: '刘杰',
+                avatar: 'https://picsum.photos/id/35/100/100',
+                role: '开发经理',
+                content: '在多个项目中使用了Chart.js，稳定性和可靠性都很好，几乎没有出现过生产环境的bug。',
+                rating: 5,
+                date: '2023-08-02',
+                type: 'positive'
+            },
+            {
+                name: '黄华',
+                avatar: 'https://picsum.photos/id/36/100/100',
+                role: '前端工程师',
+                content: '文档中的搜索功能不够强大，查找特定API时不太方便。希望能改进文档的检索体验。',
+                rating: 3,
+                date: '2023-04-25',
+                type: 'neutral'
+            },
+            {
+                name: '周敏',
+                avatar: 'https://picsum.photos/id/37/100/100',
+                role: '前端开发',
+                content: '图表的可访问性支持不足，对于屏幕阅读器用户不够友好。希望能加强这方面的功能。',
+                rating: 2,
+                date: '2023-07-30',
+                type: 'negative'
+            },
+            {
+                name: '吴杰',
+                avatar: 'https://picsum.photos/id/38/100/100',
+                role: '全栈开发',
+                content: '与各种前端框架的集成示例很丰富，无论是React、Vue还是Angular都有详细的使用指南。',
+                rating: 5,
+                date: '2023-03-05',
+                type: 'positive'
+            },
+            {
+                name: '郑华',
+                avatar: 'https://picsum.photos/id/39/100/100',
+                role: '前端工程师',
+                content: '图表导出功能需要依赖第三方库，不够原生支持。希望官方能提供更完善的导出解决方案。',
+                rating: 3,
+                date: '2023-09-20',
+                type: 'neutral'
+            },
+            {
+                name: '王强',
+                avatar: 'https://picsum.photos/id/40/100/100',
+                role: '技术总监',
+                content: '作为一个免费开源项目，Chart.js的维护质量和更新频率都令人印象深刻。有专业团队在背后支持。',
+                rating: 5,
+                date: '2023-06-22',
+                type: 'positive'
+            },
+            {
+                name: '赵敏',
+                avatar: 'https://picsum.photos/id/41/100/100',
+                role: '前端开发',
+                content: '事件处理机制有些复杂，特别是在多个图表交互的场景下，需要写很多额外代码来管理状态。',
+                rating: 3,
+                date: '2023-05-08',
+                type: 'neutral'
+            },
+            {
+                name: '孙琳',
+                avatar: 'https://picsum.photos/id/42/100/100',
+                role: 'UI工程师',
+                content: '图表的字体配置不够灵活，难以完全匹配设计系统中的字体规范。希望能提供更细粒度的字体控制。',
+                rating: 2,
+                date: '2023-08-12',
+                type: 'negative'
+            },
+            {
+                name: '陈杰',
+                avatar: 'https://picsum.photos/id/43/100/100',
+                role: '前端开发',
+                content: '更新频率很稳定，新版本会带来有用的功能而不是破坏性的变更。升级过程比较顺利。',
+                rating: 4,
+                date: '2023-04-15',
+                type: 'positive'
+            },
+            {
+                name: '林华',
+                avatar: 'https://picsum.photos/id/44/100/100',
+                role: '开发工程师',
+                content: '在处理时间序列数据时，坐标轴的自动格式化功能不够智能，需要手动配置很多选项。',
+                rating: 3,
+                date: '2023-07-05',
+                type: 'neutral'
+            },
+            {
+                name: '刘敏',
+                avatar: 'https://picsum.photos/id/45/100/100',
+                role: '前端工程师',
+                content: '错误提示不够友好，有时会抛出模糊的错误信息，难以排查问题。希望能改进错误处理和提示。',
+                rating: 2,
+                date: '2023-03-22',
+                type: 'negative'
+            },
+            {
+                name: '黄婷',
+                avatar: 'https://picsum.photos/id/46/100/100',
+                role: 'UX设计师',
+                content: '图表的交互反馈很清晰，用户能够直观地理解自己的操作会带来什么效果。体验设计很用心。',
+                rating: 5,
+                date: '2023-09-05',
+                type: 'positive'
+            },
+            {
+                name: '周强',
+                avatar: 'https://picsum.photos/id/47/100/100',
+                role: '前端架构师',
+                content: '核心代码质量很高，结构清晰，易于理解。如果需要深度定制，可以很方便地阅读和修改源码。',
+                rating: 5,
+                date: '2023-06-10',
+                type: 'positive'
+            },
+            {
+                name: '吴华',
+                avatar: 'https://picsum.photos/id/48/100/100',
+                role: '开发工程师',
+                content: '对于非常大的数据集，渲染性能明显下降，需要自己实现数据采样或分页加载。',
+                rating: 3,
+                date: '2023-05-25',
+                type: 'neutral'
+            },
+            {
+                name: '郑杰',
+                avatar: 'https://picsum.photos/id/49/100/100',
+                role: '前端开发',
+                content: '插件开发文档不够详细，想要开发自定义插件需要参考现有插件的源码，学习成本较高。',
+                rating: 2,
+                date: '2023-08-28',
+                type: 'negative'
+            },
+            {
+                name: '王琳',
+                avatar: 'https://picsum.photos/id/50/100/100',
+                role: '全栈开发',
+                content: '综合来看，Chart.js是一个性价比很高的图表库，平衡了易用性和功能性，适合大多数Web项目。',
+                rating: 4,
+                date: '2023-04-02',
+                type: 'positive'
+            },
+            {
+                name: '赵婷',
+                avatar: 'https://picsum.photos/id/51/100/100',
+                role: '前端工程师',
+                content: '与CSS框架如Tailwind、Bootstrap的集成很顺畅，没有样式冲突问题，定制起来很方便。',
+                rating: 5,
+                date: '2023-07-18',
+                type: 'positive'
+            },
+            {
+                name: '孙强',
+                avatar: 'https://picsum.photos/id/52/100/100',
+                role: '开发经理',
+                content: '团队采用Chart.js后，数据可视化开发效率提升了至少50%，维护成本也降低了很多。',
+                rating: 5,
+                date: '2023-03-10',
+                type: 'positive'
+            }
+        ];
+        
+        // 渲染评论
+        function renderReviews(filter = 'all', count = 12) {
+            const container = document.getElementById('reviews-container');
+            container.innerHTML = '';
+            
+            let filteredReviews = reviews;
+            if (filter !== 'all') {
+                filteredReviews = reviews.filter(review => review.type === filter);
+            }
+            
+            // 限制显示数量
+            const reviewsToShow = filteredReviews.slice(0, count);
+            
+            reviewsToShow.forEach((review, index) => {
+                // 创建星级评分HTML
+                let ratingHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= review.rating) {
+                        ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+                    } else {
+                        ratingHtml += '<i class="fa fa-star-o text-gray-600"></i>';
+                    }
+                }
+                
+                const reviewElement = document.createElement('div');
+                reviewElement.className = `bg-dark-card rounded-xl border border-gray-800 p-6 card-hover reveal`;
+                reviewElement.style.transitionDelay = `${(index % 6) * 0.1}s`;
+                reviewElement.dataset.type = review.type;
+                
+                reviewElement.innerHTML = `
+                    <div class="flex items-start mb-4">
+                        <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-bold">${review.name}</h4>
+                            <p class="text-gray-400 text-sm">${review.role}</p>
+                            <div class="flex mt-1">
+                                ${ratingHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 mb-4">${review.content}</p>
+                    <div class="text-gray-500 text-sm">${review.date}</div>
+                `;
+                
+                container.appendChild(reviewElement);
+            });
+            
+            // 触发动画
+            setTimeout(() => {
+                document.querySelectorAll('#reviews-container .reveal').forEach(el => {
+                    el.classList.add('active');
+                });
+            }, 100);
+        }
+        
+        // 初始渲染评论
+        window.addEventListener('load', () => {
+            renderReviews();
+        });
+        
+        // 评论筛选
+        document.querySelectorAll('.review-filter').forEach(button => {
+            button.addEventListener('click', function() {
+                // 更新按钮状态
+                document.querySelectorAll('.review-filter').forEach(btn => {
+                    btn.classList.remove('active', 'bg-primary', 'text-white');
+                    btn.classList.add('bg-dark-card', 'hover:bg-dark-hover');
+                });
+                this.classList.add('active', 'bg-primary', 'text-white');
+                this.classList.remove('bg-dark-card', 'hover:bg-dark-hover');
+                
+                // 渲染筛选后的评论
+                renderReviews(this.dataset.filter);
+            });
+        });
+        
+        // 加载更多评论
+        let currentReviewCount = 12;
+        document.getElementById('load-more').addEventListener('click', function() {
+            currentReviewCount += 12;
+            const activeFilter = document.querySelector('.review-filter.active').dataset.filter;
+            renderReviews(activeFilter, currentReviewCount);
+            
+            // 如果已经加载所有评论，隐藏按钮
+            const filteredReviews = activeFilter === 'all' 
+                ? reviews 
+                : reviews.filter(review => review.type === activeFilter);
+                
+            if (currentReviewCount >= filteredReviews.length) {
+                this.style.display = 'none';
+            }
+        });
+        
+        // 使用方法标签切换
+        document.querySelectorAll('.usage-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 更新标签状态
+                document.querySelectorAll('.usage-tab').forEach(t => {
+                    t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+                });
+                this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+                
+                // 显示对应内容
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.usage-content').forEach(content => {
+                    content.classList.add('hidden');
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabId).classList.remove('hidden');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQLite 数据库 - 轻量级嵌入式数据库</title>
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sqlite: {
+                            primary: '#0d1117',
+                            secondary: '#161b22',
+                            accent: '#0284c7',
+                            light: '#374151',
+                            success: '#10b981',
+                            warning: '#f59e0b',
+                            danger: '#ef4444',
+                            card: '#1f2937',
+                            border: '#374151'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(to right, #0284c7, #3b82f6);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            }
+            .scrollbar-thin {
+                scrollbar-width: thin;
+            }
+            .scrollbar-thin::-webkit-scrollbar {
+                width: 4px;
+                height: 4px;
+            }
+            .scrollbar-thin::-webkit-scrollbar-thumb {
+                background-color: rgba(156, 163, 175, 0.5);
+                border-radius: 2px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-sqlite-primary font-sans text-gray-200">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-sqlite-secondary/90 backdrop-blur shadow-md">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo -->
+                <a href="https://www.sqlite.org/" target="_blank" class="flex items-center">
+                    <i class="fa fa-database text-3xl text-sqlite-accent mr-2"></i>
+                    <span class="font-bold text-xl">SQLite</span>
+                </a>
+                
+                <!-- 桌面导航 -->
+                <nav class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="font-medium hover:text-sqlite-accent transition-colors">免费特性</a>
+                    <a href="#pros-cons" class="font-medium hover:text-sqlite-accent transition-colors">优缺点</a>
+                    <a href="#usage" class="font-medium hover:text-sqlite-accent transition-colors">使用方法</a>
+                    <a href="#comments" class="font-medium hover:text-sqlite-accent transition-colors">社区评论</a>
+                    <a href="https://www.sqlite.org/download.html" target="_blank" class="bg-sqlite-accent hover:bg-blue-600 text-white px-5 py-2 rounded-md text-sm font-medium transition-all">
+                        免费下载
+                    </a>
+                </nav>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-btn" class="md:hidden text-gray-200 focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- 移动端菜单 -->
+            <div id="mobile-menu" class="md:hidden hidden py-4 border-t border-sqlite-border animate-fade-in">
+                <div class="flex flex-col space-y-4">
+                    <a href="#features" class="font-medium hover:text-sqlite-accent transition-colors py-2">免费特性</a>
+                    <a href="#pros-cons" class="font-medium hover:text-sqlite-accent transition-colors py-2">优缺点</a>
+                    <a href="#usage" class="font-medium hover:text-sqlite-accent transition-colors py-2">使用方法</a>
+                    <a href="#comments" class="font-medium hover:text-sqlite-accent transition-colors py-2">社区评论</a>
+                    <a href="https://www.sqlite.org/download.html" target="_blank" class="bg-sqlite-accent hover:bg-blue-600 text-white px-5 py-3 rounded-md text-sm font-medium transition-all text-center">
+                        免费下载
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 英雄区域 -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 overflow-hidden bg-gradient-to-br from-sqlite-primary to-sqlite-secondary">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 animate-fade-in">
+                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-6">
+                        SQLite<br>
+                        <span class="text-gradient">嵌入式数据库引擎</span>
+                    </h1>
+                    <p class="text-lg md:text-xl text-gray-400 mb-8 max-w-lg">
+                        世界上最广泛部署的SQL数据库引擎，100%免费开源，零配置，无需服务器，自包含且可靠。
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="https://www.sqlite.org/download.html" target="_blank" class="bg-sqlite-accent hover:bg-blue-600 text-white px-8 py-3 rounded-md font-semibold transition-all hover:shadow-lg">
+                            免费下载
+                        </a>
+                        <a href="https://www.sqlite.org/docs.html" target="_blank" class="border-2 border-sqlite-border hover:border-sqlite-accent text-gray-300 px-8 py-3 rounded-md font-semibold transition-all">
+                            查看文档
+                        </a>
+                    </div>
+                    
+                    <!-- 核心数据 -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-12">
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border shadow-sm">
+                            <div class="text-2xl font-bold text-sqlite-accent mb-1">0</div>
+                            <div class="text-gray-400 text-sm">配置需求</div>
+                        </div>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border shadow-sm">
+                            <div class="text-2xl font-bold text-sqlite-accent mb-1">100%</div>
+                            <div class="text-gray-400 text-sm">免费开源</div>
+                        </div>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border shadow-sm">
+                            <div class="text-2xl font-bold text-sqlite-accent mb-1">~600KB</div>
+                            <div class="text-gray-400 text-sm">库大小</div>
+                        </div>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border shadow-sm">
+                            <div class="text-2xl font-bold text-sqlite-accent mb-1">ACID</div>
+                            <div class="text-gray-400 text-sm">事务支持</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="md:w-1/2 relative animate-slide-up">
+                    <div class="relative z-10 rounded-lg overflow-hidden shadow-2xl transform transition-transform hover:scale-[1.02] duration-500 border border-sqlite-border">
+                        <img src="https://picsum.photos/id/0/600/400" alt="SQLite 数据库界面展示" class="w-full h-auto">
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-40 h-40 bg-sqlite-accent/10 rounded-full -z-10"></div>
+                    <div class="absolute -top-6 -left-6 w-32 h-32 bg-blue-500/10 rounded-full -z-10"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 免费特性 -->
+    <section id="features" class="py-20 bg-sqlite-primary">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">SQLite 免费特性</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">完全免费开源，无需许可费用，可用于任何商业或非商业项目</p>
+                <div class="w-20 h-1 bg-sqlite-accent mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 特性 1 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-check-circle text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">完全免费</h3>
+                    <p class="text-gray-400 mb-4">
+                        SQLite 是100%免费的，采用公共领域授权，无需支付任何许可费用，可用于任何商业或非商业项目。
+                    </p>
+                    <a href="https://www.sqlite.org/copyright.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        查看授权详情 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 2 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-server text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">无服务器架构</h3>
+                    <p class="text-gray-400 mb-4">
+                        不需要单独的服务器进程，数据库引擎嵌入到应用程序中，通过直接访问磁盘文件进行操作。
+                    </p>
+                    <a href="https://www.sqlite.org/selfcontained.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        了解更多 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 3 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-cogs text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">零配置</h3>
+                    <p class="text-gray-400 mb-4">
+                        无需安装、配置或管理，不需要设置用户账户或权限，数据库就是一个文件，复制即可备份。
+                    </p>
+                    <a href="https://www.sqlite.org/zeroconf.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        了解更多 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 4 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-shield text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">ACID 兼容</h3>
+                    <p class="text-gray-400 mb-4">
+                        完全支持ACID事务，包括原子性、一致性、隔离性和持久性，确保数据完整性和可靠性。
+                    </p>
+                    <a href="https://www.sqlite.org/acid.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        了解更多 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 5 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-code text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">标准SQL支持</h3>
+                    <p class="text-gray-400 mb-4">
+                        支持大多数SQL92标准，包括复杂查询、子查询、触发器、视图、事务等核心SQL功能。
+                    </p>
+                    <a href="https://www.sqlite.org/lang.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        SQL语法参考 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 6 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-microchip text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">跨平台兼容</h3>
+                    <p class="text-gray-400 mb-4">
+                        支持所有主流操作系统，包括Windows、macOS、Linux、Android和iOS，数据库文件格式跨平台兼容。
+                    </p>
+                    <a href="https://www.sqlite.org/ports.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        平台支持 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 7 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-language text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">多语言绑定</h3>
+                    <p class="text-gray-400 mb-4">
+                        提供几乎所有主流编程语言的API绑定，包括C/C++、Python、Java、C#、JavaScript等。
+                    </p>
+                    <a href="https://www.sqlite.org/lang.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        语言绑定列表 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 8 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-compress text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">轻量级</h3>
+                    <p class="text-gray-400 mb-4">
+                        整个数据库引擎库大小仅约600KB，内存占用低，非常适合嵌入式设备和资源受限环境。
+                    </p>
+                    <a href="https://www.sqlite.org/small.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        了解更多 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+                
+                <!-- 特性 9 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover">
+                    <div class="bg-sqlite-secondary w-12 h-12 rounded-lg flex items-center justify-center mb-5">
+                        <i class="fa fa-history text-sqlite-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">稳定可靠</h3>
+                    <p class="text-gray-400 mb-4">
+                        经过15年以上的持续开发和优化，拥有完善的测试套件，在数十亿设备上稳定运行。
+                    </p>
+                    <a href="https://www.sqlite.org/testing.html" target="_blank" class="text-sqlite-accent hover:text-blue-400 font-medium transition-colors text-sm">
+                        测试详情 <i class="fa fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点分析 -->
+    <section id="pros-cons" class="py-20 bg-sqlite-secondary">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">SQLite 优缺点分析</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">客观评估SQLite作为嵌入式数据库的优势与不足</p>
+                <div class="w-20 h-1 bg-sqlite-accent mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- 优点 -->
+                <div class="bg-sqlite-card rounded-xl p-8 border border-sqlite-border shadow-sm">
+                    <div class="flex items-center mb-8">
+                        <div class="bg-green-900/30 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">主要优势</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-check text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">无需服务器管理</h4>
+                                <p class="text-gray-400">作为嵌入式数据库，不需要单独的服务器进程，简化了部署和维护。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-check text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">零配置要求</h4>
+                                <p class="text-gray-400">无需安装或配置，数据库就是一个文件，复制文件即可完成备份和迁移。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-check text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">轻量级高效</h4>
+                                <p class="text-gray-400">体积小，内存占用低，启动快速，非常适合资源受限的环境和移动设备。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-check text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">完全免费开源</h4>
+                                <p class="text-gray-400">公共领域授权，无任何许可费用，可自由用于任何商业或非商业项目。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-check text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">跨平台兼容</h4>
+                                <p class="text-gray-400">数据库文件格式在所有平台上兼容，实现了真正的跨平台数据交换。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-check text-green-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">强大的事务支持</h4>
+                                <p class="text-gray-400">完全支持ACID事务，包括崩溃恢复和数据一致性保证。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 缺点 -->
+                <div class="bg-sqlite-card rounded-xl p-8 border border-sqlite-border shadow-sm">
+                    <div class="flex items-center mb-8">
+                        <div class="bg-red-900/30 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">主要不足</h3>
+                    </div>
+                    
+                    <ul class="space-y-6">
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-times text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">并发写入限制</h4>
+                                <p class="text-gray-400">在任何时刻只允许一个写入器，不适合高并发写入的场景。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-times text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">不适合网络访问</h4>
+                                <p class="text-gray-400">设计用于本地访问，不适合通过网络共享和访问数据库文件。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-times text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">不适合大型应用</h4>
+                                <p class="text-gray-400">虽然支持大型数据库，但在处理超大规模数据时性能不如客户端/服务器数据库。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-times text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">功能相对有限</h4>
+                                <p class="text-gray-400">不支持一些高级数据库功能，如存储过程、复杂的用户权限管理等。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-times text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">全文搜索能力有限</h4>
+                                <p class="text-gray-400">虽然支持全文搜索，但功能和性能不如专门的搜索引擎或企业级数据库。</p>
+                            </div>
+                        </li>
+                        
+                        <li class="flex">
+                            <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                <i class="fa fa-times text-red-400 text-xs"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-lg mb-1">数据库文件锁定问题</h4>
+                                <p class="text-gray-400">在某些网络文件系统上可能会出现文件锁定问题，导致操作失败。</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 适用场景 -->
+            <div class="mt-16 bg-sqlite-card rounded-xl p-8 border border-sqlite-border shadow-sm">
+                <h3 class="text-2xl font-bold mb-6 text-center">SQLite 适用场景</h3>
+                <p class="text-gray-400 text-center max-w-3xl mx-auto mb-8">SQLite在特定场景下表现出色，了解这些场景可以帮助您做出更合适的技术选择</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-mobile text-2xl text-sqlite-accent mr-3"></i>
+                            <h4 class="text-xl font-bold">移动应用</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            非常适合iOS和Android应用，提供本地数据存储能力，支持离线操作，减轻服务器负担。
+                        </p>
+                        <a href="https://www.sqlite.org/mobile.html" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            了解移动应用案例 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-desktop text-2xl text-sqlite-accent mr-3"></i>
+                            <h4 class="text-xl font-bold">桌面软件</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            理想的桌面应用数据存储方案，用于配置存储、缓存数据、日志记录和本地数据处理。
+                        </p>
+                        <a href="https://www.sqlite.org/desktop.html" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            了解桌面应用案例 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-database text-2xl text-sqlite-accent mr-3"></i>
+                            <h4 class="text-xl font-bold">嵌入式设备</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            广泛应用于嵌入式设备和物联网设备，体积小、资源占用低的特点使其成为理想选择。
+                        </p>
+                        <a href="https://www.sqlite.org/embedded.html" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            了解嵌入式案例 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-code text-2xl text-sqlite-accent mr-3"></i>
+                            <h4 class="text-xl font-bold">开发与原型</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            适合快速开发和原型验证，简化开发环境配置，加速产品迭代，后期可平滑迁移到其他数据库。
+                        </p>
+                        <a href="https://www.sqlite.org/quickstart.html" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            快速入门指南 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-cloud-download text-2xl text-sqlite-accent mr-3"></i>
+                            <h4 class="text-xl font-bold">数据缓存</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            作为应用程序的数据缓存，减少对远程数据库的访问，提高响应速度，支持离线功能。
+                        </p>
+                        <a href="https://www.sqlite.org/caching.html" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            了解缓存方案 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-file-text-o text-2xl text-sqlite-accent mr-3"></i>
+                            <h4 class="text-xl font-bold">数据分析</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            适合中小型数据集的分析和处理，可作为数据交换格式，简化数据共享和处理流程。
+                        </p>
+                        <a href="https://www.sqlite.org/analysis.html" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            数据分析案例 <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 替代方案 -->
+            <div class="mt-16 bg-sqlite-card rounded-xl p-8 border border-sqlite-border shadow-sm">
+                <h3 class="text-2xl font-bold mb-6 text-center">替代数据库方案</h3>
+                <p class="text-gray-400 text-center max-w-3xl mx-auto mb-8">在不适合使用SQLite的场景下，这些数据库可能是更好的选择</p>
+                
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-database text-2xl text-gray-300 mr-3"></i>
+                            <h4 class="text-xl font-bold">MySQL / MariaDB</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            适合需要多用户并发访问的Web应用，提供更丰富的功能和更好的扩展性。
+                        </p>
+                        <a href="https://www.mysql.com/" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            访问 MySQL <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-database text-2xl text-gray-300 mr-3"></i>
+                            <h4 class="text-xl font-bold">PostgreSQL</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            功能最丰富的开源关系型数据库，适合复杂查询和大型应用，支持高级数据类型。
+                        </p>
+                        <a href="https://www.postgresql.org/" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            访问 PostgreSQL <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="border border-sqlite-border rounded-lg p-6 card-hover">
+                        <div class="flex items-center mb-4">
+                            <i class="fa fa-database text-2xl text-gray-300 mr-3"></i>
+                            <h4 class="text-xl font-bold">MongoDB</h4>
+                        </div>
+                        <p class="text-gray-400 mb-4 text-sm">
+                            文档型NoSQL数据库，适合存储非结构化或半结构化数据，具有良好的水平扩展能力。
+                        </p>
+                        <a href="https://www.mongodb.com/" target="_blank" class="text-gray-300 hover:text-sqlite-accent font-medium transition-colors text-sm">
+                            访问 MongoDB <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 使用方法 -->
+    <section id="usage" class="py-20 bg-sqlite-primary">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">SQLite 使用方法</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">从下载安装到基本操作的详细指南</p>
+                <div class="w-20 h-1 bg-sqlite-accent mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto">
+                <div class="relative">
+                    <!-- 步骤连接线 -->
+                    <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-sqlite-border"></div>
+                    
+                    <!-- 步骤 1 -->
+                    <div class="relative pl-16 pb-12">
+                        <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-sqlite-accent text-white flex items-center justify-center font-bold text-lg">1</div>
+                        <h3 class="text-xl font-bold mb-3">下载SQLite工具</h3>
+                        <p class="text-gray-400 mb-4">
+                            从官方网站下载适用于您操作系统的SQLite工具包，包含命令行客户端和相关工具。
+                        </p>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border mb-4">
+                            <p class="text-sm text-gray-300"><i class="fa fa-link text-sqlite-accent mr-2"></i> 下载地址: <a href="https://www.sqlite.org/download.html" target="_blank" class="text-sqlite-accent hover:underline">https://www.sqlite.org/download.html</a></p>
+                        </div>
+                        <img src="https://picsum.photos/id/180/800/300" alt="SQLite下载页面" class="w-full h-auto rounded-lg border border-sqlite-border">
+                    </div>
+                    
+                    <!-- 步骤 2 -->
+                    <div class="relative pl-16 pb-12">
+                        <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-sqlite-accent text-white flex items-center justify-center font-bold text-lg">2</div>
+                        <h3 class="text-xl font-bold mb-3">安装与配置</h3>
+                        <p class="text-gray-400 mb-4">
+                            SQLite不需要复杂安装，只需解压下载的文件，将包含sqlite3.exe的目录添加到系统PATH中，即可在命令行中使用。
+                        </p>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border mb-4 font-mono text-sm overflow-x-auto scrollbar-thin">
+                            <p class="text-gray-300"># Windows示例 - 将SQLite添加到PATH</p>
+                            <p class="text-green-400">set PATH=%PATH%;C:\sqlite-tools-win32-x86-3410200</p>
+                            <br>
+                            <p class="text-gray-300"># Linux/macOS示例 - 将SQLite添加到PATH</p>
+                            <p class="text-green-400">export PATH=$PATH:/home/user/sqlite-tools</p>
+                        </div>
+                        <img src="https://picsum.photos/id/0/800/300" alt="SQLite安装配置" class="w-full h-auto rounded-lg border border-sqlite-border">
+                    </div>
+                    
+                    <!-- 步骤 3 -->
+                    <div class="relative pl-16 pb-12">
+                        <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-sqlite-accent text-white flex items-center justify-center font-bold text-lg">3</div>
+                        <h3 class="text-xl font-bold mb-3">创建数据库</h3>
+                        <p class="text-gray-400 mb-4">
+                            打开命令行终端，使用sqlite3命令创建新数据库。只需指定数据库文件名，如果文件不存在，SQLite会自动创建。
+                        </p>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border mb-4 font-mono text-sm overflow-x-auto scrollbar-thin">
+                            <p class="text-gray-300"># 创建或打开名为mydatabase.db的数据库</p>
+                            <p class="text-green-400">sqlite3 mydatabase.db</p>
+                            <br>
+                            <p class="text-blue-400">SQLite version 3.41.2 2023-03-22 11:56:21</p>
+                            <p class="text-blue-400">Enter ".help" for usage hints.</p>
+                            <p class="text-yellow-400">sqlite></p>
+                        </div>
+                        <img src="https://picsum.photos/id/20/800/300" alt="创建SQLite数据库" class="w-full h-auto rounded-lg border border-sqlite-border">
+                    </div>
+                    
+                    <!-- 步骤 4 -->
+                    <div class="relative pl-16 pb-12">
+                        <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-sqlite-accent text-white flex items-center justify-center font-bold text-lg">4</div>
+                        <h3 class="text-xl font-bold mb-3">创建表和基本操作</h3>
+                        <p class="text-gray-400 mb-4">
+                            使用标准SQL语句创建表、插入数据、查询数据。以下是基本操作示例：
+                        </p>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border mb-4 font-mono text-sm overflow-x-auto scrollbar-thin">
+                            <p class="text-gray-300"># 创建用户表</p>
+                            <p class="text-green-400">CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email TEXT UNIQUE);</p>
+                            <p class="text-blue-400">OK</p>
+                            <br>
+                            <p class="text-gray-300"># 插入数据</p>
+                            <p class="text-green-400">INSERT INTO users (name, email) VALUES ('张三', 'zhangsan@example.com');</p>
+                            <p class="text-blue-400">1 row inserted.</p>
+                            <br>
+                            <p class="text-gray-300"># 查询数据</p>
+                            <p class="text-green-400">SELECT * FROM users;</p>
+                            <p class="text-blue-400">1|张三|zhangsan@example.com</p>
+                        </div>
+                        <img src="https://picsum.photos/id/119/800/300" alt="SQLite基本操作" class="w-full h-auto rounded-lg border border-sqlite-border">
+                    </div>
+                    
+                    <!-- 步骤 5 -->
+                    <div class="relative pl-16 pb-12">
+                        <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-sqlite-accent text-white flex items-center justify-center font-bold text-lg">5</div>
+                        <h3 class="text-xl font-bold mb-3">使用图形化工具</h3>
+                        <p class="text-gray-400 mb-4">
+                            对于不熟悉命令行的用户，可以使用图形化工具管理SQLite数据库，如DB Browser for SQLite。
+                        </p>
+                        <div class="bg-blue-900/20 p-4 rounded-lg border border-blue-800/30 mb-4">
+                            <p class="text-sm text-blue-300"><i class="fa fa-info-circle mr-2"></i> DB Browser for SQLite是一个免费开源的SQLite图形化管理工具，支持Windows、macOS和Linux。</p>
+                        </div>
+                        <a href="https://sqlitebrowser.org/" target="_blank" class="inline-flex items-center bg-sqlite-accent hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors mb-4">
+                            <i class="fa fa-download mr-2"></i> 下载DB Browser for SQLite
+                        </a>
+                        <img src="https://picsum.photos/id/160/800/300" alt="SQLite图形化工具" class="w-full h-auto rounded-lg border border-sqlite-border">
+                    </div>
+                    
+                    <!-- 步骤 6 -->
+                    <div class="relative pl-16">
+                        <div class="absolute left-0 top-0 w-12 h-12 rounded-full bg-sqlite-accent text-white flex items-center justify-center font-bold text-lg">6</div>
+                        <h3 class="text-xl font-bold mb-3">在编程语言中使用</h3>
+                        <p class="text-gray-400 mb-4">
+                            SQLite提供了多种编程语言的API，以下是在Python中使用SQLite的简单示例：
+                        </p>
+                        <div class="bg-sqlite-card p-4 rounded-lg border border-sqlite-border mb-4 font-mono text-sm overflow-x-auto scrollbar-thin">
+                            <p class="text-yellow-400">import sqlite3</p>
+                            <br>
+                            <p class="text-gray-300"># 连接数据库</p>
+                            <p class="text-yellow-400">conn = sqlite3.connect('mydatabase.db')</p>
+                            <p class="text-yellow-400">cursor = conn.cursor()</p>
+                            <br>
+                            <p class="text-gray-300"># 执行查询</p>
+                            <p class="text-yellow-400">cursor.execute("SELECT * FROM users")</p>
+                            <p class="text-yellow-400">print(cursor.fetchall())</p>
+                            <br>
+                            <p class="text-gray-300"># 关闭连接</p>
+                            <p class="text-yellow-400">conn.close()</p>
+                        </div>
+                        <div class="flex flex-wrap gap-4 mb-4">
+                            <a href="https://www.sqlite.org/lang.html" target="_blank" class="inline-flex items-center bg-sqlite-accent hover:bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                <i class="fa fa-book mr-2"></i> SQL语法参考
+                            </a>
+                            <a href="https://www.sqlite.org/howtocompile.html" target="_blank" class="inline-flex items-center border border-sqlite-border hover:border-sqlite-accent text-gray-300 px-4 py-2 rounded-md text-sm font-medium transition-colors">
+                                <i class="fa fa-code mr-2"></i> 编程语言绑定
+                            </a>
+                        </div>
+                        <img src="https://picsum.photos/id/177/800/300" alt="在编程语言中使用SQLite" class="w-full h-auto rounded-lg border border-sqlite-border">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论 -->
+    <section id="comments" class="py-20 bg-sqlite-secondary">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">SQLite 社区用户评论</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto text-lg">来自全球开发者的真实使用体验和评价</p>
+                <div class="w-20 h-1 bg-sqlite-accent mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <!-- 评论筛选 -->
+            <div class="flex flex-wrap justify-center gap-3 mb-10">
+                <button class="comment-filter active px-5 py-2 rounded-full bg-sqlite-accent text-white font-medium transition-colors">全部评论</button>
+                <button class="comment-filter px-5 py-2 rounded-full bg-sqlite-card text-gray-300 font-medium hover:bg-sqlite-card/80 transition-colors">正面评价</button>
+                <button class="comment-filter px-5 py-2 rounded-full bg-sqlite-card text-gray-300 font-medium hover:bg-sqlite-card/80 transition-colors">负面评价</button>
+                <button class="comment-filter px-5 py-2 rounded-full bg-sqlite-card text-gray-300 font-medium hover:bg-sqlite-card/80 transition-colors">中立评价</button>
+            </div>
+            
+            <!-- 评论列表 -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="comments-container">
+                <!-- 评论 1 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="positive">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1001/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">李明</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        作为移动应用开发者，SQLite是我的首选本地数据库。它体积小、性能好，不需要额外的服务器，完美满足移动端的数据存储需求。最重要的是完全免费，集成到应用中也非常简单。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-05-12
+                    </div>
+                </div>
+                
+                <!-- 评论 2 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="positive">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1002/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Sarah Johnson</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        SQLite has been a game-changer for our desktop application. The fact that it's zero-configuration and requires no server makes deployment so much easier. Performance is excellent for our use case with around 10k records.
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-06-28
+                    </div>
+                </div>
+                
+                <!-- 评论 3 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="negative">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1003/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">张伟</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        我们尝试在一个多用户并发写入的场景中使用SQLite，但效果很不理想。经常出现锁等待和超时问题，最终不得不迁移到MySQL。SQLite确实不适合高并发写入的Web应用场景。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-04-15
+                    </div>
+                </div>
+                
+                <!-- 评论 4 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="neutral">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1004/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Alex Chen</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        SQLite works great for our embedded device project. It's lightweight and reliable. The only limitation we've found is that some advanced SQL features we needed aren't supported, but we were able to work around them.
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-07-03
+                    </div>
+                </div>
+                
+                <!-- 评论 5 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="positive">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1005/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">王芳</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        作为一个独立开发者，SQLite帮我省去了数据库服务器的配置和维护工作。开发效率大大提高，而且数据库文件可以直接复制备份，非常方便。Python的内置sqlite3模块让集成变得异常简单。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-03-22
+                    </div>
+                </div>
+                
+                <!-- 评论 6 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="negative">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1006/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">David Wilson</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        We encountered significant performance issues with SQLite when our database grew beyond 10GB. Queries that used to take milliseconds started taking seconds. Migration to PostgreSQL solved our performance problems.
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-05-30
+                    </div>
+                </div>
+                
+                <!-- 评论 7 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="positive">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1007/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">刘强</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        SQLite非常适合我们的数据分析工具，作为数据交换和缓存格式非常方便。客户可以轻松地分享单个数据库文件，而不必担心数据库服务器配置。查询性能对于我们的数据集大小来说足够快。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-06-17
+                    </div>
+                </div>
+                
+                <!-- 评论 8 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="neutral">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1008/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Emily Zhang</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        SQLite is perfect for our application's local data storage needs. We use it alongside a server database for offline functionality. The only drawback is the lack of some advanced features like full-text search capabilities.
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-04-05
+                    </div>
+                </div>
+                
+                <!-- 评论 9 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="positive">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1009/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">张明</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        作为教学工具，SQLite简直太棒了！学生不需要配置复杂的数据库服务器，几分钟内就能开始学习SQL。文件型数据库也让作业提交和评分变得非常简单。完全免费的特性对学生来说也很友好。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-07-11
+                    </div>
+                </div>
+                
+                <!-- 评论 10 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="negative">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1010/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">陈静</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        我们在网络共享环境中使用SQLite时遇到了很多问题，文件锁定机制在网络文件系统上表现不稳定，经常出现数据一致性问题。不得不放弃使用，改用客户端/服务器架构的数据库。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-05-02
+                    </div>
+                </div>
+                
+                <!-- 评论 11 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="positive">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1011/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">Michael Brown</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        The reliability of SQLite is impressive. We've been using it in our IoT devices for over 5 years with zero data corruption issues, even in environments with frequent power outages. The small footprint is perfect for embedded systems.
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-06-22
+                    </div>
+                </div>
+                
+                <!-- 评论 12 -->
+                <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="neutral">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1012/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                        <div>
+                            <h4 class="font-semibold">赵伟</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        SQLite对于我们的单用户桌面应用来说非常合适，部署简单，性能也不错。但缺少存储过程和复杂的权限管理功能，对于需要这些高级特性的企业级应用来说，功能还是有些简陋。
+                    </p>
+                    <div class="text-gray-500 text-sm">
+                        <i class="fa fa-calendar-o mr-1"></i> 2023-04-28
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 加载更多评论 -->
+            <div class="text-center mt-12">
+                <button id="load-more-comments" class="bg-sqlite-card border border-sqlite-border hover:border-sqlite-accent text-gray-300 hover:text-sqlite-accent px-6 py-3 rounded-md font-semibold transition-all inline-flex items-center">
+                    加载更多评论 <i class="fa fa-refresh ml-2"></i>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- 行动召唤 -->
+    <section class="py-20 bg-sqlite-primary">
+        <div class="container mx-auto px-4 md:px-6 text-center">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6 max-w-3xl mx-auto">
+                开始使用 SQLite 构建你的应用
+            </h2>
+            <p class="text-gray-400 max-w-2xl mx-auto text-lg mb-10">
+                下载SQLite，体验这个轻量级、零配置、完全免费的嵌入式数据库引擎带来的便利。
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://www.sqlite.org/download.html" target="_blank" class="bg-sqlite-accent hover:bg-blue-600 text-white px-8 py-3 rounded-md font-semibold transition-all hover:shadow-lg">
+                    免费下载 SQLite
+                </a>
+                <a href="https://www.sqlite.org/docs.html" target="_blank" class="border-2 border-sqlite-border hover:border-sqlite-accent text-gray-300 px-8 py-3 rounded-md font-semibold transition-all">
+                    查看官方文档
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-sqlite-secondary text-gray-400 py-12">
+        <div class="container mx-auto px-4 md:px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div class="md:col-span-1">
+                    <div class="flex items-center mb-4">
+                        <i class="fa fa-database text-3xl text-sqlite-accent mr-3"></i>
+                        <span class="font-bold text-xl text-white">SQLite</span>
+                    </div>
+                    <p class="mb-4 max-w-md">
+                        SQLite是一个自包含、零配置、无需服务器的SQL数据库引擎，在全球数十亿设备上运行。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com/sqlite" target="_blank" class="hover:text-white transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://github.com/sqlite/sqlite" target="_blank" class="hover:text-white transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="https://stackoverflow.com/questions/tagged/sqlite" target="_blank" class="hover:text-white transition-colors">
+                            <i class="fa fa-stack-overflow"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">资源</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://www.sqlite.org/docs.html" target="_blank" class="hover:text-white transition-colors">文档</a></li>
+                        <li><a href="https://www.sqlite.org/download.html" target="_blank" class="hover:text-white transition-colors">下载</a></li>
+                        <li><a href="https://www.sqlite.org/cvstrac/wiki?p=SqliteUseCases" target="_blank" class="hover:text-white transition-colors">使用案例</a></li>
+                        <li><a href="https://www.sqlite.org/faq.html" target="_blank" class="hover:text-white transition-colors">常见问题</a></li>
+                        <li><a href="https://www.sqlite.org/forum.html" target="_blank" class="hover:text-white transition-colors">论坛</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">开发</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://www.sqlite.org/lang.html" target="_blank" class="hover:text-white transition-colors">SQL语法</a></li>
+                        <li><a href="https://www.sqlite.org/c3ref/intro.html" target="_blank" class="hover:text-white transition-colors">C API</a></li>
+                        <li><a href="https://www.sqlite.org/bindings.html" target="_blank" class="hover:text-white transition-colors">语言绑定</a></li>
+                        <li><a href="https://www.sqlite.org/howtocompile.html" target="_blank" class="hover:text-white transition-colors">编译指南</a></li>
+                        <li><a href="https://www.sqlite.org/testing.html" target="_blank" class="hover:text-white transition-colors">测试信息</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4 text-white">关于</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://www.sqlite.org/about.html" target="_blank" class="hover:text-white transition-colors">关于SQLite</a></li>
+                        <li><a href="https://www.sqlite.org/history.html" target="_blank" class="hover:text-white transition-colors">历史</a></li>
+                        <li><a href="https://www.sqlite.org/copyright.html" target="_blank" class="hover:text-white transition-colors">版权信息</a></li>
+                        <li><a href="https://www.sqlite.org/sponsors.html" target="_blank" class="hover:text-white transition-colors">赞助商</a></li>
+                        <li><a href="https://www.sqlite.org/contact.html" target="_blank" class="hover:text-white transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-sqlite-border pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-sm mb-4 md:mb-0">© 2023 SQLite. 公共领域软件，无版权限制。</p>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="https://www.sqlite.org/copyright.html" target="_blank" class="text-sm hover:text-white transition-colors">版权信息</a>
+                        <a href="https://www.sqlite.org/privacy.html" target="_blank" class="text-sm hover:text-white transition-colors">隐私政策</a>
+                        <a href="https://www.sqlite.org/security.html" target="_blank" class="text-sm hover:text-white transition-colors">安全信息</a>
+                        <a href="https://www.sqlite.org/sitemap.html" target="_blank" class="text-sm hover:text-white transition-colors">网站地图</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 回到顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 bg-sqlite-accent hover:bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
+        <i class="fa fa-chevron-up"></i>
+    </button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 评论筛选功能
+            const commentFilterButtons = document.querySelectorAll('.comment-filter');
+            let commentItems = document.querySelectorAll('.comment-item');
+            
+            commentFilterButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // 更新按钮状态
+                    commentFilterButtons.forEach(btn => {
+                        btn.classList.remove('active', 'bg-sqlite-accent', 'text-white');
+                        btn.classList.add('bg-sqlite-card', 'text-gray-300');
+                    });
+                    this.classList.add('active', 'bg-sqlite-accent', 'text-white');
+                    this.classList.remove('bg-sqlite-card', 'text-gray-300');
+                    
+                    const filter = this.textContent.trim();
+                    
+                    // 筛选评论
+                    commentItems.forEach(item => {
+                        if (filter === '全部评论' || 
+                            (filter === '正面评价' && item.dataset.rating === 'positive') ||
+                            (filter === '负面评价' && item.dataset.rating === 'negative') ||
+                            (filter === '中立评价' && item.dataset.rating === 'neutral')) {
+                            item.style.display = 'block';
+                        } else {
+                            item.style.display = 'none';
+                        }
+                    });
+                });
+            });
+            
+            // 加载更多评论
+            const loadMoreBtn = document.getElementById('load-more-comments');
+            let commentsLoaded = 12; // 初始加载的评论数量
+            
+            loadMoreBtn.addEventListener('click', function() {
+                // 模拟加载更多评论
+                this.innerHTML = '<i class="fa fa-circle-o-notch fa-spin mr-2"></i> 加载中...';
+                
+                setTimeout(() => {
+                    // 生成更多评论
+                    const commentsContainer = document.getElementById('comments-container');
+                    const ratings = ['positive', 'negative', 'neutral'];
+                    const names = ['王丽', '陈明', '刘洋', '赵静', '孙强', '周婷', '吴浩', '郑佳', '钱明', '孙伟', '林小红', '杨光', '黄志强', '刘敏', '周建国'];
+                    const comments = [
+                        'SQLite作为嵌入式数据库非常出色，我们的移动应用使用它存储本地数据，性能稳定，集成简单。',
+                        '在高并发写入场景下表现不佳，经常出现锁等待问题，不适合多用户同时操作的应用。',
+                        '作为小型应用的数据库解决方案非常合适，但功能相对简单，不适合复杂的企业级应用。',
+                        '零配置的特点太赞了，开发和部署都非常方便，数据库文件直接复制就能备份和迁移。',
+                        '对于我们的物联网设备来说，SQLite是完美的选择，体积小，资源占用低，可靠性高。',
+                        '当数据库文件变大后，查询性能明显下降，不得不进行分库或迁移到其他数据库。',
+                        'Python内置的sqlite3模块让使用变得异常简单，非常适合快速开发和原型验证。',
+                        '不支持网络访问是个大问题，我们尝试在局域网共享使用时遇到了很多文件锁定问题。',
+                        '作为教学工具非常合适，学生可以快速上手SQL而不必担心复杂的数据库配置。',
+                        'ACID事务支持很完善，即使在意外断电的情况下也能保证数据一致性，这点非常可靠。',
+                        '缺乏存储过程和高级查询功能，对于需要复杂业务逻辑的应用来说有些不足。',
+                        'DB Browser for SQLite这个图形化工具非常好用，大大降低了SQLite的使用门槛。',
+                        '跨平台兼容性很好，我们的应用在Windows、macOS和Linux上都能无缝使用同一个数据库文件。',
+                        '全文搜索功能比较基础，对于需要强大搜索能力的应用来说不够用，需要额外集成搜索引擎。',
+                        '社区支持很活跃，遇到问题时很容易找到解决方案，文档也非常完善。'
+                    ];
+                    
+                    // 每次加载15条评论
+                    const loadCount = 15;
+                    for (let i = 0; i < loadCount; i++) {
+                        const randomRating = ratings[Math.floor(Math.random() * ratings.length)];
+                        const randomName = names[Math.floor(Math.random() * names.length)];
+                        const randomComment = comments[Math.floor(Math.random() * comments.length)];
+                        const randomDate = new Date();
+                        randomDate.setDate(randomDate.getDate() - Math.floor(Math.random() * 90));
+                        const formattedDate = `${randomDate.getFullYear()}-${String(randomDate.getMonth() + 1).padStart(2, '0')}-${String(randomDate.getDate()).padStart(2, '0')}`;
+                        const randomId = 1020 + Math.floor(Math.random() * 100);
+                        
+                        // 生成星级评分
+                        let stars = '';
+                        let starCount = 0;
+                        
+                        if (randomRating === 'positive') {
+                            starCount = 4 + Math.floor(Math.random() * 2); // 4或5星
+                        } else if (randomRating === 'negative') {
+                            starCount = 1 + Math.floor(Math.random() * 3); // 1-3星
+                        } else {
+                            starCount = 3 + Math.floor(Math.random() * 2); // 3或4星
+                        }
+                        
+                        for (let s = 1; s <= 5; s++) {
+                            if (s <= starCount) {
+                                stars += '<i class="fa fa-star"></i>';
+                            } else {
+                                stars += '<i class="fa fa-star-o"></i>';
+                            }
+                        }
+                        
+                        // 创建评论元素
+                        const commentHTML = `
+                            <div class="bg-sqlite-card rounded-xl p-6 border border-sqlite-border shadow-sm card-hover comment-item" data-rating="${randomRating}">
+                                <div class="flex items-center mb-4">
+                                    <img src="https://picsum.photos/id/${randomId}/100/100" alt="用户头像" class="w-12 h-12 rounded-full mr-4">
+                                    <div>
+                                        <h4 class="font-semibold">${randomName}</h4>
+                                        <div class="flex text-yellow-400 text-sm">
+                                            ${stars}
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-gray-400 mb-4">
+                                    ${randomComment}
+                                </p>
+                                <div class="text-gray-500 text-sm">
+                                    <i class="fa fa-calendar-o mr-1"></i> ${formattedDate}
+                                </div>
+                            </div>
+                        `;
+                        
+                        commentsContainer.insertAdjacentHTML('beforeend', commentHTML);
+                    }
+                    
+                    commentsLoaded += loadCount;
+                    
+                    // 更新按钮文本
+                    this.innerHTML = '加载更多评论 <i class="fa fa-refresh ml-2"></i>';
+                    
+                    // 更新评论项列表
+                    commentItems = document.querySelectorAll('.comment-item');
+                    
+                    // 如果加载的评论超过50条，隐藏加载更多按钮
+                    if (commentsLoaded >= 50) {
+                        this.innerHTML = '已加载全部评论';
+                        this.disabled = true;
+                        this.classList.add('opacity-50', 'cursor-not-allowed');
+                    }
+                }, 1500);
+            });
+            
+            // 回到顶部按钮
+            const backToTopBtn = document.getElementById('back-to-top');
+            
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.remove('opacity-0', 'invisible');
+                    backToTopBtn.classList.add('opacity-100', 'visible');
+                } else {
+                    backToTopBtn.classList.remove('opacity-100', 'visible');
+                    backToTopBtn.classList.add('opacity-0', 'invisible');
+                }
+                
+                // 导航栏滚动效果
+                const navbar = document.getElementById('navbar');
+                if (window.pageYOffset > 100) {
+                    navbar.classList.add('shadow-lg');
+                    navbar.classList.remove('shadow-md');
+                } else {
+                    navbar.classList.add('shadow-md');
+                    navbar.classList.remove('shadow-lg');
+                }
+            });
+            
+            backToTopBtn.addEventListener('click', function() {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+            
+            // 移动端菜单切换
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // 平滑滚动
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    // 检查是否是外部链接
+                    if (this.target === '_blank' || this.href.includes('http')) {
+                        return; // 外部链接正常跳转
+                    }
+                    
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        // 关闭移动菜单（如果打开）
+                        mobileMenu.classList.add('hidden');
+                        
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+    

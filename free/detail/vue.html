@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vue.js 介绍 - 夜间版</title>
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入 Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 配置 Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#42b983', // Vue 绿色
+            secondary: '#35495e',
+            dark: '#1a1a2e',
+            darker: '#121212',
+            light: '#e2e8f0',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+      }
+      .gradient-border {
+        position: relative;
+        border-radius: 0.5rem;
+      }
+      .gradient-border::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        z-index: -1;
+        border-radius: 0.6rem;
+        background: linear-gradient(45deg, #42b983, #3598db, #9b59b6);
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
+      }
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-darker text-light font-sans">
+  <!-- 导航栏 -->
+  <header id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-darker/80 backdrop-blur-md">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <i class="fa fa-code text-white text-xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white">Vue.js</h1>
+      </div>
+      
+      <!-- 桌面导航 -->
+      <nav class="hidden md:flex space-x-8">
+        <a href="#home" class="text-white hover:text-primary transition-colors">首页</a>
+        <a href="#services" class="text-white hover:text-primary transition-colors">免费服务</a>
+        <a href="#pros" class="text-white hover:text-primary transition-colors">优点</a>
+        <a href="#cons" class="text-white hover:text-primary transition-colors">缺点</a>
+        <a href="#reviews" class="text-white hover:text-primary transition-colors">社区评论</a>
+        <a href="#usage" class="text-white hover:text-primary transition-colors">使用方法</a>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menu-toggle" class="md:hidden text-white text-2xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="md:hidden hidden bg-dark/95 backdrop-blur-md">
+      <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+        <a href="#home" class="text-white hover:text-primary transition-colors py-2">首页</a>
+        <a href="#services" class="text-white hover:text-primary transition-colors py-2">免费服务</a>
+        <a href="#pros" class="text-white hover:text-primary transition-colors py-2">优点</a>
+        <a href="#cons" class="text-white hover:text-primary transition-colors py-2">缺点</a>
+        <a href="#reviews" class="text-white hover:text-primary transition-colors py-2">社区评论</a>
+        <a href="#usage" class="text-white hover:text-primary transition-colors py-2">使用方法</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section id="home" class="pt-32 pb-20 bg-gradient-to-b from-dark to-darker">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+          <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-white leading-tight text-shadow mb-6">
+            Vue.js<br>
+            <span class="text-primary">渐进式 JavaScript 框架</span>
+          </h1>
+          <p class="text-xl text-gray-300 mb-8 max-w-lg">
+            构建用户界面的渐进式框架，易学易用，性能出色，适用场景丰富。
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#usage" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-primary/30">
+              开始使用
+            </a>
+            <a href="#reviews" class="px-8 py-3 bg-transparent border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg transition-all">
+              查看评论
+            </a>
+          </div>
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+          <div class="relative w-64 h-64 md:w-80 md:h-80">
+            <div class="absolute inset-0 rounded-full bg-primary/20 animate-pulse"></div>
+            <div class="absolute inset-4 rounded-full bg-primary/30 animate-pulse" style="animation-delay: 0.5s"></div>
+            <div class="absolute inset-8 flex items-center justify-center">
+              <img src="https://picsum.photos/id/0/200/200" alt="Vue.js 标志" class="w-40 h-40 md:w-56 md:h-56 rounded-full">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 统计数据 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">200k+</div>
+          <div class="text-gray-400">GitHub Stars</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">7M+</div>
+          <div class="text-gray-400">每周下载量</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">150+</div>
+          <div class="text-gray-400">国家使用</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">8年+</div>
+          <div class="text-gray-400">稳定发展</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 免费服务 -->
+  <section id="services" class="py-20 bg-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Vue.js 免费服务</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">Vue 生态系统提供了丰富的免费工具和服务，帮助开发者更高效地构建应用</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 服务卡片 1 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-code text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">核心框架</h3>
+          <p class="text-gray-400">Vue.js 核心库完全免费开源，可用于任何个人和商业项目，无需支付任何许可费用。</p>
+        </div>
+        
+        <!-- 服务卡片 2 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-book text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">官方文档</h3>
+          <p class="text-gray-400">详尽的官方文档完全免费，包含入门指南、API 参考和最佳实践，支持多种语言。</p>
+        </div>
+        
+        <!-- 服务卡片 3 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-paint-brush text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Vue CLI</h3>
+          <p class="text-gray-400">官方命令行工具，免费提供项目脚手架、开发服务器、构建优化等功能。</p>
+        </div>
+        
+        <!-- 服务卡片 4 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-cubes text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Vue Router</h3>
+          <p class="text-gray-400">官方路由管理器，免费提供客户端路由、嵌套路由、路由守卫等功能。</p>
+        </div>
+        
+        <!-- 服务卡片 5 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-database text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Vuex / Pinia</h3>
+          <p class="text-gray-400">官方状态管理库，免费提供集中式状态管理、状态持久化等功能。</p>
+        </div>
+        
+        <!-- 服务卡片 6 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-comments text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">社区支持</h3>
+          <p class="text-gray-400">免费的 GitHub 讨论区、Discord 服务器和论坛，可获取开发者社区的技术支持。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 优点 -->
+  <section id="pros" class="py-20 bg-gradient-to-b from-darker to-dark">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Vue.js 的优点</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">Vue 凭借其独特的设计理念和特性，成为众多开发者的首选框架</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="space-y-8">
+            <!-- 优点 1 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">易于学习</h3>
+                <p class="text-gray-400">Vue 的 API 设计简洁直观，HTML、CSS 和 JavaScript 开发者可以快速上手，学习曲线平缓。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 2 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">渐进式框架</h3>
+                <p class="text-gray-400">可以根据需求逐步采用其功能，从简单的视图层到复杂的单页应用，灵活适应各种项目规模。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 3 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">出色的性能</h3>
+                <p class="text-gray-400">虚拟 DOM 实现和高效的重渲染机制，确保应用具有优秀的运行性能和响应速度。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 4 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">强大的生态系统</h3>
+                <p class="text-gray-400">丰富的官方库（Vue Router、Pinia）和社区插件，满足各种开发需求，降低开发成本。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="gradient-border p-1">
+          <div class="bg-dark rounded-lg p-6 h-full">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">开发者满意度</h3>
+            <canvas id="satisfactionChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 缺点 -->
+  <section id="cons" class="py-20 bg-dark">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Vue.js 的缺点</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">任何技术都有其局限性，了解 Vue 的不足有助于做出更合适的技术选型</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="order-2 md:order-1">
+          <div class="space-y-8">
+            <!-- 缺点 1 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">企业级案例相对较少</h3>
+                <p class="text-gray-400">相比 React 和 Angular，在大型企业级应用中的采用案例相对较少，参考资料有限。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 2 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">英文文档更完善</h3>
+                <p class="text-gray-400">虽然有中文文档，但部分最新特性和高级内容的中文资料更新较慢，质量参差不齐。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 3 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">移动开发生态相对薄弱</h3>
+                <p class="text-gray-400">虽然有 Ionic Vue 和 Vue Native，但相比 React Native 和 Flutter，移动开发生态不够成熟。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 4 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">版本迁移成本</h3>
+                <p class="text-gray-400">从 Vue 2 迁移到 Vue 3 有一定的学习和迁移成本，部分库和插件的兼容性需要时间解决。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="order-1 md:order-2 gradient-border p-1">
+          <div class="bg-dark rounded-lg p-6 h-full">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">框架对比</h3>
+            <canvas id="frameworksChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社区评论 -->
+  <section id="reviews" class="py-20 bg-gradient-to-b from-dark to-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">社区真实评论</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">来自全球开发者的真实体验和评价</p>
+      </div>
+      
+      <!-- 筛选器 -->
+      <div class="flex flex-wrap justify-center gap-4 mb-12">
+        <button class="review-filter active px-6 py-2 rounded-full bg-primary text-white" data-filter="all">全部评论</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="positive">正面评价</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="neutral">中性评价</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="negative">负面评价</button>
+      </div>
+      
+      <!-- 评论网格 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+        <!-- 评论会通过 JavaScript 动态生成 -->
+      </div>
+      
+      <!-- 加载更多按钮 -->
+      <div class="text-center mt-12">
+        <button id="load-more" class="px-8 py-3 bg-dark border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg transition-all">
+          加载更多评论
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使用方法 -->
+  <section id="usage" class="py-20 bg-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Vue.js 使用方法</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">快速入门 Vue.js，从安装到创建第一个应用</p>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <!-- 步骤导航 -->
+        <div class="flex flex-wrap justify-center mb-12 gap-2 md:gap-6">
+          <button class="usage-step active px-4 py-2 md:px-6 md:py-3 rounded-lg bg-primary text-white" data-step="1">步骤 1: 安装</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="2">步骤 2: 创建实例</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="3">步骤 3: 模板语法</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="4">步骤 4: 组件基础</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="5">步骤 5: 运行应用</button>
+        </div>
+        
+        <!-- 步骤内容 -->
+        <div class="usage-content active" id="step-1">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 1: 安装 Vue.js</h3>
+            
+            <p class="text-gray-300 mb-6">有多种方式可以安装 Vue.js，选择最适合你项目的方式：</p>
+            
+            <div class="space-y-6">
+              <!-- 方式 1 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">通过 CDN 引入</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;script src="https://unpkg.com/vue@3/dist/vue.global.js"&gt;&lt;/script&gt;
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">适合快速原型开发，无需复杂配置</p>
+              </div>
+              
+              <!-- 方式 2 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">使用 npm 或 yarn</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  npm install vue@latest<br>
+                  # 或者<br>
+                  yarn add vue@latest
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">适合大型项目，便于管理依赖</p>
+              </div>
+              
+              <!-- 方式 3 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">使用 Vue CLI</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  npm install -g @vue/cli<br>
+                  # 或者<br>
+                  yarn global add @vue/cli<br><br>
+                  vue create my-project<br>
+                  cd my-project
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">官方推荐的脚手架工具，提供完整的项目配置</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-2">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 2: 创建 Vue 实例</h3>
+            
+            <p class="text-gray-300 mb-6">安装完成后，创建一个基本的 Vue 实例：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">HTML 文件</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;div id="app"&gt;<br>
+                  &nbsp;&nbsp;&lt;h1&gt;{{ message }}&lt;/h1&gt;<br>
+                  &lt;/div&gt;
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">JavaScript 文件</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 从 Vue 中导入 createApp 函数<br>
+                  import { createApp } from 'vue'<br><br>
+                  
+                  // 创建一个应用实例<br>
+                  const app = createApp({<br>
+                  &nbsp;&nbsp;// 数据 - 函数返回一个对象<br>
+                  &nbsp;&nbsp;data() {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;return {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;message: 'Hello, Vue!'<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                  &nbsp;&nbsp;}<br>
+                  })<br><br>
+                  
+                  // 将应用挂载到 DOM 元素上<br>
+                  app.mount('#app')
+                </div>
+              </div>
+              
+              <p class="text-gray-300">这个简单的实例会在页面上显示 "Hello, Vue!"，使用了 Vue 的数据绑定功能。</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-3">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 3: 模板语法</h3>
+            
+            <p class="text-gray-300 mb-6">Vue 使用基于 HTML 的模板语法，允许你声明式地将 DOM 绑定到 Vue 实例的数据：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">文本插值</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;!-- 文本插值 --&gt;<br>
+                  &lt;p&gt;{{ message }}&lt;/p&gt;<br><br>
+                  
+                  &lt;!-- 一次性插值，数据变化不会更新 --&gt;<br>
+                  &lt;p v-once&gt;{{ message }}&lt;/p&gt;
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">HTML 绑定</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;!-- 输出 HTML，会被解析为 HTML 而非文本 --&gt;<br>
+                  &lt;div v-html="rawHtml"&gt;&lt;/div&gt;
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">指令</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;!-- 条件渲染 --&gt;<br>
+                  &lt;p v-if="seen"&gt;现在你看到我了&lt;/p&gt;<br><br>
+                  
+                  &lt;!-- 列表渲染 --&gt;<br>
+                  &lt;ul&gt;<br>
+                  &nbsp;&nbsp;&lt;li v-for="item in items" :key="item.id"&gt;<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;{{ item.text }}<br>
+                  &nbsp;&nbsp;&lt;/li&gt;<br>
+                  &lt;/ul&gt;<br><br>
+                  
+                  &lt;!-- 事件监听 --&gt;<br>
+                  &lt;button v-on:click="doSomething"&gt;点击我&lt;/button&gt;
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-4">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 4: 组件基础</h3>
+            
+            <p class="text-gray-300 mb-6">组件是 Vue 应用的基本构建块，以下是创建和使用组件的示例：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">创建组件</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 定义一个名为 button-counter 的新组件<br>
+                  const ButtonCounter = {<br>
+                  &nbsp;&nbsp;data() {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;return {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;count: 0<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;}<br>
+                  &nbsp;&nbsp;},<br>
+                  &nbsp;&nbsp;template: `&lt;button v-on:click="count++"&gt;点击了 {{ count }} 次&lt;/button&gt;`<br>
+                  }
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">注册和使用组件</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 全局注册组件<br>
+                  app.component('button-counter', ButtonCounter)<br><br>
+                  
+                  // 在模板中使用<br>
+                  &lt;div id="app"&gt;<br>
+                  &nbsp;&nbsp;&lt;button-counter&gt;&lt;/button-counter&gt;<br>
+                  &nbsp;&nbsp;&lt;button-counter&gt;&lt;/button-counter&gt;<br>
+                  &lt;/div&gt;
+                </div>
+              </div>
+              
+              <p class="text-gray-300">每个组件都是独立的，点击不同的按钮会各自增加计数，不会相互影响。</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-5">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 5: 运行应用</h3>
+            
+            <p class="text-gray-300 mb-6">使用 Vue CLI 创建的项目，可以通过以下命令运行开发服务器：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">启动开发服务器</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  npm run serve<br>
+                  # 或者<br>
+                  yarn serve
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">开发服务器默认运行在 http://localhost:8080</p>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">构建生产版本</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  npm run build<br>
+                  # 或者<br>
+                  yarn build
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">构建完成的文件会生成在 dist 目录下，可直接部署到服务器</p>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">下一步学习资源</h4>
+                <ul class="list-disc pl-6 text-gray-300 space-y-2">
+                  <li><a href="https://vuejs.org/guide/introduction.html" class="text-primary hover:underline">Vue 官方文档</a></li>
+                  <li><a href="https://router.vuejs.org/" class="text-primary hover:underline">Vue Router 路由管理</a></li>
+                  <li><a href="https://pinia.vuejs.org/" class="text-primary hover:underline">Pinia 状态管理</a></li>
+                  <li><a href="https://vuejs.org/guide/scaling-up/tooling.html" class="text-primary hover:underline">Vue 开发工具</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark py-12 border-t border-gray-800">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <i class="fa fa-code text-white text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Vue.js</h3>
+          </div>
+          <p class="text-gray-400 mb-6">渐进式 JavaScript 框架，为构建用户界面而生。</p>
+          <div class="flex space-x-4">
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors">
+              <i class="fa fa-discord"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">学习资源</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">官方文档</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">教程</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">示例</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">API 参考</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">生态系统</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Vue Router</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Pinia</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Vue CLI</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Vue Devtools</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">社区</h4>
+          <ul class="space-y-3">
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">GitHub</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">论坛</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Discord</a></li>
+            <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">贡献指南</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+        <p>&copy; 2023 Vue.js 介绍页面 | 基于 Vue.js 官方资料整理</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2', 'shadow-lg');
+        navbar.classList.remove('py-4');
+      } else {
+        navbar.classList.add('py-4');
+        navbar.classList.remove('py-2', 'shadow-lg');
+      }
+    });
+    
+    // 移动端菜单切换
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // 关闭移动菜单（如果打开）
+        document.getElementById('mobile-menu').classList.add('hidden');
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // 满意度图表
+    const satisfactionCtx = document.getElementById('satisfactionChart').getContext('2d');
+    new Chart(satisfactionCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['非常满意', '满意', '一般', '不满意'],
+        datasets: [{
+          data: [65, 25, 8, 2],
+          backgroundColor: [
+            '#42b983',
+            '#3598db',
+            '#f1c40f',
+            '#e74c3c'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          }
+        },
+        cutout: '70%'
+      }
+    });
+    
+    // 框架对比图表
+    const frameworksCtx = document.getElementById('frameworksChart').getContext('2d');
+    new Chart(frameworksCtx, {
+      type: 'radar',
+      data: {
+        labels: ['易学性', '性能', '生态系统', '企业采用', '移动开发', '社区规模'],
+        datasets: [
+          {
+            label: 'Vue.js',
+            data: [95, 85, 80, 70, 75, 80],
+            backgroundColor: 'rgba(66, 185, 131, 0.2)',
+            borderColor: 'rgba(66, 185, 131, 1)',
+            pointBackgroundColor: 'rgba(66, 185, 131, 1)'
+          },
+          {
+            label: 'React',
+            data: [75, 90, 95, 90, 90, 95],
+            backgroundColor: 'rgba(97, 218, 251, 0.2)',
+            borderColor: 'rgba(97, 218, 251, 1)',
+            pointBackgroundColor: 'rgba(97, 218, 251, 1)'
+          },
+          {
+            label: 'Angular',
+            data: [60, 85, 85, 95, 80, 75],
+            backgroundColor: 'rgba(227, 79, 79, 0.2)',
+            borderColor: 'rgba(227, 79, 79, 1)',
+            pointBackgroundColor: 'rgba(227, 79, 79, 1)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            angleLines: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            pointLabels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              }
+            },
+            ticks: {
+              backdropColor: 'transparent',
+              color: 'rgba(255, 255, 255, 0.5)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          }
+        }
+      }
+    });
+    
+    // 社区评论数据
+    const reviews = [
+      {
+        id: 1,
+        name: '张明',
+        avatar: 'https://picsum.photos/id/1/100/100',
+        rating: 5,
+        content: 'Vue.js 真的太容易上手了，作为一个从 jQuery 转过来的开发者，我很快就适应了 Vue 的开发方式。文档非常清晰，社区也很活跃。',
+        date: '2023-05-12',
+        type: 'positive'
+      },
+      {
+        id: 2,
+        name: '李华',
+        avatar: 'https://picsum.photos/id/2/100/100',
+        rating: 4,
+        content: '用 Vue 开发单页应用体验很好，特别是组合式 API 让代码组织更加清晰。不过在一些复杂场景下，感觉生态系统不如 React 完善。',
+        date: '2023-04-28',
+        type: 'positive'
+      },
+      {
+        id: 3,
+        name: '王芳',
+        avatar: 'https://picsum.photos/id/3/100/100',
+        rating: 3,
+        content: 'Vue 整体不错，但从 Vue 2 迁移到 Vue 3 花了不少时间，有些第三方库的兼容性问题也让人头疼。希望生态能尽快跟上。',
+        date: '2023-06-05',
+        type: 'neutral'
+      },
+      {
+        id: 4,
+        name: '赵伟',
+        avatar: 'https://picsum.photos/id/4/100/100',
+        rating: 5,
+        content: '作为一个后端开发者，Vue 是我接触的第一个前端框架，它的学习曲线非常平缓，让我能够快速开发出像样的前端界面。',
+        date: '2023-03-18',
+        type: 'positive'
+      },
+      {
+        id: 5,
+        name: '刘强',
+        avatar: 'https://picsum.photos/id/5/100/100',
+        rating: 2,
+        content: '在大型项目中使用 Vue 感觉不如 Angular 规范，团队协作时容易出现代码风格不一致的问题。可能是我们团队的问题吧。',
+        date: '2023-05-30',
+        type: 'negative'
+      },
+      {
+        id: 6,
+        name: '陈静',
+        avatar: 'https://picsum.photos/id/6/100/100',
+        rating: 4,
+        content: 'Vue 的文档是我见过最好的框架文档之一，特别是中文文档非常完善，这对中文开发者来说太友好了。',
+        date: '2023-04-15',
+        type: 'positive'
+      },
+      {
+        id: 7,
+        name: '杨明',
+        avatar: 'https://picsum.photos/id/7/100/100',
+        rating: 5,
+        content: '组合式 API 解决了很多选项式 API 的痛点，让代码复用变得更加简单。现在开发新项目我都会优先选择 Vue 3。',
+        date: '2023-06-12',
+        type: 'positive'
+      },
+      {
+        id: 8,
+        name: '黄丽',
+        avatar: 'https://picsum.photos/id/8/100/100',
+        rating: 3,
+        content: 'Vue 本身很好用，但在移动端开发方面，感觉选择不如 React Native 多，希望以后能有更好的解决方案。',
+        date: '2023-05-08',
+        type: 'neutral'
+      },
+      {
+        id: 9,
+        name: '周杰',
+        avatar: 'https://picsum.photos/id/9/100/100',
+        rating: 1,
+        content: '升级到 Vue 3 后遇到了很多问题，有些插件还没有兼容，花了大量时间解决这些兼容性问题，体验不太好。',
+        date: '2023-03-25',
+        type: 'negative'
+      },
+      {
+        id: 10,
+        name: '吴佳',
+        avatar: 'https://picsum.photos/id/10/100/100',
+        rating: 4,
+        content: 'Vue 的响应式系统非常直观，比 React 的状态管理更容易理解。对于中小型项目来说，开发效率很高。',
+        date: '2023-06-02',
+        type: 'positive'
+      },
+      {
+        id: 11,
+        name: '郑浩',
+        avatar: 'https://picsum.photos/id/11/100/100',
+        rating: 5,
+        content: 'Vue Devtools 是我用过最好的前端开发工具之一，调试体验非常流畅，大大提高了开发效率。',
+        date: '2023-04-20',
+        type: 'positive'
+      },
+      {
+        id: 12,
+        name: '孙琳',
+        avatar: 'https://picsum.photos/id/12/100/100',
+        rating: 3,
+        content: 'Vue 3 的 TypeScript 支持比 Vue 2 好了很多，但还是有些地方感觉不太自然，希望未来能进一步改善。',
+        date: '2023-05-15',
+        type: 'neutral'
+      },
+      {
+        id: 13,
+        name: '朱强',
+        avatar: 'https://picsum.photos/id/13/100/100',
+        rating: 4,
+        content: 'Pinia 比 Vuex 简单多了，使用起来更加直观，状态管理变得不再复杂。Vue 团队的决策很明智。',
+        date: '2023-06-18',
+        type: 'positive'
+      },
+      {
+        id: 14,
+        name: '胡敏',
+        avatar: 'https://picsum.photos/id/14/100/100',
+        rating: 2,
+        content: '在开发复杂动画时，感觉 Vue 的性能不如 React，有时候会出现卡顿，可能需要更多的优化技巧。',
+        date: '2023-04-05',
+        type: 'negative'
+      },
+      {
+        id: 15,
+        name: '林达',
+        avatar: 'https://picsum.photos/id/15/100/100',
+        rating: 5,
+        content: 'Vue 的社区非常友好，在论坛上提问总能得到及时的回复。作为一个新手，这让我少走了很多弯路。',
+        date: '2023-05-22',
+        type: 'positive'
+      },
+      {
+        id: 16,
+        name: '郭鹏',
+        avatar: 'https://picsum.photos/id/16/100/100',
+        rating: 3,
+        content: 'Vue 的学习资料很多，但质量参差不齐，有时候很难找到适合自己的教程。官方文档是最好的学习资源。',
+        date: '2023-03-30',
+        type: 'neutral'
+      },
+      {
+        id: 17,
+        name: '徐静',
+        avatar: 'https://picsum.photos/id/17/100/100',
+        rating: 4,
+        content: '用 Vue 和 Element Plus 开发后台管理系统简直是绝配，组件丰富，开发速度非常快，强烈推荐。',
+        date: '2023-06-08',
+        type: 'positive'
+      },
+      {
+        id: 18,
+        name: '马明',
+        avatar: 'https://picsum.photos/id/18/100/100',
+        rating: 2,
+        content: 'Vue 的国际化解决方案感觉不如 React 成熟，在处理多语言项目时遇到了不少麻烦。',
+        date: '2023-04-12',
+        type: 'negative'
+      },
+      {
+        id: 19,
+        name: '罗琳',
+        avatar: 'https://picsum.photos/id/19/100/100',
+        rating: 5,
+        content: 'Vue 的模板语法太优雅了，既保留了 HTML 的熟悉感，又加入了强大的绑定功能，开发体验非常好。',
+        date: '2023-05-05',
+        type: 'positive'
+      },
+      {
+        id: 20,
+        name: '高杰',
+        avatar: 'https://picsum.photos/id/20/100/100',
+        rating: 3,
+        content: 'Vue 3 的文档虽然全面，但对于初学者来说还是有些复杂，希望能有更多针对新手的入门教程。',
+        date: '2023-06-22',
+        type: 'neutral'
+      },
+      {
+        id: 21,
+        name: '何丽',
+        avatar: 'https://picsum.photos/id/21/100/100',
+        rating: 4,
+        content: 'Vue 的组件化思想非常清晰，让代码复用变得简单，维护起来也很方便，大大提高了团队协作效率。',
+        date: '2023-04-25',
+        type: 'positive'
+      },
+      {
+        id: 22,
+        name: '梁浩',
+        avatar: 'https://picsum.photos/id/22/100/100',
+        rating: 2,
+        content: '在处理大量数据渲染时，Vue 的性能表现不如 React，需要做很多优化才能达到理想效果。',
+        date: '2023-05-18',
+        type: 'negative'
+      },
+      {
+        id: 23,
+        name: '宋佳',
+        avatar: 'https://picsum.photos/id/23/100/100',
+        rating: 5,
+        content: 'Vue CLI 让项目搭建变得异常简单，几分钟就能搭建好一个完整的开发环境，太方便了。',
+        date: '2023-03-15',
+        type: 'positive'
+      },
+      {
+        id: 24,
+        name: '唐强',
+        avatar: 'https://picsum.photos/id/24/100/100',
+        rating: 3,
+        content: 'Vue 的路由系统使用起来很方便，但在处理复杂路由场景时，配置会变得有些繁琐。',
+        date: '2023-06-10',
+        type: 'neutral'
+      },
+      {
+        id: 25,
+        name: '冯琳',
+        avatar: 'https://picsum.photos/id/25/100/100',
+        rating: 4,
+        content: 'Vue 的文档更新很及时，Vue 3 的新特性讲解非常详细，这对于开发者来说非常重要。',
+        date: '2023-04-08',
+        type: 'positive'
+      },
+      {
+        id: 26,
+        name: '于浩',
+        avatar: 'https://picsum.photos/id/26/100/100',
+        rating: 2,
+        content: 'Vue 的一些高级特性学习起来还是比较困难的，官方示例不够多，需要自己摸索。',
+        date: '2023-05-28',
+        type: 'negative'
+      },
+      {
+        id: 27,
+        name: '董佳',
+        avatar: 'https://picsum.photos/id/27/100/100',
+        rating: 5,
+        content: 'Vue 3 的性能比 Vue 2 提升了很多，特别是在大型应用中，加载速度和响应速度都有明显改善。',
+        date: '2023-06-03',
+        type: 'positive'
+      },
+      {
+        id: 28,
+        name: '萧强',
+        avatar: 'https://picsum.photos/id/28/100/100',
+        rating: 3,
+        content: 'Vue 的状态管理方案在不断改进，从 Vuex 到 Pinia，变得越来越简单易用，但学习成本依然存在。',
+        date: '2023-04-18',
+        type: 'neutral'
+      },
+      {
+        id: 29,
+        name: '程琳',
+        avatar: 'https://picsum.photos/id/29/100/100',
+        rating: 4,
+        content: 'Vue 和 TypeScript 的结合越来越好了，类型提示让开发更加安心，减少了很多运行时错误。',
+        date: '2023-05-10',
+        type: 'positive'
+      },
+      {
+        id: 30,
+        name: '曹浩',
+        avatar: 'https://picsum.photos/id/30/100/100',
+        rating: 2,
+        content: 'Vue 的一些第三方组件库质量参差不齐，有时候很难找到既美观又好用的组件，需要自己定制很多东西。',
+        date: '2023-06-15',
+        type: 'negative'
+      },
+      {
+        id: 31,
+        name: '袁佳',
+        avatar: 'https://picsum.photos/id/31/100/100',
+        rating: 5,
+        content: '作为一个设计转开发的人，Vue 的模板语法让我能够快速上手，不需要太多的 JavaScript 知识就能做出不错的界面。',
+        date: '2023-03-22',
+        type: 'positive'
+      },
+      {
+        id: 32,
+        name: '邓强',
+        avatar: 'https://picsum.photos/id/32/100/100',
+        rating: 3,
+        content: 'Vue 的动画系统使用起来很方便，但在实现复杂动画时，配置还是比较繁琐的，需要一定的学习成本。',
+        date: '2023-04-30',
+        type: 'neutral'
+      },
+      {
+        id: 33,
+        name: '许琳',
+        avatar: 'https://picsum.photos/id/33/100/100',
+        rating: 4,
+        content: 'Vue 的社区资源非常丰富，很多常见问题都能在社区找到解决方案，开发过程中少走了很多弯路。',
+        date: '2023-05-25',
+        type: 'positive'
+      },
+      {
+        id: 34,
+        name: '傅浩',
+        avatar: 'https://picsum.photos/id/34/100/100',
+        rating: 2,
+        content: 'Vue 在服务器端渲染方面的文档和示例不够丰富，配置起来比较复杂，不如 Next.js 简单直观。',
+        date: '2023-06-20',
+        type: 'negative'
+      },
+      {
+        id: 35,
+        name: '沈佳',
+        avatar: 'https://picsum.photos/id/35/100/100',
+        rating: 5,
+        content: 'Vue 的文档不仅全面，而且非常易懂，很多概念都解释得很清楚，对于初学者来说非常友好。',
+        date: '2023-04-03',
+        type: 'positive'
+      },
+      {
+        id: 36,
+        name: '曾强',
+        avatar: 'https://picsum.photos/id/36/100/100',
+        rating: 3,
+        content: 'Vue 的生态系统在不断完善，但相比 React 还有差距，一些高级功能需要依赖第三方库来实现。',
+        date: '2023-05-02',
+        type: 'neutral'
+      },
+      {
+        id: 37,
+        name: '吕琳',
+        avatar: 'https://picsum.photos/id/37/100/100',
+        rating: 4,
+        content: 'Vue 3 的组合式 API 让代码组织更加灵活，逻辑复用变得简单，大型项目维护起来也更加方便。',
+        date: '2023-06-07',
+        type: 'positive'
+      },
+      {
+        id: 38,
+        name: '苏浩',
+        avatar: 'https://picsum.photos/id/38/100/100',
+        rating: 2,
+        content: 'Vue 的一些错误提示不够友好，有时候很难定位问题所在，调试起来比较耗时。',
+        date: '2023-04-15',
+        type: 'negative'
+      },
+      {
+        id: 39,
+        name: '卢佳',
+        avatar: 'https://picsum.photos/id/39/100/100',
+        rating: 5,
+        content: 'Vue 的响应式系统非常强大，数据驱动的开发方式让界面和数据保持同步变得异常简单。',
+        date: '2023-05-17',
+        type: 'positive'
+      },
+      {
+        id: 40,
+        name: '蒋强',
+        avatar: 'https://picsum.photos/id/40/100/100',
+        rating: 3,
+        content: 'Vue 的学习曲线虽然平缓，但要真正掌握好还是需要花不少时间，特别是一些高级特性。',
+        date: '2023-06-12',
+        type: 'neutral'
+      },
+      {
+        id: 41,
+        name: '蔡琳',
+        avatar: 'https://picsum.photos/id/41/100/100',
+        rating: 4,
+        content: 'Vue 的单文件组件设计非常棒，把 HTML、CSS 和 JavaScript 放在一个文件里，让组件更加内聚，维护起来很方便。',
+        date: '2023-03-28',
+        type: 'positive'
+      },
+      {
+        id: 42,
+        name: '贾浩',
+        avatar: 'https://picsum.photos/id/42/100/100',
+        rating: 2,
+        content: 'Vue 在处理复杂表单时不如 Angular 方便，很多功能需要自己实现或者依赖第三方库。',
+        date: '2023-04-22',
+        type: 'negative'
+      },
+      {
+        id: 43,
+        name: '丁佳',
+        avatar: 'https://picsum.photos/id/43/100/100',
+        rating: 5,
+        content: 'Vue 的更新很稳定，从 Vue 2 到 Vue 3 的过渡虽然有成本，但官方提供了详细的迁移指南，让升级过程变得顺利。',
+        date: '2023-05-20',
+        type: 'positive'
+      },
+      {
+        id: 44,
+        name: '魏强',
+        avatar: 'https://picsum.photos/id/44/100/100',
+        rating: 3,
+        content: 'Vue 的国际化解决方案虽然有，但使用起来不如 React 的一些库方便，希望未来能有更好的官方解决方案。',
+        date: '2023-06-05',
+        type: 'neutral'
+      },
+      {
+        id: 45,
+        name: '薛琳',
+        avatar: 'https://picsum.photos/id/45/100/100',
+        rating: 4,
+        content: 'Vue 和 Electron 结合开发桌面应用非常方便，一套代码可以同时运行在 web 和桌面端，大大提高了开发效率。',
+        date: '2023-04-08',
+        type: 'positive'
+      },
+      {
+        id: 46,
+        name: '叶浩',
+        avatar: 'https://picsum.photos/id/46/100/100',
+        rating: 2,
+        content: 'Vue 的一些第三方库更新不及时，特别是在 Vue 3 发布后，很多库需要等待很长时间才能兼容，影响开发进度。',
+        date: '2023-05-05',
+        type: 'negative'
+      },
+      {
+        id: 47,
+        name: '潘佳',
+        avatar: 'https://picsum.photos/id/47/100/100',
+        rating: 5,
+        content: 'Vue 的开发体验非常好，热重载功能让开发过程更加流畅，修改代码后不需要刷新页面就能看到效果。',
+        date: '2023-06-18',
+        type: 'positive'
+      },
+      {
+        id: 48,
+        name: '杜强',
+        avatar: 'https://picsum.photos/id/48/100/100',
+        rating: 3,
+        content: 'Vue 的状态管理在小型项目中很方便，但在大型项目中，随着状态变得复杂，管理起来还是有些挑战。',
+        date: '2023-03-15',
+        type: 'neutral'
+      },
+      {
+        id: 49,
+        name: '戴琳',
+        avatar: 'https://picsum.photos/id/49/100/100',
+        rating: 4,
+        content: 'Vue 的社区非常活跃，很多问题都能在 GitHub 或者论坛上找到答案，遇到问题时不会感到无助。',
+        date: '2023-04-28',
+        type: 'positive'
+      },
+      {
+        id: 50,
+        name: '夏浩',
+        avatar: 'https://picsum.photos/id/50/100/100',
+        rating: 2,
+        content: 'Vue 在处理大数据列表时性能表现一般，需要做很多优化才能达到理想的流畅度。',
+        date: '2023-05-12',
+        type: 'negative'
+      },
+      {
+        id: 51,
+        name: '钟佳',
+        avatar: 'https://picsum.photos/id/51/100/100',
+        rating: 5,
+        content: 'Vue 的文档不仅详细，而且有很多实用的示例，让学习过程变得更加轻松愉快。',
+        date: '2023-06-02',
+        type: 'positive'
+      },
+      {
+        id: 52,
+        name: '汪强',
+        avatar: 'https://picsum.photos/id/52/100/100',
+        rating: 3,
+        content: 'Vue 的路由系统功能完善，但在处理嵌套路由时，有时候会遇到一些意想不到的问题，需要仔细调试。',
+        date: '2023-04-02',
+        type: 'neutral'
+      }
+    ];
+    
+    // 渲染评论
+    const reviewsContainer = document.getElementById('reviews-container');
+    let visibleReviews = 12; // 初始显示的评论数量
+    
+    function renderReviews(filter = 'all') {
+      reviewsContainer.innerHTML = '';
+      
+      let filteredReviews = reviews;
+      if (filter !== 'all') {
+        filteredReviews = reviews.filter(review => review.type === filter);
+      }
+      
+      // 只显示可见数量的评论
+      const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+      
+      reviewsToShow.forEach(review => {
+        const reviewCard = document.createElement('div');
+        reviewCard.className = `bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg ${review.type}`;
+        reviewCard.innerHTML = `
+          <div class="flex items-start gap-4">
+            <img src="${review.avatar}" alt="${review.name}" class="w-12 h-12 rounded-full object-cover">
+            <div class="flex-1">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-bold text-white">${review.name}</h4>
+                <div class="text-yellow-400">
+                  ${generateStars(review.rating)}
+                </div>
+              </div>
+              <p class="text-gray-400 mb-4">${review.content}</p>
+              <div class="text-gray-500 text-sm">${review.date}</div>
+            </div>
+          </div>
+        `;
+        reviewsContainer.appendChild(reviewCard);
+      });
+      
+      // 控制加载更多按钮的显示
+      const loadMoreBtn = document.getElementById('load-more');
+      if (filteredReviews.length <= visibleReviews) {
+        loadMoreBtn.classList.add('hidden');
+      } else {
+        loadMoreBtn.classList.remove('hidden');
+      }
+    }
+    
+    // 生成星级评分
+    function generateStars(rating) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars += '<i class="fa fa-star"></i>';
+        } else {
+          stars += '<i class="fa fa-star-o"></i>';
+        }
+      }
+      return stars;
+    }
+    
+    // 初始渲染评论
+    renderReviews();
+    
+    // 评论筛选
+    document.querySelectorAll('.review-filter').forEach(button => {
+      button.addEventListener('click', function() {
+        // 重置可见评论数量
+        visibleReviews = 12;
+        
+        // 更新按钮样式
+        document.querySelectorAll('.review-filter').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-white');
+          btn.classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        });
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        
+        // 渲染筛选后的评论
+        renderReviews(this.getAttribute('data-filter'));
+      });
+    });
+    
+    // 加载更多评论
+    document.getElementById('load-more').addEventListener('click', function() {
+      visibleReviews += 6;
+      
+      // 获取当前激活的筛选器
+      const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+      renderReviews(activeFilter);
+    });
+    
+    // 使用方法步骤切换
+    document.querySelectorAll('.usage-step').forEach(button => {
+      button.addEventListener('click', function() {
+        const step = this.getAttribute('data-step');
+        
+        // 更新按钮样式
+        document.querySelectorAll('.usage-step').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-white');
+          btn.classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        });
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        
+        // 显示对应的步骤内容
+        document.querySelectorAll('.usage-content').forEach(content => {
+          content.classList.add('hidden');
+          content.classList.remove('active');
+        });
+        document.getElementById(`step-${step}`).classList.remove('hidden');
+        document.getElementById(`step-${step}`).classList.add('active');
+      });
+    });
+    
+    // 添加页面加载动画
+    window.addEventListener('load', function() {
+      document.body.classList.add('opacity-100');
+      document.body.classList.remove('opacity-0');
+    });
+  </script>
+</body>
+</html>

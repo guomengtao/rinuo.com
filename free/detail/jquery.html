@@ -1,0 +1,1511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jQuery 介绍 - 夜间版</title>
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入 Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 配置 Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0769ad', // jQuery 蓝色
+            secondary: '#2c3e50',
+            dark: '#1a1a2e',
+            darker: '#121212',
+            light: '#e2e8f0',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+      }
+      .gradient-border {
+        position: relative;
+        border-radius: 0.5rem;
+      }
+      .gradient-border::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        z-index: -1;
+        border-radius: 0.6rem;
+        background: linear-gradient(45deg, #0769ad, #3598db, #5dade2);
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
+      }
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-darker text-light font-sans">
+  <!-- 导航栏 -->
+  <header id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-darker/80 backdrop-blur-md">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <i class="fa fa-code text-white text-xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white">jQuery</h1>
+      </div>
+      
+      <!-- 桌面导航 -->
+      <nav class="hidden md:flex space-x-8">
+        <a href="#home" class="text-white hover:text-primary transition-colors">首页</a>
+        <a href="#services" class="text-white hover:text-primary transition-colors">免费服务</a>
+        <a href="#pros" class="text-white hover:text-primary transition-colors">优点</a>
+        <a href="#cons" class="text-white hover:text-primary transition-colors">缺点</a>
+        <a href="#reviews" class="text-white hover:text-primary transition-colors">社区评论</a>
+        <a href="#usage" class="text-white hover:text-primary transition-colors">使用方法</a>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menu-toggle" class="md:hidden text-white text-2xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="md:hidden hidden bg-dark/95 backdrop-blur-md">
+      <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+        <a href="#home" class="text-white hover:text-primary transition-colors py-2">首页</a>
+        <a href="#services" class="text-white hover:text-primary transition-colors py-2">免费服务</a>
+        <a href="#pros" class="text-white hover:text-primary transition-colors py-2">优点</a>
+        <a href="#cons" class="text-white hover:text-primary transition-colors py-2">缺点</a>
+        <a href="#reviews" class="text-white hover:text-primary transition-colors py-2">社区评论</a>
+        <a href="#usage" class="text-white hover:text-primary transition-colors py-2">使用方法</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section id="home" class="pt-32 pb-20 bg-gradient-to-b from-dark to-darker">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+          <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-white leading-tight text-shadow mb-6">
+            jQuery<br>
+            <span class="text-primary">JavaScript 库</span>
+          </h1>
+          <p class="text-xl text-gray-300 mb-8 max-w-lg">
+            简化HTML文档操作、事件处理、动画设计和Ajax交互的快速、小巧且功能丰富的JavaScript库。
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#usage" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-primary/30">
+              开始使用
+            </a>
+            <a href="#reviews" class="px-8 py-3 bg-transparent border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg transition-all">
+              查看评论
+            </a>
+          </div>
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+          <div class="relative w-64 h-64 md:w-80 md:h-80">
+            <div class="absolute inset-0 rounded-full bg-primary/20 animate-pulse"></div>
+            <div class="absolute inset-4 rounded-full bg-primary/30 animate-pulse" style="animation-delay: 0.5s"></div>
+            <div class="absolute inset-8 flex items-center justify-center">
+              <img src="https://picsum.photos/id/180/200/200" alt="jQuery 标志" class="w-40 h-40 md:w-56 md:h-56 rounded-full">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 统计数据 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">15+</div>
+          <div class="text-gray-400">年发展历史</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">70%</div>
+          <div class="text-gray-400">网站使用率</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">30KB</div>
+          <div class="text-gray-400">压缩后大小</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">200+</div>
+          <div class="text-gray-400">国家使用</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 免费服务 -->
+  <section id="services" class="py-20 bg-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">jQuery 免费服务</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">jQuery 生态系统提供了丰富的免费工具和资源，帮助开发者更高效地构建应用</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 服务卡片 1 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-code text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">核心库</h3>
+          <p class="text-gray-400">jQuery 核心库完全免费开源，基于 MIT 许可证发布，可用于任何个人和商业项目。</p>
+        </div>
+        
+        <!-- 服务卡片 2 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-book text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">官方文档</h3>
+          <p class="text-gray-400">详尽的官方文档完全免费，包含API参考、示例代码和使用指南，更新及时。</p>
+        </div>
+        
+        <!-- 服务卡片 3 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-puzzle-piece text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">插件库</h3>
+          <p class="text-gray-400">数千个免费插件可供使用，覆盖UI组件、表单验证、动画效果等多种功能需求。</p>
+        </div>
+        
+        <!-- 服务卡片 4 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-users text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">社区支持</h3>
+          <p class="text-gray-400">活跃的社区论坛、Stack Overflow问答和GitHub讨论，免费获取技术支持。</p>
+        </div>
+        
+        <!-- 服务卡片 5 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-graduation-cap text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">学习资源</h3>
+          <p class="text-gray-400">大量免费教程、视频课程和书籍，帮助开发者快速掌握jQuery的使用。</p>
+        </div>
+        
+        <!-- 服务卡片 6 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-code-fork text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">CDN 分发</h3>
+          <p class="text-gray-400">通过多个免费CDN网络分发，如jQuery CDN、Google CDN和Microsoft CDN，加速加载。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 优点 -->
+  <section id="pros" class="py-20 bg-gradient-to-b from-darker to-dark">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">jQuery 的优点</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">jQuery 凭借其独特的设计理念和特性，成为web开发领域的重要工具</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="space-y-8">
+            <!-- 优点 1 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">简化DOM操作</h3>
+                <p class="text-gray-400">提供简洁的API，大幅简化了JavaScript的DOM操作，一行代码即可完成复杂的元素选择和操作。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 2 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">跨浏览器兼容</h3>
+                <p class="text-gray-400">解决了不同浏览器之间的兼容性问题，使开发者无需编写额外代码即可在各种浏览器中正常运行。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 3 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">丰富的插件生态</h3>
+                <p class="text-gray-400">拥有数千个免费插件，覆盖UI组件、表单验证、图表等多种功能，可快速扩展功能。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 4 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">易学易用</h3>
+                <p class="text-gray-400">语法简洁直观，学习曲线平缓，即使是JavaScript初学者也能快速掌握并应用。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="gradient-border p-1">
+          <div class="bg-dark rounded-lg p-6 h-full">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">开发者满意度</h3>
+            <canvas id="satisfactionChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 缺点 -->
+  <section id="cons" class="py-20 bg-dark">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">jQuery 的缺点</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">随着前端技术的发展，jQuery 也逐渐暴露出一些局限性</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="order-2 md:order-1">
+          <div class="space-y-8">
+            <!-- 缺点 1 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">现代框架的替代</h3>
+                <p class="text-gray-400">React、Vue等现代框架提供了更高效的组件化开发方式，逐渐取代了jQuery的地位。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 2 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">性能开销</h3>
+                <p class="text-gray-400">对于简单操作，引入jQuery会增加额外的性能开销，原生JavaScript往往更高效。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 3 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">不必要的抽象</h3>
+                <p class="text-gray-400">随着浏览器API的标准化，许多jQuery提供的功能已被原生JavaScript实现，抽象层变得多余。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 4 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">大型应用维护难</h3>
+                <p class="text-gray-400">在大型应用中，缺乏规范的架构和状态管理，代码容易变得混乱，维护成本高。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="order-1 md:order-2 gradient-border p-1">
+          <div class="bg-dark rounded-lg p-6 h-full">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">框架对比</h3>
+            <canvas id="frameworksChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社区评论 -->
+  <section id="reviews" class="py-20 bg-gradient-to-b from-dark to-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">社区真实评论</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">来自全球开发者的真实体验和评价</p>
+      </div>
+      
+      <!-- 筛选器 -->
+      <div class="flex flex-wrap justify-center gap-4 mb-12">
+        <button class="review-filter active px-6 py-2 rounded-full bg-primary text-white" data-filter="all">全部评论</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="positive">正面评价</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="neutral">中性评价</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="negative">负面评价</button>
+      </div>
+      
+      <!-- 评论网格 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+        <!-- 评论会通过 JavaScript 动态生成 -->
+      </div>
+      
+      <!-- 加载更多按钮 -->
+      <div class="text-center mt-12">
+        <button id="load-more" class="px-8 py-3 bg-dark border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg transition-all">
+          加载更多评论
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使用方法 -->
+  <section id="usage" class="py-20 bg-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">jQuery 使用方法</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">快速入门 jQuery，从安装到基本操作</p>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <!-- 步骤导航 -->
+        <div class="flex flex-wrap justify-center mb-12 gap-2 md:gap-6">
+          <button class="usage-step active px-4 py-2 md:px-6 md:py-3 rounded-lg bg-primary text-white" data-step="1">步骤 1: 引入</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="2">步骤 2: 基本语法</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="3">步骤 3: DOM操作</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="4">步骤 4: 事件处理</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="5">步骤 5: AJAX操作</button>
+        </div>
+        
+        <!-- 步骤内容 -->
+        <div class="usage-content active" id="step-1">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 1: 引入 jQuery</h3>
+            
+            <p class="text-gray-300 mb-6">有多种方式可以引入 jQuery 到你的项目中：</p>
+            
+            <div class="space-y-6">
+              <!-- 方式 1 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">通过 CDN 引入（推荐）</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;!-- 使用 jQuery 官方 CDN --&gt;<br>
+                  &lt;script src="https://code.jquery.com/jquery-3.7.1.min.js"&gt;&lt;/script&gt;<br><br>
+                  &lt;!-- 或者使用 Google CDN --&gt;<br>
+                  &lt;script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"&gt;&lt;/script&gt;
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">CDN 可以提高加载速度，减少服务器负担</p>
+              </div>
+              
+              <!-- 方式 2 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">下载到本地引入</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  &lt;!-- 从官网下载后引入本地文件 --&gt;<br>
+                  &lt;script src="jquery-3.7.1.min.js"&gt;&lt;/script&gt;
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">
+                  下载地址: <a href="https://code.jquery.com/" class="text-primary hover:underline" target="_blank">https://code.jquery.com/</a>
+                </p>
+              </div>
+              
+              <!-- 方式 3 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">使用 npm 安装</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  npm install jquery<br><br>
+                  // 在项目中引入<br>
+                  import $ from 'jquery';
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">适合现代前端工程化项目</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-2">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 2: jQuery 基本语法</h3>
+            
+            <p class="text-gray-300 mb-6">jQuery 的基本语法是通过选择器选取 HTML 元素，并对选取的元素执行某些操作：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">基础语法结构</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  $(selector).action()
+                </div>
+                <ul class="list-disc pl-6 text-gray-300 mt-3 space-y-1">
+                  <li><code class="bg-darker px-1 rounded">$</code> 符号定义 jQuery</li>
+                  <li><code class="bg-darker px-1 rounded">selector</code> 用于"查询"和"查找" HTML 元素</li>
+                  <li><code class="bg-darker px-1 rounded">action()</code> 用于执行对元素的操作</li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">文档就绪事件</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 确保DOM加载完成后再执行代码<br>
+                  $(document).ready(function(){<br>
+                  &nbsp;&nbsp;// jQuery 代码...<br>
+                  &nbsp;&nbsp;$("p").hide(); // 隐藏所有段落<br>
+                  });<br><br>
+                  
+                  // 简写形式<br>
+                  $(function(){<br>
+                  &nbsp;&nbsp;// jQuery 代码...<br>
+                  });
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">这是最安全的方式，可以避免在DOM元素加载完成前执行代码</p>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">常用选择器示例</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 元素选择器 - 选取所有 &lt;p&gt; 元素<br>
+                  $("p")<br><br>
+                  
+                  // ID选择器 - 选取 id="demo" 的元素<br>
+                  $("#demo")<br><br>
+                  
+                  // 类选择器 - 选取 class="test" 的所有元素<br>
+                  $(".test")<br><br>
+                  
+                  // 属性选择器 - 选取所有带有 href 属性的元素<br>
+                  $("[href]")
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-3">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 3: DOM 操作</h3>
+            
+            <p class="text-gray-300 mb-6">jQuery 提供了简洁的方法来操作 HTML 元素和属性：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">内容操作</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 获取/设置元素的文本内容<br>
+                  $("#test").text(); // 获取<br>
+                  $("#test").text("新文本"); // 设置<br><br>
+                  
+                  // 获取/设置元素的HTML内容<br>
+                  $("#test").html(); // 获取<br>
+                  $("#test").html("&lt;b&gt;新HTML&lt;/b&gt;"); // 设置<br><br>
+                  
+                  // 获取/设置表单字段的值<br>
+                  $("input").val(); // 获取<br>
+                  $("input").val("新值"); // 设置
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">属性操作</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 获取/设置属性值<br>
+                  $("img").attr("src"); // 获取<br>
+                  $("img").attr("src", "new-image.jpg"); // 设置<br><br>
+                  
+                  // 设置多个属性<br>
+                  $("a").attr({<br>
+                  &nbsp;&nbsp;"href": "https://jquery.com",<br>
+                  &nbsp;&nbsp;"title": "jQuery官方网站"<br>
+                  });<br><br>
+                  
+                  // 移除属性<br>
+                  $("img").removeAttr("src");
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">CSS 操作</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 添加CSS类<br>
+                  $("p").addClass("highlight");<br><br>
+                  
+                  // 移除CSS类<br>
+                  $("p").removeClass("highlight");<br><br>
+                  
+                  // 切换CSS类<br>
+                  $("p").toggleClass("highlight");<br><br>
+                  
+                  // 获取/设置CSS属性<br>
+                  $("p").css("color"); // 获取<br>
+                  $("p").css("color", "red"); // 设置<br>
+                  $("p").css({"color": "red", "font-size": "16px"}); // 设置多个
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-4">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 4: 事件处理</h3>
+            
+            <p class="text-gray-300 mb-6">jQuery 提供了简洁的方式来处理各种事件，如点击、鼠标移动、表单提交等：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">常用事件示例</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  $(document).ready(function(){<br>
+                  &nbsp;&nbsp;// 点击事件<br>
+                  $("button").click(function(){<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;alert("按钮被点击了");<br>
+                  &nbsp;&nbsp;});<br><br>
+                  
+                  &nbsp;&nbsp;// 双击事件<br>
+                  $("p").dblclick(function(){<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;$(this).hide();<br>
+                  &nbsp;&nbsp;});<br><br>
+                  
+                  &nbsp;&nbsp;// 鼠标进入事件<br>
+                  $("div").mouseenter(function(){<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;$(this).css("background-color", "lightgray");<br>
+                  &nbsp;&nbsp;});<br><br>
+                  
+                  &nbsp;&nbsp;// 鼠标离开事件<br>
+                  $("div").mouseleave(function(){<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;$(this).css("background-color", "white");<br>
+                  &nbsp;&nbsp;});<br>
+                  });
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">事件绑定与解绑</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 绑定事件<br>
+                  $("button").on("click", function(){<br>
+                  &nbsp;&nbsp;$(this).text("已点击");<br>
+                  });<br><br>
+                  
+                  // 绑定多个事件<br>
+                  $("input").on({<br>
+                  &nbsp;&nbsp;focus: function(){ $(this).css("background-color", "lightblue"); },<br>
+                  &nbsp;&nbsp;blur: function(){ $(this).css("background-color", "white"); },<br>
+                  &nbsp;&nbsp;change: function(){ $(this).css("background-color", "lightgreen"); }<br>
+                  });<br><br>
+                  
+                  // 解绑事件<br>
+                  $("button").off("click");
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">事件委托</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 为动态添加的元素绑定事件<br>
+                  $("#container").on("click", "p", function(){<br>
+                  &nbsp;&nbsp;$(this).slideToggle();<br>
+                  });<br><br>
+                  
+                  // 动态添加元素<br>
+                  $("button").click(function(){<br>
+                  &nbsp;&nbsp;$("#container").append("&lt;p&gt;新段落&lt;/p&gt;");<br>
+                  });
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">事件委托允许我们为尚不存在的元素绑定事件处理程序</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-5">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 5: AJAX 操作</h3>
+            
+            <p class="text-gray-300 mb-6">jQuery 简化了 AJAX 操作，提供了简洁的方法来与服务器交换数据：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">$.ajax() 方法</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  $.ajax({<br>
+                  &nbsp;&nbsp;url: "data.json", // 请求的URL<br>
+                  &nbsp;&nbsp;type: "GET", // 请求方法<br>
+                  &nbsp;&nbsp;dataType: "json", // 预期的响应数据类型<br>
+                  &nbsp;&nbsp;success: function(data) {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;// 请求成功时执行<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;console.log("数据加载成功:", data);<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;$("#result").html(data.content);<br>
+                  &nbsp;&nbsp;},<br>
+                  &nbsp;&nbsp;error: function(xhr, status, error) {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;// 请求失败时执行<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;console.error("请求失败:", error);<br>
+                  &nbsp;&nbsp;},<br>
+                  &nbsp;&nbsp;complete: function() {<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;// 请求完成时执行（无论成功或失败）<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;console.log("请求完成");<br>
+                  &nbsp;&nbsp;}<br>
+                  });
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">简化的 AJAX 方法</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  // 加载HTML内容<br>
+                  $("#div1").load("content.html");<br><br>
+                  
+                  // GET请求<br>
+                  $.get("demo.php", function(data, status){<br>
+                  &nbsp;&nbsp;alert("数据: " + data + "\n状态: " + status);<br>
+                  });<br><br>
+                  
+                  // POST请求<br>
+                  $.post("demo.php",<br>
+                  &nbsp;&nbsp;{ name: "John", age: 30 },<br>
+                  &nbsp;&nbsp;function(data, status){<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;alert("数据: " + data + "\n状态: " + status);<br>
+                  &nbsp;&nbsp;}<br>
+                  );
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">下一步学习资源</h4>
+                <ul class="list-disc pl-6 text-gray-300 space-y-2">
+                  <li><a href="https://api.jquery.com/" class="text-primary hover:underline" target="_blank">jQuery 官方API文档</a></li>
+                  <li><a href="https://learn.jquery.com/" class="text-primary hover:underline" target="_blank">jQuery 学习中心</a></li>
+                  <li><a href="https://plugins.jquery.com/" class="text-primary hover:underline" target="_blank">jQuery 插件库</a></li>
+                  <li><a href="https://code.jquery.com/" class="text-primary hover:underline" target="_blank">jQuery 下载与版本信息</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark py-12 border-t border-gray-800">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <i class="fa fa-code text-white text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">jQuery</h3>
+          </div>
+          <p class="text-gray-400 mb-6">快速、小巧且功能丰富的JavaScript库，简化HTML文档操作。</p>
+          <div class="flex space-x-4">
+            <a href="https://github.com/jquery/jquery" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors" target="_blank">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="https://twitter.com/jquery" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors" target="_blank">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="https://discord.com/invite/jquery" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors" target="_blank">
+              <i class="fa fa-discord"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">学习资源</h4>
+          <ul class="space-y-3">
+            <li><a href="https://api.jquery.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">官方文档</a></li>
+            <li><a href="https://learn.jquery.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">教程</a></li>
+            <li><a href="https://jquery.com/resources/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">资源中心</a></li>
+            <li><a href="https://code.jquery.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">下载</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">生态系统</h4>
+          <ul class="space-y-3">
+            <li><a href="https://plugins.jquery.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">插件库</a></li>
+            <li><a href="https://jqueryui.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">jQuery UI</a></li>
+            <li><a href="https://jquerymobile.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">jQuery Mobile</a></li>
+            <li><a href="https://sizzlejs.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">Sizzle 选择器</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">社区</h4>
+          <ul class="space-y-3">
+            <li><a href="https://github.com/jquery/jquery" class="text-gray-400 hover:text-primary transition-colors" target="_blank">GitHub</a></li>
+            <li><a href="https://forum.jquery.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">论坛</a></li>
+            <li><a href="https://stackoverflow.com/questions/tagged/jquery" class="text-gray-400 hover:text-primary transition-colors" target="_blank">Stack Overflow</a></li>
+            <li><a href="https://jquery.org/team/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">开发团队</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+        <p>&copy; 2023 jQuery 介绍页面 | 基于 jQuery 官方资料整理</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2', 'shadow-lg');
+        navbar.classList.remove('py-4');
+      } else {
+        navbar.classList.add('py-4');
+        navbar.classList.remove('py-2', 'shadow-lg');
+      }
+    });
+    
+    // 移动端菜单切换
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // 关闭移动菜单（如果打开）
+        document.getElementById('mobile-menu').classList.add('hidden');
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // 满意度图表
+    const satisfactionCtx = document.getElementById('satisfactionChart').getContext('2d');
+    new Chart(satisfactionCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['非常满意', '满意', '一般', '不满意'],
+        datasets: [{
+          data: [55, 30, 10, 5],
+          backgroundColor: [
+            '#0769ad',
+            '#3598db',
+            '#f1c40f',
+            '#e74c3c'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          }
+        },
+        cutout: '70%'
+      }
+    });
+    
+    // 框架对比图表
+    const frameworksCtx = document.getElementById('frameworksChart').getContext('2d');
+    new Chart(frameworksCtx, {
+      type: 'radar',
+      data: {
+        labels: ['易学性', '浏览器兼容', '文件大小', '现代项目适用性', '社区活跃度', '性能'],
+        datasets: [
+          {
+            label: 'jQuery',
+            data: [95, 90, 75, 60, 70, 70],
+            backgroundColor: 'rgba(7, 105, 173, 0.2)',
+            borderColor: 'rgba(7, 105, 173, 1)',
+            pointBackgroundColor: 'rgba(7, 105, 173, 1)'
+          },
+          {
+            label: 'React',
+            data: [75, 85, 80, 95, 95, 90],
+            backgroundColor: 'rgba(97, 218, 251, 0.2)',
+            borderColor: 'rgba(97, 218, 251, 1)',
+            pointBackgroundColor: 'rgba(97, 218, 251, 1)'
+          },
+          {
+            label: 'Vue',
+            data: [90, 85, 85, 90, 90, 85],
+            backgroundColor: 'rgba(66, 185, 131, 0.2)',
+            borderColor: 'rgba(66, 185, 131, 1)',
+            pointBackgroundColor: 'rgba(66, 185, 131, 1)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            angleLines: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            pointLabels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              }
+            },
+            ticks: {
+              backdropColor: 'transparent',
+              color: 'rgba(255, 255, 255, 0.5)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          }
+        }
+      }
+    });
+    
+    // 社区评论数据
+    const reviews = [
+      {
+        id: 1,
+        name: '张明',
+        avatar: 'https://picsum.photos/id/1/100/100',
+        rating: 5,
+        content: 'jQuery 真的改变了我的前端开发方式，一行代码就能完成复杂的DOM操作，极大提高了我的工作效率。',
+        date: '2023-05-12',
+        type: 'positive'
+      },
+      {
+        id: 2,
+        name: '李华',
+        avatar: 'https://picsum.photos/id/2/100/100',
+        rating: 4,
+        content: '对于维护旧项目来说，jQuery 仍然是不可或缺的工具。它的跨浏览器兼容性解决了很多头疼的问题。',
+        date: '2023-04-28',
+        type: 'positive'
+      },
+      {
+        id: 3,
+        name: '王芳',
+        avatar: 'https://picsum.photos/id/3/100/100',
+        rating: 3,
+        content: 'jQuery 在简单的交互场景下依然很有用，但对于现代大型应用，我还是更倾向于使用React或Vue。',
+        date: '2023-06-05',
+        type: 'neutral'
+      },
+      {
+        id: 4,
+        name: '赵伟',
+        avatar: 'https://picsum.photos/id/4/100/100',
+        rating: 5,
+        content: '作为一个后端开发者，jQuery 让我能够快速实现前端交互，不需要深入学习复杂的JavaScript知识。',
+        date: '2023-03-18',
+        type: 'positive'
+      },
+      {
+        id: 5,
+        name: '刘强',
+        avatar: 'https://picsum.photos/id/5/100/100',
+        rating: 2,
+        content: '现在浏览器原生API已经很强大了，很多时候jQuery反而显得多余，增加了不必要的加载时间。',
+        date: '2023-05-30',
+        type: 'negative'
+      },
+      {
+        id: 6,
+        name: '陈静',
+        avatar: 'https://picsum.photos/id/6/100/100',
+        rating: 4,
+        content: 'jQuery 的AJAX方法非常简洁易用，比原生fetch API用起来更顺手，特别是处理错误的时候。',
+        date: '2023-04-15',
+        type: 'positive'
+      },
+      {
+        id: 7,
+        name: '杨明',
+        avatar: 'https://picsum.photos/id/7/100/100',
+        rating: 3,
+        content: '对于简单的网站和快速原型开发，jQuery 仍然很有价值。但对于复杂应用，组件化框架更好。',
+        date: '2023-06-12',
+        type: 'neutral'
+      },
+      {
+        id: 8,
+        name: '黄丽',
+        avatar: 'https://picsum.photos/id/8/100/100',
+        rating: 5,
+        content: 'jQuery 的插件生态太丰富了，几乎所有常见的交互效果都能找到现成的插件，节省了大量开发时间。',
+        date: '2023-05-08',
+        type: 'positive'
+      },
+      {
+        id: 9,
+        name: '周杰',
+        avatar: 'https://picsum.photos/id/9/100/100',
+        rating: 2,
+        content: '现在还在新项目中使用jQuery 感觉有点过时了，现代框架提供的状态管理和组件化更适合大型应用。',
+        date: '2023-03-25',
+        type: 'negative'
+      },
+      {
+        id: 10,
+        name: '吴佳',
+        avatar: 'https://picsum.photos/id/10/100/100',
+        rating: 4,
+        content: '学习jQuery 是我前端开发的入门，它的语法简洁明了，让我对JavaScript有了更好的理解。',
+        date: '2023-06-02',
+        type: 'positive'
+      },
+      {
+        id: 11,
+        name: '郑浩',
+        avatar: 'https://picsum.photos/id/11/100/100',
+        rating: 3,
+        content: 'jQuery 在处理表单验证方面依然很方便，但我发现现在很多UI库已经内置了这些功能。',
+        date: '2023-04-20',
+        type: 'neutral'
+      },
+      {
+        id: 12,
+        name: '孙琳',
+        avatar: 'https://picsum.photos/id/12/100/100',
+        rating: 5,
+        content: '对于维护那些运行了10年以上的老项目，jQuery 简直是救星，没有它很多兼容性问题难以解决。',
+        date: '2023-05-15',
+        type: 'positive'
+      },
+      {
+        id: 13,
+        name: '朱强',
+        avatar: 'https://picsum.photos/id/13/100/100',
+        rating: 2,
+        content: 'jQuery 的链式调用看起来很酷，但写多了会变得难以阅读和维护，不如现代框架的代码结构清晰。',
+        date: '2023-06-18',
+        type: 'negative'
+      },
+      {
+        id: 14,
+        name: '胡敏',
+        avatar: 'https://picsum.photos/id/14/100/100',
+        rating: 4,
+        content: 'jQuery UI 提供了很多实用的组件，对于快速开发后台管理系统非常有帮助，减少了重复工作。',
+        date: '2023-04-05',
+        type: 'positive'
+      },
+      {
+        id: 15,
+        name: '林达',
+        avatar: 'https://picsum.photos/id/15/100/100',
+        rating: 3,
+        content: '我认为jQuery 仍然有其存在的价值，特别是在简单的网站和广告横幅等场景，没必要上大型框架。',
+        date: '2023-05-22',
+        type: 'neutral'
+      },
+      {
+        id: 16,
+        name: '郭鹏',
+        avatar: 'https://picsum.photos/id/16/100/100',
+        rating: 2,
+        content: 'jQuery 的性能在处理大量DOM操作时不如现代框架，频繁的重绘会导致页面卡顿。',
+        date: '2023-03-30',
+        type: 'negative'
+      },
+      {
+        id: 17,
+        name: '徐静',
+        avatar: 'https://picsum.photos/id/17/100/100',
+        rating: 5,
+        content: 'jQuery 的文档非常完善，示例丰富，遇到问题很容易找到解决方案，对于新手非常友好。',
+        date: '2023-06-08',
+        type: 'positive'
+      },
+      {
+        id: 18,
+        name: '马明',
+        avatar: 'https://picsum.photos/id/18/100/100',
+        rating: 3,
+        content: '在移动端开发中，我已经很少使用jQuery 了，原生API和轻量级库更适合性能敏感的场景。',
+        date: '2023-04-12',
+        type: 'neutral'
+      },
+      {
+        id: 19,
+        name: '罗琳',
+        avatar: 'https://picsum.photos/id/19/100/100',
+        rating: 4,
+        content: 'jQuery 的选择器引擎非常强大，比原生的querySelectorAll 功能更丰富，使用也更方便。',
+        date: '2023-05-05',
+        type: 'positive'
+      },
+      {
+        id: 20,
+        name: '高杰',
+        avatar: 'https://picsum.photos/id/20/100/100',
+        rating: 2,
+        content: '随着浏览器的更新，jQuery 解决的很多兼容性问题已经不存在了，它的价值在逐渐降低。',
+        date: '2023-06-22',
+        type: 'negative'
+      },
+      {
+        id: 21,
+        name: '何丽',
+        avatar: 'https://picsum.photos/id/21/100/100',
+        rating: 5,
+        content: '作为一名设计师，jQuery 让我能够轻松实现各种交互效果，不需要依赖开发人员就能完成原型制作。',
+        date: '2023-04-25',
+        type: 'positive'
+      },
+      {
+        id: 22,
+        name: '梁浩',
+        avatar: 'https://picsum.photos/id/22/100/100',
+        rating: 3,
+        content: '我通常在项目中混合使用jQuery 和现代框架，用jQuery 处理简单的DOM操作，框架处理复杂状态。',
+        date: '2023-05-18',
+        type: 'neutral'
+      },
+      {
+        id: 23,
+        name: '宋佳',
+        avatar: 'https://picsum.photos/id/23/100/100',
+        rating: 4,
+        content: 'jQuery 的动画方法非常直观，比CSS动画更容易控制，特别适合需要复杂交互的场景。',
+        date: '2023-03-15',
+        type: 'positive'
+      },
+      {
+        id: 24,
+        name: '唐强',
+        avatar: 'https://picsum.photos/id/24/100/100',
+        rating: 2,
+        content: '现在很多前端面试已经不再考察jQuery 了，更多的是React、Vue等现代框架，学习优先级应该调整。',
+        date: '2023-06-10',
+        type: 'negative'
+      },
+      {
+        id: 25,
+        name: '冯琳',
+        avatar: 'https://picsum.photos/id/25/100/100',
+        rating: 5,
+        content: 'jQuery 的社区支持仍然很强大，几乎所有问题都能在Stack Overflow上找到答案，这一点非常棒。',
+        date: '2023-04-08',
+        type: 'positive'
+      },
+      {
+        id: 26,
+        name: '于浩',
+        avatar: 'https://picsum.photos/id/26/100/100',
+        rating: 3,
+        content: '对于快速修复网站问题，jQuery 仍然是我的首选，几行代码就能解决问题，不需要复杂的构建过程。',
+        date: '2023-05-28',
+        type: 'neutral'
+      },
+      {
+        id: 27,
+        name: '董佳',
+        avatar: 'https://picsum.photos/id/27/100/100',
+        rating: 4,
+        content: 'jQuery Mobile 让开发跨平台移动网站变得简单，虽然不如原生应用，但对于简单需求足够用了。',
+        date: '2023-06-03',
+        type: 'positive'
+      },
+      {
+        id: 28,
+        name: '萧强',
+        avatar: 'https://picsum.photos/id/28/100/100',
+        rating: 2,
+        content: 'jQuery 的插件质量参差不齐，很多老插件已经不再维护，使用时需要谨慎选择。',
+        date: '2023-04-18',
+        type: 'negative'
+      },
+      {
+        id: 29,
+        name: '程琳',
+        avatar: 'https://picsum.photos/id/29/100/100',
+        rating: 5,
+        content: 'jQuery 改变了前端开发的历史，即使现在有了新框架，它的设计思想仍然值得学习。',
+        date: '2023-05-10',
+        type: 'positive'
+      },
+      {
+        id: 30,
+        name: '曹浩',
+        avatar: 'https://picsum.photos/id/30/100/100',
+        rating: 3,
+        content: '我认为jQuery 不会完全消失，它在特定场景下仍然有优势，特别是在维护旧系统方面。',
+        date: '2023-06-15',
+        type: 'neutral'
+      },
+      {
+        id: 31,
+        name: '袁佳',
+        avatar: 'https://picsum.photos/id/31/100/100',
+        rating: 4,
+        content: '对于非前端专业的开发者来说，jQuery 是快速实现交互效果的最佳选择，学习成本低，见效快。',
+        date: '2023-03-22',
+        type: 'positive'
+      },
+      {
+        id: 32,
+        name: '邓强',
+        avatar: 'https://picsum.photos/id/32/100/100',
+        rating: 2,
+        content: 'jQuery 鼓励直接操作DOM，这在现代前端开发中被认为是反模式的，容易导致性能问题。',
+        date: '2023-04-30',
+        type: 'negative'
+      },
+      {
+        id: 33,
+        name: '许琳',
+        avatar: 'https://picsum.photos/id/33/100/100',
+        rating: 5,
+        content: 'jQuery 的链式语法非常优雅，能够写出简洁而富有表现力的代码，这是我一直喜欢它的原因。',
+        date: '2023-05-25',
+        type: 'positive'
+      },
+      {
+        id: 34,
+        name: '傅浩',
+        avatar: 'https://picsum.photos/id/34/100/100',
+        rating: 3,
+        content: '在使用现代框架的同时，了解jQuery 仍然很有价值，很多概念是相通的，有助于更好地理解前端开发。',
+        date: '2023-06-20',
+        type: 'neutral'
+      },
+      {
+        id: 35,
+        name: '沈佳',
+        avatar: 'https://picsum.photos/id/35/100/100',
+        rating: 4,
+        content: 'jQuery 的事件处理机制非常完善，特别是事件委托功能，解决了动态元素的事件绑定问题。',
+        date: '2023-04-03',
+        type: 'positive'
+      },
+      {
+        id: 36,
+        name: '曾强',
+        avatar: 'https://picsum.photos/id/36/100/100',
+        rating: 2,
+        content: '现在的前端开发已经从DOM操作转向了数据驱动，jQuery 的设计理念有些过时了。',
+        date: '2023-05-02',
+        type: 'negative'
+      },
+      {
+        id: 37,
+        name: '吕琳',
+        avatar: 'https://picsum.photos/id/37/100/100',
+        rating: 5,
+        content: 'jQuery 的API设计非常一致，学会了一个方法，其他方法也很容易理解，这大大降低了学习难度。',
+        date: '2023-06-07',
+        type: 'positive'
+      },
+      {
+        id: 38,
+        name: '苏浩',
+        avatar: 'https://picsum.photos/id/38/100/100',
+        rating: 3,
+        content: '我在教学中仍然会先教jQuery，它能帮助学生快速理解前端交互的基本概念，然后再学习现代框架。',
+        date: '2023-04-15',
+        type: 'neutral'
+      },
+      {
+        id: 39,
+        name: '卢佳',
+        avatar: 'https://picsum.photos/id/39/100/100',
+        rating: 4,
+        content: '对于简单的单页网站，jQuery 配合一些插件就能满足大部分需求，没必要引入复杂的框架。',
+        date: '2023-05-17',
+        type: 'positive'
+      },
+      {
+        id: 40,
+        name: '蒋强',
+        avatar: 'https://picsum.photos/id/40/100/100',
+        rating: 2,
+        content: 'jQuery 的版本兼容性问题有时会很麻烦，升级版本可能导致旧插件失效，需要大量测试。',
+        date: '2023-06-12',
+        type: 'negative'
+      },
+      {
+        id: 41,
+        name: '蔡琳',
+        avatar: 'https://picsum.photos/id/41/100/100',
+        rating: 5,
+        content: 'jQuery 让我从繁琐的浏览器兼容性处理中解放出来，可以专注于实现功能和用户体验。',
+        date: '2023-03-28',
+        type: 'positive'
+      },
+      {
+        id: 42,
+        name: '贾浩',
+        avatar: 'https://picsum.photos/id/42/100/100',
+        rating: 3,
+        content: 'jQuery 在快速原型开发中仍然很有优势，能够快速验证想法，之后再考虑用现代框架重写。',
+        date: '2023-04-22',
+        type: 'neutral'
+      },
+      {
+        id: 43,
+        name: '丁佳',
+        avatar: 'https://picsum.photos/id/43/100/100',
+        rating: 4,
+        content: 'jQuery 的文档非常全面，每个方法都有详细的说明和示例，这对于学习和使用非常有帮助。',
+        date: '2023-05-20',
+        type: 'positive'
+      },
+      {
+        id: 44,
+        name: '魏强',
+        avatar: 'https://picsum.photos/id/44/100/100',
+        rating: 2,
+        content: '在现代前端工程化项目中，引入jQuery 会增加打包体积，与模块化思想也有些冲突。',
+        date: '2023-06-05',
+        type: 'negative'
+      },
+      {
+        id: 45,
+        name: '薛琳',
+        avatar: 'https://picsum.photos/id/45/100/100',
+        rating: 5,
+        content: 'jQuery 改变了我对JavaScript的看法，让我从害怕前端开发变成了享受前端开发的过程。',
+        date: '2023-04-08',
+        type: 'positive'
+      },
+      {
+        id: 46,
+        name: '叶浩',
+        avatar: 'https://picsum.photos/id/46/100/100',
+        rating: 3,
+        content: '我认为jQuery 仍然有其市场定位，不应该被完全否定，选择合适的工具做合适的事情才是关键。',
+        date: '2023-05-05',
+        type: 'neutral'
+      },
+      {
+        id: 47,
+        name: '潘佳',
+        avatar: 'https://picsum.photos/id/47/100/100',
+        rating: 4,
+        content: 'jQuery 的CSS操作方法非常方便，能够轻松实现动态样式变化，比直接操作style属性更优雅。',
+        date: '2023-06-18',
+        type: 'positive'
+      },
+      {
+        id: 48,
+        name: '杜强',
+        avatar: 'https://picsum.photos/id/48/100/100',
+        rating: 2,
+        content: 'jQuery 鼓励全局变量和副作用，这与现代函数式编程思想相悖，不利于写出可维护的代码。',
+        date: '2023-03-15',
+        type: 'negative'
+      },
+      {
+        id: 49,
+        name: '戴琳',
+        avatar: 'https://picsum.photos/id/49/100/100',
+        rating: 5,
+        content: '作为一名全栈开发者，jQuery 让我能够用最少的时间完成前端工作，专注于整体业务逻辑。',
+        date: '2023-04-28',
+        type: 'positive'
+      },
+      {
+        id: 50,
+        name: '夏浩',
+        avatar: 'https://picsum.photos/id/50/100/100',
+        rating: 3,
+        content: 'jQuery 的学习资源非常丰富，无论是书籍、教程还是视频，都能找到适合自己的学习材料。',
+        date: '2023-05-12',
+        type: 'neutral'
+      },
+      {
+        id: 51,
+        name: '钟佳',
+        avatar: 'https://picsum.photos/id/51/100/100',
+        rating: 4,
+        content: 'jQuery 的存在推动了JavaScript语言的发展，很多jQuery的功能后来都被纳入了标准，这是它的贡献。',
+        date: '2023-06-02',
+        type: 'positive'
+      },
+      {
+        id: 52,
+        name: '汪强',
+        avatar: 'https://picsum.photos/id/52/100/100',
+        rating: 2,
+        content: '现在很多设计系统和组件库都不再依赖jQuery，学习它的优先级确实不如以前了。',
+        date: '2023-04-02',
+        type: 'negative'
+      }
+    ];
+    
+    // 渲染评论
+    const reviewsContainer = document.getElementById('reviews-container');
+    let visibleReviews = 12; // 初始显示的评论数量
+    
+    function renderReviews(filter = 'all') {
+      reviewsContainer.innerHTML = '';
+      
+      let filteredReviews = reviews;
+      if (filter !== 'all') {
+        filteredReviews = reviews.filter(review => review.type === filter);
+      }
+      
+      // 只显示可见数量的评论
+      const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+      
+      reviewsToShow.forEach(review => {
+        const reviewCard = document.createElement('div');
+        reviewCard.className = `bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg ${review.type}`;
+        reviewCard.innerHTML = `
+          <div class="flex items-start gap-4">
+            <img src="${review.avatar}" alt="${review.name}" class="w-12 h-12 rounded-full object-cover">
+            <div class="flex-1">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-bold text-white">${review.name}</h4>
+                <div class="text-yellow-400">
+                  ${generateStars(review.rating)}
+                </div>
+              </div>
+              <p class="text-gray-400 mb-4">${review.content}</p>
+              <div class="text-gray-500 text-sm">${review.date}</div>
+            </div>
+          </div>
+        `;
+        reviewsContainer.appendChild(reviewCard);
+      });
+      
+      // 控制加载更多按钮的显示
+      const loadMoreBtn = document.getElementById('load-more');
+      if (filteredReviews.length <= visibleReviews) {
+        loadMoreBtn.classList.add('hidden');
+      } else {
+        loadMoreBtn.classList.remove('hidden');
+      }
+    }
+    
+    // 生成星级评分
+    function generateStars(rating) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars += '<i class="fa fa-star"></i>';
+        } else {
+          stars += '<i class="fa fa-star-o"></i>';
+        }
+      }
+      return stars;
+    }
+    
+    // 初始渲染评论
+    renderReviews();
+    
+    // 评论筛选
+    document.querySelectorAll('.review-filter').forEach(button => {
+      button.addEventListener('click', function() {
+        // 重置可见评论数量
+        visibleReviews = 12;
+        
+        // 更新按钮样式
+        document.querySelectorAll('.review-filter').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-white');
+          btn.classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        });
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        
+        // 渲染筛选后的评论
+        renderReviews(this.getAttribute('data-filter'));
+      });
+    });
+    
+    // 加载更多评论
+    document.getElementById('load-more').addEventListener('click', function() {
+      visibleReviews += 6;
+      
+      // 获取当前激活的筛选器
+      const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+      renderReviews(activeFilter);
+    });
+    
+    // 使用方法步骤切换
+    document.querySelectorAll('.usage-step').forEach(button => {
+      button.addEventListener('click', function() {
+        const step = this.getAttribute('data-step');
+        
+        // 更新按钮样式
+        document.querySelectorAll('.usage-step').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-white');
+          btn.classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        });
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        
+        // 显示对应的步骤内容
+        document.querySelectorAll('.usage-content').forEach(content => {
+          content.classList.add('hidden');
+          content.classList.remove('active');
+        });
+        document.getElementById(`step-${step}`).classList.remove('hidden');
+        document.getElementById(`step-${step}`).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
+    

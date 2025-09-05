@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Docker 介绍 - 夜间版</title>
+  <!-- 引入 Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 引入 Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 配置 Tailwind -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#0db7ed', // Docker 蓝色
+            secondary: '#3291ff',
+            dark: '#1a1a2e',
+            darker: '#121212',
+            light: '#e2e8f0',
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+      .card-hover {
+        transition: all 0.3s ease;
+      }
+      .card-hover:hover {
+        transform: translateY(-5px);
+      }
+      .gradient-border {
+        position: relative;
+        border-radius: 0.5rem;
+      }
+      .gradient-border::before {
+        content: "";
+        position: absolute;
+        inset: -2px;
+        z-index: -1;
+        border-radius: 0.6rem;
+        background: linear-gradient(45deg, #0db7ed, #3291ff, #69b1ff);
+        background-size: 200% 200%;
+        animation: gradient 3s ease infinite;
+      }
+      @keyframes gradient {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-darker text-light font-sans">
+  <!-- 导航栏 -->
+  <header id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-darker/80 backdrop-blur-md">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-2">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+          <i class="fa fa-cubes text-white text-xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-white">Docker</h1>
+      </div>
+      
+      <!-- 桌面导航 -->
+      <nav class="hidden md:flex space-x-8">
+        <a href="#home" class="text-white hover:text-primary transition-colors">首页</a>
+        <a href="#services" class="text-white hover:text-primary transition-colors">免费服务</a>
+        <a href="#pros" class="text-white hover:text-primary transition-colors">优点</a>
+        <a href="#cons" class="text-white hover:text-primary transition-colors">缺点</a>
+        <a href="#reviews" class="text-white hover:text-primary transition-colors">社区评论</a>
+        <a href="#usage" class="text-white hover:text-primary transition-colors">使用方法</a>
+      </nav>
+      
+      <!-- 移动端菜单按钮 -->
+      <button id="menu-toggle" class="md:hidden text-white text-2xl">
+        <i class="fa fa-bars"></i>
+      </button>
+    </div>
+    
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="md:hidden hidden bg-dark/95 backdrop-blur-md">
+      <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+        <a href="#home" class="text-white hover:text-primary transition-colors py-2">首页</a>
+        <a href="#services" class="text-white hover:text-primary transition-colors py-2">免费服务</a>
+        <a href="#pros" class="text-white hover:text-primary transition-colors py-2">优点</a>
+        <a href="#cons" class="text-white hover:text-primary transition-colors py-2">缺点</a>
+        <a href="#reviews" class="text-white hover:text-primary transition-colors py-2">社区评论</a>
+        <a href="#usage" class="text-white hover:text-primary transition-colors py-2">使用方法</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- 英雄区域 -->
+  <section id="home" class="pt-32 pb-20 bg-gradient-to-b from-dark to-darker">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row items-center">
+        <div class="md:w-1/2 mb-10 md:mb-0">
+          <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold text-white leading-tight text-shadow mb-6">
+            Docker<br>
+            <span class="text-primary">容器化平台</span>
+          </h1>
+          <p class="text-xl text-gray-300 mb-8 max-w-lg">
+            简化应用程序部署、隔离和扩展的开源平台，让开发者能够打包应用及其依赖项到标准化单元中。
+          </p>
+          <div class="flex flex-wrap gap-4">
+            <a href="#usage" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-primary/30">
+              开始使用
+            </a>
+            <a href="#reviews" class="px-8 py-3 bg-transparent border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg transition-all">
+              查看评论
+            </a>
+          </div>
+        </div>
+        <div class="md:w-1/2 flex justify-center">
+          <div class="relative w-64 h-64 md:w-80 md:h-80">
+            <div class="absolute inset-0 rounded-full bg-primary/20 animate-pulse"></div>
+            <div class="absolute inset-4 rounded-full bg-primary/30 animate-pulse" style="animation-delay: 0.5s"></div>
+            <div class="absolute inset-8 flex items-center justify-center">
+              <img src="https://picsum.photos/id/0/200/200" alt="Docker 标志" class="w-40 h-40 md:w-56 md:h-56 rounded-full">
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 统计数据 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">10+</div>
+          <div class="text-gray-400">年发展历史</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">80%</div>
+          <div class="text-gray-400">企业使用率</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">13M+</div>
+          <div class="text-gray-400">月下载量</div>
+        </div>
+        <div class="bg-dark/50 p-6 rounded-xl text-center border border-gray-800">
+          <div class="text-4xl font-bold text-primary mb-2">100K+</div>
+          <div class="text-gray-400">Docker镜像</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 免费服务 -->
+  <section id="services" class="py-20 bg-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Docker 免费服务</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">Docker 提供了丰富的免费工具和服务，帮助开发者构建、测试和部署容器化应用</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <!-- 服务卡片 1 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-cube text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Docker Engine</h3>
+          <p class="text-gray-400">Docker 核心引擎完全免费开源，基于 Apache 2.0 许可证，可在任何操作系统上运行。</p>
+        </div>
+        
+        <!-- 服务卡片 2 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-code-fork text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Docker Compose</h3>
+          <p class="text-gray-400">用于定义和运行多容器 Docker 应用程序的工具，完全免费，简化了复杂应用的部署。</p>
+        </div>
+        
+        <!-- 服务卡片 3 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-cloud text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Docker Hub 免费账户</h3>
+          <p class="text-gray-400">提供免费的公共仓库，可托管无限的公共镜像和有限数量的私有镜像，方便分享和协作。</p>
+        </div>
+        
+        <!-- 服务卡片 4 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-book text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">官方文档与教程</h3>
+          <p class="text-gray-400">详尽的官方文档、指南和教程完全免费，帮助开发者快速掌握 Docker 的使用和最佳实践。</p>
+        </div>
+        
+        <!-- 服务卡片 5 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-users text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">社区支持</h3>
+          <p class="text-gray-400">活跃的社区论坛、GitHub 讨论和 Stack Overflow 问答，免费获取技术支持和解决方案。</p>
+        </div>
+        
+        <!-- 服务卡片 6 -->
+        <div class="bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg">
+          <div class="w-14 h-14 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+            <i class="fa fa-code text-primary text-2xl"></i>
+          </div>
+          <h3 class="text-xl font-bold text-white mb-3">Docker SDKs</h3>
+          <p class="text-gray-400">多种编程语言的软件开发工具包完全免费，方便开发者通过代码与 Docker 引擎交互。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 优点 -->
+  <section id="pros" class="py-20 bg-gradient-to-b from-darker to-dark">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Docker 的优点</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">Docker 凭借容器化技术彻底改变了软件的开发、测试和部署方式</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div>
+          <div class="space-y-8">
+            <!-- 优点 1 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">环境一致性</h3>
+                <p class="text-gray-400">容器包含应用运行所需的所有依赖，确保开发、测试和生产环境完全一致，解决"在我机器上能运行"的问题。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 2 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">资源高效利用</h3>
+                <p class="text-gray-400">容器共享主机操作系统内核，比虚拟机更轻量，启动更快，占用资源更少，可在同一主机上运行更多应用。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 3 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">快速部署与扩展</h3>
+                <p class="text-gray-400">容器可以在几秒内启动，支持快速扩展和缩减，非常适合微服务架构和持续集成/持续部署(CI/CD)流程。</p>
+              </div>
+            </div>
+            
+            <!-- 优点 4 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-check text-primary"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">隔离性与安全性</h3>
+                <p class="text-gray-400">容器之间相互隔离，一个容器的问题不会影响其他容器，提供了一定程度的安全边界和资源控制。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="gradient-border p-1">
+          <div class="bg-dark rounded-lg p-6 h-full">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">开发者满意度</h3>
+            <canvas id="satisfactionChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 缺点 -->
+  <section id="cons" class="py-20 bg-dark">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Docker 的缺点</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">尽管Docker有很多优势，但在某些场景下也存在一些局限性</p>
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="order-2 md:order-1">
+          <div class="space-y-8">
+            <!-- 缺点 1 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">学习曲线陡峭</h3>
+                <p class="text-gray-400">对于新手来说，理解容器、镜像、卷、网络等概念需要一定时间，特别是在复杂部署场景下。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 2 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">安全性考量</h3>
+                <p class="text-gray-400">虽然提供隔离，但容器共享主机内核，与虚拟机相比隔离性较弱，需要额外措施确保安全。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 3 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">存储管理复杂</h3>
+                <p class="text-gray-400">容器的临时性本质使得数据持久化需要特殊处理，卷管理和数据备份可能变得复杂。</p>
+              </div>
+            </div>
+            
+            <!-- 缺点 4 -->
+            <div class="flex gap-4">
+              <div class="mt-1 w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center flex-shrink-0">
+                <i class="fa fa-times text-red-500"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white mb-2">Windows支持有限</h3>
+                <p class="text-gray-400">虽然有Windows容器，但生态系统主要围绕Linux，某些功能在Windows上支持不完善或性能较差。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="order-1 md:order-2 gradient-border p-1">
+          <div class="bg-dark rounded-lg p-6 h-full">
+            <h3 class="text-xl font-bold text-white mb-6 text-center">虚拟化技术对比</h3>
+            <canvas id="techComparisonChart" width="400" height="400"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 社区评论 -->
+  <section id="reviews" class="py-20 bg-gradient-to-b from-dark to-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">社区真实评论</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">来自全球开发者和运维人员的真实体验和评价</p>
+      </div>
+      
+      <!-- 筛选器 -->
+      <div class="flex flex-wrap justify-center gap-4 mb-12">
+        <button class="review-filter active px-6 py-2 rounded-full bg-primary text-white" data-filter="all">全部评论</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="positive">正面评价</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="neutral">中性评价</button>
+        <button class="review-filter px-6 py-2 rounded-full bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-filter="negative">负面评价</button>
+      </div>
+      
+      <!-- 评论网格 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
+        <!-- 评论会通过 JavaScript 动态生成 -->
+      </div>
+      
+      <!-- 加载更多按钮 -->
+      <div class="text-center mt-12">
+        <button id="load-more" class="px-8 py-3 bg-dark border border-primary text-primary hover:bg-primary/10 font-medium rounded-lg transition-all">
+          加载更多评论
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 使用方法 -->
+  <section id="usage" class="py-20 bg-darker">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-16">
+        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold text-white mb-4">Docker 使用方法</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto text-lg">从安装到基本操作，快速入门 Docker</p>
+      </div>
+      
+      <div class="max-w-4xl mx-auto">
+        <!-- 步骤导航 -->
+        <div class="flex flex-wrap justify-center mb-12 gap-2 md:gap-6">
+          <button class="usage-step active px-4 py-2 md:px-6 md:py-3 rounded-lg bg-primary text-white" data-step="1">步骤 1: 安装</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="2">步骤 2: 基本命令</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="3">步骤 3: 构建镜像</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="4">步骤 4: 多容器应用</button>
+          <button class="usage-step px-4 py-2 md:px-6 md:py-3 rounded-lg bg-dark border border-gray-700 hover:border-primary hover:text-primary transition-colors" data-step="5">步骤 5: 部署与分享</button>
+        </div>
+        
+        <!-- 步骤内容 -->
+        <div class="usage-content active" id="step-1">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 1: 安装 Docker</h3>
+            
+            <p class="text-gray-300 mb-6">Docker 支持多种操作系统，以下是不同系统的安装方法：</p>
+            
+            <div class="space-y-6">
+              <!-- 方式 1 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">Windows 安装</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 推荐使用 Docker Desktop for Windows<br>
+                  # 下载地址: https://www.docker.com/products/docker-desktop<br><br>
+                  # 安装完成后验证<br>
+                  docker --version<br>
+                  docker run hello-world
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">Windows 10 专业版/企业版需要开启 Hyper-V，家庭版会使用 WSL 2 后端</p>
+              </div>
+              
+              <!-- 方式 2 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">macOS 安装</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 下载 Docker Desktop for Mac<br>
+                  # 下载地址: https://www.docker.com/products/docker-desktop<br><br>
+                  # 安装完成后验证<br>
+                  docker --version<br>
+                  docker run hello-world
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">需要 macOS 10.15 或更高版本，支持 Intel 和 Apple Silicon 芯片</p>
+              </div>
+              
+              <!-- 方式 3 -->
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">Linux 安装 (Ubuntu 示例)</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 更新 apt 包索引并安装依赖<br>
+                  sudo apt-get update<br>
+                  sudo apt-get install ca-certificates curl gnupg lsb-release<br><br>
+                  
+                  # 添加 Docker 官方 GPG 密钥<br>
+                  curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg<br><br>
+                  
+                  # 设置稳定版仓库<br>
+                  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null<br><br>
+                  
+                  # 安装 Docker 引擎<br>
+                  sudo apt-get update<br>
+                  sudo apt-get install docker-ce docker-ce-cli containerd.io<br><br>
+                  
+                  # 将当前用户添加到 docker 组，避免使用 sudo<br>
+                  sudo usermod -aG docker $USER<br><br>
+                  
+                  # 验证安装<br>
+                  docker --version<br>
+                  docker run hello-world
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">其他 Linux 发行版请参考 <a href="https://docs.docker.com/engine/install/" class="text-primary hover:underline" target="_blank">官方安装文档</a></p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-2">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 2: Docker 基本命令</h3>
+            
+            <p class="text-gray-300 mb-6">掌握这些基本命令，开始使用 Docker 管理容器和镜像：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">镜像相关命令</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 从仓库拉取镜像<br>
+                  docker pull [镜像名]:[标签]<br>
+                  docker pull ubuntu:22.04<br>
+                  docker pull nginx:latest<br><br>
+                  
+                  # 列出本地镜像<br>
+                  docker images<br>
+                  docker image ls<br><br>
+                  
+                  # 删除本地镜像<br>
+                  docker rmi [镜像ID或名称]<br>
+                  docker image rm [镜像ID或名称]<br><br>
+                  
+                  # 搜索镜像<br>
+                  docker search [关键词]
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">容器相关命令</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 运行容器<br>
+                  docker run [选项] [镜像名] [命令]<br>
+                  docker run -it ubuntu:22.04 /bin/bash  # 交互式运行Ubuntu<br>
+                  docker run -d -p 8080:80 nginx        # 后台运行Nginx并映射端口<br><br>
+                  
+                  # 列出运行中的容器<br>
+                  docker ps<br>
+                  docker container ls<br><br>
+                  
+                  # 列出所有容器（包括停止的）<br>
+                  docker ps -a<br><br>
+                  
+                  # 启动、停止、重启容器<br>
+                  docker start [容器ID或名称]<br>
+                  docker stop [容器ID或名称]<br>
+                  docker restart [容器ID或名称]<br><br>
+                  
+                  # 进入运行中的容器<br>
+                  docker exec -it [容器ID或名称] /bin/bash<br><br>
+                  
+                  # 删除容器<br>
+                  docker rm [容器ID或名称]<br>
+                  docker container rm [容器ID或名称]
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">系统信息命令</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 查看Docker版本<br>
+                  docker --version<br>
+                  docker version<br><br>
+                  
+                  # 查看Docker系统信息<br>
+                  docker info<br><br>
+                  
+                  # 查看容器日志<br>
+                  docker logs [容器ID或名称]<br><br>
+                  
+                  # 查看容器详细信息<br>
+                  docker inspect [容器ID或名称]
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-3">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 3: 构建自定义镜像</h3>
+            
+            <p class="text-gray-300 mb-6">通过 Dockerfile 构建自己的镜像，打包应用程序及其依赖：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">创建 Dockerfile</h4>
+                <p class="text-gray-300 mb-3">在项目根目录创建名为 <code class="bg-darker px-1 rounded">Dockerfile</code> 的文件：</p>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 以官方Python镜像为基础<br>
+                  FROM python:3.9-slim<br><br>
+                  
+                  # 设置工作目录<br>
+                  WORKDIR /app<br><br>
+                  
+                  # 复制当前目录文件到容器的/app目录<br>
+                  COPY . .<br><br>
+                  
+                  # 安装依赖<br>
+                  RUN pip install --no-cache-dir -r requirements.txt<br><br>
+                  
+                  # 暴露端口<br>
+                  EXPOSE 5000<br><br>
+                  
+                  # 容器启动时执行的命令<br>
+                  CMD ["python", "app.py"]
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">构建镜像</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 在Dockerfile所在目录执行<br>
+                  docker build -t my-python-app:1.0 .<br><br>
+                  
+                  # -t 选项指定镜像名称和标签<br>
+                  # . 表示当前目录为构建上下文<br><br>
+                  
+                  # 查看构建的镜像<br>
+                  docker images | grep my-python-app
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">优化镜像构建</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 使用 .dockerignore 文件排除不必要的文件<br>
+                  # 创建 .dockerignore 文件<br>
+                  __pycache__<br>
+                  *.pyc<br>
+                  *.pyo<br>
+                  *.pyd<br>
+                  .env<br>
+                  .git<br>
+                  venv<br><br>
+                  
+                  # 多阶段构建减小镜像体积（示例）<br>
+                  FROM node:16 AS builder<br>
+                  WORKDIR /app<br>
+                  COPY package*.json ./<br>
+                  RUN npm install<br>
+                  COPY . .<br>
+                  RUN npm run build<br><br>
+                  
+                  FROM nginx:alpine<br>
+                  COPY --from=builder /app/build /usr/share/nginx/html<br>
+                  EXPOSE 80<br>
+                  CMD ["nginx", "-g", "daemon off;"]
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">优化镜像可以减小体积、提高安全性并加快部署速度</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-4">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 4: 管理多容器应用</h3>
+            
+            <p class="text-gray-300 mb-6">使用 Docker Compose 定义和运行多容器 Docker 应用程序：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">创建 docker-compose.yml</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  version: '3.8'<br><br>
+                  
+                  services:<br>
+                  &nbsp;&nbsp;web:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;build: .<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;ports:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- "5000:5000"<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;depend_on:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- db<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;environment:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- DATABASE_URL=postgresql://user:password@db:5432/mydb<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;restart: always<br><br>
+                  
+                  &nbsp;&nbsp;db:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;image: postgres:13<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;volumes:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- postgres_data:/var/lib/postgresql/data/<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;environment:<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- POSTGRES_USER=user<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- POSTGRES_PASSWORD=password<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- POSTGRES_DB=mydb<br>
+                  &nbsp;&nbsp;&nbsp;&nbsp;restart: always<br><br>
+                  
+                  volumes:<br>
+                  &nbsp;&nbsp;postgres_data:
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">使用 Docker Compose 命令</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 启动所有服务（后台运行）<br>
+                  docker-compose up -d<br><br>
+                  
+                  # 启动所有服务并查看日志<br>
+                  docker-compose up<br><br>
+                  
+                  # 停止并删除容器、网络<br>
+                  docker-compose down<br><br>
+                  
+                  # 停止并删除容器、网络、镜像和卷<br>
+                  docker-compose down --rmi all -v<br><br>
+                  
+                  # 查看服务状态<br>
+                  docker-compose ps<br><br>
+                  
+                  # 查看服务日志<br>
+                  docker-compose logs<br>
+                  docker-compose logs web  # 只查看web服务日志<br>
+                  docker-compose logs -f   # 实时查看日志<br><br>
+                  
+                  # 构建或重新构建服务<br>
+                  docker-compose build<br>
+                  docker-compose build web  # 只构建web服务
+                </div>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">容器网络与数据持久化</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 查看Docker网络<br>
+                  docker network ls<br>
+                  docker network inspect [网络名称]<br><br>
+                  
+                  # 创建自定义网络<br>
+                  docker network create my-network<br><br>
+                  
+                  # 查看卷<br>
+                  docker volume ls<br>
+                  docker volume inspect [卷名称]<br><br>
+                  
+                  # 创建卷<br>
+                  docker volume create my-volume<br><br>
+                  
+                  # 使用卷运行容器<br>
+                  docker run -d -v my-volume:/data --name my-container nginx
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">卷(volumes)是持久化容器数据的推荐方式，比绑定挂载更具可移植性</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="usage-content hidden" id="step-5">
+          <div class="bg-dark rounded-xl p-6 border border-gray-800 shadow-lg">
+            <h3 class="text-2xl font-bold text-white mb-6">步骤 5: 部署与分享镜像</h3>
+            
+            <p class="text-gray-300 mb-6">将你的镜像推送到仓库，与他人分享或部署到生产环境：</p>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">使用 Docker Hub</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 登录到Docker Hub<br>
+                  docker login<br><br>
+                  
+                  # 为镜像打标签（格式：用户名/仓库名:标签）<br>
+                  docker tag my-python-app:1.0 username/my-python-app:1.0<br>
+                  docker tag my-python-app:1.0 username/my-python-app:latest<br><br>
+                  
+                  # 推送到Docker Hub<br>
+                  docker push username/my-python-app:1.0<br>
+                  docker push username/my-python-app:latest<br><br>
+                  
+                  # 从Docker Hub拉取并运行<br>
+                  docker pull username/my-python-app:latest<br>
+                  docker run -d -p 5000:5000 username/my-python-app:latest
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">
+                  注册 Docker Hub 账号: <a href="https://hub.docker.com/" class="text-primary hover:underline" target="_blank">https://hub.docker.com/</a>
+                </p>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">使用私有仓库</h4>
+                <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm overflow-x-auto">
+                  # 使用自托管或云服务商的私有仓库<br>
+                  # 登录到私有仓库<br>
+                  docker login my-private-registry.example.com<br><br>
+                  
+                  # 为镜像打标签<br>
+                  docker tag my-app:1.0 my-private-registry.example.com/my-app:1.0<br><br>
+                  
+                  # 推送到私有仓库<br>
+                  docker push my-private-registry.example.com/my-app:1.0<br><br>
+                  
+                  # 从私有仓库拉取<br>
+                  docker pull my-private-registry.example.com/my-app:1.0
+                </div>
+                <p class="text-gray-400 mt-2 text-sm">常见的私有仓库解决方案包括 AWS ECR、Google GCR、Azure ACR 和自托管的 Harbor</p>
+              </div>
+              
+              <div>
+                <h4 class="text-xl font-semibold text-primary mb-3">下一步学习资源</h4>
+                <ul class="list-disc pl-6 text-gray-300 space-y-2">
+                  <li><a href="https://docs.docker.com/" class="text-primary hover:underline" target="_blank">Docker 官方文档</a></li>
+                  <li><a href="https://docs.docker.com/compose/" class="text-primary hover:underline" target="_blank">Docker Compose 文档</a></li>
+                  <li><a href="https://docs.docker.com/engine/swarm/" class="text-primary hover:underline" target="_blank">Docker Swarm 容器编排</a></li>
+                  <li><a href="https://kubernetes.io/" class="text-primary hover:underline" target="_blank">Kubernetes 容器编排平台</a></li>
+                  <li><a href="https://docs.docker.com/develop/develop-images/dockerfile_best-practices/" class="text-primary hover:underline" target="_blank">Dockerfile 最佳实践</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark py-12 border-t border-gray-800">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div>
+          <div class="flex items-center space-x-2 mb-6">
+            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+              <i class="fa fa-cubes text-white text-xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-white">Docker</h3>
+          </div>
+          <p class="text-gray-400 mb-6">开放平台，用于开发、交付和运行应用程序，使应用程序与基础设施分离。</p>
+          <div class="flex space-x-4">
+            <a href="https://github.com/docker" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors" target="_blank">
+              <i class="fa fa-github"></i>
+            </a>
+            <a href="https://twitter.com/docker" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors" target="_blank">
+              <i class="fa fa-twitter"></i>
+            </a>
+            <a href="https://www.linkedin.com/company/docker/" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:bg-primary hover:text-white transition-colors" target="_blank">
+              <i class="fa fa-linkedin"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">学习资源</h4>
+          <ul class="space-y-3">
+            <li><a href="https://docs.docker.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">官方文档</a></li>
+            <li><a href="https://training.docker.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">培训课程</a></li>
+            <li><a href="https://www.docker.com/community/open-source" class="text-gray-400 hover:text-primary transition-colors" target="_blank">开源项目</a></li>
+            <li><a href="https://hub.docker.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">Docker Hub</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">产品</h4>
+          <ul class="space-y-3">
+            <li><a href="https://www.docker.com/products/docker-desktop" class="text-gray-400 hover:text-primary transition-colors" target="_blank">Docker Desktop</a></li>
+            <li><a href="https://www.docker.com/products/docker-hub" class="text-gray-400 hover:text-primary transition-colors" target="_blank">Docker Hub</a></li>
+            <li><a href="https://www.docker.com/products/docker-extension-sdk" class="text-gray-400 hover:text-primary transition-colors" target="_blank">扩展 SDK</a></li>
+            <li><a href="https://www.docker.com/products/container-runtime" class="text-gray-400 hover:text-primary transition-colors" target="_blank">容器运行时</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-lg font-semibold text-white mb-6">社区</h4>
+          <ul class="space-y-3">
+            <li><a href="https://www.docker.com/community" class="text-gray-400 hover:text-primary transition-colors" target="_blank">社区资源</a></li>
+            <li><a href="https://forums.docker.com/" class="text-gray-400 hover:text-primary transition-colors" target="_blank">论坛</a></li>
+            <li><a href="https://stackoverflow.com/questions/tagged/docker" class="text-gray-400 hover:text-primary transition-colors" target="_blank">Stack Overflow</a></li>
+            <li><a href="https://www.docker.com/events" class="text-gray-400 hover:text-primary transition-colors" target="_blank">活动与会议</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500">
+        <p>&copy; 2023 Docker 介绍页面 | 基于 Docker 官方资料整理</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 导航栏滚动效果
+    window.addEventListener('scroll', function() {
+      const navbar = document.getElementById('navbar');
+      if (window.scrollY > 50) {
+        navbar.classList.add('py-2', 'shadow-lg');
+        navbar.classList.remove('py-4');
+      } else {
+        navbar.classList.add('py-4');
+        navbar.classList.remove('py-2', 'shadow-lg');
+      }
+    });
+    
+    // 移动端菜单切换
+    document.getElementById('menu-toggle').addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobile-menu');
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        
+        // 关闭移动菜单（如果打开）
+        document.getElementById('mobile-menu').classList.add('hidden');
+        
+        const targetId = this.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+        }
+      });
+    });
+    
+    // 满意度图表
+    const satisfactionCtx = document.getElementById('satisfactionChart').getContext('2d');
+    new Chart(satisfactionCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['非常满意', '满意', '一般', '不满意'],
+        datasets: [{
+          data: [65, 25, 8, 2],
+          backgroundColor: [
+            '#0db7ed',
+            '#3291ff',
+            '#f1c40f',
+            '#e74c3c'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          }
+        },
+        cutout: '70%'
+      }
+    });
+    
+    // 技术对比图表
+    const techComparisonCtx = document.getElementById('techComparisonChart').getContext('2d');
+    new Chart(techComparisonCtx, {
+      type: 'radar',
+      data: {
+        labels: ['启动速度', '资源占用', '隔离性', '易用性', '扩展性', '跨平台'],
+        datasets: [
+          {
+            label: 'Docker 容器',
+            data: [95, 90, 70, 80, 90, 85],
+            backgroundColor: 'rgba(13, 183, 237, 0.2)',
+            borderColor: 'rgba(13, 183, 237, 1)',
+            pointBackgroundColor: 'rgba(13, 183, 237, 1)'
+          },
+          {
+            label: '虚拟机',
+            data: [30, 30, 95, 60, 75, 80],
+            backgroundColor: 'rgba(105, 177, 255, 0.2)',
+            borderColor: 'rgba(105, 177, 255, 1)',
+            pointBackgroundColor: 'rgba(105, 177, 255, 1)'
+          },
+          {
+            label: '直接部署',
+            data: [90, 95, 20, 50, 40, 60],
+            backgroundColor: 'rgba(66, 185, 131, 0.2)',
+            borderColor: 'rgba(66, 185, 131, 1)',
+            pointBackgroundColor: 'rgba(66, 185, 131, 1)'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          r: {
+            angleLines: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            grid: {
+              color: 'rgba(255, 255, 255, 0.1)'
+            },
+            pointLabels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              }
+            },
+            ticks: {
+              backdropColor: 'transparent',
+              color: 'rgba(255, 255, 255, 0.5)'
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              color: '#e2e8f0',
+              font: {
+                size: 12
+              },
+              padding: 20
+            }
+          }
+        }
+      }
+    });
+    
+    // 社区评论数据
+    const reviews = [
+      {
+        id: 1,
+        name: '张明',
+        avatar: 'https://picsum.photos/id/10/100/100',
+        rating: 5,
+        content: 'Docker 彻底改变了我们的开发和部署流程，环境一致性问题再也不是困扰我们的难题了。',
+        date: '2023-06-15',
+        type: 'positive'
+      },
+      {
+        id: 2,
+        name: '李华',
+        avatar: 'https://picsum.photos/id/11/100/100',
+        rating: 4,
+        content: '作为运维人员，Docker 让我的工作效率提高了数倍，部署和回滚变得前所未有的简单。',
+        date: '2023-05-28',
+        type: 'positive'
+      },
+      {
+        id: 3,
+        name: '王芳',
+        avatar: 'https://picsum.photos/id/12/100/100',
+        rating: 3,
+        content: 'Docker 确实很有用，但学习曲线比我预期的要陡峭，特别是网络和存储部分。',
+        date: '2023-06-10',
+        type: 'neutral'
+      },
+      {
+        id: 4,
+        name: '赵伟',
+        avatar: 'https://picsum.photos/id/13/100/100',
+        rating: 5,
+        content: '在微服务架构中使用 Docker 是完美的搭配，每个服务可以独立部署和扩展，太棒了！',
+        date: '2023-04-22',
+        type: 'positive'
+      },
+      {
+        id: 5,
+        name: '刘强',
+        avatar: 'https://picsum.photos/id/14/100/100',
+        rating: 2,
+        content: '对于我们的简单应用来说，引入 Docker 反而增加了复杂性，感觉有点过度工程化了。',
+        date: '2023-05-30',
+        type: 'negative'
+      },
+      {
+        id: 6,
+        name: '陈静',
+        avatar: 'https://picsum.photos/id/15/100/100',
+        rating: 4,
+        content: 'Docker Compose 让多容器应用的开发环境配置变得如此简单，团队新成员几分钟就能搭建好环境。',
+        date: '2023-06-05',
+        type: 'positive'
+      },
+      {
+        id: 7,
+        name: '杨明',
+        avatar: 'https://picsum.photos/id/16/100/100',
+        rating: 3,
+        content: 'Docker 在 Linux 上表现很棒，但在 Windows 上使用体验还有待提高，经常遇到各种问题。',
+        date: '2023-04-18',
+        type: 'neutral'
+      },
+      {
+        id: 8,
+        name: '黄丽',
+        avatar: 'https://picsum.photos/id/17/100/100',
+        rating: 5,
+        content: '镜像分层机制太巧妙了，大大节省了存储空间，而且拉取速度也快了很多。',
+        date: '2023-05-20',
+        type: 'positive'
+      },
+      {
+        id: 9,
+        name: '周杰',
+        avatar: 'https://picsum.photos/id/18/100/100',
+        rating: 2,
+        content: '容器的安全性让我有些担忧，虽然方便，但在生产环境中需要额外配置很多安全措施。',
+        date: '2023-06-12',
+        type: 'negative'
+      },
+      {
+        id: 10,
+        name: '吴佳',
+        avatar: 'https://picsum.photos/id/19/100/100',
+        rating: 4,
+        content: 'Docker 与 CI/CD 流程的集成非常顺畅，实现了真正的持续部署，强烈推荐！',
+        date: '2023-05-15',
+        type: 'positive'
+      },
+      {
+        id: 11,
+        name: '郑浩',
+        avatar: 'https://picsum.photos/id/20/100/100',
+        rating: 3,
+        content: '对于小型项目来说，Docker 可能有些重量级，但对于中大型项目绝对是值得投入学习的。',
+        date: '2023-04-25',
+        type: 'neutral'
+      },
+      {
+        id: 12,
+        name: '孙琳',
+        avatar: 'https://picsum.photos/id/21/100/100',
+        rating: 5,
+        content: 'Docker Hub 上有大量现成的官方镜像，省去了我们很多配置工作，开箱即用的感觉真好。',
+        date: '2023-06-08',
+        type: 'positive'
+      },
+      {
+        id: 13,
+        name: '朱强',
+        avatar: 'https://picsum.photos/id/22/100/100',
+        rating: 2,
+        content: '容器的网络配置有时会变得非常复杂，特别是在需要跨主机通信的场景下。',
+        date: '2023-05-05',
+        type: 'negative'
+      },
+      {
+        id: 14,
+        name: '胡敏',
+        avatar: 'https://picsum.photos/id/23/100/100',
+        rating: 4,
+        content: '使用 Docker 后，我们的服务器资源利用率提高了近 50%，大大降低了硬件成本。',
+        date: '2023-04-10',
+        type: 'positive'
+      },
+      {
+        id: 15,
+        name: '林达',
+        avatar: 'https://picsum.photos/id/24/100/100',
+        rating: 3,
+        content: 'Docker 很好，但管理大量容器时还是需要 Kubernetes 这样的编排工具，学习成本增加了。',
+        date: '2023-06-02',
+        type: 'neutral'
+      },
+      {
+        id: 16,
+        name: '郭鹏',
+        avatar: 'https://picsum.photos/id/25/100/100',
+        rating: 2,
+        content: '数据持久化是个挑战，好几次因为卷配置不当导致数据丢失，需要非常小心。',
+        date: '2023-05-18',
+        type: 'negative'
+      },
+      {
+        id: 17,
+        name: '徐静',
+        avatar: 'https://picsum.photos/id/26/100/100',
+        rating: 5,
+        content: '作为开发人员，我再也不用在"在我机器上能运行"这个问题上浪费时间了，Docker 万岁！',
+        date: '2023-04-30',
+        type: 'positive'
+      },
+      {
+        id: 18,
+        name: '马明',
+        avatar: 'https://picsum.photos/id/27/100/100',
+        rating: 3,
+        content: 'Docker Swarm 比 Kubernetes 简单，但功能也少一些，对于中小规模部署刚刚好。',
+        date: '2023-06-18',
+        type: 'neutral'
+      },
+      {
+        id: 19,
+        name: '罗琳',
+        avatar: 'https://picsum.photos/id/28/100/100',
+        rating: 4,
+        content: '自定义镜像让我们可以精确控制应用环境，确保开发、测试和生产环境完全一致。',
+        date: '2023-05-25',
+        type: 'positive'
+      },
+      {
+        id: 20,
+        name: '高杰',
+        avatar: 'https://picsum.photos/id/29/100/100',
+        rating: 2,
+        content: '在低配置服务器上运行多个容器时，性能问题比较明显，资源隔离有时不够严格。',
+        date: '2023-04-15',
+        type: 'negative'
+      },
+      {
+        id: 21,
+        name: '何丽',
+        avatar: 'https://picsum.photos/id/30/100/100',
+        rating: 5,
+        content: 'Docker 的文档非常完善，社区也很活跃，遇到问题很容易找到解决方案。',
+        date: '2023-06-03',
+        type: 'positive'
+      },
+      {
+        id: 22,
+        name: '梁浩',
+        avatar: 'https://picsum.photos/id/31/100/100',
+        rating: 3,
+        content: 'Docker Desktop 对于开发很方便，但在生产环境中还是推荐使用原生的 Docker Engine。',
+        date: '2023-05-10',
+        type: 'neutral'
+      },
+      {
+        id: 23,
+        name: '宋佳',
+        avatar: 'https://picsum.photos/id/32/100/100',
+        rating: 4,
+        content: '容器的快速启动特性让我们的自动伸缩响应更快，大大提升了系统的弹性。',
+        date: '2023-04-20',
+        type: 'positive'
+      },
+      {
+        id: 24,
+        name: '唐强',
+        avatar: 'https://picsum.photos/id/33/100/100',
+        rating: 2,
+        content: '镜像大小是个问题，有些应用镜像体积太大，导致存储和传输成本增加。',
+        date: '2023-06-14',
+        type: 'negative'
+      },
+      {
+        id: 25,
+        name: '冯琳',
+        avatar: 'https://picsum.photos/id/34/100/100',
+        rating: 5,
+        content: '多阶段构建太实用了，可以大幅减小最终镜像的体积，同时保持构建过程的简单性。',
+        date: '2023-05-08',
+        type: 'positive'
+      },
+      {
+        id: 26,
+        name: '于浩',
+        avatar: 'https://picsum.photos/id/35/100/100',
+        rating: 3,
+        content: 'Docker 改变了我们对基础设施的思考方式，但也需要重新设计应用架构以适应容器化。',
+        date: '2023-04-05',
+        type: 'neutral'
+      },
+      {
+        id: 27,
+        name: '董佳',
+        avatar: 'https://picsum.photos/id/36/100/100',
+        rating: 4,
+        content: '使用 Docker 后，我们的部署时间从几小时缩短到几分钟，迭代速度大大加快。',
+        date: '2023-06-07',
+        type: 'positive'
+      },
+      {
+        id: 28,
+        name: '萧强',
+        avatar: 'https://picsum.photos/id/37/100/100',
+        rating: 2,
+        content: '私有镜像仓库的管理和维护成本比预期的要高，特别是需要考虑安全和访问控制时。',
+        date: '2023-05-22',
+        type: 'negative'
+      },
+      {
+        id: 29,
+        name: '程琳',
+        avatar: 'https://picsum.photos/id/38/100/100',
+        rating: 5,
+        content: 'Docker 让微服务的概念落地变得简单，每个服务可以独立开发、测试和部署，太棒了！',
+        date: '2023-04-12',
+        type: 'positive'
+      },
+      {
+        id: 30,
+        name: '曹浩',
+        avatar: 'https://picsum.photos/id/39/100/100',
+        rating: 3,
+        content: '对于图形界面应用，Docker 支持还不够完善，配置起来比较麻烦。',
+        date: '2023-06-16',
+        type: 'neutral'
+      },
+      {
+        id: 31,
+        name: '袁佳',
+        avatar: 'https://picsum.photos/id/40/100/100',
+        rating: 4,
+        content: 'Docker 让开发者可以更专注于应用本身，而不是环境配置，提高了开发效率。',
+        date: '2023-05-15',
+        type: 'positive'
+      },
+      {
+        id: 32,
+        name: '邓强',
+        avatar: 'https://picsum.photos/id/41/100/100',
+        rating: 2,
+        content: '容器的日志管理比想象中复杂，需要额外的工具来集中收集和分析日志。',
+        date: '2023-04-28',
+        type: 'negative'
+      },
+      {
+        id: 33,
+        name: '许琳',
+        avatar: 'https://picsum.photos/id/42/100/100',
+        rating: 5,
+        content: 'Docker 与各种云平台的集成非常好，实现了真正的多云部署能力，避免了厂商锁定。',
+        date: '2023-06-01',
+        type: 'positive'
+      },
+      {
+        id: 34,
+        name: '傅浩',
+        avatar: 'https://picsum.photos/id/43/100/100',
+        rating: 3,
+        content: 'Docker 对于 DevOps 文化的推广起到了很大作用，但需要整个团队转变思维方式。',
+        date: '2023-05-03',
+        type: 'neutral'
+      },
+      {
+        id: 35,
+        name: '沈佳',
+        avatar: 'https://picsum.photos/id/44/100/100',
+        rating: 4,
+        content: '使用 Docker 后，我们的灾难恢复变得简单多了，几分钟内就能在新的服务器上恢复服务。',
+        date: '2023-04-18',
+        type: 'positive'
+      },
+      {
+        id: 36,
+        name: '曾强',
+        avatar: 'https://picsum.photos/id/45/100/100',
+        rating: 2,
+        content: '容器的生命周期管理需要谨慎处理，特别是在自动伸缩场景下，很容易出现资源竞争。',
+        date: '2023-06-11',
+        type: 'negative'
+      },
+      {
+        id: 37,
+        name: '吕琳',
+        avatar: 'https://picsum.photos/id/46/100/100',
+        rating: 5,
+        content: 'Docker 让教学变得简单，学生可以快速获得与课程完全一致的开发环境，减少了环境配置问题。',
+        date: '2023-05-27',
+        type: 'positive'
+      },
+      {
+        id: 38,
+        name: '苏浩',
+        avatar: 'https://picsum.photos/id/47/100/100',
+        rating: 3,
+        content: 'Docker 社区提供了大量优秀的镜像和工具，但质量参差不齐，需要仔细筛选。',
+        date: '2023-04-08',
+        type: 'neutral'
+      },
+      {
+        id: 39,
+        name: '卢佳',
+        avatar: 'https://picsum.photos/id/48/100/100',
+        rating: 4,
+        content: 'Docker 的隔离性恰到好处，既提供了足够的隔离，又不像虚拟机那样消耗过多资源。',
+        date: '2023-06-05',
+        type: 'positive'
+      },
+      {
+        id: 40,
+        name: '蒋强',
+        avatar: 'https://picsum.photos/id/49/100/100',
+        rating: 2,
+        content: '在高安全性要求的环境中，Docker 的安全模型需要大量定制，增加了复杂性。',
+        date: '2023-05-12',
+        type: 'negative'
+      },
+      {
+        id: 41,
+        name: '蔡琳',
+        avatar: 'https://picsum.photos/id/50/100/100',
+        rating: 5,
+        content: 'Docker 让我们能够在同一台开发机上轻松运行多个版本的数据库和服务，测试兼容性变得简单。',
+        date: '2023-04-22',
+        type: 'positive'
+      },
+      {
+        id: 42,
+        name: '贾浩',
+        avatar: 'https://picsum.photos/id/51/100/100',
+        rating: 3,
+        content: 'Docker 对于微服务很合适，但对于单体应用，收益可能不如引入的复杂性多。',
+        date: '2023-06-09',
+        type: 'neutral'
+      },
+      {
+        id: 43,
+        name: '丁佳',
+        avatar: 'https://picsum.photos/id/52/100/100',
+        rating: 4,
+        content: 'Docker 扩展生态系统非常丰富，几乎所有主流工具都提供了 Docker 支持，集成方便。',
+        date: '2023-05-01',
+        type: 'positive'
+      },
+      {
+        id: 44,
+        name: '魏强',
+        avatar: 'https://picsum.photos/id/53/100/100',
+        rating: 2,
+        content: 'Docker 镜像的版本管理需要严格规范，否则很容易出现混乱，特别是在快速迭代的团队中。',
+        date: '2023-04-15',
+        type: 'negative'
+      },
+      {
+        id: 45,
+        name: '薛琳',
+        avatar: 'https://picsum.photos/id/54/100/100',
+        rating: 5,
+        content: 'Docker 让我们的开发、测试和生产环境实现了真正的统一，部署过程中的问题减少了 90%。',
+        date: '2023-06-13',
+        type: 'positive'
+      },
+      {
+        id: 46,
+        name: '叶浩',
+        avatar: 'https://picsum.photos/id/55/100/100',
+        rating: 3,
+        content: 'Docker 是个好工具，但不是银弹，需要根据项目情况决定是否使用，不要盲目跟风。',
+        date: '2023-05-24',
+        type: 'neutral'
+      },
+      {
+        id: 47,
+        name: '潘佳',
+        avatar: 'https://picsum.photos/id/56/100/100',
+        rating: 4,
+        content: '使用 Docker 后，我们的团队协作效率大大提高，每个人都能确保在相同的环境中工作。',
+        date: '2023-04-30',
+        type: 'positive'
+      },
+      {
+        id: 48,
+        name: '杜强',
+        avatar: 'https://picsum.photos/id/57/100/100',
+        rating: 2,
+        content: 'Docker 容器的性能监控比传统部署复杂得多，需要专门的工具和技能。',
+        date: '2023-06-02',
+        type: 'negative'
+      },
+      {
+        id: 49,
+        name: '戴琳',
+        avatar: 'https://picsum.photos/id/58/100/100',
+        rating: 5,
+        content: 'Docker 的出现彻底改变了软件交付的方式，是近年来最具影响力的技术之一。',
+        date: '2023-05-18',
+        type: 'positive'
+      },
+      {
+        id: 50,
+        name: '夏浩',
+        avatar: 'https://picsum.photos/id/59/100/100',
+        rating: 3,
+        content: 'Docker 与虚拟机各有优劣，在我们的架构中，两者都有使用场景，需要合理选择。',
+        date: '2023-04-25',
+        type: 'neutral'
+      },
+      {
+        id: 51,
+        name: '钟佳',
+        avatar: 'https://picsum.photos/id/60/100/100',
+        rating: 4,
+        content: 'Docker 让边缘计算部署变得简单，我们可以在资源受限的设备上高效运行应用。',
+        date: '2023-06-07',
+        type: 'positive'
+      },
+      {
+        id: 52,
+        name: '汪强',
+        avatar: 'https://picsum.photos/id/61/100/100',
+        rating: 2,
+        content: 'Docker 的网络模型对新手来说太复杂了，桥接、host、overlay 等模式容易混淆。',
+        date: '2023-05-09',
+        type: 'negative'
+      }
+    ];
+    
+    // 渲染评论
+    const reviewsContainer = document.getElementById('reviews-container');
+    let visibleReviews = 12; // 初始显示的评论数量
+    
+    function renderReviews(filter = 'all') {
+      reviewsContainer.innerHTML = '';
+      
+      let filteredReviews = reviews;
+      if (filter !== 'all') {
+        filteredReviews = reviews.filter(review => review.type === filter);
+      }
+      
+      // 只显示可见数量的评论
+      const reviewsToShow = filteredReviews.slice(0, visibleReviews);
+      
+      reviewsToShow.forEach(review => {
+        const reviewCard = document.createElement('div');
+        reviewCard.className = `bg-dark rounded-xl p-6 border border-gray-800 card-hover shadow-lg ${review.type}`;
+        reviewCard.innerHTML = `
+          <div class="flex items-start gap-4">
+            <img src="${review.avatar}" alt="${review.name}" class="w-12 h-12 rounded-full object-cover">
+            <div class="flex-1">
+              <div class="flex justify-between items-start mb-2">
+                <h4 class="font-bold text-white">${review.name}</h4>
+                <div class="text-yellow-400">
+                  ${generateStars(review.rating)}
+                </div>
+              </div>
+              <p class="text-gray-400 mb-4">${review.content}</p>
+              <div class="text-gray-500 text-sm">${review.date}</div>
+            </div>
+          </div>
+        `;
+        reviewsContainer.appendChild(reviewCard);
+      });
+      
+      // 控制加载更多按钮的显示
+      const loadMoreBtn = document.getElementById('load-more');
+      if (filteredReviews.length <= visibleReviews) {
+        loadMoreBtn.classList.add('hidden');
+      } else {
+        loadMoreBtn.classList.remove('hidden');
+      }
+    }
+    
+    // 生成星级评分
+    function generateStars(rating) {
+      let stars = '';
+      for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+          stars += '<i class="fa fa-star"></i>';
+        } else {
+          stars += '<i class="fa fa-star-o"></i>';
+        }
+      }
+      return stars;
+    }
+    
+    // 初始渲染评论
+    renderReviews();
+    
+    // 评论筛选
+    document.querySelectorAll('.review-filter').forEach(button => {
+      button.addEventListener('click', function() {
+        // 重置可见评论数量
+        visibleReviews = 12;
+        
+        // 更新按钮样式
+        document.querySelectorAll('.review-filter').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-white');
+          btn.classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        });
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        
+        // 渲染筛选后的评论
+        renderReviews(this.getAttribute('data-filter'));
+      });
+    });
+    
+    // 加载更多评论
+    document.getElementById('load-more').addEventListener('click', function() {
+      visibleReviews += 6;
+      
+      // 获取当前激活的筛选器
+      const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-filter');
+      renderReviews(activeFilter);
+    });
+    
+    // 使用方法步骤切换
+    document.querySelectorAll('.usage-step').forEach(button => {
+      button.addEventListener('click', function() {
+        const step = this.getAttribute('data-step');
+        
+        // 更新按钮样式
+        document.querySelectorAll('.usage-step').forEach(btn => {
+          btn.classList.remove('active', 'bg-primary', 'text-white');
+          btn.classList.add('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        });
+        this.classList.add('active', 'bg-primary', 'text-white');
+        this.classList.remove('bg-dark', 'border', 'border-gray-700', 'hover:border-primary', 'hover:text-primary');
+        
+        // 显示对应的步骤内容
+        document.querySelectorAll('.usage-content').forEach(content => {
+          content.classList.add('hidden');
+          content.classList.remove('active');
+        });
+        document.getElementById(`step-${step}`).classList.remove('hidden');
+        document.getElementById(`step-${step}`).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
+    
