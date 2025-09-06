@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Svelte 介绍 - 现代前端框架</title>
+    <!-- SEO 元标签 -->
+    <meta name="description" content="深入了解Svelte：名称来历、项目历史、优缺点分析、免费使用方法及真实社区评论。探索这一创新前端框架的独特之处。">
+    <meta name="keywords" content="Svelte, 前端框架, Svelte介绍, Svelte优缺点, Svelte社区评论">
+    <meta name="author" content="Svelte 爱好者">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/svelte">
+    <link rel="sitemap" href="/sitemap.html">
+    
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ff3e00',
+                        secondary: '#646cff',
+                        dark: '#121212',
+                        darker: '#0a0a0a',
+                        'dark-card': '#1e1e1e',
+                        'dark-hover': '#2d2d2d'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .card-hover {
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+    
+    <style>
+        /* 基础动画 */
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #1e1e1e;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 评论区动画延迟 */
+        .comment-item:nth-child(odd) {
+            animation-delay: 0.1s;
+        }
+        
+        .comment-item:nth-child(even) {
+            animation-delay: 0.2s;
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-gray-200 min-h-screen flex flex-col">
+    <!-- 顶部导航栏 -->
+    <header class="sticky top-0 z-50 bg-darker/90 backdrop-blur-md border-b border-gray-800">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                    <span class="font-bold text-xl">S</span>
+                </div>
+                <h1 class="text-xl font-bold text-white">Svelte 指南</h1>
+            </div>
+            
+            <nav class="hidden md:flex space-x-8">
+                <a href="#introduction" class="text-gray-300 hover:text-white transition-colors">简介</a>
+                <a href="#history" class="text-gray-300 hover:text-white transition-colors">历史</a>
+                <a href="#features" class="text-gray-300 hover:text-white transition-colors">特性</a>
+                <a href="#usage" class="text-gray-300 hover:text-white transition-colors">使用方法</a>
+                <a href="#comments" class="text-gray-300 hover:text-white transition-colors">社区评论</a>
+            </nav>
+            
+            <button class="md:hidden text-gray-300 hover:text-white" id="menuToggle">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-dark-card border-t border-gray-800">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#introduction" class="text-gray-300 hover:text-white py-2 transition-colors">简介</a>
+                <a href="#history" class="text-gray-300 hover:text-white py-2 transition-colors">历史</a>
+                <a href="#features" class="text-gray-300 hover:text-white py-2 transition-colors">特性</a>
+                <a href="#usage" class="text-gray-300 hover:text-white py-2 transition-colors">使用方法</a>
+                <a href="#comments" class="text-gray-300 hover:text-white py-2 transition-colors">社区评论</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    <div class="bg-darker border-b border-gray-800">
+        <div class="container mx-auto px-4 py-2 text-sm text-gray-400">
+            <a href="/" class="hover:text-primary transition-colors">首页</a>
+            <span class="mx-2">/</span>
+            <span class="text-gray-300">Svelte 介绍</span>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 英雄区域 -->
+        <section class="py-12 md:py-20 text-center">
+            <div class="inline-block mb-6 px-4 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                现代前端框架
+            </div>
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary text-gradient">
+                Svelte 框架解析
+            </h1>
+            <p class="text-xl text-gray-400 max-w-3xl mx-auto mb-10">
+                探索这个与众不同的前端框架，了解它的起源、特点以及为什么越来越多的开发者选择它构建现代 web 应用
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#introduction" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20">
+                    开始了解 <i class="fa fa-arrow-right ml-2"></i>
+                </a>
+                <a href="#usage" class="px-6 py-3 bg-dark-card border border-gray-700 hover:bg-dark-hover text-white rounded-lg font-medium transition-all">
+                    如何使用 <i class="fa fa-code ml-2"></i>
+                </a>
+            </div>
+            
+            <div class="mt-16 relative">
+                <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur-3xl opacity-50"></div>
+                <img src="https://picsum.photos/id/0/1200/400" alt="Svelte 框架展示图" class="relative z-10 rounded-xl shadow-2xl max-w-full h-auto mx-auto object-cover" loading="lazy">
+            </div>
+        </section>
+
+        <!-- 简介部分 -->
+        <section id="introduction" class="py-16">
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-10">
+                    <h2 class="text-3xl font-bold mb-6 text-white">什么是 Svelte？</h2>
+                    <p class="text-gray-300 mb-4 text-lg">
+                        Svelte 是一个前端 JavaScript 框架，与 React、Vue 和 Angular 等框架不同，它采用了一种独特的编译时 approach 而非运行时 approach。
+                    </p>
+                    <p class="text-gray-300 mb-4">
+                        传统框架在浏览器中需要大量的运行时代码来管理 DOM 更新，而 Svelte 在构建时就将组件编译为高效的原生 JavaScript 代码，从而在运行时不需要虚拟 DOM，也不需要框架本身的开销。
+                    </p>
+                    <p class="text-gray-300">
+                        这种方法使得 Svelte 应用通常具有更小的 bundle 体积和更好的性能，同时保持了简洁的语法和优秀的开发体验。
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-6 mt-12">
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover shadow-lg">
+                        <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fa fa-bolt text-primary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">无需虚拟 DOM</h3>
+                        <p class="text-gray-400">
+                            Svelte 在编译时直接生成高效的 DOM 操作代码，避免了虚拟 DOM 的开销和 diff 计算。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover shadow-lg">
+                        <div class="w-12 h-12 bg-secondary/20 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fa fa-code text-secondary text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">简洁的语法</h3>
+                        <p class="text-gray-400">
+                            语法接近原生 HTML、CSS 和 JavaScript，学习曲线平缓，代码可读性高。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover shadow-lg">
+                        <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fa fa-rocket text-green-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">优秀的性能</h3>
+                        <p class="text-gray-400">
+                            生成的代码体积小、执行效率高，尤其在移动设备上表现出色。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover shadow-lg">
+                        <div class="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center mb-4">
+                            <i class="fa fa-cogs text-purple-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3 text-white">内置状态管理</h3>
+                        <p class="text-gray-400">
+                            无需额外的状态管理库，内置的响应式系统简单而强大。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 历史和名称来历 -->
+        <section id="history" class="py-16 bg-darker">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-12 text-white text-center">Svelte 的历史与名称来历</h2>
+                
+                <div class="grid md:grid-cols-2 gap-10">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-5 text-white flex items-center">
+                            <span class="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-font text-primary"></i>
+                            </span>
+                            名称来历
+                        </h3>
+                        <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                            <p class="text-gray-300 mb-4">
+                                Svelte 这个名字来源于英语单词 "svelte"，意为"苗条的、优雅的、流畅的"。这个名字完美体现了框架的设计理念：
+                            </p>
+                            <ul class="space-y-3 text-gray-400">
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>生成精简的代码，没有冗余</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>语法简洁优雅，易于理解和书写</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-primary mt-1 mr-2"></i>
+                                    <span>应用运行流畅，性能出色</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-5 text-white flex items-center">
+                            <span class="w-8 h-8 bg-secondary/20 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-history text-secondary"></i>
+                            </span>
+                            项目来历
+                        </h3>
+                        <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                            <p class="text-gray-300 mb-4">
+                                Svelte 由 Rich Harris 创造，他当时是《卫报》(The Guardian) 的前端开发人员。项目起源于他对现有框架局限性的思考：
+                            </p>
+                            <ul class="space-y-3 text-gray-400">
+                                <li class="flex items-start">
+                                    <i class="fa fa-calendar text-secondary mt-1 mr-2"></i>
+                                    <span><strong>2016 年</strong> - 首次公开亮相，作为一个实验性项目</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-calendar text-secondary mt-1 mr-2"></i>
+                                    <span><strong>2017 年</strong> - 发布第一个稳定版本</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-calendar text-secondary mt-1 mr-2"></i>
+                                    <span><strong>2019 年</strong> - 发布 Svelte 3，引入了更简洁的语法</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-calendar text-secondary mt-1 mr-2"></i>
+                                    <span><strong>2021 年</strong> - SvelteKit 作为官方应用框架发布</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-calendar text-secondary mt-1 mr-2"></i>
+                                    <span><strong>至今</strong> - 持续发展，社区快速增长</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-12">
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                        <h4 class="text-lg font-medium mb-3 text-white">项目初衷</h4>
+                        <p class="text-gray-300">
+                            Rich Harris 希望创建一个框架，能够在不牺牲开发体验的前提下，生成高效、精简的代码。他认为当时的框架都依赖于运行时的虚拟 DOM  diffing，这是一种"必要的邪恶"，而 Svelte 则通过编译时的方法彻底解决了这个问题。
+                        </p>
+                        <p class="text-gray-300 mt-3">
+                            最初作为个人项目，Svelte 逐渐吸引了越来越多的开发者关注，并在 2019 年发布 Svelte 3 后获得了广泛认可，成为前端领域的重要参与者。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 优缺点 -->
+        <section id="features" class="py-16">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-12 text-white text-center">Svelte 的优点与缺点</h2>
+                
+                <div class="grid md:grid-cols-2 gap-10">
+                    <div>
+                        <div class="flex items-center mb-6">
+                            <div class="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-thumbs-up text-green-500"></i>
+                            </div>
+                            <h3 class="text-2xl font-semibold text-white">优点</h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">更小的应用体积</h4>
+                                <p class="text-gray-400 text-sm">
+                                    没有运行时开销，生成的代码体积通常比 React、Vue 等框架小得多。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">更好的性能</h4>
+                                <p class="text-gray-400 text-sm">
+                                    直接操作 DOM，避免虚拟 DOM 的 diff 计算，初始加载和更新都更快。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">简洁的语法</h4>
+                                <p class="text-gray-400 text-sm">
+                                    接近原生 HTML、CSS 和 JavaScript，学习成本低，代码可读性高。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">内置响应式系统</h4>
+                                <p class="text-gray-400 text-sm">
+                                    无需额外的状态管理库，简单的赋值操作即可触发更新。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">优秀的开发体验</h4>
+                                <p class="text-gray-400 text-sm">
+                                    热模块替换（HMR）支持良好，错误提示清晰，调试体验佳。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">灵活的样式封装</h4>
+                                <p class="text-gray-400 text-sm">
+                                    内置 CSS 作用域，无需额外工具即可实现组件样式隔离。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <div class="flex items-center mb-6">
+                            <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-thumbs-down text-red-500"></i>
+                            </div>
+                            <h3 class="text-2xl font-semibold text-white">缺点</h3>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">社区相对较小</h4>
+                                <p class="text-gray-400 text-sm">
+                                    相比 React 和 Vue，社区规模较小，第三方库和资源相对较少。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">学习资源较少</h4>
+                                <p class="text-gray-400 text-sm">
+                                    教程、书籍和课程数量不如主流框架多，初学者可能需要更多自主探索。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">企业采用率较低</h4>
+                                <p class="text-gray-400 text-sm">
+                                    在大型企业中的采用率不如 React、Vue 和 Angular，招聘岗位相对较少。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">调试体验不同</h4>
+                                <p class="text-gray-400 text-sm">
+                                    由于是编译型框架，调试时看到的代码是编译后的代码，可能与源代码有所不同。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">某些场景灵活性较低</h4>
+                                <p class="text-gray-400 text-sm">
+                                    对于某些复杂的自定义渲染需求，灵活性可能不如 React 等框架。
+                                </p>
+                            </div>
+                            
+                            <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-colors">
+                                <h4 class="font-medium text-white mb-2">生态系统仍在成熟中</h4>
+                                <p class="text-gray-400 text-sm">
+                                    虽然 SvelteKit 已经发布，但整体生态系统仍在发展完善中。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 使用方法 -->
+        <section id="usage" class="py-16 bg-darker">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold mb-12 text-white text-center">如何免费使用 Svelte</h2>
+                
+                <p class="text-gray-300 text-center mb-10 max-w-2xl mx-auto">
+                    Svelte 是完全开源和免费的，你可以在任何项目中使用它，无论是个人项目还是商业项目。以下是开始使用 Svelte 的步骤：
+                </p>
+                
+                <div class="space-y-8">
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mr-3">
+                                <span class="font-bold text-primary">1</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white">创建第一个 Svelte 项目</h3>
+                        </div>
+                        
+                        <p class="text-gray-400 mb-4">
+                            最简单的方法是使用官方提供的模板创建新项目。确保你已经安装了 Node.js (v14.13.1 或更高版本)。
+                        </p>
+                        
+                        <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm text-gray-300 overflow-x-auto">
+                            <pre>npx degit sveltejs/template my-svelte-project
+cd my-svelte-project
+npm install
+npm run dev</pre>
+                        </div>
+                        
+                        <p class="text-gray-400 mt-4 text-sm">
+                            运行这些命令后，你的应用将在 <code class="bg-gray-800 px-1 py-0.5 rounded text-primary">http://localhost:5000</code> 上运行。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mr-3">
+                                <span class="font-bold text-primary">2</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white">使用 SvelteKit 构建完整应用</h3>
+                        </div>
+                        
+                        <p class="text-gray-400 mb-4">
+                            对于更复杂的应用，推荐使用官方的 SvelteKit 框架，它提供了路由、服务端渲染等功能：
+                        </p>
+                        
+                        <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm text-gray-300 overflow-x-auto">
+                            <pre>npm create svelte@latest my-sveltekit-project
+cd my-sveltekit-project
+npm install
+npm run dev -- --open</pre>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mr-3">
+                                <span class="font-bold text-primary">3</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white">在现有项目中添加 Svelte</h3>
+                        </div>
+                        
+                        <p class="text-gray-400 mb-4">
+                            如果你想在现有项目中使用 Svelte，可以通过 npm 安装并配置相应的构建工具：
+                        </p>
+                        
+                        <div class="bg-darker p-4 rounded-lg border border-gray-700 font-mono text-sm text-gray-300 overflow-x-auto">
+                            <pre>npm install svelte</pre>
+                        </div>
+                        
+                        <p class="text-gray-400 mt-4">
+                            然后需要根据你的构建工具（Webpack、Rollup 等）添加相应的配置。具体可以参考官方文档中的集成指南。
+                        </p>
+                    </div>
+                    
+                    <div class="bg-dark-card p-6 rounded-xl border border-gray-800">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center mr-3">
+                                <span class="font-bold text-primary">4</span>
+                            </div>
+                            <h3 class="text-xl font-semibold text-white">学习资源与文档</h3>
+                        </div>
+                        
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <a href="https://svelte.dev/docs" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-darker rounded-lg border border-gray-700 hover:border-primary/50 transition-colors">
+                                <i class="fa fa-book text-primary mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-white">官方文档</div>
+                                    <div class="text-sm text-gray-400">svelte.dev/docs</div>
+                                </div>
+                            </a>
+                            
+                            <a href="https://kit.svelte.dev/docs" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-darker rounded-lg border border-gray-700 hover:border-primary/50 transition-colors">
+                                <i class="fa fa-code-fork text-primary mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-white">SvelteKit 文档</div>
+                                    <div class="text-sm text-gray-400">kit.svelte.dev/docs</div>
+                                </div>
+                            </a>
+                            
+                            <a href="https://svelte.dev/tutorial" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-darker rounded-lg border border-gray-700 hover:border-primary/50 transition-colors">
+                                <i class="fa fa-graduation-cap text-primary mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-white">交互式教程</div>
+                                    <div class="text-sm text-gray-400">svelte.dev/tutorial</div>
+                                </div>
+                            </a>
+                            
+                            <a href="https://github.com/sveltejs/svelte" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-darker rounded-lg border border-gray-700 hover:border-primary/50 transition-colors">
+                                <i class="fa fa-github text-primary mr-3"></i>
+                                <div>
+                                    <div class="font-medium text-white">GitHub 仓库</div>
+                                    <div class="text-sm text-gray-400">github.com/sveltejs/svelte</div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 社区评论 -->
+        <section id="comments" class="py-16">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl font-bold mb-4 text-white text-center">社区评论</h2>
+                <p class="text-gray-400 text-center mb-12 max-w-2xl mx-auto">
+                    来自全球开发者的真实反馈，了解他们使用 Svelte 的体验和看法
+                </p>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="commentsContainer">
+                    <!-- 评论将通过JavaScript动态加载 -->
+                </div>
+                
+                <div class="mt-10 text-center">
+                    <button id="loadMoreComments" class="px-6 py-3 bg-dark-card border border-gray-700 hover:bg-dark-hover text-white rounded-lg font-medium transition-all">
+                        加载更多评论 <i class="fa fa-refresh ml-2"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-darker border-t border-gray-800">
+        <div class="container mx-auto px-4 py-10">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <span class="font-bold text-xl">S</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white">Svelte 指南</h3>
+                    </div>
+                    <p class="text-gray-400 mb-4">
+                        全面介绍 Svelte 框架的特点、历史和使用方法，帮助开发者更好地了解和使用这一现代前端工具。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center text-gray-400 hover:text-primary hover:bg-dark-hover transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center text-gray-400 hover:text-primary hover:bg-dark-hover transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center text-gray-400 hover:text-primary hover:bg-dark-hover transition-colors">
+                            <i class="fa fa-discord"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">快速链接</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#introduction" class="text-gray-400 hover:text-primary transition-colors">什么是 Svelte</a></li>
+                        <li><a href="#history" class="text-gray-400 hover:text-primary transition-colors">历史与名称来历</a></li>
+                        <li><a href="#features" class="text-gray-400 hover:text-primary transition-colors">优点与缺点</a></li>
+                        <li><a href="#usage" class="text-gray-400 hover:text-primary transition-colors">使用方法</a></li>
+                        <li><a href="#comments" class="text-gray-400 hover:text-primary transition-colors">社区评论</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold text-white mb-4">相关资源</h4>
+                    <ul class="space-y-2">
+                        <li><a href="https://svelte.dev" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">Svelte 官方网站</a></li>
+                        <li><a href="https://kit.svelte.dev" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">SvelteKit</a></li>
+                        <li><a href="https://sveltesociety.dev" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">Svelte Society</a></li>
+                        <li><a href="/sitemap.html" class="text-gray-400 hover:text-primary transition-colors">网站地图</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm">
+                    &copy; 2023 Svelte 指南. 保留所有权利.
+                </p>
+                <div class="mt-4 md:mt-0">
+                    <a href="/sitemap.html" class="text-gray-500 hover:text-primary text-sm transition-colors">网站地图</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg opacity-0 invisible transition-all z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        const menuToggle = document.getElementById('menuToggle');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 点击移动端菜单项后关闭菜单
+        const mobileMenuItems = mobileMenu.querySelectorAll('a');
+        mobileMenuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+        
+        // 返回顶部按钮
+        const backToTopButton = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 评论数据生成
+        const generateComments = (count) => {
+            const comments = [];
+            const names = [
+                '张小明', '李华', '王芳', '赵伟', '刘强', '陈静', '杨阳', '黄强', 
+                '周琳', '吴佳', '郑浩', '钱明', '孙丽', '冯杰', '陈明', '朱琳',
+                'David', 'Sarah', 'Michael', 'Emma', 'James', 'Olivia', 'Robert', 'Sophia'
+            ];
+            
+            const avatars = Array.from({length: 30}, (_, i) => `https://picsum.photos/id/${i + 10}/200`);
+            
+            const positiveComments = [
+                'Svelte 真的改变了我对前端框架的看法，语法简洁到令人难以置信！',
+                '从 React 转过来的，Svelte 的响应式系统太直观了，不需要记住各种钩子函数。',
+                '性能真的很棒，特别是在移动端，比我之前用的框架快多了。',
+                '喜欢 Svelte 的编译时 approach，生成的代码非常精简。',
+                '学习曲线很平缓，我只用了一天就能够上手开发实际项目了。',
+                '内置的 CSS 作用域解决了很多样式冲突问题，太方便了。',
+                'SvelteKit 让构建全栈应用变得如此简单，强烈推荐！',
+                '社区虽然不大，但非常友好，问题总能得到及时解答。',
+                '没有虚拟 DOM 真的是个好主意，应用启动速度明显提升。',
+                '对于小型项目来说，Svelte 是完美的选择，不会带来不必要的复杂性。'
+            ];
+            
+            const balancedComments = [
+                'Svelte 很优秀，但某些复杂场景下生态系统还是不如 React 完善。',
+                '喜欢 Svelte 的简洁，但调试体验确实和其他框架不太一样，需要适应。',
+                '性能很好，但找到合适的第三方组件有时候需要花点时间。',
+                '语法很干净，但团队里有经验的 React 开发者转型需要一些时间。',
+                'SvelteKit 还在不断完善中，有些功能还不够稳定，但发展很快。',
+                '作为个人项目使用非常愉快，但在大型企业项目中采用需要更多考量。',
+                '响应式系统很直观，但对于复杂状态管理，有时还是需要额外的模式。',
+                '文档很清晰，但高级用法的教程相对较少，需要多看源码。',
+                '构建速度很快，但热更新偶尔会有小问题，希望后续版本能改进。',
+                '整体体验很棒，但某些边缘情况的处理方式和我预期的不太一样。'
+            ];
+            
+            const allComments = [...positiveComments, ...balancedComments];
+            
+            for (let i = 0; i < count; i++) {
+                const isPositive = Math.random() > 0.3;
+                const rating = isPositive ? 
+                    Math.floor(Math.random() * 2) + 4 : // 4-5星
+                    Math.floor(Math.random() * 2) + 3; // 3-4星
+                
+                const commentText = allComments[Math.floor(Math.random() * allComments.length)];
+                const name = names[Math.floor(Math.random() * names.length)];
+                const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+                
+                // 随机日期，过去一年内
+                const date = new Date();
+                date.setDate(date.getDate() - Math.floor(Math.random() * 365));
+                
+                comments.push({
+                    id: i + 1,
+                    name,
+                    avatar,
+                    rating,
+                    text: commentText,
+                    date: date.toLocaleDateString()
+                });
+            }
+            
+            return comments;
+        };
+        
+        // 渲染评论
+        const renderComments = (comments, container) => {
+            comments.forEach(comment => {
+                const commentEl = document.createElement('div');
+                commentEl.className = 'bg-dark-card rounded-xl border border-gray-800 p-5 fade-in comment-item';
+                commentEl.setAttribute('loading', 'lazy');
+                
+                // 生成星级HTML
+                let ratingHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (i <= comment.rating) {
+                        ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+                    } else {
+                        ratingHtml += '<i class="fa fa-star text-gray-600"></i>';
+                    }
+                }
+                
+                commentEl.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <img src="${comment.avatar}" alt="${comment.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <div class="font-medium text-white">${comment.name}</div>
+                            <div class="flex text-sm mt-1">
+                                ${ratingHtml}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-3">${comment.text}</p>
+                    <div class="text-gray-500 text-xs">${comment.date}</div>
+                `;
+                
+                container.appendChild(commentEl);
+            });
+        };
+        
+        // 初始加载评论
+        const commentsContainer = document.getElementById('commentsContainer');
+        let loadedComments = 0;
+        const commentsPerLoad = 15;
+        const allComments = generateComments(55); // 生成55条评论
+        
+        // 初始加载15条
+        renderComments(allComments.slice(0, commentsPerLoad), commentsContainer);
+        loadedComments += commentsPerLoad;
+        
+        // 加载更多评论
+        document.getElementById('loadMoreComments').addEventListener('click', () => {
+            const remaining = allComments.slice(loadedComments, loadedComments + commentsPerLoad);
+            if (remaining.length > 0) {
+                renderComments(remaining, commentsContainer);
+                loadedComments += remaining.length;
+                
+                // 如果没有更多评论，隐藏按钮
+                if (loadedComments >= allComments.length) {
+                    document.getElementById('loadMoreComments').style.display = 'none';
+                }
+            }
+        });
+        
+        // 滚动动画 - 元素进入视口时显示动画
+        const observerOptions = {
+            root: null,
+            rootMargin: '0px',
+            threshold: 0.1
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        
+        // 观察所有section
+        document.querySelectorAll('section > div').forEach(section => {
+            section.style.opacity = '0';
+            observer.observe(section);
+        });
+    </script>
+</body>
+</html>
