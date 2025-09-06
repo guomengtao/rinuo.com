@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradio 介绍 - 开源机器学习演示平台</title>
+    <meta name="description" content="Gradio 是一个开源Python库，让开发者可以快速创建机器学习模型的交互式演示。本文详细介绍Gradio的名字含义、起源、免费资源、使用方法、优缺点及社区评论。">
+    <meta name="keywords" content="Gradio, 机器学习, 演示平台, 开源工具, Python库, Gradio使用方法">
+    <meta name="author" content="AI工具指南">
+    <meta property="og:title" content="Gradio 介绍 - 开源机器学习演示平台">
+    <meta property="og:description" content="了解Gradio的一切：名字含义、起源、免费资源、使用方法、优缺点及社区评论">
+    <meta property="og:type" content="article">
+    <link rel="canonical" href="https://example.com/free/detail/">
+    <link rel="sitemap" type="application/xml" href="/sitemap.html">
+    
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7C3AED', // 主色调：深紫色
+                        secondary: '#EC4899', // 辅助色：粉红色
+                        dark: '#0F172A', // 深色背景
+                        darker: '#020617', // 更深色背景
+                        light: '#E2E8F0', // 浅色文本
+                        'gray-dark': '#1E293B', // 深灰色组件
+                        'gray-light': '#334155', // 浅灰色组件
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(124, 58, 237, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(124, 58, 237, 0.05) 1px, transparent 1px);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+</head>
+<body class="bg-dark text-light font-sans min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <header class="sticky top-0 z-50 bg-darker/80 backdrop-blur-lg border-b border-gray-light/20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                            <i class="fa fa-bolt text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">AI工具指南</span>
+                    </a>
+                </div>
+                
+                <!-- 导航链接 - 桌面版 -->
+                <nav class="hidden md:flex space-x-8">
+                    <a href="/" class="text-gray-300 hover:text-white transition-colors">首页</a>
+                    <a href="/free" class="text-primary border-b-2 border-primary px-1">免费资源</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">教程</a>
+                    <a href="#" class="text-gray-300 hover:text-white transition-colors">社区</a>
+                </nav>
+                
+                <!-- 右侧功能区 -->
+                <div class="flex items-center space-x-4">
+                    <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-light/20 transition-colors">
+                        <i class="fa fa-share-alt text-gray-300"></i>
+                    </button>
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-light/20 transition-colors">
+                        <i class="fa fa-bookmark-o text-gray-300"></i>
+                    </button>
+                    <!-- 移动端菜单按钮 -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-full hover:bg-gray-light/20 transition-colors">
+                        <i class="fa fa-bars text-gray-300"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-gray-dark border-t border-gray-light/20">
+            <div class="container mx-auto px-4 py-3 space-y-3">
+                <a href="/" class="block py-2 text-gray-300 hover:text-white transition-colors">首页</a>
+                <a href="/free" class="block py-2 text-primary">免费资源</a>
+                <a href="#" class="block py-2 text-gray-300 hover:text-white transition-colors">教程</a>
+                <a href="#" class="block py-2 text-gray-300 hover:text-white transition-colors">社区</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    <div class="bg-darker border-b border-gray-light/20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <nav class="flex text-sm" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                    <li class="inline-flex items-center">
+                        <a href="/" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-home mr-1"></i> 首页
+                        </a>
+                    </li>
+                    <li>
+                        <div class="flex items-center">
+                            <i class="fa fa-angle-right text-gray-400 mx-2"></i>
+                            <a href="/free" class="text-gray-400 hover:text-white transition-colors">资源分类</a>
+                        </div>
+                    </li>
+                    <li aria-current="page">
+                        <div class="flex items-center">
+                            <i class="fa fa-angle-right text-gray-400 mx-2"></i>
+                            <span class="text-primary">Gradio 介绍</span>
+                        </div>
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow bg-grid">
+        <!-- 英雄区 -->
+        <section class="relative overflow-hidden py-16 md:py-24">
+            <div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-60"></div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="inline-block mb-6 px-3 py-1 rounded-full bg-primary/10 border border-primary/30">
+                        <span class="text-primary font-medium text-sm">开源工具</span>
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                        <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Gradio</span>
+                        <span class="block mt-2">机器学习模型的交互式演示平台</span>
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-8">
+                        无需前端经验，用Python快速创建机器学习模型的Web演示界面
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#getting-started" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all shadow-lg shadow-primary/20">
+                            开始使用
+                        </a>
+                        <a href="https://gradio.app" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-gray-dark hover:bg-gray-light/30 text-white font-medium rounded-lg transition-all border border-gray-light/30">
+                            访问官网 <i class="fa fa-external-link ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 装饰元素 -->
+            <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-primary/20 rounded-full blur-3xl"></div>
+            <div class="absolute top-20 -right-20 w-60 h-60 bg-secondary/20 rounded-full blur-3xl"></div>
+        </section>
+
+        <!-- 简介卡片 -->
+        <section class="py-12">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <div class="bg-gray-dark rounded-2xl overflow-hidden border border-gray-light/20 shadow-xl">
+                        <div class="p-6 md:p-8">
+                            <div class="flex flex-col md:flex-row gap-8">
+                                <div class="md:w-1/3">
+                                    <div class="rounded-xl overflow-hidden border border-gray-light/30">
+                                        <img src="https://picsum.photos/id/0/600/400" alt="Gradio界面示例" class="w-full h-auto object-cover" loading="lazy">
+                                    </div>
+                                </div>
+                                <div class="md:w-2/3">
+                                    <h2 class="text-2xl font-bold mb-4">什么是 Gradio？</h2>
+                                    <p class="text-gray-300 mb-4">
+                                        Gradio 是一个开源的Python库，它允许开发者快速创建和分享机器学习模型的交互式Web界面，无需任何前端开发经验。
+                                    </p>
+                                    <p class="text-gray-300 mb-6">
+                                        无论是图像分类、文本生成还是语音识别模型，Gradio都能帮助你在几分钟内创建一个直观的演示界面，方便与团队成员、用户或研究社区分享你的模型。
+                                    </p>
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                        <div class="bg-darker rounded-lg p-3 text-center">
+                                            <div class="text-primary text-2xl mb-1"><i class="fa fa-code"></i></div>
+                                            <div class="text-sm text-gray-400">简单集成</div>
+                                        </div>
+                                        <div class="bg-darker rounded-lg p-3 text-center">
+                                            <div class="text-primary text-2xl mb-1"><i class="fa fa-share-alt"></i></div>
+                                            <div class="text-sm text-gray-400">易于分享</div>
+                                        </div>
+                                        <div class="bg-darker rounded-lg p-3 text-center">
+                                            <div class="text-primary text-2xl mb-1"><i class="fa fa-desktop"></i></div>
+                                            <div class="text-sm text-gray-400">可视化界面</div>
+                                        </div>
+                                        <div class="bg-darker rounded-lg p-3 text-center">
+                                            <div class="text-primary text-2xl mb-1"><i class="fa fa-github"></i></div>
+                                            <div class="text-sm text-gray-400">开源免费</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 名字含义与起源 -->
+        <section class="py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">名字含义与起源</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">了解Gradio这个名字的由来及其发展历程</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- 名字含义 -->
+                        <div class="bg-gray-dark rounded-2xl p-6 md:p-8 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+                                <i class="fa fa-font text-primary text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">名字含义</h3>
+                            <p class="text-gray-300 mb-4">
+                                Gradio 这个名字来源于 "Gradient"（梯度）和 "Radio"（广播）两个词的组合。
+                            </p>
+                            <p class="text-gray-300">
+                                这个名字反映了工具的双重目的：一方面与机器学习中的梯度下降等概念相关联，另一方面强调了模型演示的可分享性，就像广播一样可以被广泛传播和访问。
+                            </p>
+                        </div>
+                        
+                        <!-- 起源 -->
+                        <div class="bg-gray-dark rounded-2xl p-6 md:p-8 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-6">
+                                <i class="fa fa-history text-primary text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold mb-4">起源与发展</h3>
+                            <p class="text-gray-300 mb-4">
+                                Gradio 由阿布舍克·特瓦里（Abhishek Thakur）和阿里·阿布德（Ali Abdalla）于2019年创立，最初是作为一个简单的内部工具。
+                            </p>
+                            <p class="text-gray-300">
+                                由于其解决了机器学习模型演示的痛点，Gradio迅速在开发者社区获得关注，并于2021年加入Hugging Face旗下，成为其生态系统的重要组成部分，继续保持开源免费的特性。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 免费资源与服务 -->
+        <section class="py-16 bg-darker">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">免费资源与服务</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">Gradio 提供的核心功能与服务，全部免费开源</p>
+                    </div>
+                    
+                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- 功能卡片 1 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                                <i class="fa fa-laptop text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3">本地Web界面</h3>
+                            <p class="text-gray-400 text-sm">
+                                免费生成可在本地运行的Web界面，无需部署即可测试和演示你的机器学习模型。
+                            </p>
+                        </div>
+                        
+                        <!-- 功能卡片 2 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                                <i class="fa fa-cloud-upload text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3">免费托管</h3>
+                            <p class="text-gray-400 text-sm">
+                                通过Gradio Hub免费托管你的演示，生成可分享的公共链接，无需自己配置服务器。
+                            </p>
+                        </div>
+                        
+                        <!-- 功能卡片 3 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                                <i class="fa fa-code-fork text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3">开源代码库</h3>
+                            <p class="text-gray-400 text-sm">
+                                完全开源的代码库，可自由查看、修改和分发，没有任何许可证限制。
+                            </p>
+                        </div>
+                        
+                        <!-- 功能卡片 4 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                                <i class="fa fa-plug text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3">丰富组件库</h3>
+                            <p class="text-gray-400 text-sm">
+                                提供超过30种预构建组件，包括滑块、文本框、图像上传器等，满足各种交互需求。
+                            </p>
+                        </div>
+                        
+                        <!-- 功能卡片 5 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                                <i class="fa fa-users text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3">用户反馈收集</h3>
+                            <p class="text-gray-400 text-sm">
+                                内置的反馈收集功能，让用户可以直接对你的模型进行评分和提供改进建议。
+                            </p>
+                        </div>
+                        
+                        <!-- 功能卡片 6 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                                <i class="fa fa-book text-primary"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-3">详细文档</h3>
+                            <p class="text-gray-400 text-sm">
+                                免费提供的详尽文档和教程，帮助开发者快速上手并掌握高级功能。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 使用方法 -->
+        <section id="getting-started" class="py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">免费获取与使用方法</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">只需简单几步，即可开始使用Gradio创建你的第一个模型演示</p>
+                    </div>
+                    
+                    <div class="bg-gray-dark rounded-2xl p-6 md:p-8 border border-gray-light/20 shadow-xl">
+                        <!-- 步骤导航 -->
+                        <div class="flex flex-wrap justify-center mb-10 gap-2">
+                            <button class="step-btn active px-4 py-2 rounded-full bg-primary text-white text-sm font-medium">安装</button>
+                            <button class="step-btn px-4 py-2 rounded-full bg-gray-light/20 text-gray-300 text-sm font-medium">创建演示</button>
+                            <button class="step-btn px-4 py-2 rounded-full bg-gray-light/20 text-gray-300 text-sm font-medium">运行与分享</button>
+                        </div>
+                        
+                        <!-- 步骤内容 -->
+                        <div class="step-content">
+                            <!-- 步骤 1: 安装 -->
+                            <div class="step-pane active">
+                                <h3 class="text-2xl font-bold mb-4">步骤 1: 安装 Gradio</h3>
+                                <p class="text-gray-300 mb-6">
+                                    Gradio 可以通过 pip 轻松安装，确保你已经安装了 Python 3.7 或更高版本。
+                                </p>
+                                
+                                <div class="bg-darker rounded-xl p-4 mb-6 overflow-x-auto">
+                                    <pre class="text-gray-300 font-mono text-sm"><code>pip install gradio</code></pre>
+                                </div>
+                                
+                                <p class="text-gray-300 mb-4">
+                                    如果你需要使用所有功能（包括某些高级组件），可以安装完整版本：
+                                </p>
+                                
+                                <div class="bg-darker rounded-xl p-4 overflow-x-auto">
+                                    <pre class="text-gray-300 font-mono text-sm"><code>pip install gradio[full]</code></pre>
+                                </div>
+                            </div>
+                            
+                            <!-- 步骤 2: 创建演示 -->
+                            <div class="step-pane hidden">
+                                <h3 class="text-2xl font-bold mb-4">步骤 2: 创建你的第一个演示</h3>
+                                <p class="text-gray-300 mb-6">
+                                    创建一个简单的Python脚本，导入Gradio并定义你的函数和界面。
+                                </p>
+                                
+                                <div class="bg-darker rounded-xl p-4 mb-6 overflow-x-auto">
+                                    <pre class="text-gray-300 font-mono text-sm"><code>import gradio as gr
+
+def greet(name):
+    return f"Hello, {name}!"
+
+# 创建界面
+iface = gr.Interface(
+    fn=greet, 
+    inputs="text", 
+    outputs="text"
+)
+
+# 启动界面
+iface.launch()</code></pre>
+                                </div>
+                                
+                                <p class="text-gray-300">
+                                    这个简单的例子创建了一个文本输入和文本输出的界面，实现了一个问候功能。
+                                </p>
+                            </div>
+                            
+                            <!-- 步骤 3: 运行与分享 -->
+                            <div class="step-pane hidden">
+                                <h3 class="text-2xl font-bold mb-4">步骤 3: 运行并分享你的演示</h3>
+                                <p class="text-gray-300 mb-6">
+                                    运行你的Python脚本，Gradio会在本地启动一个Web服务器，并提供一个本地地址。
+                                </p>
+                                
+                                <div class="bg-darker rounded-xl p-4 mb-6 overflow-x-auto">
+                                    <pre class="text-gray-300 font-mono text-sm"><code>python your_script.py
+
+# 输出将包含类似以下内容
+Running on local URL:  http://127.0.0.1:7860
+Running on public URL: https://xxxx.gradio.app</code></pre>
+                                </div>
+                                
+                                <p class="text-gray-300 mb-4">
+                                    要分享你的演示，只需在启动时添加share参数：
+                                </p>
+                                
+                                <div class="bg-darker rounded-xl p-4 overflow-x-auto">
+                                    <pre class="text-gray-300 font-mono text-sm"><code>iface.launch(share=True)</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 优缺点分析 -->
+        <section class="py-16 bg-darker">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-5xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">优点与缺点</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">客观分析Gradio的优势和局限性</p>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <!-- 优点 -->
+                        <div class="bg-gray-dark rounded-2xl p-6 md:p-8 border border-green-500/30 shadow-lg">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fa fa-thumbs-up text-green-500 text-xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold">优点</h3>
+                            </div>
+                            
+                            <ul class="space-y-4">
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">无需前端开发经验，纯Python即可创建Web界面</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">快速迭代，代码修改后界面自动更新</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">一键生成可分享的公共链接，方便演示和协作</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">丰富的预构建组件，支持文本、图像、音频等多种数据类型</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">与主流机器学习库（如TensorFlow、PyTorch）无缝集成</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">活跃的开发社区和详细的文档</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">支持自定义CSS和JavaScript，满足个性化需求</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- 缺点 -->
+                        <div class="bg-gray-dark rounded-2xl p-6 md:p-8 border border-red-500/30 shadow-lg">
+                            <div class="flex items-center mb-6">
+                                <div class="w-12 h-12 bg-red-500/20 rounded-lg flex items-center justify-center mr-4">
+                                    <i class="fa fa-thumbs-down text-red-500 text-xl"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold">缺点</h3>
+                            </div>
+                            
+                            <ul class="space-y-4">
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">生成的界面在高并发场景下性能可能不足</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">自定义程度有限，复杂界面仍需前端知识</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">免费托管的链接有有效期（通常72小时）</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">对于非常复杂的模型，加载时间可能较长</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">某些高级功能需要额外安装依赖</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">在移动设备上的体验可能不如桌面端</span>
+                                </li>
+                                <li class="flex">
+                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                    <span class="text-gray-300">版本更新较快，有时会出现兼容性问题</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 社区评价 -->
+        <section class="py-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-6xl mx-auto">
+                    <div class="text-center mb-12">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-4">社区评论</h2>
+                        <p class="text-gray-400 max-w-2xl mx-auto">来自全球开发者的真实评价</p>
+                    </div>
+                    
+                    <!-- 评分概览 -->
+                    <div class="bg-gray-dark rounded-2xl p-6 md:p-8 border border-gray-light/20 shadow-lg mb-10">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="text-center md:text-left">
+                                <div class="text-5xl font-bold text-primary mb-2">4.8</div>
+                                <div class="flex text-yellow-400 mb-2">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                </div>
+                                <div class="text-gray-400">基于 2,000+ 条社区评价</div>
+                            </div>
+                            
+                            <div class="w-full md:w-2/3">
+                                <div class="space-y-2">
+                                    <!-- 5星 -->
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-sm text-gray-400">5 星</div>
+                                        <div class="flex-grow h-2 bg-gray-light/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-yellow-400 rounded-full" style="width: 78%"></div>
+                                        </div>
+                                        <div class="w-10 text-right text-sm text-gray-400">78%</div>
+                                    </div>
+                                    
+                                    <!-- 4星 -->
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-sm text-gray-400">4 星</div>
+                                        <div class="flex-grow h-2 bg-gray-light/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-yellow-400 rounded-full" style="width: 15%"></div>
+                                        </div>
+                                        <div class="w-10 text-right text-sm text-gray-400">15%</div>
+                                    </div>
+                                    
+                                    <!-- 3星 -->
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-sm text-gray-400">3 星</div>
+                                        <div class="flex-grow h-2 bg-gray-light/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-yellow-400 rounded-full" style="width: 5%"></div>
+                                        </div>
+                                        <div class="w-10 text-right text-sm text-gray-400">5%</div>
+                                    </div>
+                                    
+                                    <!-- 2星 -->
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-sm text-gray-400">2 星</div>
+                                        <div class="flex-grow h-2 bg-gray-light/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-yellow-400 rounded-full" style="width: 1%"></div>
+                                        </div>
+                                        <div class="w-10 text-right text-sm text-gray-400">1%</div>
+                                    </div>
+                                    
+                                    <!-- 1星 -->
+                                    <div class="flex items-center">
+                                        <div class="w-16 text-sm text-gray-400">1 星</div>
+                                        <div class="flex-grow h-2 bg-gray-light/20 rounded-full overflow-hidden">
+                                            <div class="h-full bg-yellow-400 rounded-full" style="width: 1%"></div>
+                                        </div>
+                                        <div class="w-10 text-right text-sm text-gray-400">1%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论列表容器 -->
+                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviewsContainer">
+                        <!-- 评论 1 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1001/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">张明</div>
+                                    <div class="text-xs text-gray-400">数据科学家</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                作为一名没有前端经验的数据科学家，Gradio彻底改变了我展示模型的方式。现在我可以在几分钟内创建一个漂亮的界面，向客户展示我的工作成果。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 2 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1002/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">李华</div>
+                                    <div class="text-xs text-gray-400">机器学习工程师</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                集成到我的工作流中非常顺畅，特别是与Hugging Face的模型库结合使用时。一键分享功能让我能够轻松地与团队成员协作，收集反馈。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 3 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1003/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">王芳</div>
+                                    <div class="text-xs text-gray-400">研究人员</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                在学术研究中非常有用，能够快速为我的论文中提出的模型创建交互式演示。唯一的小缺点是免费链接的有效期有限，有时需要重新生成。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 4 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1004/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">刘伟</div>
+                                    <div class="text-xs text-gray-400">软件开发者</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                作为全栈开发者，我对Gradio的实现印象深刻。虽然我可以自己构建界面，但Gradio节省了我大量时间，让我能够专注于模型本身而非前端代码。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 5 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1005/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">陈静</div>
+                                    <div class="text-xs text-gray-400">教育工作者</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                在教学中使用Gradio向学生展示机器学习模型的工作原理非常有效。学生可以自己动手尝试不同的输入，直观地理解模型的输出和局限性。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 6 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1006/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">赵强</div>
+                                    <div class="text-xs text-gray-400">创业公司CTO</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                    <i class="fa fa-star-o"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                对于原型演示非常棒，但在生产环境中性能不足。我们最终还是开发了自定义界面，但Gradio帮助我们快速验证了产品概念，加速了开发周期。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 7 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1007/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">孙琳</div>
+                                    <div class="text-xs text-gray-400">UX设计师</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                作为设计师，我欣赏Gradio提供的简洁界面，但有时希望有更多的自定义选项。不过考虑到它的定位和目标用户，这已经是一个非常出色的工具了。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 8 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1008/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">周健</div>
+                                    <div class="text-xs text-gray-400">大学生</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                作为机器学习入门者，Gradio让我能够快速看到我的模型的实际效果，这极大地提高了我的学习兴趣和效率。文档非常友好，示例丰富。
+                            </p>
+                        </div>
+                        
+                        <!-- 评论 9 -->
+                        <div class="bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1009/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                                <div>
+                                    <div class="font-medium">吴敏</div>
+                                    <div class="text-xs text-gray-400">产品经理</div>
+                                </div>
+                                <div class="ml-auto text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                </div>
+                            </div>
+                            <p class="text-gray-300 text-sm">
+                                帮助我们的团队快速构建MVP演示，向投资者展示产品概念。无需等待开发团队完成前端，数据科学家可以自己创建演示，加速了产品迭代。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- 加载更多评论按钮 -->
+                    <div class="flex justify-center mt-6">
+                        <button id="loadMoreReviews" class="px-6 py-3 bg-gray-light/20 hover:bg-gray-light/30 text-white font-medium rounded-lg transition-all border border-gray-light/30">
+                            加载更多评论 <i class="fa fa-chevron-down ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 行动召唤 -->
+        <section class="py-16 bg-gradient-to-br from-primary/20 to-secondary/20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">准备好尝试 Gradio 了吗？</h2>
+                    <p class="text-xl text-gray-300 mb-8">
+                        无需复杂设置，几分钟内即可创建你的第一个机器学习模型演示
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="https://gradio.app/getting_started" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all shadow-lg shadow-primary/20">
+                            查看官方教程
+                        </a>
+                        <a href="https://github.com/gradio-app/gradio" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-gray-dark hover:bg-gray-light/30 text-white font-medium rounded-lg transition-all border border-gray-light/30">
+                            访问 GitHub 仓库 <i class="fa fa-github ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-darker border-t border-gray-light/20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- 关于我们 -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
+                            <i class="fa fa-bolt text-white"></i>
+                        </div>
+                        <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">AI工具指南</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 text-sm">
+                        提供最全面的人工智能工具介绍与教程，帮助开发者和爱好者更好地利用AI技术。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 快速链接 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">快速链接</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
+                        <li><a href="/free" class="text-gray-400 hover:text-white transition-colors">免费资源</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">热门工具</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">教程文章</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">社区讨论</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 资源分类 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">资源分类</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">机器学习工具</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">数据可视化</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">自然语言处理</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">计算机视觉</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">云计算资源</a></li>
+                    </ul>
+                </div>
+                
+                <!-- 法律信息 -->
+                <div>
+                    <h3 class="text-lg font-semibold mb-6">法律信息</h3>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">版权声明</a></li>
+                        <li><a href="/sitemap.html" class="text-gray-400 hover:text-white transition-colors">网站地图</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-light/20 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-500 text-sm mb-4 md:mb-0">
+                    &copy; 2023 AI工具指南. 保留所有权利.
+                </div>
+                <div class="text-gray-500 text-sm">
+                    本网站内容仅供参考，使用前请查阅各工具的官方文档。
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 分享模态框 -->
+    <div id="shareModal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-dark rounded-2xl p-6 w-full max-w-md border border-gray-light/20 shadow-2xl transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">分享此页面</h3>
+                <button id="closeShareModal" class="text-gray-400 hover:text-white">
+                    <i class="fa fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">复制链接</label>
+                <div class="flex">
+                    <input type="text" value="https://example.com/free/detail/" readonly class="flex-grow bg-darker border border-gray-light/30 rounded-l-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button id="copyLinkBtn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+                        <i class="fa fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm text-gray-400 mb-3">分享到</label>
+                <div class="grid grid-cols-5 gap-3">
+                    <a href="#" class="flex flex-col items-center justify-center p-3 bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 text-[#1DA1F2] rounded-lg transition-colors">
+                        <i class="fa fa-twitter text-xl mb-1"></i>
+                        <span class="text-xs">Twitter</span>
+                    </a>
+                    <a href="#" class="flex flex-col items-center justify-center p-3 bg-[#4267B2]/10 hover:bg-[#4267B2]/20 text-[#4267B2] rounded-lg transition-colors">
+                        <i class="fa fa-facebook text-xl mb-1"></i>
+                        <span class="text-xs">Facebook</span>
+                    </a>
+                    <a href="#" class="flex flex-col items-center justify-center p-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#25D366] rounded-lg transition-colors">
+                        <i class="fa fa-whatsapp text-xl mb-1"></i>
+                        <span class="text-xs">WhatsApp</span>
+                    </a>
+                    <a href="#" class="flex flex-col items-center justify-center p-3 bg-[#0077B5]/10 hover:bg-[#0077B5]/20 text-[#0077B5] rounded-lg transition-colors">
+                        <i class="fa fa-linkedin text-xl mb-1"></i>
+                        <span class="text-xs">LinkedIn</span>
+                    </a>
+                    <a href="#" class="flex flex-col items-center justify-center p-3 bg-[#FF0000]/10 hover:bg-[#FF0000]/20 text-[#FF0000] rounded-lg transition-colors">
+                        <i class="fa fa-envelope text-xl mb-1"></i>
+                        <span class="text-xs">邮件</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 收藏成功提示 -->
+    <div id="bookmarkToast" class="fixed bottom-6 right-6 bg-primary text-white px-4 py-3 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all z-50 flex items-center">
+        <i class="fa fa-check-circle mr-2"></i>
+        <span>已添加到收藏</span>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 移动端菜单切换
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 步骤切换
+        const stepBtns = document.querySelectorAll('.step-btn');
+        const stepPanes = document.querySelectorAll('.step-pane');
+        
+        stepBtns.forEach((btn, index) => {
+            btn.addEventListener('click', () => {
+                // 更新按钮状态
+                stepBtns.forEach(b => {
+                    b.classList.remove('active', 'bg-primary', 'text-white');
+                    b.classList.add('bg-gray-light/20', 'text-gray-300');
+                });
+                btn.classList.add('active', 'bg-primary', 'text-white');
+                btn.classList.remove('bg-gray-light/20', 'text-gray-300');
+                
+                // 更新内容面板
+                stepPanes.forEach(pane => pane.classList.add('hidden'));
+                stepPanes[index].classList.remove('hidden');
+            });
+        });
+        
+        // 收藏功能
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const bookmarkToast = document.getElementById('bookmarkToast');
+        let isBookmarked = false;
+        
+        bookmarkBtn.addEventListener('click', () => {
+            isBookmarked = !isBookmarked;
+            
+            if (isBookmarked) {
+                bookmarkBtn.innerHTML = '<i class="fa fa-bookmark text-primary"></i>';
+                // 显示提示
+                bookmarkToast.classList.remove('translate-y-20', 'opacity-0');
+                bookmarkToast.classList.add('translate-y-0', 'opacity-100');
+                
+                // 3秒后隐藏提示
+                setTimeout(() => {
+                    bookmarkToast.classList.add('translate-y-20', 'opacity-0');
+                    bookmarkToast.classList.remove('translate-y-0', 'opacity-100');
+                }, 3000);
+            } else {
+                bookmarkBtn.innerHTML = '<i class="fa fa-bookmark-o text-gray-300"></i>';
+            }
+        });
+        
+        // 分享功能
+        const shareBtn = document.getElementById('shareBtn');
+        const shareModal = document.getElementById('shareModal');
+        const closeShareModal = document.getElementById('closeShareModal');
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        
+        shareBtn.addEventListener('click', () => {
+            shareModal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeShareModal.addEventListener('click', () => {
+            shareModal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+        
+        // 点击模态框外部关闭
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) {
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // 复制链接
+        copyLinkBtn.addEventListener('click', () => {
+            const input = document.querySelector('#shareModal input');
+            input.select();
+            document.execCommand('copy');
+            
+            // 更改按钮文本
+            copyLinkBtn.innerHTML = '<i class="fa fa-check"></i>';
+            setTimeout(() => {
+                copyLinkBtn.innerHTML = '<i class="fa fa-copy"></i>';
+            }, 2000);
+        });
+        
+        // 加载更多评论 - 修复布局问题
+        const loadMoreReviewsBtn = document.getElementById('loadMoreReviews');
+        const reviewsContainer = document.getElementById('reviewsContainer');
+        let reviewsLoaded = 9; // 已加载的评论数量
+        
+        loadMoreReviewsBtn.addEventListener('click', () => {
+            // 禁用按钮防止重复点击
+            loadMoreReviewsBtn.disabled = true;
+            loadMoreReviewsBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+            
+            // 模拟网络延迟
+            setTimeout(() => {
+                // 生成额外的5条评论
+                for (let i = 0; i < 5; i++) {
+                    const randomId = 1010 + Math.floor(Math.random() * 40);
+                    const randomRating = Math.floor(Math.random() * 2) + 4; // 4或5星
+                    const comments = [
+                        "Gradio 是我日常工作中不可或缺的工具，极大地提高了我的工作效率。",
+                        "作为一名研究人员，我非常欣赏Gradio的简单易用和强大功能。",
+                        "使用Gradio向客户展示我们的AI模型效果非常好，客户反馈很积极。",
+                        "集成到Jupyter Notebook中使用体验很棒，推荐给所有数据科学家。",
+                        "更新很及时，社区支持也很活跃，遇到问题能很快找到解决方案。",
+                        "对于教学来说是一个很棒的工具，学生们可以直观地理解模型的工作原理。",
+                        "免费托管功能非常实用，省去了部署服务器的麻烦。",
+                        "组件丰富，基本满足了我的所有需求，自定义也很方便。",
+                        "最近发现Gradio可以和Streamlit很好地配合使用，开发效率更高了。",
+                        "对于快速原型开发来说简直是神器，节省了我大量的时间和精力。",
+                        "界面设计简洁大方，用户体验很好，即使是非技术人员也能轻松使用。",
+                        "文档非常详细，示例丰富，上手难度很低，值得推荐给初学者。",
+                        "支持的模型类型越来越多，现在几乎可以满足我所有的演示需求。",
+                        "团队响应很及时，提的issue很快就能得到解决或回复。"
+                    ];
+                    const randomComment = comments[Math.floor(Math.random() * comments.length)];
+                    
+                    // 创建评论元素
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = 'bg-gray-dark rounded-xl p-6 border border-gray-light/20 shadow-lg card-hover';
+                    reviewElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/${randomId}/100/100" alt="用户头像" class="w-10 h-10 rounded-full mr-3" loading="lazy">
+                            <div>
+                                <div class="font-medium">用户${reviewsLoaded + i + 1}</div>
+                                <div class="text-xs text-gray-400">开发者</div>
+                            </div>
+                            <div class="ml-auto text-yellow-400">
+                                ${Array(randomRating).fill('<i class="fa fa-star"></i>').join('')}
+                                ${Array(5 - randomRating).fill('<i class="fa fa-star-o"></i>').join('')}
+                            </div>
+                        </div>
+                        <p class="text-gray-300 text-sm">${randomComment}</p>
+                    `;
+                    
+                    // 添加到评论容器中（而不是按钮前）
+                    reviewsContainer.appendChild(reviewElement);
+                }
+                
+                reviewsLoaded += 5;
+                
+                // 恢复按钮状态
+                loadMoreReviewsBtn.disabled = false;
+                loadMoreReviewsBtn.innerHTML = '加载更多评论 <i class="fa fa-chevron-down ml-2"></i>';
+                
+                // 当加载超过50条评论时，隐藏加载更多按钮
+                if (reviewsLoaded >= 50) {
+                    loadMoreReviewsBtn.style.display = 'none';
+                }
+            }, 800); // 模拟网络延迟
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                    
+                    // 如果是移动端，点击后关闭菜单
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+        
+        // 页面加载完成后的动画
+        window.addEventListener('load', () => {
+            document.body.classList.add('opacity-100');
+            document.body.classList.remove('opacity-0');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PostCSS - 现代CSS处理工具 | 资源详情</title>
+  
+  <!-- SEO 元标签 -->
+  <meta name="description" content="PostCSS 是一个用JavaScript工具和插件转换CSS代码的工具。了解其起源、使用方法、优缺点及社区评价。">
+  <meta name="keywords" content="PostCSS, CSS处理, 前端工具, PostCSS使用教程, CSS预处理">
+  <meta name="author" content="前端资源网">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://example.com/free/detail/postcss">
+  
+  <!-- 外部资源 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#61dafb',
+            secondary: '#a855f7',
+            dark: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+              600: '#475569',
+            },
+            light: {
+              100: '#f8fafc',
+              200: '#e2e8f0',
+              300: '#cbd5e1',
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['Fira Code', 'monospace'],
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 6s ease-in-out infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1;
+      }
+      .bg-grid {
+        background-size: 40px 40px;
+        background-image: 
+          linear-gradient(to right, rgba(97, 218, 251, 0.05) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(97, 218, 251, 0.05) 1px, transparent 1px);
+      }
+    }
+  </style>
+  
+  <style>
+    /* 基础动画和过渡 */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* 代码高亮样式 */
+    .code-block {
+      position: relative;
+      overflow-x: auto;
+    }
+    
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #61dafb;
+    }
+    
+    /* 评论动画 */
+    .comment-enter {
+      animation: fadeIn 0.5s ease forwards;
+      opacity: 0;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+
+<body class="bg-dark-900 text-light-200 font-inter bg-grid min-h-screen flex flex-col">
+  <!-- 顶部导航 -->
+  <header class="sticky top-0 z-50 bg-dark-900/80 backdrop-blur-md border-b border-dark-700">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+          <span class="font-bold text-dark-900 text-xl">P</span>
+        </div>
+        <h1 class="text-xl font-bold text-white hidden sm:block">前端资源库</h1>
+      </div>
+      
+      <nav class="hidden md:flex items-center space-x-6">
+        <a href="/" class="text-light-300 hover:text-primary transition-colors">首页</a>
+        <a href="/free" class="text-light-300 hover:text-primary transition-colors">免费资源</a>
+        <a href="/articles" class="text-light-300 hover:text-primary transition-colors">技术文章</a>
+        <a href="/tools" class="text-light-300 hover:text-primary transition-colors">开发工具</a>
+      </nav>
+      
+      <div class="flex items-center gap-4">
+        <!-- 搜索按钮 -->
+        <button class="text-light-300 hover:text-primary transition-colors">
+          <i class="fa fa-search text-lg"></i>
+        </button>
+        
+        <!-- 移动端菜单按钮 -->
+        <button class="md:hidden text-light-300 hover:text-primary transition-colors" id="mobile-menu-button">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+      </div>
+    </div>
+    
+    <!-- 移动端菜单 -->
+    <div class="md:hidden hidden bg-dark-800 border-b border-dark-700" id="mobile-menu">
+      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+        <a href="/" class="text-light-300 hover:text-primary transition-colors py-2">首页</a>
+        <a href="/free" class="text-light-300 hover:text-primary transition-colors py-2">免费资源</a>
+        <a href="/articles" class="text-light-300 hover:text-primary transition-colors py-2">技术文章</a>
+        <a href="/tools" class="text-light-300 hover:text-primary transition-colors py-2">开发工具</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-grow">
+    <!-- 面包屑导航 -->
+    <div class="container mx-auto px-4 py-4 text-sm text-light-300">
+      <nav class="flex" aria-label="面包屑">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+          <li class="inline-flex items-center">
+            <a href="/" class="hover:text-primary transition-colors">
+              <i class="fa fa-home mr-1"></i> 首页
+            </a>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-xs mx-1"></i>
+              <a href="/free" class="hover:text-primary transition-colors">资源分类</a>
+            </div>
+          </li>
+          <li>
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-xs mx-1"></i>
+              <a href="/free/detail/" class="hover:text-primary transition-colors">资源列表</a>
+            </div>
+          </li>
+          <li aria-current="page">
+            <div class="flex items-center">
+              <i class="fa fa-chevron-right text-xs mx-1"></i>
+              <span class="text-primary">PostCSS</span>
+            </div>
+          </li>
+        </ol>
+      </nav>
+    </div>
+
+    <!-- 英雄区域 -->
+    <section class="relative overflow-hidden py-16 md:py-24">
+      <div class="absolute inset-0 bg-gradient-to-b from-dark-900 via-dark-900/90 to-dark-900 z-0"></div>
+      <!-- 背景装饰 -->
+      <div class="absolute top-0 left-0 w-full h-full overflow-hidden z-[-1]">
+        <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full filter blur-3xl animate-pulse-slow"></div>
+        <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full filter blur-3xl animate-pulse-slow" style="animation-delay: 1s;"></div>
+      </div>
+      
+      <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+          <div class="inline-block mb-6 px-4 py-1 rounded-full bg-dark-800 border border-dark-700 text-primary font-mono text-sm">
+            CSS 工具
+          </div>
+          <h1 class="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary text-gradient leading-tight">
+            PostCSS
+          </h1>
+          <p class="text-xl md:text-2xl text-light-300 mb-10 max-w-3xl mx-auto">
+            用 JavaScript 转换 CSS 的工具，让 CSS 编写更高效、更灵活
+          </p>
+          
+          <div class="flex flex-wrap justify-center gap-4 mb-12">
+            <a href="#get-started" class="px-8 py-3 bg-primary text-dark-900 font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">
+              开始使用
+            </a>
+            <a href="#features" class="px-8 py-3 bg-dark-800 border border-dark-700 font-semibold rounded-lg hover:border-primary/50 transition-all">
+              了解更多
+            </a>
+          </div>
+          
+          <!-- 统计数据 -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div class="p-4 bg-dark-800/50 rounded-xl border border-dark-700">
+              <div class="text-3xl font-bold text-primary mb-1">200+</div>
+              <div class="text-light-300 text-sm">可用插件</div>
+            </div>
+            <div class="p-4 bg-dark-800/50 rounded-xl border border-dark-700">
+              <div class="text-3xl font-bold text-primary mb-1">35k+</div>
+              <div class="text-light-300 text-sm">GitHub 星标</div>
+            </div>
+            <div class="p-4 bg-dark-800/50 rounded-xl border border-dark-700">
+              <div class="text-3xl font-bold text-primary mb-1">8M+</div>
+              <div class="text-light-300 text-sm">周下载量</div>
+            </div>
+            <div class="p-4 bg-dark-800/50 rounded-xl border border-dark-700">
+              <div class="text-3xl font-bold text-primary mb-1">2013</div>
+              <div class="text-light-300 text-sm">首次发布</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 动画展示区 -->
+    <section class="py-16 bg-dark-800/50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">动画展示</h2>
+            <p class="text-light-300 max-w-2xl mx-auto">
+              看看 PostCSS 如何将现代 CSS 语法转换为兼容各种浏览器的代码
+            </p>
+          </div>
+          
+          <div class="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden shadow-xl">
+            <div class="flex border-b border-dark-700">
+              <button class="tab-button active px-6 py-3 font-medium text-primary" data-tab="input">输入 (现代 CSS)</button>
+              <button class="tab-button px-6 py-3 font-medium text-light-300 hover:text-primary transition-colors" data-tab="output">输出 (转换后)</button>
+            </div>
+            
+            <div class="tab-content active p-6" id="input-tab">
+              <div class="code-block font-mono text-sm md:text-base">
+                <pre class="text-light-200"><code>:root {
+  --color-primary: #61dafb;
+  --color-secondary: #a855f7;
+}
+
+.container {
+  display: flex;
+  gap: 2rem;
+  background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+  transition: all 0.3s ease;
+}
+
+@custom-media --small-screen (max-width: 640px);
+
+@media (--small-screen) {
+  .container {
+    flex-direction: column;
+  }
+}</code></pre>
+              </div>
+            </div>
+            
+            <div class="tab-content hidden p-6" id="output-tab">
+              <div class="code-block font-mono text-sm md:text-base">
+                <pre class="text-light-200"><code>:root {
+  --color-primary: #61dafb;
+  --color-secondary: #a855f7;
+}
+
+.container {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  gap: 2rem;
+  background: -webkit-linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+  background: linear-gradient(45deg, var(--color-primary), var(--color-secondary));
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 640px) {
+  .container {
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+        -ms-flex-direction: column;
+            flex-direction: column;
+  }
+}</code></pre>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mt-8 text-center">
+            <p class="text-light-300 text-sm">
+              示例展示了 PostCSS 如何处理 CSS 变量、Flexbox 前缀和自定义媒体查询
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 名字含义和起源 -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-5xl mx-auto">
+          <div class="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <h2 class="text-3xl md:text-4xl font-bold mb-6 text-white">名字含义 & 起源</h2>
+              
+              <div class="mb-8">
+                <h3 class="text-xl font-semibold mb-3 text-primary">名字含义</h3>
+                <p class="text-light-200 mb-4">
+                  "PostCSS" 这个名字来源于其工作方式 - 它在 CSS 处理流程中扮演"后期处理"(post-processing)的角色。
+                  与传统的预处理器(如 Sass 或 Less)在编写时处理代码不同，PostCSS 通常在 CSS 代码编写完成后进行处理。
+                </p>
+                <p class="text-light-200">
+                  尽管名字中有"Post"，但实际上 PostCSS 可以灵活地集成到构建流程的任何阶段，既可以作为预处理器使用，也可以作为后处理器使用。
+                </p>
+              </div>
+              
+              <div>
+                <h3 class="text-xl font-semibold mb-3 text-primary">起源</h3>
+                <p class="text-light-200 mb-4">
+                  PostCSS 由俄罗斯开发者 <span class="text-primary">Andrey Sitnik</span> 于 2013 年创建。
+                  他的目标是创建一个更灵活、更高效的 CSS 处理工具，与当时流行的预处理器相比，能够提供更好的扩展性。
+                </p>
+                <p class="text-light-200">
+                  最初，PostCSS 主要用于自动添加浏览器前缀。随着生态系统的发展，它逐渐成为一个完整的 CSS 处理平台，拥有数百个插件和广泛的应用场景。
+                </p>
+              </div>
+            </div>
+            
+            <div class="relative">
+              <div class="bg-dark-800 rounded-2xl border border-dark-700 p-6 shadow-xl animate-float">
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <i class="fa fa-code text-primary"></i>
+                  </div>
+                  <h3 class="text-xl font-semibold text-white">PostCSS 时间线</h3>
+                </div>
+                
+                <div class="space-y-6">
+                  <div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-dark-700">
+                    <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-primary"></div>
+                    <div class="text-primary font-semibold">2013</div>
+                    <div class="text-light-200 text-sm mt-1">PostCSS 首次发布</div>
+                  </div>
+                  
+                  <div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-dark-700">
+                    <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-primary"></div>
+                    <div class="text-primary font-semibold">2014</div>
+                    <div class="text-light-200 text-sm mt-1">Autoprefixer 插件发布，获得广泛关注</div>
+                  </div>
+                  
+                  <div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-dark-700">
+                    <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-primary"></div>
+                    <div class="text-primary font-semibold">2015</div>
+                    <div class="text-light-200 text-sm mt-1">插件生态系统快速增长，超过100个插件</div>
+                  </div>
+                  
+                  <div class="relative pl-6 before:absolute before:left-0 before:top-2 before:bottom-0 before:w-0.5 before:bg-dark-700">
+                    <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-primary"></div>
+                    <div class="text-primary font-semibold">2017</div>
+                    <div class="text-light-200 text-sm mt-1">版本 6.0 发布，性能大幅提升</div>
+                  </div>
+                  
+                  <div class="relative pl-6">
+                    <div class="absolute left-[-6px] top-2 w-3 h-3 rounded-full bg-primary"></div>
+                    <div class="text-primary font-semibold">至今</div>
+                    <div class="text-light-200 text-sm mt-1">持续维护更新，成为前端开发必备工具之一</div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 装饰元素 -->
+              <div class="absolute -bottom-6 -right-6 w-24 h-24 bg-secondary/20 rounded-full filter blur-xl"></div>
+              <div class="absolute -top-6 -left-6 w-24 h-24 bg-primary/20 rounded-full filter blur-xl"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 优点和缺点 -->
+    <section id="features" class="py-16 bg-dark-800/50">
+      <div class="container mx-auto px-4">
+        <div class="text-center mb-16">
+          <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">优点 & 缺点</h2>
+          <p class="text-light-300 max-w-2xl mx-auto">
+            了解 PostCSS 与其他 CSS 处理工具相比的优势和局限性
+          </p>
+        </div>
+        
+        <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+          <!-- 优点 -->
+          <div class="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden shadow-lg">
+            <div class="bg-gradient-to-r from-primary/20 to-primary/10 px-6 py-4 border-b border-dark-700">
+              <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                <i class="fa fa-plus-circle text-primary"></i> 优点
+              </h3>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="flex gap-4">
+                <div class="mt-1 text-primary text-xl"><i class="fa fa-check-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">高度可定制</h4>
+                  <p class="text-light-300 text-sm">只加载需要的插件，避免不必要的功能和性能开销</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-primary text-xl"><i class="fa fa-check-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">性能出色</h4>
+                  <p class="text-light-300 text-sm">处理速度通常比传统预处理器快，尤其是在大型项目中</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-primary text-xl"><i class="fa fa-check-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">活跃的插件生态</h4>
+                  <p class="text-light-300 text-sm">拥有200多个插件，涵盖从前缀添加到代码优化的各种功能</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-primary text-xl"><i class="fa fa-check-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">原生CSS支持</h4>
+                  <p class="text-light-300 text-sm">可以直接使用标准CSS语法，学习曲线较低</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-primary text-xl"><i class="fa fa-check-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">与现有工具集成</h4>
+                  <p class="text-light-300 text-sm">可以与Sass、Less等预处理器以及Webpack、Gulp等构建工具无缝集成</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-primary text-xl"><i class="fa fa-check-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">持续更新</h4>
+                  <p class="text-light-300 text-sm">快速跟进CSS标准的更新，支持最新的CSS特性</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 缺点 -->
+          <div class="bg-dark-900 rounded-2xl border border-dark-700 overflow-hidden shadow-lg">
+            <div class="bg-gradient-to-r from-red-500/20 to-red-500/10 px-6 py-4 border-b border-dark-700">
+              <h3 class="text-2xl font-bold text-white flex items-center gap-2">
+                <i class="fa fa-minus-circle text-red-400"></i> 缺点
+              </h3>
+            </div>
+            
+            <div class="p-6 space-y-4">
+              <div class="flex gap-4">
+                <div class="mt-1 text-red-400 text-xl"><i class="fa fa-times-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">配置复杂</h4>
+                  <p class="text-light-300 text-sm">需要手动配置所需插件，对新手不够友好</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-red-400 text-xl"><i class="fa fa-times-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">插件质量参差不齐</h4>
+                  <p class="text-light-300 text-sm">部分插件可能维护不及时或存在兼容性问题</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-red-400 text-xl"><i class="fa fa-times-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">功能分散</h4>
+                  <p class="text-light-300 text-sm">核心功能有限，大部分功能依赖第三方插件</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-red-400 text-xl"><i class="fa fa-times-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">构建工具依赖</h4>
+                  <p class="text-light-300 text-sm">通常需要与构建工具集成，单独使用不够方便</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-red-400 text-xl"><i class="fa fa-times-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">调试难度增加</h4>
+                  <p class="text-light-300 text-sm">转换后的代码与源代码存在差异，可能增加调试难度</p>
+                </div>
+              </div>
+              
+              <div class="flex gap-4">
+                <div class="mt-1 text-red-400 text-xl"><i class="fa fa-times-circle"></i></div>
+                <div>
+                  <h4 class="font-semibold text-white mb-1">学习曲线</h4>
+                  <p class="text-light-300 text-sm">虽然基于CSS，但掌握插件生态系统需要额外学习</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 免费资源和使用方法 -->
+    <section id="get-started" class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-5xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">免费资源 & 使用方法</h2>
+            <p class="text-light-300 max-w-2xl mx-auto">
+              探索 PostCSS 的免费资源，快速开始使用这个强大的 CSS 处理工具
+            </p>
+          </div>
+          
+          <div class="grid md:grid-cols-3 gap-6 mb-16">
+            <!-- 资源卡片 1 -->
+            <div class="bg-dark-800 rounded-xl border border-dark-700 overflow-hidden card-hover">
+              <div class="h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <i class="fa fa-book text-6xl text-primary/70"></i>
+              </div>
+              <div class="p-5">
+                <h3 class="text-xl font-semibold text-white mb-2">官方文档</h3>
+                <p class="text-light-300 text-sm mb-4">
+                  完整的官方文档，包含安装指南、API 参考和插件开发教程。
+                </p>
+                <a href="https://postcss.org/docs/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+                  访问文档 <i class="fa fa-external-link ml-1"></i>
+                </a>
+              </div>
+            </div>
+            
+            <!-- 资源卡片 2 -->
+            <div class="bg-dark-800 rounded-xl border border-dark-700 overflow-hidden card-hover">
+              <div class="h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <i class="fa fa-puzzle-piece text-6xl text-primary/70"></i>
+              </div>
+              <div class="p-5">
+                <h3 class="text-xl font-semibold text-white mb-2">插件库</h3>
+                <p class="text-light-300 text-sm mb-4">
+                  浏览超过 200 个官方和社区开发的插件，扩展 PostCSS 功能。
+                </p>
+                <a href="https://postcss.org/plugins/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+                  浏览插件 <i class="fa fa-external-link ml-1"></i>
+                </a>
+              </div>
+            </div>
+            
+            <!-- 资源卡片 3 -->
+            <div class="bg-dark-800 rounded-xl border border-dark-700 overflow-hidden card-hover">
+              <div class="h-40 bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center">
+                <i class="fa fa-github text-6xl text-primary/70"></i>
+              </div>
+              <div class="p-5">
+                <h3 class="text-xl font-semibold text-white mb-2">GitHub 仓库</h3>
+                <p class="text-light-300 text-sm mb-4">
+                  查看源代码、提交 issues、参与开发，或了解最新的更新。
+                </p>
+                <a href="https://github.com/postcss/postcss" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary hover:text-primary/80 transition-colors text-sm font-medium">
+                  访问仓库 <i class="fa fa-external-link ml-1"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+          
+          <!-- 使用方法 -->
+          <div class="bg-dark-800 rounded-2xl border border-dark-700 p-6 md:p-8">
+            <h3 class="text-2xl font-bold text-white mb-6">快速开始使用 PostCSS</h3>
+            
+            <div class="space-y-8">
+              <!-- 步骤 1 -->
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
+                  <h4 class="text-xl font-semibold text-white">安装 PostCSS</h4>
+                </div>
+                
+                <div class="ml-11">
+                  <p class="text-light-300 mb-4">
+                    首先，确保你已经安装了 Node.js 和 npm。然后通过 npm 安装 PostCSS 及其 CLI：
+                  </p>
+                  
+                  <div class="code-block bg-dark-900 rounded-lg p-4 font-mono text-sm mb-3">
+                    <pre class="text-light-200"><code>npm install --save-dev postcss postcss-cli</code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 步骤 2 -->
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
+                  <h4 class="text-xl font-semibold text-white">安装所需插件</h4>
+                </div>
+                
+                <div class="ml-11">
+                  <p class="text-light-300 mb-4">
+                    根据你的需求安装插件，例如自动添加浏览器前缀的 autoprefixer：
+                  </p>
+                  
+                  <div class="code-block bg-dark-900 rounded-lg p-4 font-mono text-sm mb-3">
+                    <pre class="text-light-200"><code>npm install --save-dev autoprefixer</code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 步骤 3 -->
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
+                  <h4 class="text-xl font-semibold text-white">创建配置文件</h4>
+                </div>
+                
+                <div class="ml-11">
+                  <p class="text-light-300 mb-4">
+                    在项目根目录创建 postcss.config.js 文件，配置你安装的插件：
+                  </p>
+                  
+                  <div class="code-block bg-dark-900 rounded-lg p-4 font-mono text-sm mb-3">
+                    <pre class="text-light-200"><code>module.exports = {
+  plugins: [
+    require('autoprefixer')
+  ]
+}</code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 步骤 4 -->
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
+                  <h4 class="text-xl font-semibold text-white">运行 PostCSS</h4>
+                </div>
+                
+                <div class="ml-11">
+                  <p class="text-light-300 mb-4">
+                    在 package.json 中添加脚本，或直接通过命令行运行：
+                  </p>
+                  
+                  <div class="code-block bg-dark-900 rounded-lg p-4 font-mono text-sm mb-3">
+                    <pre class="text-light-200"><code># 直接运行
+npx postcss src/css/style.css --output dist/css/style.css
+
+# 或者添加到 package.json 脚本
+"scripts": {
+  "build:css": "postcss src/css/style.css --output dist/css/style.css"
+}</code></pre>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- 步骤 5 -->
+              <div>
+                <div class="flex items-center gap-3 mb-4">
+                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">5</div>
+                  <h4 class="text-xl font-semibold text-white">集成到构建工具</h4>
+                </div>
+                
+                <div class="ml-11">
+                  <p class="text-light-300 mb-4">
+                    大多数情况下，你会将 PostCSS 与 Webpack、Gulp 等构建工具集成：
+                  </p>
+                  
+                  <div class="code-block bg-dark-900 rounded-lg p-4 font-mono text-sm mb-3">
+                    <pre class="text-light-200"><code>// Webpack 配置示例
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.css$/i,
+        use: [
+          'style-loader',
+          'css-loader',
+          'postcss-loader',
+        ],
+      },
+    ],
+  },
+};</code></pre>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 社区评论 -->
+    <section class="py-16 bg-dark-800/50">
+      <div class="container mx-auto px-4">
+        <div class="max-w-6xl mx-auto">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">社区评论</h2>
+            <p class="text-light-300 max-w-2xl mx-auto">
+              来自开发者社区的真实评价和使用体验分享
+            </p>
+          </div>
+          
+          <!-- 评论筛选 -->
+          <div class="flex flex-wrap justify-center gap-3 mb-10">
+            <button class="comment-filter active px-4 py-2 rounded-full bg-primary text-dark-900 text-sm font-medium" data-filter="all">
+              全部评论
+            </button>
+            <button class="comment-filter px-4 py-2 rounded-full bg-dark-900 text-light-300 text-sm font-medium hover:bg-dark-700 transition-colors" data-filter="positive">
+              正面评价
+            </button>
+            <button class="comment-filter px-4 py-2 rounded-full bg-dark-900 text-light-300 text-sm font-medium hover:bg-dark-700 transition-colors" data-filter="negative">
+              负面评价
+            </button>
+            <button class="comment-filter px-4 py-2 rounded-full bg-dark-900 text-light-300 text-sm font-medium hover:bg-dark-700 transition-colors" data-filter="neutral">
+              中性评价
+            </button>
+          </div>
+          
+          <!-- 评论列表 -->
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="comments-container">
+            <!-- 评论将通过JavaScript动态生成 -->
+          </div>
+          
+          <!-- 加载更多按钮 -->
+          <div class="mt-12 text-center">
+            <button id="load-more-comments" class="px-6 py-3 bg-dark-900 border border-dark-700 rounded-lg font-medium hover:border-primary/50 transition-all">
+              加载更多评论 <i class="fa fa-refresh ml-2"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 收藏和分享 -->
+    <section class="py-16">
+      <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto bg-dark-800 rounded-2xl border border-dark-700 p-8 text-center">
+          <h2 class="text-2xl md:text-3xl font-bold mb-6 text-white">觉得有用？分享给朋友吧！</h2>
+          
+          <div class="flex flex-wrap justify-center gap-4 mb-8">
+            <!-- 收藏按钮 -->
+            <button id="bookmark-btn" class="flex items-center gap-2 px-6 py-3 bg-dark-900 border border-dark-700 rounded-lg font-medium hover:border-primary/50 transition-all">
+              <i class="fa fa-bookmark-o text-primary"></i>
+              <span>收藏资源</span>
+            </button>
+            
+            <!-- 分享按钮 -->
+            <div class="relative group">
+              <button class="flex items-center gap-2 px-6 py-3 bg-dark-900 border border-dark-700 rounded-lg font-medium hover:border-primary/50 transition-all">
+                <i class="fa fa-share-alt text-primary"></i>
+                <span>分享</span>
+              </button>
+              
+              <!-- 分享选项 -->
+              <div class="absolute bottom-full right-0 mb-3 w-48 bg-dark-900 border border-dark-700 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-10">
+                <div class="p-3 grid grid-cols-4 gap-2">
+                  <a href="#" class="w-10 h-10 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors" title="分享到Facebook">
+                    <i class="fa fa-facebook"></i>
+                  </a>
+                  <a href="#" class="w-10 h-10 rounded-full bg-[#1DA1F2]/10 flex items-center justify-center text-[#1DA1F2] hover:bg-[#1DA1F2]/20 transition-colors" title="分享到Twitter">
+                    <i class="fa fa-twitter"></i>
+                  </a>
+                  <a href="#" class="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors" title="分享到WhatsApp">
+                    <i class="fa fa-whatsapp"></i>
+                  </a>
+                  <a href="#" class="w-10 h-10 rounded-full bg-[#0A66C2]/10 flex items-center justify-center text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors" title="分享到LinkedIn">
+                    <i class="fa fa-linkedin"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 复制链接 -->
+            <button id="copy-link-btn" class="flex items-center gap-2 px-6 py-3 bg-dark-900 border border-dark-700 rounded-lg font-medium hover:border-primary/50 transition-all">
+              <i class="fa fa-link text-primary"></i>
+              <span>复制链接</span>
+            </button>
+          </div>
+          
+          <p class="text-light-300 text-sm">
+            分享此页面，帮助更多开发者了解和使用 PostCSS
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark-800 border-t border-dark-700 pt-12 pb-6">
+    <div class="container mx-auto px-4">
+      <div class="grid md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+              <span class="font-bold text-dark-900 text-xl">P</span>
+            </div>
+            <h3 class="text-xl font-bold text-white">前端资源库</h3>
+          </div>
+          <p class="text-light-300 text-sm mb-4">
+            收集和分享优质前端开发资源、工具和教程，助力开发者成长。
+          </p>
+          <div class="flex gap-4">
+            <a href="#" class="text-light-300 hover:text-primary transition-colors">
+              <i class="fa fa-github text-xl"></i>
+            </a>
+            <a href="#" class="text-light-300 hover:text-primary transition-colors">
+              <i class="fa fa-twitter text-xl"></i>
+            </a>
+            <a href="#" class="text-light-300 hover:text-primary transition-colors">
+              <i class="fa fa-linkedin text-xl"></i>
+            </a>
+            <a href="#" class="text-light-300 hover:text-primary transition-colors">
+              <i class="fa fa-instagram text-xl"></i>
+            </a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">资源分类</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="#" class="text-light-300 hover:text-primary transition-colors">CSS 工具</a></li>
+            <li><a href="#" class="text-light-300 hover:text-primary transition-colors">JavaScript 库</a></li>
+            <li><a href="#" class="text-light-300 hover:text-primary transition-colors">UI 框架</a></li>
+            <li><a href="#" class="text-light-300 hover:text-primary transition-colors">开发工具</a></li>
+            <li><a href="#" class="text-light-300 hover:text-primary transition-colors">学习资源</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">快速链接</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/" class="text-light-300 hover:text-primary transition-colors">首页</a></li>
+            <li><a href="/free" class="text-light-300 hover:text-primary transition-colors">免费资源</a></li>
+            <li><a href="/articles" class="text-light-300 hover:text-primary transition-colors">技术文章</a></li>
+            <li><a href="/about" class="text-light-300 hover:text-primary transition-colors">关于我们</a></li>
+            <li><a href="/contact" class="text-light-300 hover:text-primary transition-colors">联系我们</a></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="text-white font-semibold mb-4">法律信息</h4>
+          <ul class="space-y-2 text-sm">
+            <li><a href="/privacy" class="text-light-300 hover:text-primary transition-colors">隐私政策</a></li>
+            <li><a href="/terms" class="text-light-300 hover:text-primary transition-colors">使用条款</a></li>
+            <li><a href="/disclaimer" class="text-light-300 hover:text-primary transition-colors">免责声明</a></li>
+            <li><a href="/sitemap.html" class="text-light-300 hover:text-primary transition-colors">网站地图</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="border-t border-dark-700 pt-6 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-light-300 text-sm mb-4 md:mb-0">
+          &copy; 2023 前端资源库. 保留所有权利.
+        </p>
+        <div class="text-sm text-light-300">
+          <a href="/sitemap.html" class="hover:text-primary transition-colors">网站地图</a> | 
+          <a href="/privacy" class="hover:text-primary transition-colors">隐私政策</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 移动端菜单切换
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+    
+    // 代码标签切换
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 移除所有活跃状态
+        tabButtons.forEach(btn => {
+          btn.classList.remove('active', 'text-primary');
+          btn.classList.add('text-light-300');
+        });
+        
+        tabContents.forEach(content => {
+          content.classList.add('hidden');
+          content.classList.remove('active');
+        });
+        
+        // 设置当前活跃状态
+        button.classList.add('active', 'text-primary');
+        button.classList.remove('text-light-300');
+        
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(`${tabId}-tab`).classList.remove('hidden');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+    
+    // 评论数据
+    const comments = [
+      {
+        id: 1,
+        name: "张明",
+        avatar: "https://picsum.photos/id/1/40/40",
+        date: "2023-05-15",
+        content: "PostCSS 彻底改变了我的工作流程！只需要几个插件，就能实现我以前用Sass做的所有事情，而且构建速度更快。强烈推荐给所有前端开发者！",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 2,
+        name: "李华",
+        avatar: "https://picsum.photos/id/2/40/40",
+        date: "2023-04-28",
+        content: "作为一个新手，我发现PostCSS的配置有点复杂。花了不少时间才弄明白如何正确设置插件链。不过一旦配置好，确实很好用。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 3,
+        name: "王芳",
+        avatar: "https://picsum.photos/id/3/40/40",
+        date: "2023-06-02",
+        content: "Autoprefixer插件简直是救星！再也不用担心浏览器兼容性问题了。结合其他插件，PostCSS提供了无限可能。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 4,
+        name: "赵伟",
+        avatar: "https://picsum.photos/id/4/40/40",
+        date: "2023-05-20",
+        content: "我尝试从Sass迁移到PostCSS，但发现缺少一些我习惯的功能。最终我选择了两者结合使用，效果不错。",
+        rating: 4,
+        type: "neutral"
+      },
+      {
+        id: 5,
+        name: "陈静",
+        avatar: "https://picsum.photos/id/5/40/40",
+        date: "2023-04-10",
+        content: "插件生态系统是PostCSS最大的优势，但也可能是劣势。有太多选择，很难知道哪个插件最适合特定需求。文档也不够完善。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 6,
+        name: "刘强",
+        avatar: "https://picsum.photos/id/6/40/40",
+        date: "2023-06-15",
+        content: "PostCSS的性能令人印象深刻。在我们的大型项目中，相比之前使用的Less，构建时间减少了近40%。这对开发效率提升很大。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 7,
+        name: "杨洋",
+        avatar: "https://picsum.photos/id/7/40/40",
+        date: "2023-05-05",
+        content: "我喜欢PostCSS的模块化 approach。只添加我需要的功能，不会引入不必要的代码。这让我的CSS更加精简。",
+        rating: 4,
+        type: "positive"
+      },
+      {
+        id: 8,
+        name: "周敏",
+        avatar: "https://picsum.photos/id/8/40/40",
+        date: "2023-03-28",
+        content: "对于简单的项目，设置PostCSS感觉有点小题大做。可能更适合中大型项目，能体现出它的优势。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 9,
+        name: "吴杰",
+        avatar: "https://picsum.photos/id/9/40/40",
+        date: "2023-06-08",
+        content: "调试起来有点麻烦，因为转换后的代码和源代码差别很大。希望能有更好的source map支持。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 10,
+        name: "郑琳",
+        avatar: "https://picsum.photos/id/10/40/40",
+        date: "2023-05-30",
+        content: "作为一个经常需要编写兼容旧浏览器代码的开发者，PostCSS帮我省了很多时间。自动前缀和polyfill插件非常实用。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 11,
+        name: "孙浩",
+        avatar: "https://picsum.photos/id/11/40/40",
+        date: "2023-04-15",
+        content: "我发现有些插件之间会有冲突，解决起来很耗时。希望官方能提供更多关于插件兼容性的指导。",
+        rating: 3,
+        type: "negative"
+      },
+      {
+        id: 12,
+        name: "朱婷",
+        avatar: "https://picsum.photos/id/12/40/40",
+        date: "2023-06-20",
+        content: "PostCSS让我能够使用最新的CSS特性，同时确保在生产环境中兼容各种浏览器。这大大提高了我的开发效率。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 13,
+        name: "马亮",
+        avatar: "https://picsum.photos/id/13/40/40",
+        date: "2023-05-18",
+        content: "刚开始使用时，我对PostCSS的概念有点困惑。它既不是预处理器也不是后处理器，而是一个处理平台。花了一些时间才理解它的工作方式。",
+        rating: 4,
+        type: "neutral"
+      },
+      {
+        id: 14,
+        name: "林小红",
+        avatar: "https://picsum.photos/id/14/40/40",
+        date: "2023-03-20",
+        content: "我尝试使用PostCSS替代Sass，但发现缺少一些我常用的功能。最后还是选择了两者结合使用，Sass用于变量和混合，PostCSS用于后处理。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 15,
+        name: "黄强",
+        avatar: "https://picsum.photos/id/15/40/40",
+        date: "2023-06-12",
+        content: "PostCSS的插件更新不够及时，有时候需要等待很久才能支持新的CSS特性。希望社区能更活跃一些。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 16,
+        name: "郭丽",
+        avatar: "https://picsum.photos/id/16/40/40",
+        date: "2023-05-08",
+        content: "对于团队协作来说，PostCSS是个好选择。我们可以根据项目需求定制我们的CSS处理流程，每个开发者都使用相同的配置，减少了兼容性问题。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 17,
+        name: "何军",
+        avatar: "https://picsum.photos/id/17/40/40",
+        date: "2023-04-05",
+        content: "PostCSS的学习曲线比我预期的要陡峭。文档虽然全面，但对于初学者来说不够友好。我不得不查阅很多第三方教程。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 18,
+        name: "高燕",
+        avatar: "https://picsum.photos/id/18/40/40",
+        date: "2023-06-05",
+        content: "我特别喜欢PostCSS的模块化设计。只加载需要的插件，让我的构建过程更加高效。相比包含所有功能的大型预处理器，这是一个很大的优势。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 19,
+        name: "罗明",
+        avatar: "https://picsum.photos/id/19/40/40",
+        date: "2023-05-25",
+        content: "在使用某些较新的插件时，我遇到了一些兼容性问题。希望插件作者能更及时地更新和维护他们的作品。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 20,
+        name: "谢芳",
+        avatar: "https://picsum.photos/id/20/40/40",
+        date: "2023-04-22",
+        content: "PostCSS与Webpack的集成非常顺畅。配置好后，几乎不需要再关心它的存在，就能自动处理所有CSS。非常适合现代前端工作流。",
+        rating: 4,
+        type: "positive"
+      },
+      {
+        id: 21,
+        name: "韩磊",
+        avatar: "https://picsum.photos/id/21/40/40",
+        date: "2023-03-15",
+        content: "我发现PostCSS对于小型项目来说有点过于复杂。设置和配置需要一些时间，可能不值得。但对于大型项目来说，绝对是值得的投资。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 22,
+        name: "唐静",
+        avatar: "https://picsum.photos/id/22/40/40",
+        date: "2023-06-18",
+        content: "PostCSS的插件生态系统是其最大的优势。有一个插件几乎可以满足任何需求。我特别喜欢cssnano，它能显著减小我的CSS文件大小。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 23,
+        name: "冯伟",
+        avatar: "https://picsum.photos/id/23/40/40",
+        date: "2023-05-12",
+        content: "作为一个习惯了Sass语法的开发者，我发现PostCSS的语法有点限制。虽然可以通过插件添加类似Sass的功能，但感觉不如原生支持的流畅。",
+        rating: 3,
+        type: "negative"
+      },
+      {
+        id: 24,
+        name: "蔡琳",
+        avatar: "https://picsum.photos/id/24/40/40",
+        date: "2023-04-18",
+        content: "PostCSS的性能真的很棒。在我们的项目中，它比Less快得多，特别是在处理大型CSS文件时。这大大提高了我们的构建速度。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 25,
+        name: "彭亮",
+        avatar: "https://picsum.photos/id/25/40/40",
+        date: "2023-06-01",
+        content: "我希望PostCSS有更好的错误提示。有时候遇到问题很难调试，错误信息不够明确，需要花很多时间排查。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 26,
+        name: "曾燕",
+        avatar: "https://picsum.photos/id/26/40/40",
+        date: "2023-05-02",
+        content: "PostCSS让我能够逐步采用现代CSS特性，而不必担心浏览器兼容性。这让我的代码更加现代化，同时保持了广泛的兼容性。",
+        rating: 4,
+        type: "positive"
+      },
+      {
+        id: 27,
+        name: "肖军",
+        avatar: "https://picsum.photos/id/27/40/40",
+        date: "2023-03-25",
+        content: "对于初学者来说，PostCSS可能有点压倒性。有太多的插件和配置选项，很难知道从哪里开始。希望能有更多的入门指南。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 28,
+        name: "田丽",
+        avatar: "https://picsum.photos/id/28/40/40",
+        date: "2023-06-10",
+        content: "我喜欢PostCSS的灵活性。它不强迫你使用特定的语法或工作流，而是让你根据自己的需求定制。这对于有特定需求的项目非常有用。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 29,
+        name: "董明",
+        avatar: "https://picsum.photos/id/29/40/40",
+        date: "2023-05-22",
+        content: "我发现有些常用功能需要多个插件组合才能实现，这增加了配置的复杂性。希望能有更多的“一站式”插件解决方案。",
+        rating: 3,
+        type: "negative"
+      },
+      {
+        id: 30,
+        name: "袁芳",
+        avatar: "https://picsum.photos/id/30/40/40",
+        date: "2023-04-08",
+        content: "PostCSS与我的开发工具集成得很好。VS Code的插件支持让我能够在编辑器中直接看到处理后的效果，大大提高了我的工作效率。",
+        rating: 4,
+        type: "positive"
+      },
+      {
+        id: 31,
+        name: "潘强",
+        avatar: "https://picsum.photos/id/31/40/40",
+        date: "2023-06-22",
+        content: "我尝试在一个旧项目中引入PostCSS，但遇到了很多兼容性问题。最后不得不放弃，可能更适合新项目的初始设置。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 32,
+        name: "于婷",
+        avatar: "https://picsum.photos/id/32/40/40",
+        date: "2023-05-10",
+        content: "PostCSS的文档虽然全面，但组织方式有点混乱。查找特定信息有时很困难，特别是对于初学者来说。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 33,
+        name: "余亮",
+        avatar: "https://picsum.photos/id/33/40/40",
+        date: "2023-04-25",
+        content: "我特别喜欢PostCSS的插件系统。它让我能够精确控制CSS处理的每个步骤，只添加我需要的功能。这比使用包含所有功能的大型预处理器要高效得多。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 34,
+        name: "杜小红",
+        avatar: "https://picsum.photos/id/34/40/40",
+        date: "2023-03-18",
+        content: "在团队环境中使用PostCSS需要一些规范，否则每个人可能会使用不同的插件组合，导致代码不一致。需要团队共同约定一套插件配置。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 35,
+        name: "叶军",
+        avatar: "https://picsum.photos/id/35/40/40",
+        date: "2023-06-07",
+        content: "PostCSS的更新有时会导致插件不兼容，需要花时间更新和调整配置。希望能有更好的向后兼容性保证。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 36,
+        name: "苏丽",
+        avatar: "https://picsum.photos/id/36/40/40",
+        date: "2023-05-01",
+        content: "对于需要支持多种浏览器的项目，PostCSS是不可或缺的工具。它让我们能够使用统一的代码库，同时为不同浏览器生成适当的代码。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 37,
+        name: "魏明",
+        avatar: "https://picsum.photos/id/37/40/40",
+        date: "2023-04-12",
+        content: "我发现PostCSS的学习资源相对较少，特别是中文资源。希望社区能提供更多的教程和案例研究，帮助新用户入门。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 38,
+        name: "吕燕",
+        avatar: "https://picsum.photos/id/38/40/40",
+        date: "2023-06-16",
+        content: "PostCSS的插件生态系统非常活跃，几乎每周都有新的插件发布。这让我能够不断发现新的工具来改进我的工作流程。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 39,
+        name: "丁强",
+        avatar: "https://picsum.photos/id/39/40/40",
+        date: "2023-05-19",
+        content: "我发现有些插件的文档质量参差不齐，有些甚至没有详细的使用说明。这增加了使用的难度，特别是对于不熟悉的功能。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 40,
+        name: "沈婷",
+        avatar: "https://picsum.photos/id/40/40/40",
+        date: "2023-04-02",
+        content: "PostCSS与现代前端框架如React和Vue集成得很好。它已经成为我们前端工作流的重要组成部分，大大提高了我们的开发效率。",
+        rating: 4,
+        type: "positive"
+      },
+      {
+        id: 41,
+        name: "任亮",
+        avatar: "https://picsum.photos/id/41/40/40",
+        date: "2023-03-22",
+        content: "对于简单的项目，我认为PostCSS有点过于复杂。但对于需要精细控制CSS处理过程的大型项目，它是一个非常强大的工具。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 42,
+        name: "姜丽",
+        avatar: "https://picsum.photos/id/42/40/40",
+        date: "2023-06-04",
+        content: "我特别喜欢PostCSS的未来CSS特性支持。它让我能够使用还未被所有浏览器支持的CSS特性，同时确保在生产环境中正常工作。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 43,
+        name: "范军",
+        avatar: "https://picsum.photos/id/43/40/40",
+        date: "2023-05-07",
+        content: "PostCSS的错误处理可以改进。有时会给出模糊的错误信息，很难确定问题所在。希望未来的版本能改善这一点。",
+        rating: 3,
+        type: "negative"
+      },
+      {
+        id: 44,
+        name: "方小红",
+        avatar: "https://picsum.photos/id/44/40/40",
+        date: "2023-04-20",
+        content: "使用PostCSS后，我的CSS文件大小显著减小。结合cssnano等优化插件，我能够生成非常精简的生产环境代码。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 45,
+        name: "石明",
+        avatar: "https://picsum.photos/id/45/40/40",
+        date: "2023-06-19",
+        content: "我发现PostCSS的配置文件有时会变得非常冗长，特别是当使用多个插件时。希望能有更好的配置管理方式。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 46,
+        name: "姚丽",
+        avatar: "https://picsum.photos/id/46/40/40",
+        date: "2023-05-24",
+        content: "PostCSS的社区支持非常好。在GitHub上提交的issues通常能得到及时回应，社区也很活跃地帮助解决问题。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 47,
+        name: "谭强",
+        avatar: "https://picsum.photos/id/47/40/40",
+        date: "2023-04-09",
+        content: "我尝试使用PostCSS替代我们现有的Sass工作流，但团队成员的学习曲线太陡，最终不得不放弃。可能需要更渐进式的迁移策略。",
+        rating: 2,
+        type: "negative"
+      },
+      {
+        id: 48,
+        name: "廖婷",
+        avatar: "https://picsum.photos/id/48/40/40",
+        date: "2023-03-16",
+        content: "PostCSS的插件系统让我能够创建自定义的CSS处理流程，完全符合我们项目的特定需求。这是其他预处理器无法比拟的优势。",
+        rating: 5,
+        type: "positive"
+      },
+      {
+        id: 49,
+        name: "邹亮",
+        avatar: "https://picsum.photos/id/49/40/40",
+        date: "2023-06-03",
+        content: "对于初学者来说，PostCSS可能有点难以理解，因为它的概念与传统的预处理器不同。需要一些时间来适应它的工作方式。",
+        rating: 3,
+        type: "neutral"
+      },
+      {
+        id: 50,
+        name: "熊丽",
+        avatar: "https://picsum.photos/id/50/40/40",
+        date: "2023-05-14",
+        content: "PostCSS已经成为我前端工作流中不可或缺的一部分。它的灵活性和强大功能让我能够以更高效的方式编写CSS，强烈推荐给所有前端开发者。",
+        rating: 5,
+        type: "positive"
+      }
+    ];
+    
+    // 渲染评论
+    const commentsContainer = document.getElementById('comments-container');
+    let displayedComments = 15;
+    let currentFilter = 'all';
+    
+    function renderComments() {
+      commentsContainer.innerHTML = '';
+      
+      const filteredComments = currentFilter === 'all' 
+        ? comments 
+        : comments.filter(comment => comment.type === currentFilter);
+      
+      const commentsToShow = filteredComments.slice(0, displayedComments);
+      
+      commentsToShow.forEach((comment, index) => {
+        setTimeout(() => {
+          const commentEl = document.createElement('div');
+          commentEl.className = 'bg-dark-900 rounded-xl border border-dark-700 p-5 card-hover comment-enter';
+          
+          // 生成星级评分HTML
+          let ratingHtml = '';
+          for (let i = 1; i <= 5; i++) {
+            if (i <= comment.rating) {
+              ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
+            } else {
+              ratingHtml += '<i class="fa fa-star-o text-dark-600"></i>';
+            }
+          }
+          
+          commentEl.innerHTML = `
+            <div class="flex items-center gap-3 mb-4">
+              <img src="${comment.avatar}" alt="${comment.name}的头像" class="w-10 h-10 rounded-full object-cover lazyload">
+              <div>
+                <div class="font-medium text-white">${comment.name}</div>
+                <div class="text-xs text-light-300">${comment.date}</div>
+              </div>
+            </div>
+            <div class="mb-3">${ratingHtml}</div>
+            <p class="text-light-200 text-sm">${comment.content}</p>
+          `;
+          
+          commentsContainer.appendChild(commentEl);
+        }, index * 50); // 错开时间添加，形成动画效果
+      });
+    }
+    
+    // 初始渲染评论
+    renderComments();
+    
+    // 评论筛选
+    const commentFilters = document.querySelectorAll('.comment-filter');
+    commentFilters.forEach(filter => {
+      filter.addEventListener('click', () => {
+        // 更新活跃状态
+        commentFilters.forEach(f => {
+          f.classList.remove('active', 'bg-primary', 'text-dark-900');
+          f.classList.add('bg-dark-900', 'text-light-300');
+        });
+        
+        filter.classList.add('active', 'bg-primary', 'text-dark-900');
+        filter.classList.remove('bg-dark-900', 'text-light-300');
+        
+        // 应用筛选
+        currentFilter = filter.getAttribute('data-filter');
+        displayedComments = 15; // 重置显示数量
+        renderComments();
+        
+        // 显示加载更多按钮（如果有更多评论）
+        const filteredComments = currentFilter === 'all' 
+          ? comments 
+          : comments.filter(comment => comment.type === currentFilter);
+        
+        document.getElementById('load-more-comments').style.display = 
+          filteredComments.length > displayedComments ? 'inline-block' : 'none';
+      });
+    });
+    
+    // 加载更多评论
+    document.getElementById('load-more-comments').addEventListener('click', () => {
+      const filteredComments = currentFilter === 'all' 
+        ? comments 
+        : comments.filter(comment => comment.type === currentFilter);
+      
+      displayedComments += 10;
+      renderComments();
+      
+      // 如果没有更多评论，隐藏加载更多按钮
+      if (displayedComments >= filteredComments.length) {
+        document.getElementById('load-more-comments').style.display = 'none';
+      }
+    });
+    
+    // 收藏功能
+    const bookmarkBtn = document.getElementById('bookmark-btn');
+    let isBookmarked = false;
+    
+    bookmarkBtn.addEventListener('click', () => {
+      isBookmarked = !isBookmarked;
+      
+      if (isBookmarked) {
+        bookmarkBtn.innerHTML = '<i class="fa fa-bookmark text-primary"></i><span>已收藏</span>';
+        showNotification('已收藏该资源');
+      } else {
+        bookmarkBtn.innerHTML = '<i class="fa fa-bookmark-o text-primary"></i><span>收藏资源</span>';
+        showNotification('已取消收藏');
+      }
+    });
+    
+    // 复制链接功能
+    const copyLinkBtn = document.getElementById('copy-link-btn');
+    
+    copyLinkBtn.addEventListener('click', () => {
+      const currentUrl = window.location.href;
+      
+      navigator.clipboard.writeText(currentUrl).then(() => {
+        showNotification('链接已复制到剪贴板');
+      }).catch(err => {
+        console.error('无法复制链接: ', err);
+        showNotification('复制失败，请手动复制', 'error');
+      });
+    });
+    
+    // 通知提示
+    function showNotification(message, type = 'success') {
+      // 创建通知元素
+      const notification = document.createElement('div');
+      notification.className = `fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 transition-all transform translate-y-2 opacity-0`;
+      
+      // 设置样式
+      if (type === 'success') {
+        notification.classList.add('bg-green-500/90', 'text-white');
+        notification.innerHTML = `<i class="fa fa-check mr-2"></i>${message}`;
+      } else {
+        notification.classList.add('bg-red-500/90', 'text-white');
+        notification.innerHTML = `<i class="fa fa-times mr-2"></i>${message}`;
+      }
+      
+      // 添加到页面
+      document.body.appendChild(notification);
+      
+      // 显示动画
+      setTimeout(() => {
+        notification.classList.remove('translate-y-2', 'opacity-0');
+        notification.classList.add('translate-y-0', 'opacity-100');
+      }, 10);
+      
+      // 3秒后隐藏
+      setTimeout(() => {
+        notification.classList.add('translate-y-2', 'opacity-0');
+        notification.classList.remove('translate-y-0', 'opacity-100');
+        
+        // 动画结束后移除元素
+        setTimeout(() => {
+          document.body.removeChild(notification);
+        }, 300);
+      }, 3000);
+    }
+    
+    // 图片懒加载
+    document.addEventListener("DOMContentLoaded", function() {
+      const lazyImages = document.querySelectorAll("img.lazyload");
+      
+      if ("IntersectionObserver" in window) {
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              const image = entry.target;
+              image.src = image.src; // 触发加载
+              image.classList.remove("lazyload");
+              imageObserver.unobserve(image);
+            }
+          });
+        });
+        
+        lazyImages.forEach(image => {
+          imageObserver.observe(image);
+        });
+      }
+    });
+    
+    // 滚动时导航栏效果
+    window.addEventListener('scroll', () => {
+      const header = document.querySelector('header');
+      if (window.scrollY > 50) {
+        header.classList.add('shadow-md', 'shadow-dark-900/50');
+      } else {
+        header.classList.remove('shadow-md', 'shadow-dark-900/50');
+      }
+    });
+  </script>
+</body>
+</html>
