@@ -98,7 +98,7 @@ function toggleBookmarkCurrent() {
     console.groupEnd();
 }
 
-// 渲染书签列表（如果页面存在 #bookmarkList）
+// 渲染书签列表（如果页面存在 #bookmarkList）- 已修改：移除li，直接追加a标签
 function renderBookmarkList() {
     const list = document.getElementById('bookmarkList');
     if (!list) {
@@ -110,11 +110,30 @@ function renderBookmarkList() {
     const data = readBookmarks();
     log('渲染书签数量：', data.length);
 
-    list.innerHTML = '';
+    list.innerHTML = ''; // 清空原有内容
     data.forEach(b => {
-        const li = document.createElement('li');
-        li.innerHTML = `<a href="${b.url}">${b.title}</a>`;
-        list.appendChild(li);
+        // 直接创建a标签，不包裹li
+        const link = document.createElement('a');
+        link.href = b.url; // 书签链接
+        link.textContent = b.title; // 书签标题
+        // 样式控制：一行显示多个、自动换行，且有间距
+        link.style.display = 'inline-block'; // 支持一行多元素+自动换行
+        link.style.margin = '0 12px 8px 0'; // 水平12px、垂直8px间距，避免拥挤
+        link.style.padding = '4px 8px'; // 内边距，提升点击体验
+        link.style.borderRadius = '4px'; // 圆角，优化视觉
+        link.style.backgroundColor = '#2d2d2d'; // 深色背景，适配页面主题
+        link.style.color = '#4af'; // 链接颜色，与原样式保持一致
+        link.style.textDecoration = 'none'; // 默认去掉下划线
+        //  hover效果，提升交互感
+        link.addEventListener('mouseover', () => {
+            link.style.textDecoration = 'underline'; //  hover时显示下划线
+            link.style.backgroundColor = '#383838'; //  hover时深色加深
+        });
+        link.addEventListener('mouseout', () => {
+            link.style.textDecoration = 'none'; // 离开时恢复
+            link.style.backgroundColor = '#2d2d2d';
+        });
+        list.appendChild(link); // 追加到列表容器
     });
 
     // 在控制台以表格形式打印
