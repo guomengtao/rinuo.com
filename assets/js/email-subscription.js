@@ -8,7 +8,7 @@
  * 2. 导入此脚本即可自动绑定功能
  * 
  * @author Rinuo.com
- * @version 2.0.2（修复401错误版）
+ * @version 2.1.0（使用接口返回信息版）
  */
 
 class EmailSubscription {
@@ -30,7 +30,6 @@ class EmailSubscription {
         // 提示文本（可通过全局变量自定义）
         this.messages = {
             loading: '正在订阅中...',
-            success: '订阅请求已发送！请查收验证邮件',
             error: '订阅失败，请稍后重试',
             empty: '请输入邮箱地址',
             invalid: '请输入有效的邮箱地址',
@@ -94,8 +93,9 @@ class EmailSubscription {
     async handleSubmit() {
         const { input, button, message } = this.elements;
         const email = input.value.trim();
+        const name = input.dataset.name || ''; // 支持从input的data属性获取姓名
         
-        console.log(`${this.debugPrefix} 开始处理订阅，邮箱地址: ${email}`);
+        console.log(`${this.debugPrefix} 开始处理订阅，邮箱地址: ${email}，姓名: ${name}`);
         
         // 邮箱验证
         if (!email) {
@@ -121,13 +121,6 @@ class EmailSubscription {
             const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             console.log(`${this.debugPrefix} 环境检测：${isDev ? '本地开发环境' : '生产环境'}`);
             
-            if (isDev) {
-                console.log(`${this.debugPrefix} 本地环境：模拟订阅成功`);
-                this.showMessage(message, this.messages.success, 'success');
-                input.value = '';
-                return;
-            }
-            
             // 构造请求URL
             const requestUrl = `${this.config.url}/functions/v1/${this.config.functionName}`;
             console.log(`${this.debugPrefix} 准备发送请求到: ${requestUrl}`);
@@ -142,9 +135,9 @@ class EmailSubscription {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.config.key}` // 关键修复：使用完整密钥
+                        'Authorization': `Bearer ${this.config.key}`
                     },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ email, name }) // 同时发送邮箱和姓名
                 }
             );
             
@@ -169,14 +162,39 @@ class EmailSubscription {
                 throw new Error(errorMsg);
             }
             
-            // 订阅成功
+            // 订阅成功 - 使用接口返回的信息显示提示
             console.log(`${this.debugPrefix} 订阅成功，邮箱: ${email}`);
-            this.showMessage(message, this.messages.success, 'success');
+            
+            // 根据接口返回的不同状态显示不同提示
+            if (result.isVerified) {
+                // 已验证用户 - 显示管理链接
+                let messageHtml = `${result.message}<br>`;
+                if (result.actions?.manageSubscription) {
+                    messageHtml += `<a href="${result.actions.manageSubscription}" class="subscription-link">管理我的订阅</a> | `;
+                }
+                if (result.actions?.unsubscribe) {
+                    messageHtml += `<a href="${result.actions.unsubscribe}" class="subscription-link">取消订阅</a>`;
+                }
+                this.showMessage(message, messageHtml, 'success', true);
+            } else {
+                // 新用户/未验证用户 - 显示查收邮件提示
+                let messageHtml = `${result.message}<br>`;
+                if (result.actions?.resend) {
+                    messageHtml += `<a href="${result.actions.resend}" class="subscription-link">未收到邮件？点击重发</a>`;
+                }
+                if (result.actions?.checkSpam) {
+                    messageHtml += `<br>请检查垃圾邮件文件夹`;
+                }
+                this.showMessage(message, messageHtml, 'success', true);
+            }
+            
             input.value = '';
             
         } catch (err) {
             console.error(`${this.debugPrefix} 订阅流程出错:`, err);
-            this.showMessage(message, this.messages.error, 'error');
+            // 错误信息优先使用接口返回的内容
+            const errorMsg = err.message || this.messages.error;
+            this.showMessage(message, errorMsg, 'error');
         } finally {
             // 恢复按钮状态
             button.disabled = false;
@@ -184,10 +202,17 @@ class EmailSubscription {
         }
     }
     
-    // 显示提示信息（仅设置文本和data属性，不干涉样式）
-    showMessage(element, text, type) {
-        console.log(`${this.debugPrefix} 显示提示信息: [${type}] ${text}`);
-        element.textContent = text;
+    // 显示提示信息（支持HTML内容）
+    showMessage(element, content, type, isHtml = false) {
+        console.log(`${this.debugPrefix} 显示提示信息: [${type}] ${content}`);
+        
+        // 根据是否为HTML内容选择设置方式
+        if (isHtml) {
+            element.innerHTML = content;
+        } else {
+            element.textContent = content;
+        }
+        
         element.setAttribute('data-status', type); // 仅添加状态标记，样式由用户控制
         element.setAttribute('data-visible', 'true');
         
@@ -196,6 +221,8 @@ class EmailSubscription {
             setTimeout(() => {
                 console.log(`${this.debugPrefix} 自动隐藏成功提示`);
                 element.setAttribute('data-visible', 'false');
+                // 清空内容
+                element.textContent = '';
             }, 5000);
         }
     }
@@ -225,3 +252,4 @@ if (typeof window !== 'undefined') {
         document.addEventListener('DOMContentLoaded', initWhenReady);
     }
 }
+    
