@@ -1,12 +1,11 @@
-// ===== 全站书签(收藏)功能（带调试日志） =====
+// ===== 全站书签(收藏)功能（带浮动列表+调试日志） =====
 const BOOKMARK_KEY = 'bookmarks_v1';
-const DEBUG = true; // 需要时可改为 false 关闭日志
+const DEBUG = true; 
 
 function log(...args) { if (DEBUG) console.log('%c[bookmarks]', 'color:#06b6d4', ...args); }
 function warn(...args) { if (DEBUG) console.warn('[bookmarks]', ...args); }
 function error(...args) { console.error('[bookmarks]', ...args); }
 
-// 检测 localStorage 是否可用（隐私/无痕/配额满等场景）
 function storageAvailable() {
     try {
         const x = '__bookmarks_test__';
@@ -19,7 +18,6 @@ function storageAvailable() {
     }
 }
 
-// 读取书签
 function readBookmarks() {
     if (!storageAvailable()) return [];
     try {
@@ -37,7 +35,6 @@ function readBookmarks() {
     }
 }
 
-// 写入书签
 function writeBookmarks(list) {
     if (!storageAvailable()) return;
     try {
@@ -48,26 +45,22 @@ function writeBookmarks(list) {
     }
 }
 
-// 获取页面名称（取最后一段去掉 .html）
 function getPageName(url) {
     const parts = url.split('/');
-    let last = parts.pop() || parts.pop(); // 防止结尾是 /
+    let last = parts.pop() || parts.pop(); 
     const name = decodeURIComponent(last).replace(/\.html?$/i, '');
     log('计算页面名称：', { url, name });
     return name || '未命名';
 }
 
-// 获取页面路径（去掉域名，仅保留 / 开头路径）
 function getPagePath(url) {
     const a = document.createElement('a');
     a.href = url;
-    // 兼容 file:// 或无路径情况
     const path = a.pathname || '/';
     log('计算页面路径：', { url, path });
     return path;
 }
 
-// 当前页面是否已在书签里
 function isBookmarked(url = location.href) {
     const path = getPagePath(url);
     const exists = readBookmarks().some(b => b.url === path);
@@ -75,7 +68,6 @@ function isBookmarked(url = location.href) {
     return exists;
 }
 
-// 切换当前页面的书签状态
 function toggleBookmarkCurrent() {
     console.group('[bookmarks] toggleBookmarkCurrent');
     const bookmarks = readBookmarks();
@@ -95,97 +87,155 @@ function toggleBookmarkCurrent() {
 
     writeBookmarks(bookmarks);
     renderBookmarkList();
+    renderPopup();
     console.groupEnd();
 }
 
-// 渲染书签列表（如果页面存在 #bookmarkList）- 已修改：移除li，直接追加a标签
+// ===== 浮动列表功能 =====
+const popup = document.createElement('div');
+popup.id = 'bookmarkPopup';
+popup.style.position = 'absolute';
+popup.style.backgroundColor = '#222';
+popup.style.color = '#4af';
+popup.style.padding = '8px';
+popup.style.borderRadius = '6px';
+popup.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+popup.style.display = 'none';
+popup.style.zIndex = '9999';
+popup.style.minWidth = '200px';
+popup.style.fontSize = '0.875rem';
+document.body.appendChild(popup);
+
+function renderPopup() {
+    popup.innerHTML = '';
+    const list = readBookmarks();
+    if (list.length === 0) {
+        const empty = document.createElement('div');
+        empty.textContent = '暂无收藏，点击加入收藏';
+        empty.style.color = '#aaa';
+        popup.appendChild(empty);
+        return;
+    }
+
+    list.forEach((b, i) => {
+        const row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.justifyContent = 'space-between';
+        row.style.alignItems = 'center';
+        row.style.marginBottom = '4px';
+
+        const link = document.createElement('a');
+        link.href = b.url;
+        link.textContent = b.title;
+        link.style.color = '#4af';
+        link.style.textDecoration = 'none';
+        link.style.flex = '1';
+        link.style.marginRight = '6px';
+
+        const del = document.createElement('span');
+        del.textContent = '❌';
+        del.style.cursor = 'pointer';
+        del.addEventListener('click', () => {
+            const bookmarks = readBookmarks();
+            bookmarks.splice(i, 1);
+            writeBookmarks(bookmarks);
+            renderPopup();
+            btn.textContent = isBookmarked() ? '取消收藏' : '加入收藏';
+        });
+
+        row.appendChild(link);
+        row.appendChild(del);
+        popup.appendChild(row);
+    });
+}
+
+// ===== 渲染原有页面列表（可选，保留） =====
 function renderBookmarkList() {
     const list = document.getElementById('bookmarkList');
-    if (!list) {
-        log('未找到 #bookmarkList，跳过渲染');
-        return;
-    }
+    if (!list) return;
 
-    console.group('[bookmarks] renderBookmarkList');
-    const data = readBookmarks();
-    log('渲染书签数量：', data.length);
-
-    list.innerHTML = ''; // 清空原有内容
-    data.forEach(b => {
-        // 直接创建a标签，不包裹li
+    list.innerHTML = '';
+    readBookmarks().forEach(b => {
         const link = document.createElement('a');
-        link.href = b.url; // 书签链接
-        link.textContent = b.title; // 书签标题
-        // 样式控制：一行显示多个、自动换行，且有间距
-        link.style.display = 'inline-block'; // 支持一行多元素+自动换行
-        link.style.margin = '0 12px 8px 0'; // 水平12px、垂直8px间距，避免拥挤
-        link.style.padding = '4px 8px'; // 内边距，提升点击体验
-        link.style.borderRadius = '4px'; // 圆角，优化视觉
-        link.style.backgroundColor = '#2d2d2d'; // 深色背景，适配页面主题
-        link.style.color = '#4af'; // 链接颜色，与原样式保持一致
-        link.style.textDecoration = 'none'; // 默认去掉下划线
-        //  hover效果，提升交互感
+        link.href = b.url;
+        link.textContent = b.title;
+        link.style.display = 'inline-block';
+        link.style.margin = '0 12px 8px 0';
+        link.style.padding = '4px 8px';
+        link.style.borderRadius = '4px';
+        link.style.backgroundColor = '#2d2d2d';
+        link.style.color = '#4af';
+        link.style.textDecoration = 'none';
         link.addEventListener('mouseover', () => {
-            link.style.textDecoration = 'underline'; //  hover时显示下划线
-            link.style.backgroundColor = '#383838'; //  hover时深色加深
+            link.style.textDecoration = 'underline';
+            link.style.backgroundColor = '#383838';
         });
         link.addEventListener('mouseout', () => {
-            link.style.textDecoration = 'none'; // 离开时恢复
+            link.style.textDecoration = 'none';
             link.style.backgroundColor = '#2d2d2d';
         });
-        list.appendChild(link); // 追加到列表容器
+        list.appendChild(link);
     });
-
-    // 在控制台以表格形式打印
-    if (DEBUG && console.table) {
-        console.table(data);
-    }
-    console.groupEnd();
 }
 
-// 初始化书签按钮（默认 #bookmarkBtn）
+// ===== 初始化按钮 =====
 function initBookmarkBtn(btnSelector = '#bookmarkBtn') {
     const btn = document.querySelector(btnSelector);
-    if (!btn) {
-        warn(`未找到按钮 ${btnSelector}，跳过绑定`);
-        return;
-    }
-
-    log('找到书签按钮：', btn);
+    if (!btn) return;
 
     function updateBtnText() {
         const active = isBookmarked();
         const text = active ? '取消收藏' : '加入收藏';
         btn.textContent = text;
         btn.setAttribute('aria-pressed', String(active));
-        log('按钮状态更新：', { active, text });
     }
 
     updateBtnText();
-
     btn.addEventListener('click', (e) => {
         e.preventDefault();
-        log('按钮点击：开始切换收藏状态');
         toggleBookmarkCurrent();
         updateBtnText();
     });
+
+    // ===== 浮动事件 =====
+    btn.addEventListener('mouseenter', showPopup);
+    btn.addEventListener('mouseleave', hidePopup);
+    popup.addEventListener('mouseenter', ()=> popup.style.display='block');
+    popup.addEventListener('mouseleave', hidePopup);
 }
 
-// 一键清除书签
+function showPopup() {
+    renderPopup();
+    const rect = btn.getBoundingClientRect();
+    popup.style.top = (rect.bottom + window.scrollY + 6) + 'px';
+    popup.style.left = (rect.left + window.scrollX) + 'px';
+    popup.style.display = 'block';
+}
+
+function hidePopup() {
+    popup.style.display = 'none';
+}
+
+// ===== 清空收藏 =====
 function clearAllBookmarks() {
     if (!storageAvailable()) return;
-    try {
-        localStorage.removeItem(BOOKMARK_KEY);
-        log('已清空全部书签');
-    } catch (e) {
-        error('清空书签失败：', e);
-    }
+    localStorage.removeItem(BOOKMARK_KEY);
     renderBookmarkList();
+    renderPopup();
     const btn = document.querySelector('#bookmarkBtn');
     if (btn) btn.textContent = '加入收藏';
 }
 
-// 将常用方法暴露到全局，方便在控制台手动调试
+// ===== 导出模块方法 =====
+export function init() {
+    console.group('[bookmarks] 模块初始化');
+    initBookmarkBtn('#bookmarkBtn');
+    renderBookmarkList();
+    renderPopup();
+    console.groupEnd();
+}
+
+// ===== 全局暴露方法 =====
 window.__bookmarks = {
     read: readBookmarks,
     write: writeBookmarks,
@@ -197,15 +247,5 @@ window.__bookmarks = {
     getPagePath
 };
 
-// 定义初始化函数并导出，供外部导入使用
-export function init() {
-    console.group('[bookmarks] 模块初始化');
-    log('开始执行初始化...');
-    initBookmarkBtn('#bookmarkBtn');
-    renderBookmarkList();
-    log('模块初始化完成。当前存储：', readBookmarks());
-    console.groupEnd();
-}
-
-// 自动初始化（保持原有自动执行逻辑，不影响非模块化使用）
+// ===== 自动初始化 =====
 window.addEventListener('DOMContentLoaded', init);

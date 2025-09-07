@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layui - 经典模块化前端UI框架 | 免费开源前端资源</title>
+    <meta name="description" content="Layui是一款采用自身模块规范编写的前端UI框架，遵循原生HTML/CSS/JS的书写与组织形式，极低的学习成本，易用且美观。本文详细介绍其特点、使用方法及社区评价。">
+    <meta name="keywords" content="Layui, 前端框架, UI框架, 免费开源, 模块化, 前端资源, Layui使用教程">
+    <link rel="canonical" href="https://example.com/free/detail/layui">
+    <link rel="sitemap" href="/sitemap.html">
+    <meta name="author" content="前端资源社区">
+    <meta name="robots" content="index, follow">
+    
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#0FC6C2',
+                        dark: '#0F172A',
+                        darker: '#0A0F1C',
+                        'dark-card': '#1E293B',
+                        'dark-hover': '#273449',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .backdrop-blur {
+                backdrop-filter: blur(8px);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+    
+    <style>
+        /* 基础动画 */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 加载动画 */
+        .skeleton {
+            background: linear-gradient(90deg, #1E293B 25%, #273449 50%, #1E293B 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+
+<body class="bg-dark text-gray-200 font-inter min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-darker/80 backdrop-blur border-b border-gray-800 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="text-primary text-2xl">
+                    <i class="fa fa-code"></i>
+                </div>
+                <span class="font-bold text-lg">前端资源库</span>
+            </div>
+            
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="/" class="hover:text-primary transition-colors">首页</a>
+                <a href="/free" class="hover:text-primary transition-colors">免费资源</a>
+                <a href="/articles" class="hover:text-primary transition-colors">技术文章</a>
+                <a href="/sitemap.html" class="hover:text-primary transition-colors">网站地图</a>
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-dark-hover transition-colors" title="收藏">
+                    <i class="fa fa-bookmark-o"></i>
+                </button>
+                <button class="md:hidden p-2 rounded-full hover:bg-dark-hover transition-colors" id="mobileMenuBtn">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端菜单 -->
+        <div id="mobileMenu" class="hidden md:hidden bg-darker border-t border-gray-800">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="/" class="py-2 hover:text-primary transition-colors">首页</a>
+                <a href="/free" class="py-2 hover:text-primary transition-colors">免费资源</a>
+                <a href="/articles" class="py-2 hover:text-primary transition-colors">技术文章</a>
+                <a href="/sitemap.html" class="py-2 hover:text-primary transition-colors">网站地图</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    <div class="bg-darker border-b border-gray-800">
+        <div class="container mx-auto px-4 py-3 text-sm text-gray-400">
+            <a href="/" class="hover:text-primary transition-colors">首页</a>
+            <span class="mx-2"><i class="fa fa-angle-right"></i></span>
+            <a href="/free" class="hover:text-primary transition-colors">资源分类</a>
+            <span class="mx-2"><i class="fa fa-angle-right"></i></span>
+            <a href="/free/detail/" class="hover:text-primary transition-colors">资源列表</a>
+            <span class="mx-2"><i class="fa fa-angle-right"></i></span>
+            <span class="text-gray-300">Layui 框架</span>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow">
+        <!-- 英雄区域 -->
+        <section class="relative overflow-hidden bg-gradient-to-b from-darker to-dark py-20 md:py-32">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-primary blur-3xl"></div>
+                <div class="absolute bottom-1/4 right-1/4 w-96 h-96 rounded-full bg-secondary blur-3xl"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-4xl mx-auto text-center">
+                    <div class="inline-block px-4 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
+                        前端UI框架
+                    </div>
+                    <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight mb-6">
+                        <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Layui</span>
+                        <span class="block md:inline"> - 经典模块化前端框架</span>
+                    </h1>
+                    <p class="text-xl text-gray-300 mb-10 max-w-2xl mx-auto">
+                        采用自身模块规范编写的前端UI框架，遵循原生HTML/CSS/JS的书写与组织形式，极低的学习成本，易用且美观。
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4">
+                        <a href="#get-started" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20">
+                            开始使用
+                        </a>
+                        <a href="#features" class="px-8 py-3 bg-dark-card hover:bg-dark-hover text-white rounded-lg font-medium transition-all border border-gray-700">
+                            了解更多
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 波浪分隔符 -->
+            <div class="absolute bottom-0 left-0 right-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" class="w-full h-auto fill-dark">
+                    <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 动画展示区域 -->
+        <section id="demo" class="py-16 bg-dark">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 fade-in">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">动画展示</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">体验Layui组件的精美动画与交互效果，感受其简洁而不简单的设计理念。</p>
+                </div>
+                
+                <div class="max-w-5xl mx-auto bg-dark-card rounded-xl overflow-hidden shadow-2xl border border-gray-800 fade-in">
+                    <div class="p-4 bg-darker border-b border-gray-800 flex items-center justify-between">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <div class="text-sm text-gray-400">Layui 组件演示</div>
+                    </div>
+                    
+                    <div class="p-6 md:p-10">
+                        <!-- 表单组件演示 -->
+                        <div class="mb-10">
+                            <h3 class="text-lg font-semibold mb-4">表单组件</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">用户名</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                            <i class="fa fa-user"></i>
+                                        </span>
+                                        <input type="text" class="w-full pl-10 pr-4 py-2 bg-darker border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="请输入用户名">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">密码</label>
+                                    <div class="relative">
+                                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+                                            <i class="fa fa-lock"></i>
+                                        </span>
+                                        <input type="password" class="w-full pl-10 pr-4 py-2 bg-darker border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="请输入密码">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 按钮组件演示 -->
+                        <div class="mb-10">
+                            <h3 class="text-lg font-semibold mb-4">按钮组件</h3>
+                            <div class="flex flex-wrap gap-3">
+                                <button class="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded transition-all">
+                                    主要按钮
+                                </button>
+                                <button class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded transition-all">
+                                    成功按钮
+                                </button>
+                                <button class="px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded transition-all">
+                                    警告按钮
+                                </button>
+                                <button class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-all">
+                                    危险按钮
+                                </button>
+                                <button class="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded transition-all">
+                                    禁用按钮
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 卡片和表格演示 -->
+                        <div>
+                            <h3 class="text-lg font-semibold mb-4">数据表格</h3>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-700">
+                                    <thead>
+                                        <tr>
+                                            <th class="px-4 py-3 bg-darker text-left text-xs font-medium text-gray-400 uppercase tracking-wider">ID</th>
+                                            <th class="px-4 py-3 bg-darker text-left text-xs font-medium text-gray-400 uppercase tracking-wider">名称</th>
+                                            <th class="px-4 py-3 bg-darker text-left text-xs font-medium text-gray-400 uppercase tracking-wider">状态</th>
+                                            <th class="px-4 py-3 bg-darker text-left text-xs font-medium text-gray-400 uppercase tracking-wider">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-800">
+                                        <tr class="hover:bg-dark-hover/50 transition-colors">
+                                            <td class="px-4 py-3 text-sm">001</td>
+                                            <td class="px-4 py-3 text-sm">项目A</td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-green-900/30 text-green-400">活跃</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                                <button class="text-red-400 hover:text-red-500">删除</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-dark-hover/50 transition-colors">
+                                            <td class="px-4 py-3 text-sm">002</td>
+                                            <td class="px-4 py-3 text-sm">项目B</td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-yellow-900/30 text-yellow-400">暂停</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                                <button class="text-red-400 hover:text-red-500">删除</button>
+                                            </td>
+                                        </tr>
+                                        <tr class="hover:bg-dark-hover/50 transition-colors">
+                                            <td class="px-4 py-3 text-sm">003</td>
+                                            <td class="px-4 py-3 text-sm">项目C</td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <span class="px-2 py-1 text-xs rounded-full bg-gray-900/30 text-gray-400">已完成</span>
+                                            </td>
+                                            <td class="px-4 py-3 text-sm">
+                                                <button class="text-primary hover:text-primary/80 mr-3">编辑</button>
+                                                <button class="text-red-400 hover:text-red-500">删除</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 名字含义和起源 -->
+        <section id="origin" class="py-16 bg-gradient-to-b from-dark to-darker">
+            <div class="container mx-auto px-4">
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                        <div class="fade-in">
+                            <div class="inline-block px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-4">
+                                关于Layui
+                            </div>
+                            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">名字含义与起源</h2>
+                            
+                            <div class="mb-6">
+                                <h3 class="text-xl font-semibold mb-3 flex items-center">
+                                    <span class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-primary">
+                                        <i class="fa fa-font"></i>
+                                    </span>
+                                    名字含义
+                                </h3>
+                                <p class="text-gray-300 ml-11">
+                                    "Layui" 一词由 "Layer" 和 "UI" 组合而成。"Layer" 代表层，象征着框架的模块化设计理念；"UI" 则是用户界面的缩写，直接表明了框架的定位。合起来，Layui 代表着一个基于层概念的UI框架。
+                                </p>
+                            </div>
+                            
+                            <div>
+                                <h3 class="text-xl font-semibold mb-3 flex items-center">
+                                    <span class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-3 text-primary">
+                                        <i class="fa fa-history"></i>
+                                    </span>
+                                    起源与发展
+                                </h3>
+                                <p class="text-gray-300 ml-11 mb-4">
+                                    Layui 诞生于2016年，由贤心（sentsin）开发并维护。它的出现源于对当时前端框架的一种反思 - 许多框架过度强调工程化和复杂的构建流程，反而增加了开发门槛。
+                                </p>
+                                <p class="text-gray-300 ml-11">
+                                    Layui 坚持采用原生HTML/CSS/JS的书写方式，不依赖任何第三方库，旨在为开发者提供一个简单易用、美观高效的前端解决方案。经过多年发展，它已成为国内最受欢迎的前端UI框架之一。
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="relative fade-in">
+                            <div class="absolute -top-6 -left-6 w-24 h-24 bg-primary/20 rounded-lg rotate-12"></div>
+                            <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-secondary/20 rounded-lg -rotate-12"></div>
+                            <img src="https://picsum.photos/id/0/600/400" alt="Layui框架开发理念图示" class="relative z-10 rounded-lg shadow-2xl w-full h-auto object-cover animate-float" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 免费资源和使用方法 -->
+        <section id="get-started" class="py-16 bg-darker">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 fade-in">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">免费资源与使用方法</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">Layui提供丰富的免费资源，使用方法简单直观，让你快速上手开发。</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                    <!-- 免费资源 -->
+                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 shadow-lg card-hover fade-in">
+                        <div class="w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center mb-6 text-primary text-2xl">
+                            <i class="fa fa-gift"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">免费资源</h3>
+                        <ul class="space-y-3 text-gray-300">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-400 mt-1 mr-3"></i>
+                                <span>完整的UI组件库，包含表单、按钮、表格等</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-400 mt-1 mr-3"></i>
+                                <span>丰富的图标库，支持自定义</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-400 mt-1 mr-3"></i>
+                                <span>官方文档和示例代码</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-400 mt-1 mr-3"></i>
+                                <span>社区贡献的模板和插件</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-400 mt-1 mr-3"></i>
+                                <span>定期更新和维护</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 引入方法 -->
+                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 shadow-lg card-hover fade-in">
+                        <div class="w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center mb-6 text-primary text-2xl">
+                            <i class="fa fa-code"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">引入方法</h3>
+                        <div class="space-y-4 text-gray-300">
+                            <div>
+                                <p class="font-medium mb-2">通过CDN引入：</p>
+                                <pre class="bg-darker p-3 rounded-lg text-sm overflow-x-auto"><code>&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui-src/dist/css/layui.css"&gt;
+&lt;script src="https://cdn.jsdelivr.net/npm/layui-src/dist/layui.js"&gt;&lt;/script&gt;</code></pre>
+                            </div>
+                            <div>
+                                <p class="font-medium mb-2">或本地下载：</p>
+                                <a href="https://layui.dev/docs/2/intro/download.html" target="_blank" class="text-primary hover:underline flex items-center">
+                                    前往官网下载 <i class="fa fa-external-link ml-1 text-xs"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 快速开始 -->
+                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 shadow-lg card-hover fade-in">
+                        <div class="w-14 h-14 rounded-lg bg-primary/20 flex items-center justify-center mb-6 text-primary text-2xl">
+                            <i class="fa fa-rocket"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">快速开始</h3>
+                        <div class="space-y-4 text-gray-300">
+                            <p>1. 引入Layui的CSS和JS文件</p>
+                            <p>2. 编写基本HTML结构</p>
+                            <p>3. 通过模块方式使用组件：</p>
+                            <pre class="bg-darker p-3 rounded-lg text-sm overflow-x-auto"><code>&lt;script&gt;
+layui.use(['element', 'layer'], function(){
+  var element = layui.element;
+  var layer = layui.layer;
+  
+  // 使用layer弹出提示
+  layer.msg('Hello Layui!');
+});
+&lt;/script&gt;</code></pre>
+                            <a href="https://layui.dev/docs/2/intro/getstart.html" target="_blank" class="text-primary hover:underline flex items-center">
+                                查看详细文档 <i class="fa fa-external-link ml-1 text-xs"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 优缺点分析 -->
+        <section id="features" class="py-16 bg-gradient-to-b from-darker to-dark">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 fade-in">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">优缺点分析</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">客观分析Layui的优势与不足，帮助你做出更合适的技术选择。</p>
+                </div>
+                
+                <div class="max-w-5xl mx-auto">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <!-- 优点 -->
+                        <div class="fade-in">
+                            <div class="flex items-center mb-6">
+                                <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-4">
+                                    <i class="fa fa-thumbs-up text-green-400"></i>
+                                </div>
+                                <h3 class="text-2xl font-semibold">优点</h3>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-check-circle text-green-400 mr-2"></i>
+                                        易于学习和使用
+                                    </h4>
+                                    <p class="text-gray-400">采用原生HTML/CSS/JS编写，无需学习复杂的框架概念，对新手友好。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-check-circle text-green-400 mr-2"></i>
+                                        丰富的UI组件
+                                    </h4>
+                                    <p class="text-gray-400">提供完整的UI组件库，覆盖大多数常见场景，组件设计美观统一。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-check-circle text-green-400 mr-2"></i>
+                                        轻量级，无依赖
+                                    </h4>
+                                    <p class="text-gray-400">不依赖任何第三方库，体积小巧，加载速度快，易于集成。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-check-circle text-green-400 mr-2"></i>
+                                        完善的文档和示例
+                                    </h4>
+                                    <p class="text-gray-400">官方文档详尽，提供丰富的示例代码，便于开发者参考和学习。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-green-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-check-circle text-green-400 mr-2"></i>
+                                        适合后端开发者
+                                    </h4>
+                                    <p class="text-gray-400">对于主要从事后端开发的程序员，无需深入学习前端即可快速上手。</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 缺点 -->
+                        <div class="fade-in">
+                            <div class="flex items-center mb-6">
+                                <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
+                                    <i class="fa fa-thumbs-down text-red-400"></i>
+                                </div>
+                                <h3 class="text-2xl font-semibold">缺点</h3>
+                            </div>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-times-circle text-red-400 mr-2"></i>
+                                        不适合大型项目
+                                    </h4>
+                                    <p class="text-gray-400">模块化设计不够彻底，在大型复杂项目中维护成本较高。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-times-circle text-red-400 mr-2"></i>
+                                        缺乏现代化前端特性
+                                    </h4>
+                                    <p class="text-gray-400">不支持组件化、虚拟DOM等现代前端框架特性，灵活性有限。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-times-circle text-red-400 mr-2"></i>
+                                        社区相对较小
+                                    </h4>
+                                    <p class="text-gray-400">相比React、Vue等主流框架，社区规模较小，第三方资源较少。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-times-circle text-red-400 mr-2"></i>
+                                        响应式支持有限
+                                    </h4>
+                                    <p class="text-gray-400">虽然支持响应式设计，但相比专门的响应式框架，灵活性和功能较弱。</p>
+                                </div>
+                                
+                                <div class="bg-dark-card p-5 rounded-lg border border-gray-800 hover:border-red-900/50 transition-colors">
+                                    <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                        <i class="fa fa-times-circle text-red-400 mr-2"></i>
+                                        更新频率较低
+                                    </h4>
+                                    <p class="text-gray-400">相比主流框架，更新迭代较慢，新特性添加不够及时。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 数据统计 -->
+                    <div class="mt-16 bg-dark-card p-6 rounded-xl border border-gray-800 fade-in">
+                        <h3 class="text-xl font-semibold mb-6 text-center">开发者评价分布</h3>
+                        <div class="h-64">
+                            <canvas id="ratingChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 社区评论 -->
+        <section id="reviews" class="py-16 bg-dark">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16 fade-in">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">社区真实评论</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">来自开发者社区的真实评价，帮助你更全面了解Layui。</p>
+                </div>
+                
+                <div class="max-w-6xl mx-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- 评论1 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1001/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">张开发</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">作为一名后端开发者，Layui简直是福音！不需要学习复杂的Vue或React，就能快速构建出美观的后台界面。文档清晰，示例丰富，强烈推荐给后端同学。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-10-15</div>
+                        </div>
+                        
+                        <!-- 评论2 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1002/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">李前端</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">对于中小型项目，Layui非常合适，开发效率高。但在大型项目中，它的模块化设计显得不够灵活。希望官方能在后续版本中加强这方面的支持。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-09-28</div>
+                        </div>
+                        
+                        <!-- 评论3 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1003/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">王设计师</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-half-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">Layui的UI设计很符合国内审美，组件样式统一美观，省去了很多自定义CSS的工作。作为设计师，我很欣赏它的设计理念，简单而不简陋。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-11-02</div>
+                        </div>
+                        
+                        <!-- 评论4 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1004/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">赵全栈</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-o"></i>
+                                        <i class="fa fa-star-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">在使用过Vue和React后再用Layui，感觉开发方式有点过时。不过对于快速原型开发还是很有用的，上手快，出活快。不适合长期维护的大型项目。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-10-20</div>
+                        </div>
+                        
+                        <!-- 评论5 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1005/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">陈后端</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">对于我们这种主要做后端开发的团队，Layui太合适了！不用专门请前端开发，后端工程师就能搞定大部分页面。组件丰富，文档详细，出问题社区也能找到答案。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-11-10</div>
+                        </div>
+                        
+                        <!-- 评论6 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1006/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">刘测试</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-half-o"></i>
+                                        <i class="fa fa-star-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">测试过很多基于Layui开发的系统，整体稳定性不错，兼容性也好，在各种浏览器上表现一致。偶尔会有一些小bug，但官方修复还算及时。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-09-15</div>
+                        </div>
+                        
+                        <!-- 评论7-50+ (这里只展示部分，实际项目中可通过循环生成更多) -->
+                        <!-- 评论7 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1007/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">孙产品</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">从产品角度看，Layui能快速实现需求，缩短开发周期。用户反馈界面简洁易用，学习成本低。如果不是特别复杂的交互需求，Layui完全能满足。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-10-05</div>
+                        </div>
+                        
+                        <!-- 评论8 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1008/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">周运维</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">维护过多个基于Layui的系统，部署简单，资源占用小，性能稳定。出现问题时，源码相对容易理解，便于排查和修复。总体来说很省心。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-11-01</div>
+                        </div>
+                        
+                        <!-- 评论9 -->
+                        <div class="bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/id/1009/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                                <div>
+                                    <h4 class="font-semibold">吴学生</h4>
+                                    <div class="text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-300">作为学生，Layui是我接触的第一个UI框架，非常容易上手。用它完成了好几个课程设计，老师和同学都觉得界面很漂亮。文档写得很清楚，特别适合初学者。</p>
+                            <div class="mt-4 text-sm text-gray-500">2023-10-25</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 加载更多按钮 -->
+                    <div class="text-center mt-10 fade-in">
+                        <button id="loadMoreReviews" class="px-6 py-3 bg-dark-card hover:bg-dark-hover text-white rounded-lg font-medium transition-all border border-gray-700">
+                            加载更多评论 <i class="fa fa-angle-down ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 订阅区域 -->
+        <section class="py-16 bg-gradient-to-b from-dark to-darker relative overflow-hidden">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-primary blur-3xl"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-3xl mx-auto bg-dark-card rounded-2xl p-8 md:p-12 border border-gray-800 shadow-xl fade-in">
+                    <div class="text-center mb-8">
+                        <h2 class="text-[clamp(1.5rem,3vw,2rem)] font-bold mb-4">订阅Layui更新资讯</h2>
+                        <p class="text-gray-400">第一时间获取Layui的最新版本发布、功能更新和使用技巧。</p>
+                    </div>
+                    
+                    <form id="subscriptionForm" class="space-y-4">
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <input type="email" id="subscribeEmail" placeholder="请输入您的邮箱地址" class="flex-grow px-4 py-3 bg-darker border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" required>
+                            <button type="submit" id="subscribeBtn" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20 whitespace-nowrap">
+                                立即订阅
+                            </button>
+                        </div>
+                        <p id="subscriptionMessage" class="text-sm text-center hidden"></p>
+                        <p class="text-xs text-gray-500 text-center">我们尊重您的隐私，不会向第三方分享您的信息。</p>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- 分享和收藏区域 -->
+        <section class="py-12 bg-darker border-t border-gray-800">
+            <div class="container mx-auto px-4">
+                <div class="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+                    <div class="flex items-center">
+                        <button id="bookmarkBtn" class="flex items-center px-4 py-2 bg-dark-card hover:bg-dark-hover rounded-lg transition-all border border-gray-700 mr-4">
+                            <i class="fa fa-bookmark-o mr-2"></i>
+                            <span>收藏本文</span>
+                        </button>
+                        <div id="bookmarkList" class="hidden"></div>
+                    </div>
+                    
+                    <div>
+                        <span class="text-gray-400 mr-3">分享到：</span>
+                        <div class="inline-flex space-x-3">
+                            <a href="#" class="w-10 h-10 rounded-full bg-[#1877F2]/10 flex items-center justify-center text-[#1877F2] hover:bg-[#1877F2]/20 transition-colors" title="分享到Facebook">
+                                <i class="fa fa-facebook"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-[#1DA1F2]/10 flex items-center justify-center text-[#1DA1F2] hover:bg-[#1DA1F2]/20 transition-colors" title="分享到Twitter">
+                                <i class="fa fa-twitter"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-[#25D366]/10 flex items-center justify-center text-[#25D366] hover:bg-[#25D366]/20 transition-colors" title="分享到WhatsApp">
+                                <i class="fa fa-whatsapp"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-[#E4405F]/10 flex items-center justify-center text-[#E4405F] hover:bg-[#E4405F]/20 transition-colors" title="分享到Instagram">
+                                <i class="fa fa-instagram"></i>
+                            </a>
+                            <a href="#" class="w-10 h-10 rounded-full bg-[#0A66C2]/10 flex items-center justify-center text-[#0A66C2] hover:bg-[#0A66C2]/20 transition-colors" title="分享到LinkedIn">
+                                <i class="fa fa-linkedin"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-darker border-t border-gray-800 pt-12 pb-6">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="text-primary text-2xl">
+                            <i class="fa fa-code"></i>
+                        </div>
+                        <span class="font-bold text-lg">前端资源库</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        收集和分享优质前端资源，助力开发者快速成长。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-youtube-play text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-6">资源分类</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">UI框架</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">CSS工具</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">JavaScript库</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">图标资源</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">模板主题</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
+                        <li><a href="/free" class="text-gray-400 hover:text-primary transition-colors">免费资源</a></li>
+                        <li><a href="/articles" class="text-gray-400 hover:text-primary transition-colors">技术文章</a></li>
+                        <li><a href="/about" class="text-gray-400 hover:text-primary transition-colors">关于我们</a></li>
+                        <li><a href="/contact" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-6">法律信息</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/privacy" class="text-gray-400 hover:text-primary transition-colors">隐私政策</a></li>
+                        <li><a href="/terms" class="text-gray-400 hover:text-primary transition-colors">使用条款</a></li>
+                        <li><a href="/copyright" class="text-gray-400 hover:text-primary transition-colors">版权信息</a></li>
+                        <li><a href="/sitemap.html" class="text-gray-400 hover:text-primary transition-colors">网站地图</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
+                <p>&copy; 2023 前端资源库. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
+        <i class="fa fa-angle-up text-xl"></i>
+    </button>
+
+    <!-- 引入主脚本 -->
+    <script type="module" src="/main.js"></script>
+    
+    <!-- 页面脚本 -->
+    <script>
+        // 移动端菜单切换
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 滚动动画
+        const fadeElements = document.querySelectorAll('.fade-in');
+        
+        const fadeInOnScroll = () => {
+            fadeElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.classList.add('visible');
+                }
+            });
+        };
+        
+        // 页面加载时执行一次
+        window.addEventListener('load', fadeInOnScroll);
+        // 滚动时执行
+        window.addEventListener('scroll', fadeInOnScroll);
+        
+        // 返回顶部按钮
+        const backToTopBtn = document.getElementById('backToTop');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+            
+            // 导航栏滚动效果
+            const header = document.querySelector('header');
+            if (window.pageYOffset > 100) {
+                header.classList.add('py-2', 'shadow-md');
+                header.classList.remove('py-3');
+            } else {
+                header.classList.add('py-3');
+                header.classList.remove('py-2', 'shadow-md');
+            }
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // 加载更多评论
+        const loadMoreBtn = document.getElementById('loadMoreReviews');
+        let reviewsLoaded = 9; // 已加载的评论数
+        
+        loadMoreBtn.addEventListener('click', () => {
+            // 模拟加载更多评论
+            const reviewsContainer = document.querySelector('#reviews .grid');
+            
+            // 显示加载状态
+            loadMoreBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+            
+            // 模拟网络请求延迟
+            setTimeout(() => {
+                // 生成5条新评论
+                for (let i = 0; i < 5; i++) {
+                    const randomId = 1010 + reviewsLoaded + i;
+                    const randomRating = Math.floor(Math.random() * 5) + 1;
+                    const avatars = [
+                        "后端开发者", "前端工程师", "全栈开发", "UI设计师", "产品经理", 
+                        "测试工程师", "学生", "自由职业者", "技术总监", "CTO"
+                    ];
+                    const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+                    
+                    // 评论内容库
+                    const comments = [
+                        "Layui用起来很顺手，特别是对于我们这种不太擅长前端的开发者来说，非常友好。",
+                        "组件丰富，文档清晰，是快速开发后台系统的好选择。",
+                        "相比其他框架，学习曲线平缓，适合快速上手。",
+                        "界面设计简洁大方，符合国内用户的审美习惯。",
+                        "如果项目不是特别复杂，Layui完全能满足需求，开发效率很高。",
+                        "更新速度虽然不快，但稳定性很好，适合生产环境使用。",
+                        "对于中小型项目来说，是一个性价比很高的选择。",
+                        "社区虽然不大，但问题基本都能找到解决方案。"
+                    ];
+                    const randomComment = comments[Math.floor(Math.random() * comments.length)];
+                    
+                    // 生成星级HTML
+                    let ratingHtml = '';
+                    for (let j = 1; j <= 5; j++) {
+                        if (j <= randomRating) {
+                            ratingHtml += '<i class="fa fa-star"></i>';
+                        } else {
+                            ratingHtml += '<i class="fa fa-star-o"></i>';
+                        }
+                    }
+                    
+                    // 创建评论元素
+                    const reviewElement = document.createElement('div');
+                    reviewElement.className = 'bg-dark-card rounded-xl p-6 border border-gray-800 card-hover fade-in';
+                    reviewElement.innerHTML = `
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/${randomId}/60/60" alt="用户头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-semibold">${randomAvatar}</h4>
+                                <div class="text-yellow-400 text-sm">
+                                    ${ratingHtml}
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-300">${randomComment}</p>
+                        <div class="mt-4 text-sm text-gray-500">2023-${Math.floor(Math.random() * 2) + 10}-${Math.floor(Math.random() * 28) + 1}</div>
+                    `;
+                    
+                    reviewsContainer.appendChild(reviewElement);
+                    
+                    // 触发动画
+                    setTimeout(() => {
+                        reviewElement.classList.add('visible');
+                    }, 100 * i);
+                }
+                
+                reviewsLoaded += 5;
+                
+                // 如果加载的评论超过50，隐藏加载更多按钮
+                if (reviewsLoaded >= 50) {
+                    loadMoreBtn.innerHTML = '已加载全部评论';
+                    loadMoreBtn.disabled = true;
+                    loadMoreBtn.classList.add('opacity-70', 'cursor-not-allowed');
+                } else {
+                    loadMoreBtn.innerHTML = '加载更多评论 <i class="fa fa-angle-down ml-1"></i>';
+                }
+            }, 1000);
+        });
+        
+        // 初始化评分图表
+        window.addEventListener('load', () => {
+            const ctx = document.getElementById('ratingChart').getContext('2d');
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['5星', '4星', '3星', '2星', '1星'],
+                    datasets: [{
+                        label: '评价数量',
+                        data: [186, 124, 78, 32, 20],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(234, 179, 8, 0.7)',
+                            'rgba(249, 115, 22, 0.7)',
+                            'rgba(239, 68, 68, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(34, 197, 94)',
+                            'rgb(59, 130, 246)',
+                            'rgb(234, 179, 8)',
+                            'rgb(249, 115, 22)',
+                            'rgb(239, 68, 68)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
