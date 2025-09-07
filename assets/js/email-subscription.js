@@ -8,7 +8,7 @@
  * 2. 导入此脚本即可自动绑定功能
  * 
  * @author Rinuo.com
- * @version 2.0.1（带调试信息版）
+ * @version 2.0.2（修复401错误版）
  */
 
 class EmailSubscription {
@@ -20,7 +20,7 @@ class EmailSubscription {
             message: 'subscriptionMessage'
         };
         
-        // Supabase配置
+        // Supabase配置（使用完整密钥）
         this.config = {
             url: "https://ibwhykivdlzuumcgcssl.supabase.co",
             key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2h5a2l2ZGx6dXVtY2djc3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMzEyOTMsImV4cCI6MjA2OTcwNzI5M30.o7zwqToKgbXnFUEIBxjQYydJkP9peP_Hul-F8xhsE20",
@@ -132,14 +132,17 @@ class EmailSubscription {
             const requestUrl = `${this.config.url}/functions/v1/${this.config.functionName}`;
             console.log(`${this.debugPrefix} 准备发送请求到: ${requestUrl}`);
             
-            // 调用Supabase云函数
+            // 调试：输出密钥前10位和后10位（确认密钥完整）
+            console.log(`${this.debugPrefix} 密钥验证：${this.config.key.substring(0, 10)}...${this.config.key.substring(this.config.key.length - 10)}`);
+            
+            // 调用Supabase云函数（使用完整密钥）
             const response = await fetch(
                 requestUrl,
                 {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.config.key.substring(0, 6)}...${this.config.key.substring(this.config.key.length - 6)}` // 部分隐藏密钥
+                        'Authorization': `Bearer ${this.config.key}` // 关键修复：使用完整密钥
                     },
                     body: JSON.stringify({ email })
                 }
