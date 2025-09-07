@@ -2,200 +2,192 @@
 <html lang="zh">
 <head>
   <meta charset="UTF-8">
-  <title>收藏 MVP 示例</title>
-  <style>
-    /* 基础样式设置 */
-    body { 
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-      padding: 20px; 
-      background: #1a1a1a; 
-      color: #f0f0f0; 
-      max-width: 1200px;
-      margin: 0 auto;
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="资源收藏与订阅页面，提供优质资源的收藏和邮件订阅服务，随时获取最新资源更新。">
+  <meta name="keywords" content="资源收藏, 邮件订阅, 免费资源, 资源列表, 夜间模式">
+  <meta name="author" content="您的网站名称">
+  <meta name="robots" content="index, follow">
+  <title>收藏 MVP 示例 - 优质资源详情</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 配置Tailwind自定义颜色和字体 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7c3aed', // 主色调：深紫色
+            secondary: '#22d3ee', // 辅助色：亮青色
+            dark: {
+              100: '#374151',
+              200: '#1f2937',
+              300: '#111827',
+              400: '#0f172a',
+              500: '#030712'
+            },
+            light: {
+              100: '#f9fafb',
+              200: '#f3f4f6',
+              300: '#e5e7eb'
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
     }
-    
-    /* 按钮样式 */
-    button { 
-      padding: 8px 16px; 
-      border-radius: 6px; 
-      cursor: pointer; 
-      border: none;
-      transition: all 0.3s ease;
-      font-weight: 500;
-    }
-    
-    #bookmarkBtn {
-      background: #4a90e2;
-      color: white;
-    }
-    
-    #bookmarkBtn:hover {
-      background: #3a80d2;
-      transform: translateY(-2px);
-    }
-    
-    .my-button-style {
-      background: #5cb85c;
-      color: white;
-      margin-left: 10px;
-    }
-    
-    .my-button-style:hover {
-      background: #4cae4c;
-    }
-    
-    /* 输入框样式 */
-    .my-input-style {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid #444;
-      background: #2d2d2d;
-      color: #f0f0f0;
-      width: 250px;
-      transition: border 0.3s ease;
-    }
-    
-    .my-input-style:focus {
-      outline: none;
-      border-color: #4a90e2;
-    }
-    
-    /* 消息提示样式 */
-    .my-message-style {
-      margin-top: 10px;
-      padding: 8px 12px;
-      border-radius: 6px;
-      display: none;
-    }
-    
-    .my-message-style.success {
-      background: rgba(92, 184, 92, 0.2);
-      border: 1px solid #5cb85c;
-      display: block;
-    }
-    
-    .my-message-style.error {
-      background: rgba(217, 83, 79, 0.2);
-      border: 1px solid #d9534f;
-      display: block;
-    }
-    
-    /* 收藏列表样式 - 重点优化部分 */
-    #bookmarkList {
-      margin-top: 20px;
-      padding: 20px;
-      background: #2d2d2d;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-    
-    #fav-list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      
-      /* 实现一行显示多个，自动换行 */
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-    
-    #fav-list li {
-      margin: 0;
-      padding: 8px 14px;
-      background: #3a3a3a;
-      border-radius: 6px;
-      border: 1px solid #444;
-      transition: all 0.2s ease;
-      white-space: nowrap; /* 防止文本换行 */
-    }
-    
-    #fav-list li:hover {
-      background: #444;
-      transform: translateY(-2px);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-    }
-    
-    #fav-list a { 
-      color: #81c3fd; 
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    
-    #fav-list a:hover { 
-      text-decoration: underline;
-      color: #a8d4ff;
-    }
-    
-    #fav-list .remove-btn {
-      background: transparent;
-      color: #ff6b6b;
-      padding: 2px 6px;
-      font-size: 12px;
-      margin-left: 6px;
-    }
-    
-    #fav-list .remove-btn:hover {
-      background: rgba(255, 107, 107, 0.2);
-    }
-    
-    /* 标题样式 */
-    h1, h2 {
-      color: #f8f9fa;
-      border-bottom: 1px solid #444;
-      padding-bottom: 10px;
-      margin-top: 30px;
-    }
-    
-    h1 {
-      color: #4a90e2;
-    }
-    
-    .my-custom-subscription {
-      margin-bottom: 30px;
-      padding: 20px;
-      background: #2d2d2d;
-      border-radius: 8px;
+  </script>
+  
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1;
+      }
+      .btn-primary {
+        @apply bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/50;
+      }
+      .input-style {
+        @apply bg-dark-300 border border-dark-100 rounded-lg px-4 py-2 text-light-100 focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all duration-300;
+      }
     }
   </style>
 </head>
-<body>
-  <!-- 用户页面的HTML WARP -->
-  <div class="my-custom-subscription">
-    <!-- 输入框：必须有id="emailInput" -->
-    <input 
-        type="email" 
-        id="subscribeEmail" 
-        placeholder="请输入邮箱"
-        class="my-input-style"  
-    >
-    
-    <!-- 按钮：必须有id="subscribeBtn" -->
-    <button 
-        id="subscribeBtn"
-        class="my-button-style"  
-    >
-        立即订阅
-    </button>
-    
-    <!-- 提示区：必须有id="subscriptionMessage" -->
-    <div 
-        id="subscriptionMessage"
-        class="my-message-style"  
-    ></div>
-  </div>
- 
-  <!-- 引入入口脚本（需加type="module"启用ES6模块） -->
+<body class="font-inter bg-dark-500 text-light-200 min-h-screen flex flex-col">
+  <!-- 面包屑导航 -->
+  <nav class="py-4 px-6 md:px-12 border-b border-dark-200">
+    <div class="max-w-7xl mx-auto">
+      <ol class="flex items-center text-sm text-light-300">
+        <li>
+          <a href="/" class="hover:text-secondary transition-colors duration-200">
+            <i class="fa fa-home mr-1"></i>首页
+          </a>
+        </li>
+        <li class="mx-2">
+          <i class="fa fa-angle-right text-dark-100"></i>
+        </li>
+        <li>
+          <a href="/free" class="hover:text-secondary transition-colors duration-200">资源分类</a>
+        </li>
+        <li class="mx-2">
+          <i class="fa fa-angle-right text-dark-100"></i>
+        </li>
+        <li>
+          <a href="/free/detail/" class="hover:text-secondary transition-colors duration-200">资源列表</a>
+        </li>
+        <li class="mx-2">
+          <i class="fa fa-angle-right text-dark-100"></i>
+        </li>
+        <li class="text-secondary">当前资源名</li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- 主要内容 -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-6 md:px-12 py-8 md:py-12">
+    <div class="mb-10">
+      <h1 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-light-100 mb-4 bg-gradient-to-r from-secondary to-primary text-gradient">
+        当前页面 bookmarkBtn
+      </h1>
+      <p class="text-light-300 max-w-3xl">
+        收藏您喜爱的资源，随时查看和管理。订阅我们的邮件，获取最新资源更新和独家内容。
+      </p>
+    </div>
+
+    <!-- 收藏区域 -->
+    <section class="mb-16 bg-dark-400 rounded-xl p-6 md:p-8 shadow-xl shadow-dark-300/20 card-hover">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div>
+          <h2 class="text-2xl font-semibold text-light-100 mb-2">资源收藏</h2>
+          <p class="text-light-300">将当前资源添加到您的收藏列表，方便日后查看</p>
+        </div>
+        
+        <button id="bookmarkBtn" class="btn-primary flex items-center gap-2">
+          <i class="fa fa-bookmark-o"></i>
+          <span>加入收藏</span>
+        </button>
+      </div>
+
+      <div id="bookmarkList" class="mt-8">
+        <h3 class="text-xl font-medium text-light-100 mb-4">已收藏页面</h3>
+        <ul id="fav-list" class="space-y-3">
+          <!-- 收藏列表将通过JS动态生成 -->
+          <li class="animate-pulse text-light-300">暂无收藏内容</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 邮件订阅区域 -->
+    <section class="bg-gradient-to-br from-dark-400 to-dark-300 rounded-xl p-6 md:p-8 shadow-xl shadow-primary/10 card-hover">
+      <h2 class="text-2xl font-semibold text-light-100 mb-2">邮件订阅</h2>
+      <p class="text-light-300 mb-6">订阅我们的邮件，获取最新资源更新和独家优惠信息</p>
+      
+      <div class="my-custom-subscription max-w-md">
+        <div class="flex flex-col sm:flex-row gap-3 mb-4">
+          <input 
+            type="email" 
+            id="subscribeEmail" 
+            placeholder="请输入您的邮箱地址"
+            class="input-style flex-grow"
+            required
+          >
+          
+          <button 
+            id="subscribeBtn"
+            class="btn-primary whitespace-nowrap"
+          >
+            立即订阅
+          </button>
+        </div>
+        
+        <div 
+          id="subscriptionMessage"
+          class="my-message-style text-sm p-3 rounded-lg hidden"
+        ></div>
+      </div>
+      
+      <p class="text-xs text-light-300/70 mt-4">
+        我们尊重您的隐私，不会向第三方分享您的信息。您可以随时取消订阅。
+      </p>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark-400 border-t border-dark-200 py-8 px-6 md:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-light-300 text-sm">
+          &copy; 2023 您的网站名称. 保留所有权利.
+        </div>
+        
+        <div class="flex items-center gap-6">
+          <a href="/sitemap.html" class="text-light-300 hover:text-secondary transition-colors duration-200 text-sm flex items-center gap-1">
+            <i class="fa fa-sitemap"></i>
+            <span>网站地图</span>
+          </a>
+          <a href="#" class="text-light-300 hover:text-secondary transition-colors duration-200 text-sm flex items-center gap-1">
+            <i class="fa fa-privacy"></i>
+            <span>隐私政策</span>
+          </a>
+          <a href="#" class="text-light-300 hover:text-secondary transition-colors duration-200 text-sm flex items-center gap-1">
+            <i class="fa fa-info-circle"></i>
+            <span>关于我们</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 引入入口脚本 -->
   <script type="module" src="./main.js"></script>
-
-  <h1>当前页面 bookmarkBtn</h1>
-  <button id="bookmarkBtn">加入收藏</button>
-
-  <h2>已收藏页面 fav-list</h2>
-  <div id="bookmarkList"></div>
-  <script type="module" src="/main.js"></script>
-
 </body>
 </html>
