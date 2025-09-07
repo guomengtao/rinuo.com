@@ -2,7 +2,7 @@
  * 无样式侵入的邮件订阅功能
  * 使用方法：
  * 1. 在页面中添加3个元素（ID固定）：
- *    - 输入框：<input type="email" id="emailInput">
+ *    - 输入框：<input type="email" id="subscribeEmail">
  *    - 按钮：<button id="subscribeBtn">订阅</button>
  *    - 提示区：<div id="subscriptionMessage"></div>
  * 2. 导入此脚本即可自动绑定功能
@@ -15,7 +15,7 @@ class EmailSubscription {
     constructor() {
         // 固定元素ID（用户页面中必须存在这三个ID）
         this.ids = {
-            input: 'emailInput',
+            input: 'subscribeEmail',
             button: 'subscribeBtn',
             message: 'subscriptionMessage'
         };
