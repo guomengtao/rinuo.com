@@ -6,8 +6,8 @@
   <title>收藏与订阅功能演示 | MVP示例</title>
   
   <!-- SEO优化 -->
-  <meta name="description" content="邮件订阅和网页收藏功能的演示页面，支持多种提示方式和展示风格。">
-  <meta name="keywords" content="邮件订阅, 网页收藏, 前端功能, 代码演示, 夜间模式">
+  <meta name="description" content="邮件订阅和网页收藏功能的演示页面，支持真实接口数据和行内显示收藏内容。">
+  <meta name="keywords" content="邮件订阅, 网页收藏, 真实接口数据, 行内显示, 前端功能">
   <meta name="author" content="Rinuo.com">
   
   <!-- 外部资源 -->
@@ -22,6 +22,7 @@
           colors: {
             primary: '#6366f1',
             secondary: '#10b981',
+            accent: '#ec4899', // 爱心颜色
             dark: '#0f172a',
             darker: '#030712',
           },
@@ -47,6 +48,14 @@
       }
       .tag-style {
         @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+      }
+      .pulse-animation {
+        animation: pulse 0.5s ease-in-out;
+      }
+      @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
       }
     }
   </style>
@@ -82,6 +91,12 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
     
+    /* 爱心收藏按钮动画 */
+    .heart-toggle {
+      transition: all 0.3s ease;
+      transform-origin: center;
+    }
+    
     /* 弹出通知动画 */
     .toast-enter {
       animation: toastIn 0.3s ease forwards;
@@ -101,11 +116,13 @@
       to { transform: translateX(100%); opacity: 0; }
     }
     
-    /* 收藏项一行显示 */
+    /* 收藏项强制一行显示 - 重点实现 */
     .bookmark-item {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      max-width: 100% !important;
+      display: inline-block !important;
     }
   </style>
 </head>
@@ -147,7 +164,7 @@
         收藏与订阅功能演示
       </h1>
       <p class="text-gray-400 max-w-2xl mx-auto">
-        轻量级功能组件，支持多种提示方式和展示风格，ID保持正确即可轻松集成
+        集成真实接口数据的订阅通知，收藏内容强制行内显示，保持界面整洁
       </p>
     </div>
 
@@ -163,7 +180,7 @@
         </div>
         
         <p class="text-gray-400 mb-6">
-          支持两种提示方式：页面内显示和弹出提示，自动适配不同场景
+          使用真实接口返回数据作为通知信息，支持页面内和弹出两种提示方式
         </p>
         
         <!-- 邮件订阅表单 -->
@@ -225,33 +242,61 @@
         </div>
         
         <p class="text-gray-400 mb-6">
-          支持多种展示风格，收藏内容一行内显示，节省空间且美观
+          收藏内容强制行内显示，默认不换行，超长内容自动省略，保持界面整洁
         </p>
         
         <!-- 收藏功能演示 -->
         <div class="space-y-6">
-          <div class="flex flex-wrap gap-3">
-            <button id="bookmarkBtn" class="bookmark-toggle bg-gray-800 hover:bg-secondary text-white font-medium py-3 px-6 rounded-lg transition-all flex items-center gap-2 btn-effect">
-              <i class="fa fa-bookmark-o text-xl"></i>
-              <span>收藏当前页</span>
-            </button>
-            
-            <div class="flex items-center gap-2">
-              <span class="text-gray-400">展示风格：</span>
-              <select id="bookmarkStyleSelector" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
-                <option value="simple">简洁方式</option>
-                <option value="tag">标签方式</option>
-              </select>
+          <!-- 收藏按钮风格选择 -->
+          <div>
+            <h3 class="font-semibold mb-3 text-white flex items-center gap-2">
+              <i class="fa fa-th text-gray-500"></i>
+              收藏按钮风格
+            </h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <!-- 风格1: 文本+书签图标 -->
+              <button id="bookmarkBtn1" class="bookmark-toggle bg-gray-800 hover:bg-secondary text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 btn-effect">
+                <i class="fa fa-bookmark-o"></i>
+                <span class="text-sm">收藏</span>
+              </button>
+              
+              <!-- 风格2: 仅书签图标 -->
+              <button id="bookmarkBtn2" class="bookmark-toggle bg-gray-800 hover:bg-secondary text-white font-medium p-3 rounded-lg transition-all flex items-center justify-center btn-effect">
+                <i class="fa fa-bookmark-o text-xl"></i>
+              </button>
+              
+              <!-- 风格3: 文本+爱心图标 -->
+              <button id="bookmarkBtn3" class="heart-toggle bg-gray-800 hover:bg-accent text-white font-medium py-3 px-4 rounded-lg transition-all flex items-center justify-center gap-2 btn-effect">
+                <i class="fa fa-heart-o"></i>
+                <span class="text-sm">喜欢</span>
+              </button>
+              
+              <!-- 风格4: 仅爱心图标 -->
+              <button id="bookmarkBtn4" class="heart-toggle bg-gray-800 hover:bg-accent text-white font-medium p-3 rounded-lg transition-all flex items-center justify-center btn-effect">
+                <i class="fa fa-heart-o text-xl"></i>
+              </button>
             </div>
           </div>
           
+          <!-- 收藏列表展示风格 -->
           <div>
-            <h3 class="font-semibold mb-3 text-white flex items-center gap-2">
-              <i class="fa fa-list-ul text-gray-500"></i>
-              已收藏页面
-            </h3>
-            <div id="bookmarkList" class="space-y-3 max-h-60 overflow-y-auto pr-2 p-2 bg-gray-800/40 rounded-lg">
-              <!-- 收藏列表由/main.js动态生成 -->
+            <div class="flex flex-wrap gap-3 items-center">
+              <h3 class="font-semibold text-white flex items-center gap-2">
+                <i class="fa fa-list-ul text-gray-500"></i>
+                已收藏页面
+              </h3>
+              
+              <div class="flex items-center gap-2">
+                <span class="text-gray-400">展示风格：</span>
+                <select id="bookmarkStyleSelector" class="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary">
+                  <option value="simple">简洁方式</option>
+                  <option value="tag">标签方式</option>
+                </select>
+              </div>
+            </div>
+            
+            <div id="bookmarkList" class="space-y-3 max-h-60 overflow-y-auto pr-2 p-2 bg-gray-800/40 rounded-lg mt-3">
+              <!-- 收藏列表由脚本动态生成 -->
               <div class="text-gray-500 text-center py-8 border border-dashed border-gray-800 rounded-lg">
                 暂无收藏内容
               </div>
@@ -261,9 +306,12 @@
         
         <div class="mt-6 pt-6 border-t border-gray-800">
           <h3 class="font-semibold mb-3 text-white">调用说明</h3>
-          <p class="text-gray-400 text-sm mb-3">核心ID必须保持一致：</p>
+          <p class="text-gray-400 text-sm mb-3">选择一种按钮风格，保持对应ID即可：</p>
           <ul class="text-gray-400 text-sm mb-4 space-y-1">
-            <li>✓ 收藏按钮：<code class="bg-gray-800 px-1 rounded">#bookmarkBtn</code></li>
+            <li>✓ 文本+书签：<code class="bg-gray-800 px-1 rounded">#bookmarkBtn1</code></li>
+            <li>✓ 仅书签图标：<code class="bg-gray-800 px-1 rounded">#bookmarkBtn2</code></li>
+            <li>✓ 文本+爱心：<code class="bg-gray-800 px-1 rounded">#bookmarkBtn3</code></li>
+            <li>✓ 仅爱心图标：<code class="bg-gray-800 px-1 rounded">#bookmarkBtn4</code></li>
             <li>✓ 收藏列表：<code class="bg-gray-800 px-1 rounded">#bookmarkList</code></li>
           </ul>
           <pre class="bg-gray-800/80 p-3 rounded-lg text-sm overflow-x-auto text-gray-300"><code>&lt;!-- 引入核心脚本 --&gt;
@@ -283,11 +331,11 @@
             简洁方式
           </h3>
           <p class="text-gray-400 mb-4 text-sm">
-            一行内显示标题和操作按钮，简约高效，适合大多数场景。标题过长会自动省略，保持界面整洁。
+            一行内显示标题和操作按钮，标题过长自动省略，强制不换行
           </p>
           <div class="bg-gray-800/60 p-3 rounded-lg">
-            <div class="flex items-center justify-between bookmark-item p-2 border border-gray-700 rounded">
-              <span>收藏项目标题示例</span>
+            <div class="flex items-center justify-between p-2 border border-gray-700 rounded">
+              <span class="bookmark-item">这是一个很长很长很长很长很长很长很长很长的收藏项目标题示例，用于展示自动省略效果</span>
               <button class="text-gray-500 hover:text-red-400 ml-2">
                 <i class="fa fa-times"></i>
               </button>
@@ -301,52 +349,15 @@
             标签方式
           </h3>
           <p class="text-gray-400 mb-4 text-sm">
-            标签式设计，带有分类标识，视觉区分度高。适合需要对收藏内容进行分类管理的场景。
+            标签式设计，带有分类标识，强制一行内显示，超长内容自动省略
           </p>
           <div class="bg-gray-800/60 p-3 rounded-lg flex flex-wrap gap-2">
-            <div class="inline-flex items-center bg-gray-700/50 rounded-full px-3 py-1 bookmark-item">
+            <div class="inline-flex items-center bg-gray-700/50 rounded-full px-3 py-1">
               <span class="tag-style bg-primary/20 text-primary mr-2">资源</span>
-              <span>收藏项目标题示例</span>
+              <span class="bookmark-item">这是一个很长很长很长很长很长很长很长很长的收藏项目标题示例，用于展示自动省略效果</span>
               <button class="text-gray-500 hover:text-red-400 ml-2">
                 <i class="fa fa-times"></i>
               </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- 提示方式说明 -->
-    <section class="mb-16 fade-in" style="animation-delay: 0.4s">
-      <h2 class="text-xl font-bold mb-6 text-center">订阅提示方式说明</h2>
-      
-      <div class="grid md:grid-cols-2 gap-6">
-        <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-5 card-hover">
-          <h3 class="font-semibold mb-3 flex items-center gap-2">
-            <i class="fa fa-comment text-primary"></i>
-            页面内提示
-          </h3>
-          <p class="text-gray-400 mb-4 text-sm">
-            在表单下方直接显示提示信息，与操作区域紧密关联，用户注意力集中，适合重要反馈。
-          </p>
-          <div class="bg-gray-800/60 p-3 rounded-lg">
-            <div class="p-3 rounded-lg text-center border bg-green-900/30 border-green-500 text-green-400">
-              订阅成功！验证邮件已发送至您的邮箱
-            </div>
-          </div>
-        </div>
-        
-        <div class="bg-gray-900/60 border border-gray-800 rounded-xl p-5 card-hover">
-          <h3 class="font-semibold mb-3 flex items-center gap-2">
-            <i class="fa fa-bell text-purple-400"></i>
-            弹出提示
-          </h3>
-          <p class="text-gray-400 mb-4 text-sm">
-            从页面角落弹出通知，不打断用户操作流程，适合非紧急的状态反馈，自动消失不占用空间。
-          </p>
-          <div class="bg-gray-800/60 p-3 rounded-lg relative h-14">
-            <div class="absolute right-3 top-3 p-3 rounded-lg shadow-lg bg-purple-900/80 text-purple-100 border border-purple-800 toast-enter">
-              订阅请求已提交
             </div>
           </div>
         </div>
@@ -381,21 +392,64 @@
   <div id="toastNotification" class="fixed bottom-6 right-6 p-4 rounded-lg shadow-lg transform translate-x-full opacity-0 transition-all duration-300 max-w-xs z-50"></div>
 
   <!-- 核心功能脚本 -->
-  <script type="module" src="/main.js"></script>
-  
-  <!-- 功能增强脚本 -->
   <script>
     // 确保DOM加载完成
     document.addEventListener('DOMContentLoaded', () => {
-      // 邮件订阅功能增强
+      // 邮件订阅功能 - 使用真实接口数据
       const emailInput = document.getElementById('subscribeEmail');
       const messageArea = document.getElementById('subscriptionMessage');
       const toastNotification = document.getElementById('toastNotification');
       const subscribeBtn1 = document.getElementById('subscribeBtn1');
       const subscribeBtn2 = document.getElementById('subscribeBtn2');
       
+      // 真实订阅API接口调用函数
+      async function subscribeViaApi(email, useInline) {
+        try {
+          // 调用真实API接口
+          const response = await fetch('/api/subscribe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
+          });
+          
+          // 解析接口返回的JSON数据
+          const result = await response.json();
+          
+          // 根据接口返回的状态显示相应信息
+          if (result.success) {
+            // 使用接口返回的真实成功信息
+            if (useInline) {
+              showInlineMessage(result.message, 'success');
+            } else {
+              showToastMessage(result.message, 'success');
+            }
+            return true;
+          } else {
+            // 使用接口返回的错误信息
+            if (useInline) {
+              showInlineMessage(result.message || '订阅失败，请稍后再试', 'error');
+            } else {
+              showToastMessage(result.message || '订阅失败，请稍后再试', 'error');
+            }
+            return false;
+          }
+        } catch (error) {
+          // 网络错误处理
+          console.error('订阅接口调用失败:', error);
+          const errorMsg = '网络连接错误，请检查您的网络设置';
+          if (useInline) {
+            showInlineMessage(errorMsg, 'error');
+          } else {
+            showToastMessage(errorMsg, 'error');
+          }
+          return false;
+        }
+      }
+      
       // 页面内提示订阅
-      subscribeBtn1.addEventListener('click', () => {
+      subscribeBtn1.addEventListener('click', async () => {
         const email = emailInput.value.trim();
         
         if (!email) {
@@ -408,12 +462,29 @@
           return;
         }
         
-        // 模拟订阅请求
-        simulateSubscription(email, true);
+        // 禁用按钮并显示加载状态
+        subscribeBtn1.disabled = true;
+        subscribeBtn2.disabled = true;
+        subscribeBtn1.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
+        subscribeBtn2.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
+        
+        // 调用真实API
+        const success = await subscribeViaApi(email, true);
+        
+        // 恢复按钮状态
+        subscribeBtn1.disabled = false;
+        subscribeBtn2.disabled = false;
+        subscribeBtn1.innerHTML = '<span>页面内提示</span><i class="fa fa-comment-o ml-2"></i>';
+        subscribeBtn2.innerHTML = '<span>弹出提示</span><i class="fa fa-bell-o ml-2"></i>';
+        
+        // 成功后清空输入框
+        if (success) {
+          emailInput.value = '';
+        }
       });
       
       // 弹出提示订阅
-      subscribeBtn2.addEventListener('click', () => {
+      subscribeBtn2.addEventListener('click', async () => {
         const email = emailInput.value.trim();
         
         if (!email) {
@@ -426,8 +497,25 @@
           return;
         }
         
-        // 模拟订阅请求
-        simulateSubscription(email, false);
+        // 禁用按钮并显示加载状态
+        subscribeBtn1.disabled = true;
+        subscribeBtn2.disabled = true;
+        subscribeBtn1.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
+        subscribeBtn2.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
+        
+        // 调用真实API
+        const success = await subscribeViaApi(email, false);
+        
+        // 恢复按钮状态
+        subscribeBtn1.disabled = false;
+        subscribeBtn2.disabled = false;
+        subscribeBtn1.innerHTML = '<span>页面内提示</span><i class="fa fa-comment-o ml-2"></i>';
+        subscribeBtn2.innerHTML = '<span>弹出提示</span><i class="fa fa-bell-o ml-2"></i>';
+        
+        // 成功后清空输入框
+        if (success) {
+          emailInput.value = '';
+        }
       });
       
       // 邮箱验证
@@ -453,6 +541,7 @@
             messageArea.classList.add('bg-blue-900/30', 'border-blue-500', 'text-blue-400');
         }
         
+        // 使用接口返回的真实文本信息
         messageArea.textContent = text;
         messageArea.setAttribute('data-visible', 'true');
         
@@ -485,6 +574,7 @@
             toastNotification.classList.add('bg-purple-900/80', 'text-purple-100', 'border', 'border-purple-800');
         }
         
+        // 使用接口返回的真实文本信息
         toastNotification.textContent = text;
         
         // 3秒后消失
@@ -497,49 +587,116 @@
         }, 3000);
       }
       
-      // 模拟订阅请求
-      function simulateSubscription(email, useInline) {
-        const btn1OriginalText = subscribeBtn1.innerHTML;
-        const btn2OriginalText = subscribeBtn2.innerHTML;
-        
-        // 禁用按钮并显示加载状态
-        subscribeBtn1.disabled = true;
-        subscribeBtn2.disabled = true;
-        subscribeBtn1.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
-        subscribeBtn2.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 处理中...';
-        
-        // 模拟API请求延迟
-        setTimeout(() => {
-          // 恢复按钮状态
-          subscribeBtn1.disabled = false;
-          subscribeBtn2.disabled = false;
-          subscribeBtn1.innerHTML = btn1OriginalText;
-          subscribeBtn2.innerHTML = btn2OriginalText;
-          
-          // 显示成功提示
-          const successMsg = `订阅成功！验证邮件已发送至 ${email}`;
-          if (useInline) {
-            showInlineMessage(successMsg, 'success');
-          } else {
-            showToastMessage(successMsg, 'success');
-          }
-          
-          // 清空输入框
-          emailInput.value = '';
-        }, 1500);
-      }
-      
-      // 收藏风格切换功能
+      // 收藏功能 - 强制行内显示
+      let isBookmarked = false;
+      const bookmarkButtons = [
+        document.getElementById('bookmarkBtn1'),
+        document.getElementById('bookmarkBtn2'),
+        document.getElementById('bookmarkBtn3'),
+        document.getElementById('bookmarkBtn4')
+      ];
       const styleSelector = document.getElementById('bookmarkStyleSelector');
       const bookmarkList = document.getElementById('bookmarkList');
+      
+      // 初始化收藏状态
+      function initBookmarkState() {
+        // 检查本地存储中的收藏状态
+        const currentUrl = window.location.href;
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+        isBookmarked = bookmarks.some(bookmark => bookmark.url === currentUrl);
+        updateBookmarkButtons();
+      }
+      
+      // 更新所有收藏按钮状态
+      function updateBookmarkButtons() {
+        bookmarkButtons.forEach((btn, index) => {
+          if (!btn) return;
+          
+          const icon = btn.querySelector('i');
+          
+          // 重置所有类
+          btn.classList.remove('bg-secondary', 'bg-accent', 'hover:bg-secondary/80', 'hover:bg-accent/80');
+          btn.classList.add('bg-gray-800');
+          
+          if (isBookmarked) {
+            // 收藏状态
+            if (index < 2) {
+              // 书签样式按钮
+              btn.classList.add('bg-secondary', 'hover:bg-secondary/80');
+              icon.classList.remove('fa-bookmark-o');
+              icon.classList.add('fa-bookmark');
+              if (index === 0) btn.querySelector('span').textContent = '已收藏';
+            } else {
+              // 爱心样式按钮
+              btn.classList.add('bg-accent', 'hover:bg-accent/80');
+              icon.classList.remove('fa-heart-o');
+              icon.classList.add('fa-heart');
+              if (index === 2) btn.querySelector('span').textContent = '已喜欢';
+            }
+            btn.classList.add('pulse-animation');
+          } else {
+            // 未收藏状态
+            if (index < 2) {
+              // 书签样式按钮
+              btn.classList.add('hover:bg-secondary');
+              icon.classList.remove('fa-bookmark');
+              icon.classList.add('fa-bookmark-o');
+              if (index === 0) btn.querySelector('span').textContent = '收藏';
+            } else {
+              // 爱心样式按钮
+              btn.classList.add('hover:bg-accent');
+              icon.classList.remove('fa-heart');
+              icon.classList.add('fa-heart-o');
+              if (index === 2) btn.querySelector('span').textContent = '喜欢';
+            }
+          }
+          
+          // 移除动画类（为下次动画做准备）
+          setTimeout(() => {
+            btn.classList.remove('pulse-animation');
+          }, 500);
+        });
+      }
+      
+      // 绑定所有收藏按钮事件
+      bookmarkButtons.forEach(btn => {
+        if (btn) {
+          btn.addEventListener('click', toggleBookmark);
+        }
+      });
+      
+      // 切换收藏状态
+      function toggleBookmark() {
+        isBookmarked = !isBookmarked;
+        updateBookmarkButtons();
+        
+        const currentUrl = window.location.href;
+        let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+        
+        if (isBookmarked) {
+          // 添加收藏 - 使用较长标题测试行内显示效果
+          bookmarks.push({
+            title: document.title + " - 这是一个较长的收藏标题，用于测试行内显示和自动省略效果",
+            url: currentUrl,
+            date: new Date().toISOString()
+          });
+          showToastMessage('已添加到收藏', 'success');
+        } else {
+          // 取消收藏
+          bookmarks = bookmarks.filter(bookmark => bookmark.url !== currentUrl);
+          showToastMessage('已取消收藏', 'info');
+        }
+        
+        // 保存到本地存储
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+        // 更新收藏列表
+        updateBookmarkList();
+      }
       
       // 监听风格选择变化
       styleSelector.addEventListener('change', () => {
         updateBookmarkStyle(styleSelector.value);
-        // 通知主脚本更新风格
-        if (window.updateBookmarkDisplay) {
-          window.updateBookmarkDisplay(styleSelector.value);
-        }
+        updateBookmarkList();
       });
       
       // 更新收藏展示风格
@@ -549,22 +706,70 @@
         
         // 添加选中的样式类
         bookmarkList.classList.add(`style-${style}`);
+      }
+      
+      // 更新收藏列表 - 重点确保行内显示
+      function updateBookmarkList() {
+        const style = styleSelector.value;
+        const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
         
-        // 如果已有收藏项，更新它们的样式
-        const items = bookmarkList.querySelectorAll('.bookmark-item');
-        items.forEach(item => {
-          item.className = 'bookmark-item'; // 重置
-          
-          if (style === 'simple') {
-            item.classList.add('flex', 'items-center', 'justify-between', 'p-2', 'border', 'border-gray-700', 'rounded', 'bg-gray-800/30');
-          } else if (style === 'tag') {
-            item.classList.add('inline-flex', 'items-center', 'bg-gray-700/50', 'rounded-full', 'px-3', 'py-1', 'mb-2');
-          }
+        if (bookmarks.length === 0) {
+          bookmarkList.innerHTML = `
+            <div class="text-gray-500 text-center py-8 border border-dashed border-gray-800 rounded-lg">
+              暂无收藏内容
+            </div>
+          `;
+          return;
+        }
+        
+        // 按日期排序（最新的在前）
+        bookmarks.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        // 根据选择的风格生成不同的HTML，但都强制行内显示
+        let html = '';
+        if (style === 'simple') {
+          // 简洁方式 - 强制一行显示
+          html = bookmarks.map((bookmark, index) => `
+            <div class="flex items-center justify-between p-2 border border-gray-700 rounded bg-gray-800/30">
+              <span class="bookmark-item">${bookmark.title}</span>
+              <button class="delete-bookmark text-gray-500 hover:text-red-400 ml-2" data-index="${index}">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          `).join('');
+        } else {
+          // 标签方式 - 强制一行显示
+          html = bookmarks.map((bookmark, index) => `
+            <div class="inline-flex items-center bg-gray-700/50 rounded-full px-3 py-1 mb-2">
+              <span class="tag-style bg-primary/20 text-primary mr-2">收藏</span>
+              <span class="bookmark-item">${bookmark.title}</span>
+              <button class="delete-bookmark text-gray-500 hover:text-red-400 ml-2" data-index="${index}">
+                <i class="fa fa-times"></i>
+              </button>
+            </div>
+          `).join('');
+        }
+        
+        bookmarkList.innerHTML = html;
+        
+        // 绑定删除按钮事件
+        document.querySelectorAll('.delete-bookmark').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const index = e.currentTarget.getAttribute('data-index');
+            let bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+            bookmarks.splice(index, 1);
+            localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+            updateBookmarkList();
+            initBookmarkState(); // 重新检查当前页面收藏状态
+            showToastMessage('收藏已删除', 'info');
+          });
         });
       }
       
-      // 初始化收藏样式
+      // 初始化
+      initBookmarkState();
       updateBookmarkStyle(styleSelector.value);
+      updateBookmarkList();
     });
   </script>
 </body>
