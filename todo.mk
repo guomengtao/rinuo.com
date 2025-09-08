@@ -204,3 +204,51 @@
 
 **更新时间**: 2025-01-27  
 **下次评估**: 2025-02-27
+
+完全有价值，Tom 😄
+
+从 GitHub 用户和开发者社区角度来看，开发者名人/核心开源贡献者栏目很有吸引力：
+	•	初学者可以学习他们的开源实践和技术栈
+	•	中级开发者可以跟踪社区动态、学习最佳实践
+	•	高级开发者可以了解技术趋势、贡献者生态
+
+所以你这个栏目绝对有用户需求。
+
+⸻
+
+核心推荐人选（GitHub 开发者 / 开源贡献者）
+
+我按影响力和代表性列一批，既覆盖 编程语言/前端/后端/DevOps/AI：
+
+名称	GitHub / 领域	代表贡献 / 说明
+Linus Torvalds	@torvalds	Linux 内核创始人，Git 作者
+Dan Abramov	@gaearon	React 核心开发者，Redux 创始
+TJ Holowaychuk	@tj	Node.js 生态，Express、Mocha、Lodash
+Kent C. Dodds	@kentcdodds	React 社区教育，Testing Library 作者
+Evan You	@yyx990803	Vue.js 创始人
+Fabien Potencier	@fabpot	Symfony PHP 框架创始人
+Jake Wharton	@JakeWharton	Android 开源库维护者
+Chris Wanstrath	@defunkt	GitHub 联合创始人
+Brendan Eich	@brendaneich	JavaScript 语言发明者
+Yehuda Katz	@wycats	Ember.js、Rust 贡献者
+Shawn Wang	@swyx	前端/React 教育、社区贡献
+Adam Stacoviak	@adamstacoviak	开源新闻、Dev 教育
+Heitor Murilo	@heitormurilo	Python / 数据科学贡献者
+Guillermo Rauch	@rauchg	Next.js 创始、Vercel CEO
+Soumith Chintala	@soumith	PyTorch 核心贡献者
+Andrew Ng	@andrewng	AI / 机器学习教育贡献者
+
+
+⸻
+
+推荐逻辑
+	1.	技术影响力：核心库/语言/框架的创始或贡献者
+	2.	活跃度：GitHub 上仍有公开项目或社区贡献
+	3.	教育价值：文章、教程、开源项目对其他开发者有学习参考价值
+	4.	多样性：覆盖前端、后端、移动端、AI、DevOps、教育类
+
+⸻
+
+如果你愿意，我可以帮你做一个 “开发者栏目初版列表页 + 详情页模板”，保持你现有 夜间风格 + 收藏/订阅/分享 + Tailwind CSS 风格，页面直接可用。
+
+你希望我直接做吗？
