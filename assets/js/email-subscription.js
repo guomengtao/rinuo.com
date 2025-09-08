@@ -1,23 +1,21 @@
 /**
  * 无样式侵入的邮件订阅功能
  * 使用方法：
- * 1. 在页面中添加3个元素（ID固定）：
+ * 1. 在页面中添加2个元素（ID固定）：
  *    - 输入框：<input type="email" id="subscribeEmail">
  *    - 按钮：<button id="subscribeBtn">订阅</button>
- *    - 提示区：<div id="subscriptionMessage"></div>
  * 2. 导入此脚本即可自动绑定功能
  * 
  * @author Rinuo.com
- * @version 2.1.0（使用接口返回信息版）
+ * @version 2.2.0（消息显示在按钮后版本）
  */
 
 class EmailSubscription {
     constructor() {
-        // 固定元素ID（用户页面中必须存在这三个ID）
+        // 固定元素ID（用户页面中必须存在这两个ID）
         this.ids = {
             input: 'subscribeEmail',
-            button: 'subscribeBtn',
-            message: 'subscriptionMessage'
+            button: 'subscribeBtn'
         };
         
         // Supabase配置（使用完整密钥）
@@ -49,15 +47,13 @@ class EmailSubscription {
         // 获取页面中的元素
         this.elements = {
             input: document.getElementById(this.ids.input),
-            button: document.getElementById(this.ids.button),
-            message: document.getElementById(this.ids.message)
+            button: document.getElementById(this.ids.button)
         };
         
         // 详细日志：输出获取到的元素状态
         console.log(`${this.debugPrefix} 元素检测结果:`, {
             input: this.elements.input ? '找到' : '未找到',
-            button: this.elements.button ? '找到' : '未找到',
-            message: this.elements.message ? '找到' : '未找到'
+            button: this.elements.button ? '找到' : '未找到'
         });
         
         // 检测元素是否齐全
@@ -69,6 +65,9 @@ class EmailSubscription {
             console.error(`${this.debugPrefix} 初始化失败：缺少必要元素 ${missing.join(', ')}`);
             return;
         }
+        
+        // 创建消息容器（将在按钮后显示）
+        this.createMessageContainer();
         
         // 绑定按钮点击事件
         this.elements.button.addEventListener('click', (e) => {
@@ -87,6 +86,30 @@ class EmailSubscription {
         });
         
         console.log(`${this.debugPrefix} 组件初始化完成，功能已就绪`);
+    }
+    
+    // 创建消息容器并插入到按钮后面
+    createMessageContainer() {
+        // 检查是否已存在消息容器
+        this.elements.message = document.querySelector('.subscription-message');
+        
+        if (!this.elements.message) {
+            // 创建新的消息容器
+            this.elements.message = document.createElement('div');
+            this.elements.message.className = 'subscription-message';
+            this.elements.message.style.marginLeft = '8px'; // 简单的间距样式
+            this.elements.message.style.whiteSpace = 'nowrap'; // 防止换行
+            
+            // 插入到按钮后面
+            this.elements.button.parentNode.insertBefore(
+                this.elements.message,
+                this.elements.button.nextSibling
+            );
+            
+            console.log(`${this.debugPrefix} 已创建消息容器并插入到按钮后面`);
+        } else {
+            console.log(`${this.debugPrefix} 消息容器已存在`);
+        }
     }
     
     // 核心提交逻辑
@@ -213,16 +236,18 @@ class EmailSubscription {
             element.textContent = content;
         }
         
-        element.setAttribute('data-status', type); // 仅添加状态标记，样式由用户控制
-        element.setAttribute('data-visible', 'true');
+        // 移除所有状态类
+        element.classList.remove('subscription-success', 'subscription-error', 'subscription-info');
+        // 添加当前状态类
+        element.classList.add(`subscription-${type}`);
         
         // 5秒后自动隐藏成功提示
         if (type === 'success') {
-            setTimeout(() => {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = setTimeout(() => {
                 console.log(`${this.debugPrefix} 自动隐藏成功提示`);
-                element.setAttribute('data-visible', 'false');
-                // 清空内容
-                element.textContent = '';
+                element.innerHTML = '';
+                element.classList.remove('subscription-success', 'subscription-error', 'subscription-info');
             }, 5000);
         }
     }
