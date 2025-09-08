@@ -221,15 +221,15 @@
 我按影响力和代表性列一批，既覆盖 编程语言/前端/后端/DevOps/AI：
 
 名称	GitHub / 领域	代表贡献 / 说明
-Linus Torvalds	@torvalds	Linux 内核创始人，Git 作者
+Linus Torvalds	@torvalds	Linux 内核创始人，Git 作者 1
 Dan Abramov	@gaearon	React 核心开发者，Redux 创始
-TJ Holowaychuk	@tj	Node.js 生态，Express、Mocha、Lodash
+TJ Holowaychuk	@tj	Node.js 生态，Express、Mocha、Lodash 3
 Kent C. Dodds	@kentcdodds	React 社区教育，Testing Library 作者
-Evan You	@yyx990803	Vue.js 创始人
+Evan You	@yyx990803	Vue.js 创始人 5
 Fabien Potencier	@fabpot	Symfony PHP 框架创始人
-Jake Wharton	@JakeWharton	Android 开源库维护者
+Jake Wharton	@JakeWharton	Android 开源库维护者 7
 Chris Wanstrath	@defunkt	GitHub 联合创始人
-Brendan Eich	@brendaneich	JavaScript 语言发明者
+Brendan Eich	@brendaneich	JavaScript 语言发明者 9
 Yehuda Katz	@wycats	Ember.js、Rust 贡献者
 Shawn Wang	@swyx	前端/React 教育、社区贡献
 Adam Stacoviak	@adamstacoviak	开源新闻、Dev 教育
