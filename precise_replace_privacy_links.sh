@@ -21,11 +21,11 @@ echo "找到 $total_files 个包含隐私政策相关链接的文件"
 replaced_count=0
 for file in $files; do
     # 仅替换href属性值，保留其他所有属性
-    sed -i '' 's|href="[^"]*隐私政策[^"]*"|href="/about.html#privacy"|g' "$file"
-    sed -i '' 's|href="[^"]*[Pp]rivacy[^"]*"|href="/about.html#privacy"|g' "$file"
+    sed -i '' 's|href="[^"]*隐私政策[^"]*"|href="/about#privacy"|g' "$file"
+    sed -i '' 's|href="[^"]*[Pp]rivacy[^"]*"|href="/about#privacy"|g' "$file"
     
     # 检查是否实际进行了替换
-    if grep -q 'href="/about.html#privacy"' "$file"; then
+    if grep -q 'href="/about#privacy"' "$file"; then
         ((replaced_count++))
         echo "已更新: $file"
     fi
