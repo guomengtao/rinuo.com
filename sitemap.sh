@@ -3,7 +3,7 @@
 # 要扫描的文件夹
 FOLDERS=("free" "developer")
 # 要排除的文件名
-EXCLUDE="index.html"
+EXCLUDE="/"
 # 输出文件
 OUTPUT="sitemap.txt"
 

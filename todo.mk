@@ -61,7 +61,7 @@
 - 新闻资讯 (news.html)
 - 天气服务 (weather.html)
 - WebSocket (websocket.html)
-- 索引页面 (index.html, free.html)
+- 索引页面 (/, free.html)
 
 ## 🚀 推荐新增分类 (按优先级)
 
