@@ -117,4 +117,4 @@ For detailed usage examples, please refer to the [USAGE_EXAMPLES.md](USAGE_EXAMP
 Welcome to submit issues via GitHub to supplement quality resources or report problems. Please refer to the project Issues template for contribution process.
 
 ## License
-This project adopts the Apache License 2.0. See the LICENSE file for details.
+This project adopts the MIT License. See the LICENSE file for details.
