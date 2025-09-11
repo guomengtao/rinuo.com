@@ -1,36 +1,40 @@
 #!/bin/bash
 
-echo "正在统一首页链接为根路径..."
+# 先收集所有需要处理的文件到数组中
+files=()
+while IFS= read -r file; do
+  files+=("$file")
+done < <(find . -name "*.html" -exec grep -L "main.js" {} +)
 
-# 查找所有包含首页链接的文件
-files=$(grep -rlni --include="*.html" --include="*.htm" --include="*.php" \
--e 'href="[^"]*首页[^"]*"' \
--e 'href="[^"]*[Hh]ome[^"]*"' \
--e 'href="[^"]*主页[^"]*"' \
-. | sort -u)
-
-if [ -z "$files" ]; then
-    echo "未找到任何首页相关链接"
-    exit 0
-fi
-
-# 统计总数
-total_files=$(echo "$files" | wc -l)
-echo "找到 $total_files 个包含首页相关链接的文件"
-
-# 执行替换操作
-replaced_count=0
-for file in $files; do
-    # 仅替换href属性值，保留其他所有属性
-    sed -i '' 's|href="[^"]*首页[^"]*"|href="/"|g' "$file"
-    sed -i '' 's|href="[^"]*[Hh]ome[^"]*"|href="/"|g' "$file"
-    sed -i '' 's|href="[^"]*主页[^"]*"|href="/"|g' "$file"
-    
-    # 检查是否实际进行了替换
-    if grep -q 'href="/"' "$file"; then
-        ((replaced_count++))
-        echo "已更新: $file"
+# 逐个处理文件
+for file in "${files[@]}"; do
+  echo "发现需要处理的文件: $file"
+  
+  # 确保用户输入确认，强制等待输入
+  read -p "是否在该文件的</body>前插入脚本？(Y/n) " -r reply
+  
+  # 检查用户输入
+  if [[ "$reply" =~ ^[Yy]$ || -z "$reply" ]]; then
+    # 检查文件中是否存在</body>标签
+    if grep -q '</body>' "$file"; then
+      # 执行插入操作
+      sed -i '' '/<\/body>/i \
+<script type="module" src="/main.js"></script>
+' "$file"
+      
+      # 验证修改结果
+      if grep -q '<script type="module" src="/main.js"></script>' "$file"; then
+        echo "✅ 已成功修改: $file"
+      else
+        echo "❌ 修改失败: $file（可能是sed命令执行出错）"
+      fi
+    else
+      echo "❌ 修改失败: $file（未找到</body>标签）"
     fi
+  else
+    echo "⏭️ 已跳过: $file"
+  fi
+  echo "----------------------------------------"
 done
 
-echo "操作完成。精确修改了 $replaced_count 个文件(仅替换href属性)。"
+echo "处理完成！"
