@@ -139,8 +139,8 @@
             </div>
         </div>
         
-        <!-- 面包屑导航 -->
-        <div class="container mx-auto px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-t border-light-300 dark:border-dark-100">
+        <!-- 面包屑导航 - 移动端简化显示 -->
+        <div class="container mx-auto px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-t border-light-300 dark:border-dark-100 hidden sm:block">
             <nav class="flex items-center gap-2">
                 <a href="/" class="hover:text-primary dark:hover:text-primary transition-colors">首页</a>
                 <i class="fa fa-angle-right text-xs"></i>
@@ -151,23 +151,31 @@
                 <span class="text-primary">在线状态检测</span>
             </nav>
         </div>
+        <!-- 移动端简化面包屑 -->
+        <div class="container mx-auto px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-t border-light-300 dark:border-dark-100 sm:hidden">
+            <nav class="flex items-center gap-2">
+                <a href="/" class="hover:text-primary transition-colors">首页</a>
+                <i class="fa fa-angle-right text-xs"></i>
+                <span class="text-primary">在线状态检测</span>
+            </nav>
+        </div>
     </header>
 
     <!-- 主内容区 -->
-    <main class="flex-1 container mx-auto px-4 py-6 md:py-8">
+    <main class="flex-1 container mx-auto px-4 py-4 md:py-6">
         <div class="max-w-6xl mx-auto bg-white dark:bg-dark-200 rounded-2xl shadow-lg overflow-hidden transition-all duration-300">
             <!-- 页面标题和在线统计 -->
-            <div class="bg-gradient-to-r from-primary to-purple-600 p-6 text-white">
+            <div class="bg-gradient-to-r from-primary to-purple-600 p-4 md:p-6 text-white">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold">
+                        <h1 class="text-[clamp(1.2rem,3vw,2rem)] font-bold">
                             精确在线状态检测
                         </h1>
-                        <p class="text-purple-100/90 mt-1 max-w-xl">
+                        <p class="text-purple-100/90 mt-1 max-w-xl text-sm md:text-base">
                             基于Firebase .info/connected机制，实时监测用户在线状态，精确显示当前在线人数
                         </p>
                     </div>
-                    <div class="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl flex items-center gap-3">
+                    <div class="bg-white/20 backdrop-blur-sm px-4 py-2 md:px-5 md:py-3 rounded-xl flex items-center gap-3 self-start md:self-auto">
                         <div class="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
                             <i class="fa fa-users text-xl"></i>
                         </div>
@@ -182,54 +190,61 @@
                 </div>
             </div>
 
-            <div class="flex flex-col lg:flex-row h-[calc(100vh-300px)] min-h-[500px]">
-                <!-- 在线用户列表 -->
-                <div class="w-full lg:w-80 bg-light-100 dark:bg-dark-300 border-b lg:border-b-0 lg:border-r border-light-300 dark:border-dark-100 transition-colors">
-                    <div class="p-4 border-b border-light-300 dark:border-dark-100">
-                        <h2 class="text-lg font-semibold flex items-center">
-                            <i class="fa fa-user-circle text-primary mr-2"></i>在线用户列表
-                        </h2>
-                    </div>
-                    <div id="online-users-list" class="p-3 space-y-2 max-h-full overflow-y-auto scrollbar-thumb-rounded">
-                        <!-- 在线用户会动态添加到这里 -->
-                        <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-10">
-                            <i class="fa fa-spinner fa-spin block mb-2"></i>
-                            正在加载在线用户...
+            <!-- 聊天区域容器 - 关键优化：使用flex确保输入框可见 -->
+            <div class="flex flex-col h-[calc(100vh-260px)] md:h-[calc(100vh-300px)] min-h-[400px]">
+                <!-- 聊天和用户列表区域 -->
+                <div class="flex-1 flex flex-col lg:flex-row overflow-hidden">
+                    <!-- 在线用户列表 - 移动端可收起 -->
+                    <div class="w-full lg:w-80 bg-light-100 dark:bg-dark-300 border-b lg:border-b-0 lg:border-r border-light-300 dark:border-dark-100 transition-colors flex-shrink-0">
+                        <div class="p-4 border-b border-light-300 dark:border-dark-100 flex justify-between items-center">
+                            <h2 class="text-lg font-semibold flex items-center">
+                                <i class="fa fa-user-circle text-primary mr-2"></i>在线用户列表
+                            </h2>
+                            <button id="toggle-users" class="lg:hidden p-1 rounded hover:bg-light-200 dark:hover:bg-dark-200">
+                                <i class="fa fa-chevron-up"></i>
+                            </button>
                         </div>
-                    </div>
-                </div>
-
-                <!-- 聊天区域 -->
-                <div class="flex-1 flex flex-col">
-                    <!-- 消息列表 -->
-                    <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-thumb-rounded bg-gradient-to-b from-light-100/50 to-light-200/50 dark:from-dark-300/50 dark:to-dark-200/50">
-                        <div class="text-center text-gray-500 dark:text-gray-400 text-sm animate-fade-in">
-                            欢迎使用精确在线状态聊天系统
-                        </div>
-                        <!-- 正在输入提示 -->
-                        <div id="typing-indicator" class="hidden pl-12 animate-fade-in">
-                            <div class="inline-flex items-center gap-2 bg-light-200 dark:bg-dark-100 px-3 py-1.5 rounded-full text-sm text-gray-600 dark:text-gray-300">
-                                <span id="typing-username"></span>
-                                <span class="typing-indicator">
-                                    <span></span>
-                                    <span></span>
-                                    <span></span>
-                                </span>
+                        <div id="online-users-list" class="p-3 space-y-2 max-h-[200px] lg:max-h-full overflow-y-auto scrollbar-thumb-rounded">
+                            <!-- 在线用户会动态添加到这里 -->
+                            <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-10">
+                                <i class="fa fa-spinner fa-spin block mb-2"></i>
+                                正在加载在线用户...
                             </div>
                         </div>
-                        <!-- 系统消息区域（显示用户上线/下线通知） -->
-                        <div id="system-messages"></div>
-                        <!-- 聊天消息会动态添加到这里 -->
                     </div>
 
-                    <!-- 输入区域 -->
-                    <div class="p-4 border-t border-light-300 dark:border-dark-100 bg-white dark:bg-dark-200 transition-colors">
-                        <div class="flex items-center gap-3">
-                            <textarea id="message-input" placeholder="输入消息..." 
-                                class="flex-1 px-4 py-3 rounded-xl border border-light-300 dark:border-dark-100 bg-light-100 dark:bg-dark-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none transition-all min-h-[50px] max-h-[150px] overflow-y-auto scrollbar-thumb-rounded"></textarea>
-                            <button id="send-message" class="bg-primary hover:bg-primary/90 text-white p-3 rounded-full transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
-                                <i class="fa fa-paper-plane"></i>
-                            </button>
+                    <!-- 聊天区域 - 关键优化：确保占据剩余空间 -->
+                    <div class="flex-1 flex flex-col overflow-hidden">
+                        <!-- 消息列表 -->
+                        <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-thumb-rounded bg-gradient-to-b from-light-100/50 to-light-200/50 dark:from-dark-300/50 dark:to-dark-200/50">
+                            <div class="text-center text-gray-500 dark:text-gray-400 text-sm animate-fade-in">
+                                欢迎使用精确在线状态聊天系统
+                            </div>
+                            <!-- 正在输入提示 -->
+                            <div id="typing-indicator" class="hidden pl-12 animate-fade-in">
+                                <div class="inline-flex items-center gap-2 bg-light-200 dark:bg-dark-100 px-3 py-1.5 rounded-full text-sm text-gray-600 dark:text-gray-300">
+                                    <span id="typing-username"></span>
+                                    <span class="typing-indicator">
+                                        <span></span>
+                                        <span></span>
+                                        <span></span>
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- 系统消息区域（显示用户上线/下线通知） -->
+                            <div id="system-messages"></div>
+                            <!-- 聊天消息会动态添加到这里 -->
+                        </div>
+
+                        <!-- 输入区域 - 关键优化：固定在底部并确保可见 -->
+                        <div class="p-3 md:p-4 border-t border-light-300 dark:border-dark-100 bg-white dark:bg-dark-200 transition-colors flex-shrink-0">
+                            <div class="flex items-center gap-2">
+                                <textarea id="message-input" placeholder="输入消息..." 
+                                    class="flex-1 px-3 py-2 md:px-4 md:py-3 rounded-xl border border-light-300 dark:border-dark-100 bg-light-100 dark:bg-dark-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none transition-all min-h-[40px] md:min-h-[50px] max-h-[120px] md:max-h-[150px] overflow-y-auto scrollbar-thumb-rounded text-sm md:text-base"></textarea>
+                                <button id="send-message" class="bg-primary hover:bg-primary/90 text-white p-2 md:p-3 rounded-full transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <i class="fa fa-paper-plane"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -237,26 +252,27 @@
         </div>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-white dark:bg-dark-200 border-t border-light-300 dark:border-dark-100 py-6 transition-colors mt-6">
+    <!-- 页脚 - 优化移动端排版 -->
+    <footer class="bg-white dark:bg-dark-200 border-t border-light-300 dark:border-dark-100 py-4 md:py-6 transition-colors mt-4">
         <div class="container mx-auto px-4">
             <div class="max-w-6xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- 移动端使用更紧凑的布局 -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
                     <div>
-                        <h4 class="font-bold text-lg mb-4 flex items-center">
+                        <h4 class="font-bold text-base md:text-lg mb-3 flex items-center">
                             <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mr-2">
                                 <i class="fa fa-user-circle text-white text-xs"></i>
                             </div>
                             PresenceChat
                         </h4>
-                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-3">
                             专注于精确检测用户在线状态的实时聊天系统，采用Firebase的连接状态监测技术。
                         </p>
                     </div>
                     
                     <div>
-                        <h4 class="font-bold text-lg mb-4">快速链接</h4>
-                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                        <h4 class="font-bold text-base md:text-lg mb-3">快速链接</h4>
+                        <ul class="space-y-1.5 md:space-y-2 text-gray-600 dark:text-gray-300 text-sm">
                             <li><a href="/" class="hover:text-primary transition-colors">首页</a></li>
                             <li><a href="/free" class="hover:text-primary transition-colors">资源分类</a></li>
                             <li><a href="/free/detail/" class="hover:text-primary transition-colors">资源列表</a></li>
@@ -265,8 +281,8 @@
                     </div>
                     
                     <div>
-                        <h4 class="font-bold text-lg mb-4">法律信息</h4>
-                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                        <h4 class="font-bold text-base md:text-lg mb-3">法律信息</h4>
+                        <ul class="space-y-1.5 md:space-y-2 text-gray-600 dark:text-gray-300 text-sm">
                             <li><a href="/privacy" class="hover:text-primary transition-colors">隐私政策</a></li>
                             <li><a href="/terms" class="hover:text-primary transition-colors">使用条款</a></li>
                             <li><a href="/sitemap.html" class="hover:text-primary transition-colors">网站地图</a></li>
@@ -274,7 +290,7 @@
                     </div>
                 </div>
                 
-                <div class="border-t border-light-300 dark:border-dark-100 mt-8 pt-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                <div class="border-t border-light-300 dark:border-dark-100 mt-4 md:mt-8 pt-4 text-center text-gray-500 dark:text-gray-400 text-xs md:text-sm">
                     &copy; 2023 PresenceChat. 保留所有权利。
                 </div>
             </div>
@@ -361,6 +377,7 @@
         const themeToggle = document.getElementById('theme-toggle');
         const connectionIndicator = document.getElementById('connection-indicator');
         const connectionStatusText = document.getElementById('connection-status-text');
+        const toggleUsersBtn = document.getElementById('toggle-users');
         
         // 初始化
         function init() {
@@ -443,6 +460,32 @@
             
             // 主题切换
             themeToggle.addEventListener('click', toggleTheme);
+            
+            // 移动端用户列表切换
+            toggleUsersBtn.addEventListener('click', toggleUserList);
+            
+            // 关键优化：在输入框获得焦点时滚动到可见位置
+            messageInput.addEventListener('focus', () => {
+                setTimeout(() => {
+                    messageInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }, 300);
+            });
+        }
+        
+        // 切换用户列表显示（移动端）
+        function toggleUserList() {
+            const userList = document.getElementById('online-users-list');
+            const icon = toggleUsersBtn.querySelector('i');
+            
+            if (userList.style.maxHeight) {
+                userList.style.maxHeight = null;
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                userList.style.maxHeight = userList.scrollHeight + 'px';
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
         }
         
         // 处理连接事件 - 核心功能实现
@@ -717,7 +760,7 @@
             let toast = document.querySelector('.toast-notification');
             if (!toast) {
                 toast = document.createElement('div');
-                toast.className = 'toast-notification fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-dark-300 dark:bg-dark-100 text-white px-4 py-2 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300';
+                toast.className = 'toast-notification fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-dark-300 dark:bg-dark-100 text-white px-4 py-2 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300';
                 document.body.appendChild(toast);
             }
             
@@ -756,6 +799,13 @@
         
         // 初始化应用
         window.addEventListener('load', init);
+        
+        // 关键优化：处理窗口大小变化，确保输入框可见
+        window.addEventListener('resize', () => {
+            if (document.activeElement === messageInput) {
+                messageInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
     </script>
 </body>
 </html>
