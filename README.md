@@ -1,120 +1,120 @@
 # rinuo.com
 
-## 项目简介
-rinuo.com 是一个专注于收集和整理优质免费技术资源的平台，旨在为开发者提供便捷的工具与学习资源导航服务。平台平台涵盖开发工具、API服务、云资源、设计素材等多个技术领域，所有内容均经过筛选，聚焦实用性与合规性，助力开发者开发者与技术爱好者提供有价值的参考信息。
+## Project Overview
+rinuo.com is a platform dedicated to collecting and organizing high-quality free technical resources, aiming to provide developers with convenient tool and learning resource navigation services. The platform covers multiple technical fields including development tools, API services, cloud resources, and design materials. All content is carefully curated with a focus on practicality and compliance, providing valuable reference information for developers and technology enthusiasts.
 
-## 核心内容
-- **开发工具集合**：包含IDE、CI/CD工具、调试工具等开发全流程所需资源
-- **免费API服务**：整理各类公开API接口及使用指南
-- **学习资源导航**：技术文档、教程、社区等学习渠道推荐
-- **设计资源库**：图标、字体等设计素材及使用规范
+## Core Content
+- **Development Tools Collection**: Resources for the entire development process including IDEs, CI/CD tools, debugging tools, etc.
+- **Free API Services**: Organized public API interfaces and usage guides
+- **Learning Resources Navigation**: Recommended learning channels such as technical documentation, tutorials, and communities
+- **Design Resources Library**: Design materials like icons, fonts, and usage specifications
 
-## 资源特点
-- 所有资源均标注使用许可与限制条件
-- 定期时更新主流技术趋势调整资源列表
-- 提供详细的使用场景建议与最佳实践
+## Resource Features
+- All resources are labeled with usage licenses and restrictions
+- Regularly updated to reflect mainstream technology trends
+- Provides detailed usage scenario suggestions and best practices
 
-## 数据提取与同步
+## Data Extraction and Synchronization
 
-### 自动化数据提取脚本
+### Automated Data Extraction Script
 
-本项目提供了智能化的数据提取脚本 `extract_data.py`，可以自动从HTML文件中提取服务信息并同步到JSON数据文件。
+This project provides an intelligent data extraction script `extract_data.py` that automatically extracts service information from HTML files and synchronizes it to JSON data files.
 
-#### 功能特性
+#### Features
 
-- **智能数据提取**：自动识别HTML中的表格、列表项和卡片形式服务信息
-- **多格式支持**：支持表格视图、列表项视图和卡片视图三种HTML结构
-- **自动分类**：根据文件名自动分类服务数据
-- **数据同步**：保持HTML和JSON数据的实时同步
-- **汇总索引**：生成包含所有服务的汇总JSON文件，支持快速搜索
-- **中英文支持**：分类名称同时支持中文和英文，便于不同语言环境使用
+- **Intelligent Data Extraction**: Automatically identifies service information in HTML tables, list items, and card views
+- **Multi-format Support**: Supports three HTML structures - table view, list item view, and card view
+- **Automatic Classification**: Automatically categorizes service data based on file names
+- **Data Synchronization**: Maintains real-time synchronization between HTML and JSON data
+- **Summary Index**: Generates a summary JSON file containing all services for quick search
+- **Bilingual Support**: Category names support both Chinese and English for different language environments
 
-#### 提取的数据字段
+#### Extracted Data Fields
 
-每个服务包含以下信息：
-- `title`: 服务名称
-- `url`: 官方网站链接
-- `description`: 服务描述
-- `features`: 特点/限制说明
-- `tags`: 功能标签
-- `isFree`: 是否免费
-- `isOpenSource`: 是否开源
-- `updatedAt`: 更新时间
-- `region`: 服务地区
+Each service includes the following information:
+- `title`: Service name
+- `url`: Official website link
+- `description`: Service description
+- `features`: Features/limitations
+- `tags`: Functional tags
+- `isFree`: Whether it's free
+- `isOpenSource`: Whether it's open source
+- `updatedAt`: Update time
+- `region`: Service region
 
-#### 安装依赖
+#### Install Dependencies
 
 ```bash
-# 创建Python虚拟环境
+# Create Python virtual environment
 python3 -m venv venv
 
-# 激活虚拟环境
+# Activate virtual environment
 source venv/bin/activate  # macOS/Linux
-# 或
+# or
 venv\Scripts\activate     # Windows
 
-# 安装依赖包
+# Install dependencies
 pip install beautifulsoup4
 ```
 
-#### 使用方法
+#### Usage
 
-1. **首次运行**：提取所有HTML文件数据并创建JSON文件
+1. **First Run**: Extract data from all HTML files and create JSON files
    ```bash
    source venv/bin/activate
    python extract_data.py
    ```
 
-2. **重复运行**：当HTML文件更新后，重新运行脚本同步数据
+2. **Subsequent Runs**: When HTML files are updated, rerun the script to synchronize data
    ```bash
    source venv/bin/activate
    python extract_data.py
    ```
 
-3. **查看结果**：脚本会在 `assets/data/` 目录下生成：
-   - 各分类的JSON文件（如 `cdn.json`, `ai.json` 等）
-   - 汇总文件 `summary.json`（包含所有服务数据）
+3. **View Results**: The script will generate in the `assets/data/` directory:
+   - Category-specific JSON files (e.g., `cdn.json`, `ai.json`, etc.)
+   - Summary file `summary.json` (contains all service data)
 
-#### 输出文件结构
+#### Output File Structure
 
 ```
 assets/data/
-├── cdn.json          # CDN服务数据
-├── ai.json           # AI服务数据
-├── email.json        # 邮件服务数据
-├── ...               # 其他分类数据
-└── summary.json      # 汇总数据（包含搜索索引）
+├── cdn.json          # CDN service data
+├── ai.json           # AI service data
+├── email.json        # Email service data
+├── ...               # Other category data
+└── summary.json      # Summary data (contains search index)
 ```
 
-#### 汇总文件特性
+#### Summary File Features
 
-`summary.json` 文件提供：
-- **统计信息**：总服务数、总分类数
-- **分类概览**：每个分类的服务数量和更新时间，包含中英文名称
-- **搜索索引**：
-  - 按分类索引：`searchIndex.byCategory`（英文）
-  - 按中文分类名称索引：`searchIndex.byCategoryName`（中文）
-  - 按标签索引：`searchIndex.byTag`
-  - 按免费状态索引：`searchIndex.byFreeStatus`
-  - 按开源状态索引：`searchIndex.byOpenSource`
+The `summary.json` file provides:
+- **Statistics**: Total service count, total category count
+- **Category Overview**: Service count and update time for each category, with bilingual names
+- **Search Indexes**:
+  - By category: `searchIndex.byCategory` (English)
+  - By Chinese category name: `searchIndex.byCategoryName` (Chinese)
+  - By tag: `searchIndex.byTag`
+  - By free status: `searchIndex.byFreeStatus`
+  - By open source status: `searchIndex.byOpenSource`
 
-#### 使用场景
+#### Use Cases
 
-- **网站搜索功能**：利用汇总文件快速实现全站搜索
-- **数据统计**：获取各分类服务数量统计
-- **API接口**：为前端应用提供统一的数据接口
-- **数据分析**：分析免费资源分布和趋势
+- **Website Search**: Quickly implement site-wide search using the summary file
+- **Data Statistics**: Get service count statistics by category
+- **API Interface**: Provide unified data interface for frontend applications
+- **Data Analysis**: Analyze free resource distribution and trends
 
-详细的使用示例请参考 [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) 文档。
+For detailed usage examples, please refer to the [USAGE_EXAMPLES.md](USAGE_EXAMPLES.md) document.
 
-#### 注意事项
+#### Notes
 
-- 脚本会完全替换JSON文件中的服务数据，请勿在JSON中添加自定义字段
-- 确保HTML文件结构符合脚本识别规则
-- 建议在修改HTML后及时运行脚本保持数据同步
+- The script will completely replace service data in JSON files - do not add custom fields to JSON
+- Ensure HTML file structure complies with script recognition rules
+- Recommended to run the script promptly after modifying HTML to maintain data synchronization
 
-## 贡献指南
-欢迎通过 GitHub 提交 issue 补充优质资源或反馈问题，贡献流程请参考项目 Issues 模板。
+## Contribution Guide
+Welcome to submit issues via GitHub to supplement quality resources or report problems. Please refer to the project Issues template for contribution process.
 
-## 许可协议
-本项目采用 Apache License 2.0 许可协议，详情参见 LICENSE 文件。
+## License
+This project adopts the Apache License 2.0. See the LICENSE file for details.
