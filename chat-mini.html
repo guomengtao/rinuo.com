@@ -1,0 +1,226 @@
+<!-- 在线人数组件 - 完整版本 -->
+<div id="presence-counter-container">
+    <!-- 页面应在此处定义自己的按钮样式 -->
+    <!-- 示例样式仅供参考，实际使用时可完全自定义 -->
+    <button id="online-count-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-full shadow transition-all">
+        <i class="fa fa-users mr-2"></i>
+        <span>在线:</span>
+        <span id="online-number" class="mx-1">--</span>
+        <span>人</span>
+    </button>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+<script>
+// 命名空间隔离，避免全局变量冲突
+if (!window.PresenceCounter) {
+    window.PresenceCounter = (function() {
+        // Firebase配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyD19ZwRmby0LATLuswJvqaiRcRbEGrtElg",
+            authDomain: "rinuo-a2679.firebaseapp.com",
+            databaseURL: "https://rinuo-a2679-default-rtdb.firebaseio.com",
+            projectId: "rinuo-a2679",
+            storageBucket: "rinuo-a2679.firebasestorage.app",
+            messagingSenderId: "818845165575",
+            appId: "1:818845165575:web:f35118e617e1138098a2a2",
+            measurementId: "G-MWP5DF8H47"
+        };
+
+        // 初始化Firebase（避免重复初始化）
+        let firebaseApp;
+        try {
+            firebaseApp = firebase.app("PresenceCounterApp");
+        } catch (e) {
+            firebaseApp = firebase.initializeApp(firebaseConfig, "PresenceCounterApp");
+        }
+        const database = firebaseApp.database();
+        
+        // 用户标识与页面跟踪变量
+        let userId;
+        let pageCountRef;
+        let isMasterTab = false;
+        let onlineCount = 0;
+
+        // 生成或获取用户唯一ID
+        function getUserId() {
+            if (!userId) {
+                userId = localStorage.getItem('presenceUserId');
+                if (!userId) {
+                    // 生成唯一用户ID
+                    userId = 'user_' + Math.random().toString(36).substring(2, 15) + 
+                             Date.now().toString(36);
+                    localStorage.setItem('presenceUserId', userId);
+                }
+            }
+            return userId;
+        }
+
+        // 初始化页面计数，处理多标签页情况
+        function initPageTracking() {
+            const uid = getUserId();
+            pageCountRef = database.ref(`pageCounts/${uid}`);
+            
+            // 监听页面计数变化
+            pageCountRef.on('value', (snapshot) => {
+                const count = snapshot.val() || 0;
+                
+                // 第一个页面作为主页面负责更新在线状态
+                if (count === 1) {
+                    isMasterTab = true;
+                    setUserOnline(true);
+                } else if (count === 0) {
+                    if (isMasterTab) {
+                        setUserOnline(false);
+                    }
+                    isMasterTab = false;
+                }
+            });
+            
+            // 增加页面计数
+            pageCountRef.transaction((count) => {
+                return (count || 0) + 1;
+            });
+            
+            // 页面关闭时减少计数
+            window.addEventListener('beforeunload', () => {
+                pageCountRef.transaction((count) => {
+                    return (count || 0) - 1;
+                }, (error) => {
+                    if (error) {
+                        console.error('页面计数更新失败:', error);
+                    }
+                });
+            });
+
+            // 监听页面可见性变化
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'visible' && isMasterTab) {
+                    // 页面重新可见时确认在线状态
+                    setUserOnline(true);
+                }
+            });
+        }
+
+        // 设置用户在线状态
+        function setUserOnline(isOnline) {
+            const uid = getUserId();
+            const userPresenceRef = database.ref(`presence/${uid}`);
+            
+            if (isOnline) {
+                // 在线时设置为true，并配置离线时自动变为false
+                userPresenceRef.set(true)
+                    .catch(error => console.error('设置在线状态失败:', error));
+                userPresenceRef.onDisconnect().set(false)
+                    .catch(error => console.error('设置离线回调失败:', error));
+            } else {
+                userPresenceRef.set(false)
+                    .catch(error => console.error('设置离线状态失败:', error));
+            }
+        }
+
+        // 监听在线人数变化
+        function trackOnlineUsers() {
+            const presenceRef = database.ref('presence');
+            
+            presenceRef.on('value', (snapshot) => {
+                const presenceData = snapshot.val();
+                let newCount = 0;
+                
+                if (presenceData) {
+                    // 过滤出状态为true的在线用户
+                    newCount = Object.keys(presenceData)
+                        .filter(userId => presenceData[userId] === true)
+                        .length;
+                }
+                
+                // 仅在人数变化时更新
+                if (newCount !== onlineCount) {
+                    onlineCount = newCount;
+                    updateOnlineDisplay(onlineCount);
+                }
+            }, (error) => {
+                console.error('监听在线状态失败:', error);
+                const numberElement = document.getElementById('online-number');
+                if (numberElement) numberElement.textContent = '错误';
+            });
+        }
+
+        // 更新在线人数显示
+        function updateOnlineDisplay(count) {
+            // 更新指定ID的元素
+            const numberElement = document.getElementById('online-number');
+            if (numberElement) {
+                numberElement.textContent = count;
+            }
+            
+            // 触发自定义事件，供页面监听
+            const event = new CustomEvent('onlineUsersUpdated', {
+                detail: {
+                    count: count
+                }
+            });
+            document.dispatchEvent(event);
+        }
+
+        // 初始化组件
+        function init() {
+            getUserId(); // 确保用户ID已初始化
+            initPageTracking();
+            trackOnlineUsers();
+            
+            // 为按钮添加默认点击事件（可被页面重写）
+            const btn = document.getElementById('online-count-btn');
+            if (btn && !btn.hasAttribute('data-click-handler')) {
+                btn.setAttribute('data-click-handler', 'true');
+                btn.addEventListener('click', () => {
+                    window.open('/presence-detection.html', '_blank');
+                });
+            }
+        }
+
+        // 公共方法
+        return {
+            init: init,
+            getOnlineCount: function() {
+                return onlineCount;
+            },
+            getUserId: function() {
+                return getUserId();
+            }
+        };
+    })();
+
+    // 页面加载完成后初始化组件
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => window.PresenceCounter.init());
+    } else {
+        window.PresenceCounter.init();
+    }
+}
+</script>
+
+<!-- 示例样式 - 实际使用时可删除或修改 -->
+<style>
+#presence-counter-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* 仅作为示例，实际使用时由页面自定义样式 */
+#online-count-btn {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+#online-number {
+    font-weight: bold;
+}
+</style>
+    
