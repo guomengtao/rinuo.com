@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="基于Firebase的精确用户在线状态检测系统，实时显示在线人数和用户状态">
+    <meta name="keywords" content="在线状态检测, 实时用户状态, Firebase连接监测, 在线人数统计">
+    <meta name="author" content="在线状态检测系统">
+    <title>精确在线状态检测 | 实时用户监控</title>
+    <link rel="canonical" href="https://yourdomain.com/free/detail/presence-detection">
+    <link rel="sitemap" type="application/xml" href="/sitemap.html">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        danger: '#EF4444',
+                        dark: {
+                            100: '#374151',
+                            200: '#1F2937',
+                            300: '#111827'
+                        },
+                        light: {
+                            100: '#F9FAFB',
+                            200: '#F3F4F6',
+                            300: '#E5E7EB'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.3s ease-in-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'status-pulse': 'statusPulse 2s infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(10px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        statusPulse: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.6' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-thumb-rounded {
+                scrollbar-width: thin;
+                scrollbar-color: theme('colors.primary/50') transparent;
+            }
+            .scrollbar-thumb-rounded::-webkit-scrollbar {
+                width: 4px;
+            }
+            .scrollbar-thumb-rounded::-webkit-scrollbar-thumb {
+                background-color: theme('colors.primary/50');
+                border-radius: 2px;
+            }
+            .typing-indicator {
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
+                height: 20px;
+            }
+            .typing-indicator span {
+                height: 6px;
+                width: 6px;
+                background-color: currentColor;
+                border-radius: 50%;
+                display: inline-block;
+                animation: typing 1.4s infinite ease-in-out both;
+            }
+            .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+            .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+            @keyframes typing {
+                0%, 80%, 100% { transform: scale(0); }
+                40% { transform: scale(1); }
+            }
+            .online-indicator {
+                position: relative;
+            }
+            .online-indicator::after {
+                content: '';
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                background-color: theme('colors.secondary');
+                border-radius: 50%;
+                bottom: 0;
+                right: 0;
+                border: 2px solid white;
+            }
+            .dark .online-indicator::after {
+                border-color: theme('colors.dark.200');
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light-100 text-gray-800 dark:bg-dark-300 dark:text-light-100 transition-colors duration-300 min-h-screen flex flex-col">
+    <!-- 顶部导航 -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-dark-300/90 backdrop-blur-md border-b border-light-300 dark:border-dark-100 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-light-200 dark:hover:bg-dark-200 transition-colors">
+                    <i class="fa fa-moon-o dark:hidden text-gray-600"></i>
+                    <i class="fa fa-sun-o hidden dark:block text-yellow-300"></i>
+                </button>
+                <a href="/" class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center">
+                        <i class="fa fa-user-circle text-white"></i>
+                    </div>
+                    <span class="font-bold text-lg hidden sm:inline-block">PresenceChat</span>
+                </a>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-light-200 dark:bg-dark-200 px-3 py-1.5 rounded-full text-sm">
+                    <div id="connection-indicator" class="w-2 h-2 bg-gray-500 rounded-full"></div>
+                    <span id="connection-status-text">连接中...</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 面包屑导航 -->
+        <div class="container mx-auto px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-t border-light-300 dark:border-dark-100">
+            <nav class="flex items-center gap-2">
+                <a href="/" class="hover:text-primary dark:hover:text-primary transition-colors">首页</a>
+                <i class="fa fa-angle-right text-xs"></i>
+                <a href="/free" class="hover:text-primary dark:hover:text-primary transition-colors">资源分类</a>
+                <i class="fa fa-angle-right text-xs"></i>
+                <a href="/free/detail/" class="hover:text-primary dark:hover:text-primary transition-colors">资源列表</a>
+                <i class="fa fa-angle-right text-xs"></i>
+                <span class="text-primary">在线状态检测</span>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 container mx-auto px-4 py-6 md:py-8">
+        <div class="max-w-6xl mx-auto bg-white dark:bg-dark-200 rounded-2xl shadow-lg overflow-hidden transition-all duration-300">
+            <!-- 页面标题和在线统计 -->
+            <div class="bg-gradient-to-r from-primary to-purple-600 p-6 text-white">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold">
+                            精确在线状态检测
+                        </h1>
+                        <p class="text-purple-100/90 mt-1 max-w-xl">
+                            基于Firebase .info/connected机制，实时监测用户在线状态，精确显示当前在线人数
+                        </p>
+                    </div>
+                    <div class="bg-white/20 backdrop-blur-sm px-5 py-3 rounded-xl flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/30 flex items-center justify-center">
+                            <i class="fa fa-users text-xl"></i>
+                        </div>
+                        <div>
+                            <div class="text-sm text-purple-100/80">当前在线</div>
+                            <div class="text-2xl font-bold flex items-center">
+                                <span id="online-count">0</span>
+                                <span class="text-sm ml-1 mt-1">人</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex flex-col lg:flex-row h-[calc(100vh-300px)] min-h-[500px]">
+                <!-- 在线用户列表 -->
+                <div class="w-full lg:w-80 bg-light-100 dark:bg-dark-300 border-b lg:border-b-0 lg:border-r border-light-300 dark:border-dark-100 transition-colors">
+                    <div class="p-4 border-b border-light-300 dark:border-dark-100">
+                        <h2 class="text-lg font-semibold flex items-center">
+                            <i class="fa fa-user-circle text-primary mr-2"></i>在线用户列表
+                        </h2>
+                    </div>
+                    <div id="online-users-list" class="p-3 space-y-2 max-h-full overflow-y-auto scrollbar-thumb-rounded">
+                        <!-- 在线用户会动态添加到这里 -->
+                        <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-10">
+                            <i class="fa fa-spinner fa-spin block mb-2"></i>
+                            正在加载在线用户...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 聊天区域 -->
+                <div class="flex-1 flex flex-col">
+                    <!-- 消息列表 -->
+                    <div id="messages-container" class="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 scrollbar-thumb-rounded bg-gradient-to-b from-light-100/50 to-light-200/50 dark:from-dark-300/50 dark:to-dark-200/50">
+                        <div class="text-center text-gray-500 dark:text-gray-400 text-sm animate-fade-in">
+                            欢迎使用精确在线状态聊天系统
+                        </div>
+                        <!-- 正在输入提示 -->
+                        <div id="typing-indicator" class="hidden pl-12 animate-fade-in">
+                            <div class="inline-flex items-center gap-2 bg-light-200 dark:bg-dark-100 px-3 py-1.5 rounded-full text-sm text-gray-600 dark:text-gray-300">
+                                <span id="typing-username"></span>
+                                <span class="typing-indicator">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- 系统消息区域（显示用户上线/下线通知） -->
+                        <div id="system-messages"></div>
+                        <!-- 聊天消息会动态添加到这里 -->
+                    </div>
+
+                    <!-- 输入区域 -->
+                    <div class="p-4 border-t border-light-300 dark:border-dark-100 bg-white dark:bg-dark-200 transition-colors">
+                        <div class="flex items-center gap-3">
+                            <textarea id="message-input" placeholder="输入消息..." 
+                                class="flex-1 px-4 py-3 rounded-xl border border-light-300 dark:border-dark-100 bg-light-100 dark:bg-dark-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary resize-none transition-all min-h-[50px] max-h-[150px] overflow-y-auto scrollbar-thumb-rounded"></textarea>
+                            <button id="send-message" class="bg-primary hover:bg-primary/90 text-white p-3 rounded-full transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fa fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-white dark:bg-dark-200 border-t border-light-300 dark:border-dark-100 py-6 transition-colors mt-6">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h4 class="font-bold text-lg mb-4 flex items-center">
+                            <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mr-2">
+                                <i class="fa fa-user-circle text-white text-xs"></i>
+                            </div>
+                            PresenceChat
+                        </h4>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            专注于精确检测用户在线状态的实时聊天系统，采用Firebase的连接状态监测技术。
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-lg mb-4">快速链接</h4>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                            <li><a href="/" class="hover:text-primary transition-colors">首页</a></li>
+                            <li><a href="/free" class="hover:text-primary transition-colors">资源分类</a></li>
+                            <li><a href="/free/detail/" class="hover:text-primary transition-colors">资源列表</a></li>
+                            <li><a href="/about" class="hover:text-primary transition-colors">关于我们</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-bold text-lg mb-4">法律信息</h4>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                            <li><a href="/privacy" class="hover:text-primary transition-colors">隐私政策</a></li>
+                            <li><a href="/terms" class="hover:text-primary transition-colors">使用条款</a></li>
+                            <li><a href="/sitemap.html" class="hover:text-primary transition-colors">网站地图</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-t border-light-300 dark:border-dark-100 mt-8 pt-6 text-center text-gray-500 dark:text-gray-400 text-sm">
+                    &copy; 2023 PresenceChat. 保留所有权利。
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <script>
+        // 生成唯一用户ID (UUID)
+        function generateUUID() {
+            return 'user_' + ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c => 
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        }
+        
+        // 获取或创建用户ID - 确保同一用户在不同页面保持相同ID
+        function getOrCreateUserId() {
+            let userId = localStorage.getItem('presenceUserId');
+            
+            if (!userId) {
+                userId = generateUUID();
+                localStorage.setItem('presenceUserId', userId);
+            }
+            
+            return userId;
+        }
+        
+        // 获取或创建用户名
+        function getOrCreateUsername() {
+            let username = localStorage.getItem('presenceUsername');
+            
+            if (!username) {
+                // 生成随机用户名
+                const adjectives = ['阳光', '快乐', '智慧', '勇敢', '好奇', '友善', '真诚', '幽默', '勤奋', '创意'];
+                const nouns = ['小鹿', '松鼠', '雄鹰', '海豚', '猎豹', '骏马', '蜜蜂', '蝴蝶', '熊猫', '企鹅'];
+                username = adjectives[Math.floor(Math.random() * adjectives.length)] + 
+                           nouns[Math.floor(Math.random() * nouns.length)];
+                localStorage.setItem('presenceUsername', username);
+            }
+            
+            return username;
+        }
+
+        // Firebase配置
+        const firebaseConfig = {
+            apiKey: "AIzaSyD19ZwRmby0LATLuswJvqaiRcRbEGrtElg",
+            authDomain: "rinuo-a2679.firebaseapp.com",
+            databaseURL: "https://rinuo-a2679-default-rtdb.firebaseio.com",
+            projectId: "rinuo-a2679",
+            storageBucket: "rinuo-a2679.firebasestorage.app",
+            messagingSenderId: "818845165575",
+            appId: "1:818845165575:web:f35118e617e1138098a2a2",
+            measurementId: "G-MWP5DF8H47"
+        };
+
+        // 初始化Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        
+        // 关键引用 - 重点实现
+        const connectedRef = database.ref('.info/connected'); // Firebase内置连接状态节点
+        const presenceRef = database.ref('presence'); // 存储用户在线状态的节点
+        const usersRef = database.ref('users'); // 存储用户信息的节点
+        const messagesRef = database.ref('messages'); // 消息节点
+        const typingRef = database.ref('typing'); // 正在输入状态节点
+        
+        // 当前用户信息
+        const userId = getOrCreateUserId();
+        const username = getOrCreateUsername();
+        let isOnline = false;
+        
+        // DOM元素
+        const onlineCountElement = document.getElementById('online-count');
+        const onlineUsersList = document.getElementById('online-users-list');
+        const messagesContainer = document.getElementById('messages-container');
+        const systemMessagesContainer = document.getElementById('system-messages');
+        const messageInput = document.getElementById('message-input');
+        const sendMessageBtn = document.getElementById('send-message');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const typingUsernameElement = document.getElementById('typing-username');
+        const themeToggle = document.getElementById('theme-toggle');
+        const connectionIndicator = document.getElementById('connection-indicator');
+        const connectionStatusText = document.getElementById('connection-status-text');
+        
+        // 初始化
+        function init() {
+            // 检查主题偏好
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // 保存用户信息
+            usersRef.child(userId).set({
+                username: username,
+                lastActive: firebase.database.ServerValue.TIMESTAMP
+            });
+            
+            // 监听Firebase连接状态 - 核心功能
+            connectedRef.on('value', (snapshot) => {
+                const isConnected = snapshot.val();
+                
+                if (isConnected) {
+                    // 当客户端连接到Firebase时
+                    handleConnect();
+                } else {
+                    // 当客户端与Firebase断开连接时
+                    handleDisconnect();
+                }
+            });
+            
+            // 监听在线用户变化
+            presenceRef.on('value', (snapshot) => {
+                updateOnlineUsers(snapshot.val());
+            });
+            
+            // 监听消息
+            messagesRef.limitToLast(50).on('child_added', (snapshot) => {
+                const message = snapshot.val();
+                addMessageToDOM(message, snapshot.key);
+            });
+            
+            // 监听正在输入状态
+            typingRef.on('value', (snapshot) => {
+                updateTypingIndicator(snapshot.val());
+            });
+            
+            // 监听用户输入以显示"正在输入"状态
+            let typingTimeout;
+            messageInput.addEventListener('input', () => {
+                if (!isOnline) return;
+                
+                const isTyping = messageInput.value.trim().length > 0;
+                
+                if (isTyping) {
+                    typingRef.child(userId).set({
+                        username: username,
+                        timestamp: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    
+                    // 清除之前的超时
+                    clearTimeout(typingTimeout);
+                    
+                    // 3秒后停止显示"正在输入"
+                    typingTimeout = setTimeout(() => {
+                        typingRef.child(userId).remove();
+                    }, 3000);
+                } else {
+                    typingRef.child(userId).remove();
+                    clearTimeout(typingTimeout);
+                }
+            });
+            
+            // 发送消息
+            sendMessageBtn.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            // 主题切换
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+        
+        // 处理连接事件 - 核心功能实现
+        function handleConnect() {
+            isOnline = true;
+            
+            // 更新UI连接状态
+            connectionIndicator.className = 'w-2 h-2 bg-secondary rounded-full animate-status-pulse';
+            connectionStatusText.textContent = '已连接';
+            connectionStatusText.className = 'text-secondary';
+            
+            // 获取当前用户的在线状态引用
+            const userPresenceRef = presenceRef.child(userId);
+            
+            // 关键: 设置当客户端断开连接时的操作
+            // 即使浏览器意外关闭，Firebase也会自动执行此操作
+            userPresenceRef.onDisconnect().set(false);
+            
+            // 将当前用户标记为在线
+            userPresenceRef.set(true);
+            
+            // 记录用户上线时间
+            usersRef.child(userId).update({
+                lastActive: firebase.database.ServerValue.TIMESTAMP,
+                online: true
+            });
+            
+            // 发送系统消息通知上线
+            addSystemMessage(`${username} 已上线`);
+        }
+        
+        // 处理断开连接事件
+        function handleDisconnect() {
+            isOnline = false;
+            
+            // 更新UI连接状态
+            connectionIndicator.className = 'w-2 h-2 bg-danger rounded-full';
+            connectionStatusText.textContent = '已断开';
+            connectionStatusText.className = 'text-danger';
+            
+            // 清除正在输入状态
+            typingRef.child(userId).remove();
+        }
+        
+        // 更新在线用户列表
+        function updateOnlineUsers(presenceData) {
+            onlineUsersList.innerHTML = '';
+            
+            if (!presenceData) {
+                onlineCountElement.textContent = '0';
+                onlineUsersList.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-10">
+                        当前没有在线用户
+                    </div>
+                `;
+                return;
+            }
+            
+            // 过滤出在线用户（presence值为true的用户）
+            const onlineUserIds = Object.keys(presenceData).filter(userId => presenceData[userId] === true);
+            onlineCountElement.textContent = onlineUserIds.length;
+            
+            if (onlineUserIds.length === 0) {
+                onlineUsersList.innerHTML = `
+                    <div class="text-center text-gray-500 dark:text-gray-400 text-sm py-10">
+                        当前没有在线用户
+                    </div>
+                `;
+                return;
+            }
+            
+            // 获取在线用户信息并显示
+            onlineUserIds.forEach(userId => {
+                usersRef.child(userId).once('value').then(snapshot => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        addUserToOnlineList(userId, userData.username);
+                    }
+                });
+            });
+        }
+        
+        // 添加用户到在线列表
+        function addUserToOnlineList(userId, username) {
+            // 检查用户是否已在列表中
+            if (document.querySelector(`[data-user-id="${userId}"]`)) {
+                return;
+            }
+            
+            const userElement = document.createElement('div');
+            userElement.className = 'flex items-center gap-3 p-2 rounded-lg hover:bg-light-200 dark:hover:bg-dark-200 transition-all animate-fade-in';
+            userElement.dataset.userId = userId;
+            
+            // 用户头像
+            const avatar = document.createElement('div');
+            const initials = username.charAt(0);
+            const avatarColors = [
+                'bg-primary', 'bg-purple-500', 'bg-blue-500', 
+                'bg-green-500', 'bg-yellow-500', 'bg-red-500',
+                'bg-pink-500', 'bg-indigo-500', 'bg-teal-500'
+            ];
+            const colorIndex = Math.abs(hashCode(userId)) % avatarColors.length;
+            
+            avatar.className = `w-9 h-9 rounded-full ${avatarColors[colorIndex]} text-white flex items-center justify-center font-bold online-indicator`;
+            avatar.textContent = initials;
+            
+            // 用户名
+            const usernameElement = document.createElement('div');
+            usernameElement.className = `text-sm font-medium ${userId === getOrCreateUserId() ? 'text-primary' : ''}`;
+            usernameElement.textContent = username;
+            
+            if (userId === getOrCreateUserId()) {
+                const youLabel = document.createElement('span');
+                youLabel.className = 'ml-2 text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded';
+                youLabel.textContent = '你';
+                usernameElement.appendChild(youLabel);
+            }
+            
+            userElement.appendChild(avatar);
+            userElement.appendChild(usernameElement);
+            onlineUsersList.appendChild(userElement);
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            if (!isOnline) {
+                showToast('离线状态，无法发送消息');
+                return;
+            }
+            
+            const text = messageInput.value.trim();
+            if (text.length === 0) return;
+            
+            const message = {
+                userId: userId,
+                username: username,
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            
+            messagesRef.push(message)
+                .then(() => {
+                    messageInput.value = '';
+                    // 清除正在输入状态
+                    typingRef.child(userId).remove();
+                })
+                .catch(error => {
+                    console.error('发送消息失败:', error);
+                    showToast('发送消息失败，请重试');
+                });
+        }
+        
+        // 添加消息到DOM
+        function addMessageToDOM(message, messageId) {
+            // 检查消息是否已存在
+            if (document.querySelector(`[data-message-id="${messageId}"]`)) {
+                return;
+            }
+            
+            const messageElement = document.createElement('div');
+            messageElement.className = `animate-fade-in ${message.userId === userId ? 'flex justify-end' : 'flex justify-start'}`;
+            messageElement.dataset.messageId = messageId;
+            
+            const messageContent = document.createElement('div');
+            const isCurrentUser = message.userId === userId;
+            const maxWidth = 'max-w-[80%]';
+            
+            messageContent.className = `${maxWidth} px-4 py-3 rounded-2xl ${
+                isCurrentUser 
+                    ? 'bg-primary text-white rounded-tr-none' 
+                    : 'bg-light-200 dark:bg-dark-100 rounded-tl-none'
+            }`;
+            
+            // 用户名和时间
+            const header = document.createElement('div');
+            header.className = `text-xs mb-1 ${isCurrentUser ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`;
+            
+            const date = new Date(message.timestamp);
+            const timeString = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+            
+            header.textContent = `${message.username} · ${timeString}`;
+            
+            // 消息内容
+            const content = document.createElement('div');
+            content.textContent = message.text;
+            
+            messageContent.appendChild(header);
+            messageContent.appendChild(content);
+            messageElement.appendChild(messageContent);
+            
+            // 插入到消息容器
+            const typingIndicatorElement = document.getElementById('typing-indicator');
+            if (typingIndicatorElement && !typingIndicatorElement.classList.contains('hidden')) {
+                messagesContainer.insertBefore(messageElement, typingIndicatorElement);
+            } else {
+                messagesContainer.insertBefore(messageElement, systemMessagesContainer.nextSibling);
+            }
+            
+            // 滚动到底部
+            scrollToBottom();
+        }
+        
+        // 添加系统消息（用户上线/下线通知）
+        function addSystemMessage(text) {
+            const messageElement = document.createElement('div');
+            messageElement.className = 'text-center animate-fade-in';
+            
+            const content = document.createElement('div');
+            content.className = 'inline-block bg-light-200 dark:bg-dark-100 text-gray-500 dark:text-gray-400 text-sm px-3 py-1 rounded-full';
+            content.textContent = text;
+            
+            messageElement.appendChild(content);
+            systemMessagesContainer.appendChild(messageElement);
+            
+            // 限制系统消息数量
+            const systemMessages = systemMessagesContainer.querySelectorAll('div');
+            if (systemMessages.length > 10) {
+                systemMessages[0].remove();
+            }
+            
+            scrollToBottom();
+        }
+        
+        // 更新正在输入指示器
+        function updateTypingIndicator(typingData) {
+            if (!typingData) {
+                typingIndicator.classList.add('hidden');
+                return;
+            }
+            
+            const typingUserIds = Object.keys(typingData);
+            // 排除当前用户
+            const otherTypingUsers = typingUserIds.filter(id => id !== userId)
+                .map(id => typingData[id]);
+            
+            if (otherTypingUsers.length > 0) {
+                // 显示第一个正在输入的用户
+                typingUsernameElement.textContent = otherTypingUsers[0].username;
+                typingIndicator.classList.remove('hidden');
+                
+                // 如果有多个用户正在输入
+                if (otherTypingUsers.length > 1) {
+                    typingUsernameElement.textContent += ` 等${otherTypingUsers.length}人`;
+                }
+            } else {
+                typingIndicator.classList.add('hidden');
+            }
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            // 只有当用户接近底部时才自动滚动
+            const scrollThreshold = 100;
+            if (messagesContainer.scrollHeight - messagesContainer.scrollTop - messagesContainer.clientHeight < scrollThreshold) {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+        }
+        
+        // 切换主题
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+        
+        // 显示提示消息
+        function showToast(message) {
+            let toast = document.querySelector('.toast-notification');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.className = 'toast-notification fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-dark-300 dark:bg-dark-100 text-white px-4 py-2 rounded-lg shadow-lg z-50 opacity-0 transition-opacity duration-300';
+                document.body.appendChild(toast);
+            }
+            
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 3000);
+        }
+        
+        // 哈希函数，用于生成头像颜色
+        function hashCode(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // 转换为32位整数
+            }
+            return hash;
+        }
+        
+        // 监听用户离开页面
+        window.addEventListener('beforeunload', () => {
+            if (isOnline) {
+                // 发送离线系统消息
+                addSystemMessage(`${username} 已下线`);
+                
+                // 更新用户状态
+                usersRef.child(userId).update({
+                    online: false,
+                    lastActive: firebase.database.ServerValue.TIMESTAMP
+                });
+            }
+        });
+        
+        // 初始化应用
+        window.addEventListener('load', init);
+    </script>
+</body>
+</html>
