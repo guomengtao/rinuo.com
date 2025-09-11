@@ -1,4 +1,4 @@
- // 在线人数统计组件（内置Firebase SDK加载）
+// 在线人数统计组件（确保新用户和多标签页正确计数）
 (function() {
     // 先加载Firebase SDK
     function loadFirebaseSDKs() {
@@ -46,6 +46,7 @@
         let onlineCount = 0;
         let firebaseApp;
         let database;
+        let isInitialSetup = true; // 标记是否为首次设置
 
         // Firebase配置
         const firebaseConfig = {
@@ -75,6 +76,7 @@
             if (!userId) {
                 userId = localStorage.getItem('presenceUserId');
                 if (!userId) {
+                    // 生成新用户ID
                     userId = 'user_' + Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
                     localStorage.setItem('presenceUserId', userId);
                 }
@@ -87,8 +89,17 @@
             const uid = getUserId();
             pageCountRef = database.ref(`pageCounts/${uid}`);
             
+            // 监听页面计数变化
             pageCountRef.on('value', (snapshot) => {
                 const count = snapshot.val() || 0;
+                
+                // 关键改进：确保新用户首次加载时被计入
+                if (isInitialSetup) {
+                    isMasterTab = true;
+                    setUserOnline(true);
+                    isInitialSetup = false;
+                    return;
+                }
                 
                 if (count === 1) {
                     isMasterTab = true;
@@ -99,8 +110,16 @@
                 }
             });
             
-            // 增加页面计数
-            pageCountRef.transaction(count => (count || 0) + 1);
+            // 增加页面计数 - 改进为带回调的事务处理
+            pageCountRef.transaction(count => (count || 0) + 1, (error, committed, snapshot) => {
+                if (committed) {
+                    // 事务成功提交后确保用户状态正确
+                    if (snapshot.val() === 1) {
+                        isMasterTab = true;
+                        setUserOnline(true);
+                    }
+                }
+            });
             
             // 页面关闭时减少计数
             window.addEventListener('beforeunload', () => {
@@ -111,11 +130,17 @@
         // 设置用户在线状态
         function setUserOnline(isOnline) {
             const userPresenceRef = database.ref(`presence/${getUserId()}`);
+            
             if (isOnline) {
-                userPresenceRef.set(true);
-                userPresenceRef.onDisconnect().set(false);
+                // 立即设置在线状态，确保新用户被统计
+                userPresenceRef.set(true)
+                    .catch(error => console.error('设置在线状态失败:', error));
+                // 设置断开连接时自动变为离线
+                userPresenceRef.onDisconnect().set(false)
+                    .catch(error => console.error('设置离线回调失败:', error));
             } else {
-                userPresenceRef.set(false);
+                userPresenceRef.set(false)
+                    .catch(error => console.error('设置离线状态失败:', error));
             }
         }
 
@@ -151,13 +176,31 @@
             }
         }
 
-        // 初始化
-        if (initFirebase()) {
-            getUserId();
-            initPageTracking();
-            trackOnlineUsers();
-            updateDisplay();
+        // 初始化 - 确保新用户立即被计入
+        function init() {
+            if (!initFirebase()) return;
+            
+            const uid = getUserId();
+            // 关键改进：新用户首次加载时强制设置在线状态
+            const userPresenceRef = database.ref(`presence/${uid}`);
+            userPresenceRef.once('value').then(snapshot => {
+                // 如果是新用户（之前没有在线记录），立即设置为在线
+                if (!snapshot.exists()) {
+                    userPresenceRef.set(true)
+                        .then(() => {
+                            userPresenceRef.onDisconnect().set(false);
+                        });
+                }
+                
+                // 继续初始化其他功能
+                initPageTracking();
+                trackOnlineUsers();
+                updateDisplay();
+            });
         }
+
+        // 启动初始化
+        init();
     }
 
     // 加载SDK并初始化组件
