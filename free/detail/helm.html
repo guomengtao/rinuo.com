@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Helm - Kubernetes Package Manager | 容器应用管理工具</title>
+    <meta name="description" content="Helm是Kubernetes的包管理器，简化了Kubernetes应用的部署和管理。了解Helm的功能、下载、使用方法和社区评价。">
+    <meta name="keywords" content="Helm, Kubernetes, 包管理器, 容器, 部署, Helm下载, Helm教程">
+    <meta name="author" content="Helm社区">
+    <link rel="canonical" href="https://helm.sh/">
+    <link rel="sitemap" type="application/xml" href="/sitemap.html">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0F172A',
+                        secondary: '#1E40AF',
+                        accent: '#3B82F6',
+                        light: '#F8FAFC',
+                        dark: '#0F172A',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .transition-custom {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .card-hover {
+                @apply hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+            }
+        }
+    </style>
+    
+    <style>
+        /* 基础动画 */
+        .fade-in {
+            animation: fadeIn 0.6s ease-in forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 进度条动画 */
+        .progress-bar {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: rgba(59, 130, 246, 0.2);
+            transition: width 1.5s ease-out;
+        }
+        
+        .progress-bar.animate::after {
+            width: 100%;
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 骨架屏加载效果 */
+        .skeleton {
+            background: linear-gradient(90deg, #27272a 25%, #3f3f46 50%, #27272a 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+        }
+        
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-gray-900 text-gray-100 dark:bg-gray-900 dark:text-gray-100 light:bg-gray-50 light:text-gray-900 transition-custom">
+    <!-- 顶部导航栏 -->
+    <header class="fixed w-full z-50 bg-primary/80 backdrop-blur-md border-b border-gray-800 light:bg-white/80 light:border-gray-200 transition-custom">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="h-10 w-10 bg-accent rounded-lg flex items-center justify-center">
+                    <i class="fa fa-anchor text-white text-xl"></i>
+                </div>
+                <span class="text-xl font-bold">Helm</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#overview" class="hover:text-accent transition-custom">概述</a>
+                <a href="#downloads" class="hover:text-accent transition-custom">下载</a>
+                <a href="#resources" class="hover:text-accent transition-custom">资源</a>
+                <a href="#comparison" class="hover:text-accent transition-custom">对比</a>
+                <a href="#reviews" class="hover:text-accent transition-custom">评论</a>
+            </nav>
+            
+            <div class="flex items-center space-x-4">
+                <!-- 模式切换按钮 -->
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-800 light:hover:bg-gray-200 transition-custom">
+                    <i class="fa fa-sun-o light:hidden"></i>
+                    <i class="fa fa-moon-o hidden light:block"></i>
+                </button>
+                
+                <!-- 移动端菜单按钮 -->
+                <button id="mobile-menu-button" class="md:hidden p-2 rounded-full hover:bg-gray-800 light:hover:bg-gray-200 transition-custom">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="md:hidden hidden bg-gray-900 light:bg-white border-b border-gray-800 light:border-gray-200">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#overview" class="py-2 hover:text-accent transition-custom">概述</a>
+                <a href="#downloads" class="py-2 hover:text-accent transition-custom">下载</a>
+                <a href="#resources" class="py-2 hover:text-accent transition-custom">资源</a>
+                <a href="#comparison" class="py-2 hover:text-accent transition-custom">对比</a>
+                <a href="#reviews" class="py-2 hover:text-accent transition-custom">评论</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="pt-16">
+        <!-- 面包屑导航 -->
+        <div class="bg-gray-800 light:bg-gray-100 py-3 border-b border-gray-700 light:border-gray-200">
+            <div class="container mx-auto px-4">
+                <nav class="text-sm" aria-label="Breadcrumb">
+                    <ol class="flex flex-wrap items-center">
+                        <li><a href="/" class="hover:text-accent transition-custom">首页</a></li>
+                        <li class="mx-2"><i class="fa fa-angle-right text-gray-500"></i></li>
+                        <li><a href="/free" class="hover:text-accent transition-custom">资源分类</a></li>
+                        <li class="mx-2"><i class="fa fa-angle-right text-gray-500"></i></li>
+                        <li><a href="/free/detail/" class="hover:text-accent transition-custom">资源列表</a></li>
+                        <li class="mx-2"><i class="fa fa-angle-right text-gray-500"></i></li>
+                        <li aria-current="page" class="text-accent">Helm - Kubernetes包管理器</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <!-- 英雄区域 -->
+        <section class="py-20 md:py-32 relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary to-gray-800 light:from-blue-50 light:to-white z-0"></div>
+            <div class="absolute inset-0 opacity-20 light:opacity-10">
+                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://picsum.photos/id/1/1200/800')] bg-cover bg-center"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-3xl mx-auto text-center fade-in">
+                    <div class="inline-block px-4 py-1 rounded-full bg-accent/20 text-accent mb-6">
+                        Kubernetes 包管理器
+                    </div>
+                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                        <span class="bg-gradient-to-r from-blue-400 to-indigo-500 text-gradient">Helm</span>
+                        <br>简化容器应用管理
+                    </h1>
+                    <p class="text-xl text-gray-300 light:text-gray-600 mb-10">
+                        Helm 帮助您管理 Kubernetes 应用 — Helm 图表，是预先配置好的 Kubernetes 资源包，便于安装和管理。
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="https://helm.sh/docs/intro/install/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-accent hover:bg-blue-600 rounded-lg font-medium transition-custom flex items-center justify-center">
+                            <i class="fa fa-download mr-2"></i> 开始使用
+                        </a>
+                        <a href="https://github.com/helm/helm" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-gray-800 hover:bg-gray-700 light:bg-gray-200 light:hover:bg-gray-300 rounded-lg font-medium transition-custom flex items-center justify-center">
+                            <i class="fa fa-github mr-2"></i> GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-gray-900 to-transparent light:from-gray-50"></div>
+        </section>
+
+        <!-- 概述部分 -->
+        <section id="overview" class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto mb-16 text-center fade-in" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">什么是 Helm？</h2>
+                    <div class="h-1 w-20 bg-accent mx-auto mb-6"></div>
+                    <p class="text-lg text-gray-300 light:text-gray-600">
+                        Helm 是 Kubernetes 的包管理器，类似于 Linux 系统中的 apt 或 yum。它简化了 Kubernetes 应用的部署和管理流程。
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- 名字含义 -->
+                    <div class="bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.2s">
+                        <div class="w-14 h-14 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-book text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">名字含义与起源</h3>
+                        <p class="text-gray-400 light:text-gray-600">
+                            Helm 这个名字来源于"掌舵"的概念，象征着它在 Kubernetes 集群中引导和管理应用的角色。
+                        </p>
+                        <p class="text-gray-400 light:text-gray-600 mt-4">
+                            Helm 最初由 Deis 公司开发，2016 年首次发布，后被微软收购，并于 2019 年成为 CNCF 毕业项目。
+                        </p>
+                    </div>
+                    
+                    <!-- 创始人 -->
+                    <div class="bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.3s">
+                        <div class="w-14 h-14 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-users text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">创始人</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-3">
+                            <span class="font-medium text-white light:text-gray-900">Matt Butcher</span>
+                            <br>前 Deis 首席架构师，现微软首席工程师
+                        </p>
+                        <p class="text-gray-400 light:text-gray-600">
+                            <span class="font-medium text-white light:text-gray-900">Micah Hausler</span>
+                            <br>前 Deis 软件工程师，云原生领域专家
+                        </p>
+                    </div>
+                    
+                    <!-- 核心功能 -->
+                    <div class="bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.4s">
+                        <div class="w-14 h-14 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-cogs text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4">核心功能</h3>
+                        <ul class="space-y-2 text-gray-400 light:text-gray-600">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                <span>应用打包与分发</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                <span>版本控制与回滚</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                <span>配置管理</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                <span>依赖管理</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- 优缺点 -->
+                <div class="mt-16 grid md:grid-cols-2 gap-8">
+                    <div class="bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 fade-in" style="animation-delay: 0.5s">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-green-900/30 light:bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa fa-plus-circle text-green-500 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold">优点</h3>
+                        </div>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">简化 Kubernetes 应用部署流程，降低复杂性</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">丰富的官方和社区图表仓库，便于快速部署常见应用</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">强大的版本控制，支持应用的升级和回滚</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">活跃的社区支持和持续的更新迭代</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 fade-in" style="animation-delay: 0.6s">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 bg-red-900/30 light:bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                                <i class="fa fa-minus-circle text-red-500 text-xl"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold">缺点</h3>
+                        </div>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">对于初学者，有一定的学习曲线</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">复杂的图表调试可能有难度</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">某些第三方图表可能缺乏维护</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span class="text-gray-300 light:text-gray-700">版本间存在一些不兼容的变更</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 下载部分 -->
+        <section id="downloads" class="py-16 bg-gray-800/50 light:bg-gray-100/50">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto mb-16 text-center fade-in" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">下载 Helm</h2>
+                    <div class="h-1 w-20 bg-accent mx-auto mb-6"></div>
+                    <p class="text-lg text-gray-300 light:text-gray-600">
+                        获取最新版本的 Helm 客户端，支持多种操作系统和架构。
+                    </p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-gray-900 light:bg-white rounded-xl border border-gray-700 light:border-gray-200 overflow-hidden fade-in" style="animation-delay: 0.2s">
+                        <div class="p-6 border-b border-gray-700 light:border-gray-200">
+                            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                                <div>
+                                    <h3 class="text-xl font-semibold">最新稳定版本</h3>
+                                    <p class="text-accent">Helm 3.14.0</p>
+                                </div>
+                                <p class="text-sm text-gray-400 light:text-gray-500 mt-2 md:mt-0">
+                                    发布日期: 2025年3月15日
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <h4 class="font-medium mb-4">选择您的操作系统</h4>
+                            
+                            <div class="grid md:grid-cols-3 gap-4">
+                                <!-- Linux -->
+                                <a href="https://get.helm.sh/helm-v3.14.0-linux-amd64.tar.gz" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-gray-800 light:bg-gray-50 rounded-lg hover:bg-gray-700 light:hover:bg-gray-100 transition-custom">
+                                    <div class="w-10 h-10 bg-gray-700 light:bg-gray-200 rounded flex items-center justify-center mr-4">
+                                        <i class="fa fa-linux text-gray-300 light:text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Linux</div>
+                                        <div class="text-sm text-gray-400 light:text-gray-500">amd64</div>
+                                    </div>
+                                </a>
+                                
+                                <!-- macOS -->
+                                <a href="https://get.helm.sh/helm-v3.14.0-darwin-amd64.tar.gz" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-gray-800 light:bg-gray-50 rounded-lg hover:bg-gray-700 light:hover:bg-gray-100 transition-custom">
+                                    <div class="w-10 h-10 bg-gray-700 light:bg-gray-200 rounded flex items-center justify-center mr-4">
+                                        <i class="fa fa-apple text-gray-300 light:text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">macOS</div>
+                                        <div class="text-sm text-gray-400 light:text-gray-500">amd64</div>
+                                    </div>
+                                </a>
+                                
+                                <!-- Windows -->
+                                <a href="https://get.helm.sh/helm-v3.14.0-windows-amd64.zip" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-gray-800 light:bg-gray-50 rounded-lg hover:bg-gray-700 light:hover:bg-gray-100 transition-custom">
+                                    <div class="w-10 h-10 bg-gray-700 light:bg-gray-200 rounded flex items-center justify-center mr-4">
+                                        <i class="fa fa-windows text-gray-300 light:text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium">Windows</div>
+                                        <div class="text-sm text-gray-400 light:text-gray-500">amd64</div>
+                                    </div>
+                                </a>
+                            </div>
+                            
+                            <div class="mt-6">
+                                <h4 class="font-medium mb-3">其他架构和版本</h4>
+                                <a href="https://github.com/helm/helm/releases" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-accent hover:underline">
+                                    查看所有可用下载 <i class="fa fa-external-link ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 安装指南 -->
+                    <div class="mt-8 bg-gray-900 light:bg-white rounded-xl border border-gray-700 light:border-gray-200 p-6 fade-in" style="animation-delay: 0.3s">
+                        <h3 class="text-xl font-semibold mb-4">快速安装</h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="text-sm font-medium bg-gray-800 light:bg-gray-200 px-2 py-1 rounded mr-2">Linux/macOS</span>
+                                    <button class="copy-btn text-sm text-gray-400 hover:text-accent" data-target="linux-install">
+                                        <i class="fa fa-copy"></i> 复制
+                                    </button>
+                                </div>
+                                <div id="linux-install" class="bg-gray-800 light:bg-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                    curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+                                    <br>chmod 700 get_helm.sh
+                                    <br>./get_helm.sh
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="text-sm font-medium bg-gray-800 light:bg-gray-200 px-2 py-1 rounded mr-2">Homebrew</span>
+                                    <button class="copy-btn text-sm text-gray-400 hover:text-accent" data-target="brew-install">
+                                        <i class="fa fa-copy"></i> 复制
+                                    </button>
+                                </div>
+                                <div id="brew-install" class="bg-gray-800 light:bg-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                    brew install helm
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <div class="flex items-center mb-2">
+                                    <span class="text-sm font-medium bg-gray-800 light:bg-gray-200 px-2 py-1 rounded mr-2">Chocolatey</span>
+                                    <button class="copy-btn text-sm text-gray-400 hover:text-accent" data-target="choco-install">
+                                        <i class="fa fa-copy"></i> 复制
+                                    </button>
+                                </div>
+                                <div id="choco-install" class="bg-gray-800 light:bg-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                    choco install helm
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 资源部分 -->
+        <section id="resources" class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto mb-16 text-center fade-in" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">官方资源</h2>
+                    <div class="h-1 w-20 bg-accent mx-auto mb-6"></div>
+                    <p class="text-lg text-gray-300 light:text-gray-600">
+                        探索Helm的官方文档、社区资源和媒体渠道，获取更多帮助和信息。
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 官网 -->
+                    <a href="https://helm.sh/" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.2s">
+                        <div class="w-14 h-14 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-globe text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">官方网站</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-4">
+                            访问Helm的官方网站，获取最新资讯、文档和资源。
+                        </p>
+                        <div class="text-accent flex items-center">
+                            <span>访问网站</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </div>
+                    </a>
+                    
+                    <!-- GitHub -->
+                    <a href="https://github.com/helm/helm" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.3s">
+                        <div class="w-14 h-14 bg-gray-900/50 light:bg-gray-200 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-github text-gray-300 light:text-gray-800 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">GitHub 仓库</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-4">
+                            查看源代码、提交issue、参与贡献和查看发布历史。
+                        </p>
+                        <div class="text-accent flex items-center">
+                            <span>查看仓库</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </div>
+                    </a>
+                    
+                    <!-- 文档 -->
+                    <a href="https://helm.sh/docs/" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.4s">
+                        <div class="w-14 h-14 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-book text-accent text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">官方文档</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-4">
+                            详细的安装指南、使用教程和API参考文档。
+                        </p>
+                        <div class="text-accent flex items-center">
+                            <span>阅读文档</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </div>
+                    </a>
+                    
+                    <!-- YouTube -->
+                    <a href="https://www.youtube.com/c/Helm" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.5s">
+                        <div class="w-14 h-14 bg-red-900/30 light:bg-red-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-youtube-play text-red-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">YouTube 频道</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-4">
+                            观看教程视频、演讲和演示，学习如何使用Helm。
+                        </p>
+                        <div class="text-accent flex items-center">
+                            <span>访问频道</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </div>
+                    </a>
+                    
+                    <!-- Slack -->
+                    <a href="https://kubernetes.slack.com/messages/helm/" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.6s">
+                        <div class="w-14 h-14 bg-purple-900/30 light:bg-purple-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-slack text-purple-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Slack 社区</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-4">
+                            加入Kubernetes Slack的#helm频道，与社区交流。
+                        </p>
+                        <div class="text-accent flex items-center">
+                            <span>加入社区</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </div>
+                    </a>
+                    
+                    <!-- 图表仓库 -->
+                    <a href="https://artifacthub.io/packages/search?kind=0" target="_blank" rel="noopener noreferrer" class="block bg-gray-800 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.7s">
+                        <div class="w-14 h-14 bg-green-900/30 light:bg-green-100 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-cubes text-green-500 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Helm 图表仓库</h3>
+                        <p class="text-gray-400 light:text-gray-600 mb-4">
+                            浏览和下载由社区维护的Helm图表，快速部署应用。
+                        </p>
+                        <div class="text-accent flex items-center">
+                            <span>浏览图表</span>
+                            <i class="fa fa-arrow-right ml-2"></i>
+                        </div>
+                    </a>
+                </div>
+                
+                <!-- 最新动态 -->
+                <div class="mt-16 fade-in" style="animation-delay: 0.8s">
+                    <h3 class="text-2xl font-bold mb-8 text-center">最新动态</h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-gray-800 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 flex card-hover">
+                            <div class="mr-4 flex-shrink-0">
+                                <div class="w-12 h-12 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fa fa-calendar text-accent"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-400 light:text-gray-500 mb-1">2025年6月10日</div>
+                                <h4 class="font-semibold mb-2">Helm 3.14.0 发布</h4>
+                                <p class="text-gray-400 light:text-gray-600 text-sm mb-3">
+                                    此版本包含多项性能改进和bug修复，增强了对Kubernetes 1.30的支持。
+                                </p>
+                                <a href="https://github.com/helm/helm/releases/tag/v3.14.0" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">
+                                    查看详情 <i class="fa fa-external-link ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-800 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 flex card-hover">
+                            <div class="mr-4 flex-shrink-0">
+                                <div class="w-12 h-12 bg-blue-900/30 light:bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i class="fa fa-calendar text-accent"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-400 light:text-gray-500 mb-1">2025年4月2日</div>
+                                <h4 class="font-semibold mb-2">Helm 社区会议记录公开</h4>
+                                <p class="text-gray-400 light:text-gray-600 text-sm mb-3">
+                                    最新社区会议讨论了Helm 4.0的路线图和主要新功能规划。
+                                </p>
+                                <a href="https://github.com/helm/community/tree/main/meetings" target="_blank" rel="noopener noreferrer" class="text-accent text-sm hover:underline">
+                                    查看详情 <i class="fa fa-external-link ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 免费资源 -->
+        <section class="py-16 bg-gray-800/50 light:bg-gray-100/50">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto mb-16 text-center fade-in" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">免费资源与服务</h2>
+                    <div class="h-1 w-20 bg-accent mx-auto mb-6"></div>
+                    <p class="text-lg text-gray-300 light:text-gray-600">
+                        Helm 提供丰富的免费资源和服务，帮助您更好地管理Kubernetes应用。
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <div class="bg-gray-900 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 fade-in" style="animation-delay: 0.2s">
+                        <h3 class="text-xl font-semibold mb-6 flex items-center">
+                            <i class="fa fa-gift text-accent mr-3"></i>
+                            免费资源
+                        </h3>
+                        
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <span class="font-medium">Helm 客户端</span>
+                                    <p class="text-sm text-gray-400 light:text-gray-600 mt-1">完全免费的开源软件，无任何使用限制</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <span class="font-medium">官方文档</span>
+                                    <p class="text-sm text-gray-400 light:text-gray-600 mt-1">详尽的使用指南和教程，完全免费访问</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <span class="font-medium">社区维护的Helm图表</span>
+                                    <p class="text-sm text-gray-400 light:text-gray-600 mt-1">数千个免费的应用打包，可直接部署</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <div>
+                                    <span class="font-medium">社区支持</span>
+                                    <p class="text-sm text-gray-400 light:text-gray-600 mt-1">通过Slack、GitHub等渠道获得免费技术支持</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gray-900 light:bg-white p-8 rounded-xl border border-gray-700 light:border-gray-200 fade-in" style="animation-delay: 0.3s">
+                        <h3 class="text-xl font-semibold mb-6 flex items-center">
+                            <i class="fa fa-lightbulb-o text-accent mr-3"></i>
+                            免费获取与使用方法
+                        </h3>
+                        
+                        <ol class="space-y-4">
+                            <li class="flex">
+                                <div class="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-sm font-medium mr-3 flex-shrink-0">1</div>
+                                <div>
+                                    <p class="text-gray-300 light:text-gray-700">从官方网站或GitHub下载适合您系统的Helm客户端</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-sm font-medium mr-3 flex-shrink-0">2</div>
+                                <div>
+                                    <p class="text-gray-300 light:text-gray-700">按照安装指南完成安装配置</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-sm font-medium mr-3 flex-shrink-0">3</div>
+                                <div>
+                                    <p class="text-gray-300 light:text-gray-700">添加官方图表仓库：<code class="bg-gray-800 light:bg-gray-200 px-1 py-0.5 rounded text-sm">helm repo add stable https://charts.helm.sh/stable</code></p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-sm font-medium mr-3 flex-shrink-0">4</div>
+                                <div>
+                                    <p class="text-gray-300 light:text-gray-700">开始搜索和安装应用：<code class="bg-gray-800 light:bg-gray-200 px-1 py-0.5 rounded text-sm">helm search repo nginx</code></p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="w-6 h-6 bg-accent rounded-full flex items-center justify-center text-sm font-medium mr-3 flex-shrink-0">5</div>
+                                <div>
+                                    <p class="text-gray-300 light:text-gray-700">参考官方文档学习更多高级功能和最佳实践</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 同行业对比 -->
+        <section id="comparison" class="py-16">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto mb-16 text-center fade-in" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">同行业对比</h2>
+                    <div class="h-1 w-20 bg-accent mx-auto mb-6"></div>
+                    <p class="text-lg text-gray-300 light:text-gray-600">
+                        Helm 与其他 Kubernetes 包管理工具的对比分析，帮助您选择最适合的工具。
+                    </p>
+                </div>
+                
+                <div class="max-w-5xl mx-auto">
+                    <!-- 雷达图 -->
+                    <div class="bg-gray-800 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 mb-12 fade-in" style="animation-delay: 0.2s">
+                        <h3 class="text-xl font-semibold mb-6 text-center">功能对比雷达图</h3>
+                        <div class="h-[400px] md:h-[500px]">
+                            <canvas id="comparisonChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- 详细对比表格 -->
+                    <div class="overflow-hidden bg-gray-800 light:bg-white rounded-xl border border-gray-700 light:border-gray-200 fade-in" style="animation-delay: 0.3s">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-700 light:border-gray-200">
+                                    <th class="py-4 px-6 text-left font-semibold">特性</th>
+                                    <th class="py-4 px-6 text-left font-semibold">Helm</th>
+                                    <th class="py-4 px-6 text-left font-semibold">Kustomize</th>
+                                    <th class="py-4 px-6 text-left font-semibold">Ksonnet</th>
+                                    <th class="py-4 px-6 text-left font-semibold">Kubecfg</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b border-gray-700 light:border-gray-200">
+                                    <td class="py-4 px-6 font-medium">易用性</td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-half-o"></i>
+                                            </div>
+                                            <span>4.5/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>3.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-half-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.5/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>3.0/5</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-700 light:border-gray-200">
+                                    <td class="py-4 px-6 font-medium">社区支持</td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                            </div>
+                                            <span>5.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>4.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.0/5</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-700 light:border-gray-200">
+                                    <td class="py-4 px-6 font-medium">版本控制</td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-half-o"></i>
+                                            </div>
+                                            <span>4.5/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>3.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>4.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-half-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>3.5/5</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-700 light:border-gray-200">
+                                    <td class="py-4 px-6 font-medium">生态系统</td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                            </div>
+                                            <span>5.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>4.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.0/5</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="py-4 px-6 font-medium">学习曲线</td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>3.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-half-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.5/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>1.0/5</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-4 px-6">
+                                        <div class="flex items-center">
+                                            <div class="text-yellow-400 mr-2">
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                                <i class="fa fa-star-o"></i>
+                                            </div>
+                                            <span>2.0/5</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 社区评论 -->
+        <section id="reviews" class="py-16 bg-gray-800/50 light:bg-gray-100/50">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto mb-16 text-center fade-in" style="animation-delay: 0.1s">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-4">2025年社区评论</h2>
+                    <div class="h-1 w-20 bg-accent mx-auto mb-6"></div>
+                    <p class="text-lg text-gray-300 light:text-gray-600">
+                        来自开发者社区的真实反馈和使用体验分享。
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- 评论1 -->
+                    <div class="bg-gray-900 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.2s">
+                        <div class="text-yellow-400 mb-4">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 mb-6">
+                            "Helm 3.14版本带来的性能提升令人印象深刻，我们的CI/CD pipeline速度提高了近40%。对于管理大型Kubernetes集群中的多个应用，Helm仍然是无可替代的工具。"
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 light:bg-gray-300 rounded-full overflow-hidden mr-4">
+                                <img src="https://picsum.photos/id/1005/100/100" alt="用户头像" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-medium">陈明</div>
+                                <div class="text-sm text-gray-400 light:text-gray-500">资深云原生工程师 @ 阿里云</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论2 -->
+                    <div class="bg-gray-900 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.3s">
+                        <div class="text-yellow-400 mb-4">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 mb-6">
+                            "作为一个初创公司，我们使用Helm管理所有微服务，极大地简化了部署流程。文档非常完善，社区支持也很及时。唯一的小缺点是某些复杂图表的调试仍然有点棘手。"
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 light:bg-gray-300 rounded-full overflow-hidden mr-4">
+                                <img src="https://picsum.photos/id/1012/100/100" alt="用户头像" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-medium">Sarah Johnson</div>
+                                <div class="text-sm text-gray-400 light:text-gray-500">技术负责人 @ TechStart</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论3 -->
+                    <div class="bg-gray-900 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.4s">
+                        <div class="text-yellow-400 mb-4">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-o"></i>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 mb-6">
+                            "从Kustomize迁移到Helm是我们团队今年做的最好决定之一。模板系统和依赖管理功能让我们的配置更加整洁。希望未来版本能进一步简化私有仓库的管理。"
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 light:bg-gray-300 rounded-full overflow-hidden mr-4">
+                                <img src="https://picsum.photos/id/1025/100/100" alt="用户头像" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-medium">李伟</div>
+                                <div class="text-sm text-gray-400 light:text-gray-500">DevOps工程师 @ 腾讯云</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论4 -->
+                    <div class="bg-gray-900 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.5s">
+                        <div class="text-yellow-400 mb-4">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 mb-6">
+                            "Helm的社区图表仓库是一个宝藏，让我们能够快速部署各种中间件。3.14版本对OCI仓库的支持更加完善，这对我们的安全合规要求非常有帮助。"
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 light:bg-gray-300 rounded-full overflow-hidden mr-4">
+                                <img src="https://picsum.photos/id/1027/100/100" alt="用户头像" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-medium">Michael Brown</div>
+                                <div class="text-sm text-gray-400 light:text-gray-500">平台架构师 @ FinTech Inc</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论5 -->
+                    <div class="bg-gray-900 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.6s">
+                        <div class="text-yellow-400 mb-4">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                            <i class="fa fa-star-o"></i>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 mb-6">
+                            "作为Kubernetes新手，Helm帮助我快速上手应用部署。学习曲线比我想象的要平缓，但高级功能如钩子和测试仍然需要花时间理解。文档非常全面。"
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 light:bg-gray-300 rounded-full overflow-hidden mr-4">
+                                <img src="https://picsum.photos/id/1062/100/100" alt="用户头像" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-medium">张雨</div>
+                                <div class="text-sm text-gray-400 light:text-gray-500">软件工程师 @ 创业公司</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 评论6 -->
+                    <div class="bg-gray-900 light:bg-white p-6 rounded-xl border border-gray-700 light:border-gray-200 card-hover fade-in" style="animation-delay: 0.7s">
+                        <div class="text-yellow-400 mb-4">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-o"></i>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 mb-6">
+                            "我们在生产环境中使用Helm管理超过50个应用，版本控制和回滚功能救了我们好几次。希望未来能有更好的UI工具来管理发布历史，但命令行体验已经很出色了。"
+                        </p>
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 bg-gray-700 light:bg-gray-300 rounded-full overflow-hidden mr-4">
+                                <img src="https://picsum.photos/id/1074/100/100" alt="用户头像" class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="font-medium">David Kim</div>
+                                <div class="text-sm text-gray-400 light:text-gray-500">SRE @ 电商平台</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA部分 -->
+        <section class="py-20 bg-gradient-to-br from-primary to-gray-800 light:from-blue-50 light:to-white relative overflow-hidden">
+            <div class="absolute inset-0 opacity-20 light:opacity-10">
+                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://picsum.photos/id/2/1200/800')] bg-cover bg-center"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-3xl mx-auto text-center fade-in">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-6">开始使用 Helm 管理您的 Kubernetes 应用</h2>
+                    <p class="text-xl text-gray-300 light:text-gray-600 mb-10">
+                        加入全球数百万开发者的行列，体验简化的容器应用管理流程。
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="https://helm.sh/docs/intro/install/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-accent hover:bg-blue-600 rounded-lg font-medium transition-custom flex items-center justify-center">
+                            <i class="fa fa-download mr-2"></i> 立即下载
+                        </a>
+                        <a href="https://helm.sh/docs/intro/quickstart/" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-gray-800 hover:bg-gray-700 light:bg-gray-200 light:hover:bg-gray-300 rounded-lg font-medium transition-custom flex items-center justify-center">
+                            <i class="fa fa-book mr-2"></i> 快速入门
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 light:bg-gray-800 text-gray-400 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="h-10 w-10 bg-accent rounded-lg flex items-center justify-center">
+                            <i class="fa fa-anchor text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold text-white">Helm</span>
+                    </div>
+                    <p class="mb-6">
+                        Helm 是 Kubernetes 的包管理器，简化了 Kubernetes 应用的部署和管理。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/helm/helm" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="https://twitter.com/helm_sh" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://www.youtube.com/c/Helm" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">
+                            <i class="fa fa-youtube-play text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6">快速链接</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#overview" class="hover:text-accent transition-custom">概述</a></li>
+                        <li><a href="#downloads" class="hover:text-accent transition-custom">下载</a></li>
+                        <li><a href="#resources" class="hover:text-accent transition-custom">资源</a></li>
+                        <li><a href="#comparison" class="hover:text-accent transition-custom">对比</a></li>
+                        <li><a href="#reviews" class="hover:text-accent transition-custom">评论</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6">官方资源</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://helm.sh/" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">官方网站</a></li>
+                        <li><a href="https://helm.sh/docs/" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">文档</a></li>
+                        <li><a href="https://github.com/helm/helm" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">GitHub</a></li>
+                        <li><a href="https://artifacthub.io/packages/search?kind=0" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">图表仓库</a></li>
+                        <li><a href="https://kubernetes.slack.com/messages/helm/" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">社区支持</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6">法律信息</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://helm.sh/security/" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">安全政策</a></li>
+                        <li><a href="https://github.com/helm/helm/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">许可证</a></li>
+                        <li><a href="https://helm.sh/code-of-conduct/" target="_blank" rel="noopener noreferrer" class="hover:text-accent transition-custom">行为准则</a></li>
+                        <li><a href="/sitemap.html" class="hover:text-accent transition-custom">网站地图</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p>© 2025 Helm 社区. 保留所有权利.</p>
+                <p class="mt-4 md:mt-0">Helm 是 CNCF 毕业项目.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 模式切换功能
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        
+        // 检查本地存储中的主题偏好
+        if (localStorage.getItem('theme') === 'light' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            htmlElement.classList.add('light');
+        } else {
+            htmlElement.classList.remove('light');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('light');
+            
+            // 保存主题偏好到本地存储
+            if (htmlElement.classList.contains('light')) {
+                localStorage.setItem('theme', 'light');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+        // 移动端菜单
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 复制按钮功能
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetId = button.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                const textToCopy = targetElement.textContent;
+                
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '<i class="fa fa-check"></i> 已复制';
+                    button.classList.add('text-green-500');
+                    
+                    setTimeout(() => {
+                        button.innerHTML = originalText;
+                        button.classList.remove('text-green-500');
+                    }, 2000);
+                });
+            });
+        });
+        
+        // 滚动动画
+        const fadeElements = document.querySelectorAll('.fade-in');
+        
+        const fadeInObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    fadeInObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1 });
+        
+        fadeElements.forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+            fadeInObserver.observe(element);
+        });
+        
+        // 进度条动画
+        const progressBars = document.querySelectorAll('.progress-bar');
+        
+        const progressObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                    progressObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        progressBars.forEach(bar => {
+            progressObserver.observe(bar);
+        });
+        
+        // 雷达图
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const comparisonChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['易用性', '社区支持', '版本控制', '生态系统', '学习曲线', '灵活性'],
+                datasets: [
+                    {
+                        label: 'Helm',
+                        data: [4.5, 5.0, 4.5, 5.0, 3.0, 4.0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    },
+                    {
+                        label: 'Kustomize',
+                        data: [3.0, 4.0, 3.0, 4.0, 2.5, 4.5],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
+                    },
+                    {
+                        label: 'Ksonnet',
+                        data: [2.5, 2.0, 4.0, 2.0, 1.0, 4.5],
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(245, 158, 11, 1)'
+                    },
+                    {
+                        label: 'Kubecfg',
+                        data: [3.0, 2.0, 3.5, 2.0, 2.0, 4.0],
+                        backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                        borderColor: 'rgba(239, 68, 68, 1)',
+                        pointBackgroundColor: 'rgba(239, 68, 68, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(239, 68, 68, 1)'
+                    }
+                ]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: htmlElement.classList.contains('light') ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+                        },
+                        grid: {
+                            color: htmlElement.classList.contains('light') ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)'
+                        },
+                        pointLabels: {
+                            color: htmlElement.classList.contains('light') ? '#000' : '#fff'
+                        },
+                        ticks: {
+                            color: htmlElement.classList.contains('light') ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)',
+                            backdropColor: 'transparent',
+                            maxTicksLimit: 5
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: htmlElement.classList.contains('light') ? '#000' : '#fff'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 监听主题变化，更新图表颜色
+        themeToggle.addEventListener('click', () => {
+            const isLight = htmlElement.classList.contains('light');
+            comparisonChart.options.scales.r.angleLines.color = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+            comparisonChart.options.scales.r.grid.color = isLight ? 'rgba(0, 0, 0, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+            comparisonChart.options.scales.r.pointLabels.color = isLight ? '#000' : '#fff';
+            comparisonChart.options.scales.r.ticks.color = isLight ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.7)';
+            comparisonChart.options.plugins.legend.labels.color = isLight ? '#000' : '#fff';
+            comparisonChart.update();
+        });
+        
+        // 图片懒加载
+        document.addEventListener("DOMContentLoaded", function() {
+            const lazyImages = [].slice.call(document.querySelectorAll("img"));
+            
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            lazyImage.src = lazyImage.dataset.src || lazyImage.src;
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(function(lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+            }
+        });
+    </script>
+</body>
+</html>

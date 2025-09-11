@@ -1,0 +1,1353 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity引擎 - 游戏开发与互动内容创作平台</title>
+    <meta name="description" content="Unity是全球领先的实时3D互动内容创作和运营平台，本文详细介绍Unity的历史、功能、版本下载、创始人信息、优缺点及行业对比。">
+    <meta name="keywords" content="Unity, Unity引擎, 游戏开发, 3D引擎, Unity下载, Unity创始人, Unity对比">
+    <meta name="author" content="Unity Technologies">
+    <meta property="og:title" content="Unity引擎 - 专业游戏开发平台">
+    <meta property="og:description" content="了解Unity引擎的历史、功能特点、下载资源及行业地位">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://unity.com/">
+    <meta property="og:image" content="https://unity.com/sites/default/files/styles/16_9_large/public/2020-11/unity-engine-keyart.jpg">
+    <link rel="canonical" href="https://unity.com/">
+    <link rel="sitemap" type="application/xml" href="/sitemap.html">
+    <link href="icon" type="image/png" href="https://unity.com/themes/contrib/unity_base/images/favicons/favicon-32x32.png">
+    
+    <!-- 外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        unity: {
+                            blue: '#0066CC',
+                            dark: '#0A0E17',
+                            light: '#F5F5F7',
+                            accent: '#3498db',
+                            secondary: '#2980b9'
+                        },
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .text-shadow-lg {
+                text-shadow: 0 4px 8px rgba(0,0,0,0.12), 0 2px 4px rgba(0,0,0,0.08);
+            }
+            .transition-transform-opacity {
+                transition-property: transform, opacity;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+    
+    <style>
+        /* 基础动画 */
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* 延迟加载动画 */
+        .lazy-load {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            background: #1a1a1a url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%230066CC" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M16 12a4 4 0 1 1-8 0"></path></svg>') center no-repeat;
+            background-size: 40px;
+        }
+        
+        .lazy-load.loaded {
+            opacity: 1;
+        }
+        
+        /* 图片加载失败样式 */
+        .lazy-load.error {
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%23ff4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>');
+            background-color: rgba(255, 68, 68, 0.1);
+            border: 1px dashed #ff4444;
+        }
+        
+        /* 滚动指示器 */
+        .scroll-indicator {
+            height: 3px;
+            background-color: #0066CC;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 50;
+            width: 0%;
+        }
+        
+        /* 雷达图容器 */
+        .radar-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* 平滑滚动 */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* 加载动画 */
+        .loader {
+            border: 3px solid rgba(0, 102, 204, 0.2);
+            border-radius: 50%;
+            border-top: 3px solid #0066CC;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body class="font-inter bg-unity-dark text-gray-100 dark:bg-unity-dark dark:text-gray-100 light:bg-unity-light light:text-gray-900 transition-colors duration-300">
+    <!-- 滚动进度指示器 -->
+    <div class="scroll-indicator" id="scrollIndicator"></div>
+
+    <!-- 导航栏 -->
+    <header class="fixed w-full z-40 transition-all duration-300" id="navbar">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <img src="https://unity.com/themes/contrib/unity_base/images/unity-logo-white.svg" alt="Unity Logo" class="h-8 light:hidden lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                <img src="https://unity.com/themes/contrib/unity_base/images/unity-logo-black.svg" alt="Unity Logo" class="h-8 hidden light:block lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                <span class="text-xl font-bold tracking-tight">Unity</span>
+            </div>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#about" class="hover:text-unity-blue transition-colors">关于</a>
+                <a href="#downloads" class="hover:text-unity-blue transition-colors">下载</a>
+                <a href="#resources" class="hover:text-unity-blue transition-colors">资源</a>
+                <a href="#comparison" class="hover:text-unity-blue transition-colors">行业对比</a>
+                <a href="#reviews" class="hover:text-unity-blue transition-colors">社区评论</a>
+            </nav>
+            
+            <!-- 主题切换按钮 -->
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-800 light:hover:bg-gray-200 transition-colors">
+                <i class="fa fa-sun-o light:hidden text-xl"></i>
+                <i class="fa fa-moon-o hidden light:block text-xl"></i>
+            </button>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="mobileMenuBtn" class="md:hidden p-2 rounded-md hover:bg-gray-800 light:hover:bg-gray-200 transition-colors">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobileMenu" class="md:hidden hidden bg-gray-900/95 light:bg-gray-100/95 backdrop-blur-md">
+            <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+                <a href="#about" class="py-2 hover:text-unity-blue transition-colors">关于</a>
+                <a href="#downloads" class="py-2 hover:text-unity-blue transition-colors">下载</a>
+                <a href="#resources" class="py-2 hover:text-unity-blue transition-colors">资源</a>
+                <a href="#comparison" class="py-2 hover:text-unity-blue transition-colors">行业对比</a>
+                <a href="#reviews" class="py-2 hover:text-unity-blue transition-colors">社区评论</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 面包屑导航 -->
+    <div class="pt-24 pb-4 px-4 container mx-auto">
+        <nav class="text-sm text-gray-400" aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center">
+                <li><a href="/" class="hover:text-unity-blue transition-colors">首页</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free" class="hover:text-unity-blue transition-colors">资源分类</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free/detail/" class="hover:text-unity-blue transition-colors">资源列表</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li aria-current="page" class="text-gray-300 light:text-gray-600">Unity引擎</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- 英雄区域 -->
+    <section class="relative h-[80vh] flex items-center overflow-hidden">
+        <div class="absolute inset-0 z-0">
+            <img src="https://unity.com/sites/default/files/styles/16_9_large/public/2020-11/unity-engine-keyart.jpg" 
+                 alt="Unity引擎展示图" 
+                 class="w-full h-full object-cover opacity-40 lazy-load"
+                 onload="this.classList.add('loaded')"
+                 onerror="this.classList.add('error')">
+            <div class="absolute inset-0 bg-gradient-to-r from-unity-dark via-unity-dark/80 to-transparent"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 z-10 fade-in">
+            <h1 class="text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-tight text-shadow-lg mb-6">
+                Unity<br><span class="text-unity-blue">实时3D互动内容创作平台</span>
+            </h1>
+            <p class="text-[clamp(1rem,2vw,1.25rem)] text-gray-300 max-w-2xl mb-8">
+                从游戏开发到电影制作，从建筑可视化到虚拟现实，Unity为创作者提供强大工具，实现您的创意愿景。
+            </p>
+            <div class="flex flex-wrap gap-4">
+                <a href="https://unity.com/download" target="_blank" rel="noopener noreferrer" 
+                   class="px-8 py-3 bg-unity-blue hover:bg-unity-blue/90 text-white font-medium rounded-md transition-all transform hover:scale-105 shadow-lg">
+                    立即下载
+                </a>
+                <a href="#about" 
+                   class="px-8 py-3 bg-transparent border border-gray-400 hover:border-unity-blue hover:text-unity-blue font-medium rounded-md transition-all">
+                    了解更多
+                </a>
+            </div>
+        </div>
+        
+        <!-- 滚动提示 -->
+        <div class="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <i class="fa fa-angle-down text-2xl"></i>
+        </div>
+    </section>
+
+    <!-- 关于Unity -->
+    <section id="about" class="py-20 bg-gradient-to-b from-unity-dark to-gray-900 light:from-unity-light light:to-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">关于 Unity</h2>
+                <div class="w-20 h-1 bg-unity-blue mx-auto"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="fade-in" style="animation-delay: 0.1s">
+                    <h3 class="text-2xl font-semibold mb-4">名字含义与起源</h3>
+                    <p class="mb-4 text-gray-300 light:text-gray-700">
+                        Unity这个名字代表着"团结"，象征着将游戏开发的各个方面整合到一个统一的平台中。
+                    </p>
+                    <p class="mb-4 text-gray-300 light:text-gray-700">
+                        Unity最初由丹麦公司Over the Edge Entertainment (OTEE)开发，2004年在Apple Worldwide Developers Conference上首次亮相。2007年，公司更名为Unity Technologies。
+                    </p>
+                    <p class="text-gray-300 light:text-gray-700">
+                        最初Unity仅支持Mac OS X平台，后来逐渐扩展到多平台支持，成为目前最流行的跨平台游戏引擎之一。
+                    </p>
+                </div>
+                
+                <div class="relative fade-in" style="animation-delay: 0.2s">
+                    <img src="https://unity.com/sites/default/files/styles/21_9_large/public/2021-08/unity-editor-2021-1.png" 
+                         alt="Unity编辑器界面" 
+                         class="w-full h-auto rounded-lg shadow-2xl lazy-load"
+                         onload="this.classList.add('loaded')"
+                         onerror="this.classList.add('error')">
+                    <div class="absolute -bottom-6 -left-6 bg-unity-blue/90 text-white p-4 rounded-lg shadow-lg hidden md:block">
+                        <p class="font-semibold">首次发布</p>
+                        <p>2005年6月</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 创始人信息 -->
+            <div class="mt-20 fade-in" style="animation-delay: 0.3s">
+                <h3 class="text-2xl font-semibold mb-8 text-center">创始人</h3>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- 创始人1 -->
+                    <div class="bg-gray-800/50 light:bg-white/50 backdrop-blur-sm rounded-xl p-6 hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-700/30 light:border-gray-200/30">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/1005/100/100" alt="David Helgason" class="w-16 h-16 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                            <div>
+                                <h4 class="font-semibold text-lg">David Helgason</h4>
+                                <p class="text-gray-400 text-sm">联合创始人 & 前CEO</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 text-sm">
+                            冰岛企业家，Unity的主要创始人之一，担任CEO直到2014年。他在Unity的早期发展中发挥了关键作用，推动了引擎的多平台战略。
+                        </p>
+                    </div>
+                    
+                    <!-- 创始人2 -->
+                    <div class="bg-gray-800/50 light:bg-white/50 backdrop-blur-sm rounded-xl p-6 hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-700/30 light:border-gray-200/30">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/1012/100/100" alt="Joachim Ante" class="w-16 h-16 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                            <div>
+                                <h4 class="font-semibold text-lg">Joachim Ante</h4>
+                                <p class="text-gray-400 text-sm">联合创始人 & CTO</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 text-sm">
+                            德国软件工程师，Unity的技术核心人物，负责引擎的主要技术架构。他开发了Unity最初的渲染引擎和核心技术。
+                        </p>
+                    </div>
+                    
+                    <!-- 创始人3 -->
+                    <div class="bg-gray-800/50 light:bg-white/50 backdrop-blur-sm rounded-xl p-6 hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-700/30 light:border-gray-200/30">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/1025/100/100" alt="Nicholas Francis" class="w-16 h-16 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                            <div>
+                                <h4 class="font-semibold text-lg">Nicholas Francis</h4>
+                                <p class="text-gray-400 text-sm">联合创始人</p>
+                            </div>
+                        </div>
+                        <p class="text-gray-300 light:text-gray-700 text-sm">
+                            新西兰游戏开发者，Unity的第三位联合创始人。他在公司早期负责产品设计和用户体验，帮助塑造了Unity易于使用的特点。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 版本下载 -->
+    <section id="downloads" class="py-20 bg-gray-900 light:bg-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">版本下载</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">获取适合您需求的Unity版本，从个人爱好者到专业开发团队都能找到合适的工具</p>
+                <div class="w-20 h-1 bg-unity-blue mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 个人版 -->
+                <div class="bg-gray-800/30 light:bg-white/70 backdrop-blur-sm rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.1s">
+                    <div class="p-6 border-b border-gray-700/30 light:border-gray-200/30">
+                        <h3 class="text-xl font-semibold mb-2">Unity 个人版</h3>
+                        <p class="text-unity-blue font-bold">免费</p>
+                        <p class="text-sm text-gray-400 mt-2">适合个人开发者和小型团队</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>完整引擎功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>支持所有平台发布</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>社区支持</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>收入低于10万美元时免费使用</span>
+                            </li>
+                        </ul>
+                        <a href="https://store.unity.com/cn/download?ref=personal" target="_blank" rel="noopener noreferrer" 
+                           class="block w-full py-3 text-center bg-unity-blue hover:bg-unity-blue/90 text-white font-medium rounded-md transition-colors">
+                            下载个人版
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 专业版 -->
+                <div class="bg-gray-800/30 light:bg-white/70 backdrop-blur-sm rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-unity-blue/30 relative transform scale-105 z-10 fade-in" style="animation-delay: 0.2s">
+                    <div class="absolute top-0 right-0 bg-unity-blue text-white px-4 py-1 text-sm font-medium">
+                        最受欢迎
+                    </div>
+                    <div class="p-6 border-b border-gray-700/30 light:border-gray-200/30">
+                        <h3 class="text-xl font-semibold mb-2">Unity 专业版</h3>
+                        <p class="text-unity-blue font-bold">¥1,890/月</p>
+                        <p class="text-sm text-gray-400 mt-2">适合专业开发者和工作室</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>包含个人版所有功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>高级性能分析工具</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>优先技术支持</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>团队协作工具</span>
+                            </li>
+                        </ul>
+                        <a href="https://store.unity.com/cn/products/unity-pro?aid=united-lands--affiliate--6370775&pubref=website" target="_blank" rel="noopener noreferrer" 
+                           class="block w-full py-3 text-center bg-unity-blue hover:bg-unity-blue/90 text-white font-medium rounded-md transition-colors">
+                            购买专业版
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 企业版 -->
+                <div class="bg-gray-800/30 light:bg-white/70 backdrop-blur-sm rounded-xl overflow-hidden hover:shadow-2xl transition-all duration-300 border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.3s">
+                    <div class="p-6 border-b border-gray-700/30 light:border-gray-200/30">
+                        <h3 class="text-xl font-semibold mb-2">Unity 企业版</h3>
+                        <p class="text-unity-blue font-bold">定制价格</p>
+                        <p class="text-sm text-gray-400 mt-2">适合大型企业和团队</p>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3 mb-6">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>包含专业版所有功能</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>专属客户经理</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>高级安全与合规</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span>定制化培训与支持</span>
+                            </li>
+                        </ul>
+                        <a href="https://unity.com/contact-sales" target="_blank" rel="noopener noreferrer" 
+                           class="block w-full py-3 text-center bg-transparent border border-unity-blue hover:bg-unity-blue/10 text-unity-blue font-medium rounded-md transition-colors">
+                            联系销售
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center fade-in" style="animation-delay: 0.4s">
+                <p class="text-gray-400 mb-4">需要特定版本？查看历史版本和补丁</p>
+                <a href="https://unity.com/releases/editor/archive" target="_blank" rel="noopener noreferrer" 
+                   class="inline-flex items-center text-unity-blue hover:underline">
+                    访问版本归档
+                    <i class="fa fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 媒体链接和官网 -->
+    <section id="resources" class="py-20 bg-gradient-to-b from-gray-900 to-unity-dark light:from-gray-100 light:to-unity-light">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">官方资源与媒体</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">通过这些官方渠道获取最新资讯、文档和社区支持</p>
+                <div class="w-20 h-1 bg-unity-blue mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1 fade-in" style="animation-delay: 0.1s">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <!-- 官网链接 -->
+                        <a href="https://unity.com/" target="_blank" rel="noopener noreferrer" 
+                           class="flex items-center p-4 bg-gray-800/30 light:bg-white/50 rounded-lg hover:bg-gray-800/50 light:hover:bg-white/80 transition-colors group">
+                            <div class="w-12 h-12 rounded-full bg-unity-blue/20 flex items-center justify-center mr-4 group-hover:bg-unity-blue/30 transition-colors">
+                                <i class="fa fa-globe text-unity-blue text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">官方网站</h3>
+                                <p class="text-sm text-gray-400">unity.com</p>
+                            </div>
+                        </a>
+                        
+                        <!-- YouTube -->
+                        <a href="https://www.youtube.com/c/Unity" target="_blank" rel="noopener noreferrer" 
+                           class="flex items-center p-4 bg-gray-800/30 light:bg-white/50 rounded-lg hover:bg-gray-800/50 light:hover:bg-white/80 transition-colors group">
+                            <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mr-4 group-hover:bg-red-500/30 transition-colors">
+                                <i class="fa fa-youtube-play text-red-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">YouTube频道</h3>
+                                <p class="text-sm text-gray-400">Unity官方教程</p>
+                            </div>
+                        </a>
+                        
+                        <!-- GitHub -->
+                        <a href="https://github.com/Unity-Technologies" target="_blank" rel="noopener noreferrer" 
+                           class="flex items-center p-4 bg-gray-800/30 light:bg-white/50 rounded-lg hover:bg-gray-800/50 light:hover:bg-white/80 transition-colors group">
+                            <div class="w-12 h-12 rounded-full bg-gray-700/20 flex items-center justify-center mr-4 group-hover:bg-gray-700/30 transition-colors">
+                                <i class="fa fa-github text-gray-300 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">GitHub</h3>
+                                <p class="text-sm text-gray-400">开源项目与示例</p>
+                            </div>
+                        </a>
+                        
+                        <!-- 文档 -->
+                        <a href="https://docs.unity3d.com/Manual/index.html" target="_blank" rel="noopener noreferrer" 
+                           class="flex items-center p-4 bg-gray-800/30 light:bg-white/50 rounded-lg hover:bg-gray-800/50 light:hover:bg-white/80 transition-colors group">
+                            <div class="w-12 h-12 rounded-full bg-unity-blue/20 flex items-center justify-center mr-4 group-hover:bg-unity-blue/30 transition-colors">
+                                <i class="fa fa-book text-unity-blue text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold">官方文档</h3>
+                                <p class="text-sm text-gray-400">详细API与教程</p>
+                            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- 最新动态 -->
+                    <div class="mt-12">
+                        <h3 class="text-xl font-semibold mb-6">最新动态</h3>
+                        <div class="space-y-6">
+                            <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg hover:shadow-lg transition-all">
+                                <span class="text-xs bg-unity-blue/20 text-unity-blue px-3 py-1 rounded-full">2025年6月</span>
+                                <h4 class="font-medium mt-3 mb-2">Unity 2025.1版本发布</h4>
+                                <p class="text-sm text-gray-400">引入全新的光线追踪系统和改进的物理引擎，提升移动端性能表现。</p>
+                                <a href="https://unity.com/releases/editor/whats-new/2025.1.0" target="_blank" rel="noopener noreferrer" 
+                                   class="inline-block mt-3 text-unity-blue text-sm hover:underline">
+                                    了解更多 <i class="fa fa-angle-right ml-1"></i>
+                                </a>
+                            </div>
+                            
+                            <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg hover:shadow-lg transition-all">
+                                <span class="text-xs bg-unity-blue/20 text-unity-blue px-3 py-1 rounded-full">2025年4月</span>
+                                <h4 class="font-medium mt-3 mb-2">Unity收购AI内容生成公司</h4>
+                                <p class="text-sm text-gray-400">收购专注于游戏资产AI生成的公司，将在未来版本中整合相关技术。</p>
+                                <a href="https://unity.com/news/company/2025/unity-acquires-ai-content-generation-startup" target="_blank" rel="noopener noreferrer" 
+                                   class="inline-block mt-3 text-unity-blue text-sm hover:underline">
+                                    了解更多 <i class="fa fa-angle-right ml-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-1 md:order-2 fade-in" style="animation-delay: 0.2s">
+                    <div class="relative">
+                        <img src="https://unity.com/sites/default/files/styles/16_9_large/public/2023-06/unity-2023-1-tech-stream-thumbnail-16x9.jpg" 
+                             alt="Unity最新动态" 
+                             class="w-full h-auto rounded-xl shadow-2xl lazy-load"
+                             onload="this.classList.add('loaded')"
+                             onerror="this.classList.add('error')">
+                        <div class="absolute -bottom-6 -right-6 bg-gray-800 light:bg-white p-4 rounded-lg shadow-lg hidden md:block">
+                            <p class="font-semibold">活跃开发者</p>
+                            <p>超过1500万</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 免费资源 -->
+    <section class="py-20 bg-unity-dark light:bg-unity-light">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">免费资源与服务</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">探索Unity提供的免费工具、资产和学习资源，开始您的创作之旅</p>
+                <div class="w-20 h-1 bg-unity-blue mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- 资源商店免费内容 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.1s">
+                    <div class="w-14 h-14 rounded-full bg-unity-blue/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-shopping-bag text-unity-blue text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Unity资源商店免费内容</h3>
+                    <p class="text-gray-400 mb-4">
+                        Unity Asset Store提供数千种免费资源，包括模型、材质、脚本和完整项目模板。
+                    </p>
+                    <h4 class="font-medium mb-2">获取方法：</h4>
+                    <ol class="list-decimal list-inside text-gray-400 space-y-1 mb-6 text-sm">
+                        <li>访问Unity资源商店</li>
+                        <li>在筛选器中选择"价格: 免费"</li>
+                        <li>选择所需资源并点击"下载"</li>
+                        <li>资源将自动导入您的项目</li>
+                    </ol>
+                    <a href="https://assetstore.unity.com/?free=1" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center text-unity-blue hover:underline">
+                        浏览免费资源
+                        <i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- 学习资源 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.2s">
+                    <div class="w-14 h-14 rounded-full bg-unity-blue/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-graduation-cap text-unity-blue text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">免费学习资源</h3>
+                    <p class="text-gray-400 mb-4">
+                        Unity Learn平台提供免费课程、教程和项目，从入门到高级主题应有尽有。
+                    </p>
+                    <h4 class="font-medium mb-2">获取方法：</h4>
+                    <ol class="list-decimal list-inside text-gray-400 space-y-1 mb-6 text-sm">
+                        <li>注册Unity账号</li>
+                        <li>访问Unity Learn平台</li>
+                        <li>浏览免费课程库</li>
+                        <li>开始学习并跟随实践</li>
+                    </ol>
+                    <a href="https://learn.unity.com/" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center text-unity-blue hover:underline">
+                        访问学习平台
+                        <i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- 社区资源 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all transform hover:-translate-y-1 border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.3s">
+                    <div class="w-14 h-14 rounded-full bg-unity-blue/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-users text-unity-blue text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">社区免费资源</h3>
+                    <p class="text-gray-400 mb-4">
+                        活跃的社区创作者分享大量免费资源，包括插件、工具和教程。
+                    </p>
+                    <h4 class="font-medium mb-2">获取方法：</h4>
+                    <ol class="list-decimal list-inside text-gray-400 space-y-1 mb-6 text-sm">
+                        <li>加入Unity官方论坛</li>
+                        <li>关注社区创作者博客</li>
+                        <li>参与Unity社区活动</li>
+                        <li>加入相关Discord服务器</li>
+                    </ol>
+                    <a href="https://forum.unity.com/" target="_blank" rel="noopener noreferrer" 
+                       class="inline-flex items-center text-unity-blue hover:underline">
+                        访问社区论坛
+                        <i class="fa fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 优缺点分析 -->
+    <section class="py-20 bg-gradient-to-b from-unity-dark to-gray-900 light:from-unity-light light:to-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">优缺点分析</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">客观评估Unity引擎的优势与不足，帮助您做出更明智的选择</p>
+                <div class="w-20 h-1 bg-unity-blue mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- 优点 -->
+                <div class="fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要优势</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                                跨平台能力
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                支持一次开发，多平台发布，包括PC、移动设备、主机、Web、VR和AR设备等20多个平台。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                                易用性
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                直观的可视化编辑器，对初学者友好，学习曲线相对平缓，快速原型开发能力强。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                                丰富的资源生态
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                拥有全球最大的游戏开发资源商店之一，提供大量现成的资产、插件和工具。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                                活跃的社区支持
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                庞大的开发者社区，丰富的教程资源和第三方支持，问题容易得到解决。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                                持续更新与改进
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                Unity Technologies持续更新引擎，不断引入新技术和优化性能，保持行业竞争力。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 缺点 -->
+                <div class="fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center mb-8">
+                        <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-500 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">主要不足</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-times-circle text-red-500 mr-2"></i>
+                                性能限制
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                在大型复杂项目上性能可能不如虚幻引擎等竞争对手，特别是在高端图形渲染方面。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-times-circle text-red-500 mr-2"></i>
+                                收费模式争议
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                2023年曾尝试修改收费模式引发开发者强烈反对，虽然已调整，但仍影响部分开发者信任。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-times-circle text-red-500 mr-2"></i>
+                                C#限制
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                主要使用C#语言，对于习惯C++的开发者可能需要适应，某些底层优化不如C++灵活。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-times-circle text-red-500 mr-2"></i>
+                                资源商店质量参差不齐
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                资源商店中的第三方资产质量不一，部分高价资源可能存在兼容性或性能问题。
+                            </p>
+                        </div>
+                        
+                        <div class="bg-gray-800/20 light:bg-white/30 p-5 rounded-lg">
+                            <h4 class="font-medium mb-2 flex items-center">
+                                <i class="fa fa-times-circle text-red-500 mr-2"></i>
+                                升级兼容性问题
+                            </h4>
+                            <p class="text-gray-400 text-sm">
+                                版本升级有时会导致项目兼容性问题，需要额外工作来确保旧项目在新版本上正常运行。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 行业对比 -->
+    <section id="comparison" class="py-20 bg-gray-900 light:bg-gray-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">行业对比</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Unity与其他主流游戏引擎的关键特性对比</p>
+                <div class="w-20 h-1 bg-unity-blue mx-auto mt-4"></div>
+            </div>
+            
+            <!-- 雷达图 -->
+            <div class="mb-20 fade-in" style="animation-delay: 0.1s">
+                <div class="radar-container">
+                    <canvas id="radarChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+            
+            <!-- 详细对比表格 -->
+            <div class="overflow-x-auto bg-gray-800/30 light:bg-white/50 rounded-xl shadow-lg fade-in" style="animation-delay: 0.2s">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-700 light:border-gray-300">
+                            <th class="py-4 px-6 text-left font-semibold">特性</th>
+                            <th class="py-4 px-6 text-left font-semibold">Unity</th>
+                            <th class="py-4 px-6 text-left font-semibold">Unreal Engine</th>
+                            <th class="py-4 px-6 text-left font-semibold">Godot</th>
+                            <th class="py-4 px-6 text-left font-semibold">Cocos2d-x</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">首次发布</td>
+                            <td class="py-4 px-6">2005年</td>
+                            <td class="py-4 px-6">1998年</td>
+                            <td class="py-4 px-6">2014年</td>
+                            <td class="py-4 px-6">2010年</td>
+                        </tr>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">主要编程语言</td>
+                            <td class="py-4 px-6">C#</td>
+                            <td class="py-4 px-6">C++、Blueprints</td>
+                            <td class="py-4 px-6">GDScript、C#、C++</td>
+                            <td class="py-4 px-6">C++、Lua</td>
+                        </tr>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">授权模式</td>
+                            <td class="py-4 px-6">免费（收入门槛）+ 订阅</td>
+                            <td class="py-4 px-6">免费 + 5% 版权费</td>
+                            <td class="py-4 px-6">完全开源免费</td>
+                            <td class="py-4 px-6">完全开源免费</td>
+                        </tr>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">3D图形能力</td>
+                            <td class="py-4 px-6">优秀</td>
+                            <td class="py-4 px-6">卓越</td>
+                            <td class="py-4 px-6">良好</td>
+                            <td class="py-4 px-6">一般</td>
+                        </tr>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">2D游戏支持</td>
+                            <td class="py-4 px-6">优秀</td>
+                            <td class="py-4 px-6">良好</td>
+                            <td class="py-4 px-6">优秀</td>
+                            <td class="py-4 px-6">优秀</td>
+                        </tr>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">学习曲线</td>
+                            <td class="py-4 px-6">中等</td>
+                            <td class="py-4 px-6">陡峭</td>
+                            <td class="py-4 px-6">平缓</td>
+                            <td class="py-4 px-6">中等</td>
+                        </tr>
+                        <tr class="border-b border-gray-800 light:border-gray-200">
+                            <td class="py-4 px-6 font-medium">资源生态</td>
+                            <td class="py-4 px-6">非常丰富</td>
+                            <td class="py-4 px-6">丰富</td>
+                            <td class="py-4 px-6">成长中</td>
+                            <td class="py-4 px-6">有限</td>
+                        </tr>
+                        <tr>
+                            <td class="py-4 px-6 font-medium">主要优势领域</td>
+                            <td class="py-4 px-6">移动游戏、独立游戏、VR/AR</td>
+                            <td class="py-4 px-6">3A大作、高端图形、主机游戏</td>
+                            <td class="py-4 px-6">2D游戏、小型项目、教育</td>
+                            <td class="py-4 px-6">2D移动游戏、轻量级应用</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- 社区评论 -->
+    <section id="reviews" class="py-20 bg-gradient-to-b from-gray-900 to-unity-dark light:from-gray-100 light:to-unity-light">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16 fade-in">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">2025年社区评论</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">来自全球开发者社区的真实反馈与评价</p>
+                <div class="w-20 h-1 bg-unity-blue mx-auto mt-4"></div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 评论1 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.1s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1027/60/60" alt="Alex Chen" class="w-12 h-12 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <div>
+                            <h4 class="font-semibold">Alex Chen</h4>
+                            <p class="text-sm text-gray-400">独立游戏开发者</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <p class="text-gray-300 light:text-gray-700 text-sm">
+                        "Unity 2025版本的改进令人印象深刻，特别是新的AI辅助工具节省了我大量开发时间。作为独立开发者，我能够在有限资源下实现更复杂的功能。资源商店的质量也在不断提升。"
+                    </p>
+                    <p class="text-xs text-gray-500 mt-4">2025年5月12日</p>
+                </div>
+                
+                <!-- 评论2 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.2s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1062/60/60" alt="Sofia Rodriguez" class="w-12 h-12 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <div>
+                            <h4 class="font-semibold">Sofia Rodriguez</h4>
+                            <p class="text-sm text-gray-400">移动游戏工作室创始人</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                    </div>
+                    <p class="text-gray-300 light:text-gray-700 text-sm">
+                        "我们工作室用Unity开发了多款成功的移动游戏。2025版本的性能优化让我们的游戏在中端设备上也能流畅运行。唯一的不满是某些高级功能仍然需要付费插件，希望官方能整合更多功能。"
+                    </p>
+                    <p class="text-xs text-gray-500 mt-4">2025年4月3日</p>
+                </div>
+                
+                <!-- 评论3 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.3s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1074/60/60" alt="Marcus Johnson" class="w-12 h-12 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <div>
+                            <h4 class="font-semibold">Marcus Johnson</h4>
+                            <p class="text-sm text-gray-400">VR内容创作者</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-o"></i>
+                    </div>
+                    <p class="text-gray-300 light:text-gray-700 text-sm">
+                        "Unity的VR支持依然是行业领先的，但面对Unreal的竞争，优势正在缩小。2025年的更新带来了更好的手部追踪和物理交互，但在图形保真度方面仍有提升空间。文档需要更完善。"
+                    </p>
+                    <p class="text-xs text-gray-500 mt-4">2025年3月17日</p>
+                </div>
+                
+                <!-- 评论4 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.4s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1083/60/60" alt="Yuki Tanaka" class="w-12 h-12 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <div>
+                            <h4 class="font-semibold">Yuki Tanaka</h4>
+                            <p class="text-sm text-gray-400">教育软件开发者</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <p class="text-gray-300 light:text-gray-700 text-sm">
+                        "作为教育软件开发者，Unity的易用性和多平台支持是我们选择它的主要原因。2025年新增的教育模板和协作工具极大提高了我们的开发效率，社区支持也非常有帮助。"
+                    </p>
+                    <p class="text-xs text-gray-500 mt-4">2025年2月28日</p>
+                </div>
+                
+                <!-- 评论5 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.5s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/177/60/60" alt="Carlos Mendez" class="w-12 h-12 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <div>
+                            <h4 class="font-semibold">Carlos Mendez</h4>
+                            <p class="text-sm text-gray-400">AAA游戏工作室技术总监</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-o"></i>
+                        <i class="fa fa-star-o"></i>
+                    </div>
+                    <p class="text-gray-300 light:text-gray-700 text-sm">
+                        "在AAA级别项目上，Unity仍然不如Unreal强大。虽然2025版本有显著改进，但在大型开放世界和高级渲染方面仍有差距。我们主要用它来开发衍生手游，而不是核心3A作品。"
+                    </p>
+                    <p class="text-xs text-gray-500 mt-4">2025年1月5日</p>
+                </div>
+                
+                <!-- 评论6 -->
+                <div class="bg-gray-800/20 light:bg-white/50 rounded-xl p-6 hover:shadow-xl transition-all border border-gray-700/20 light:border-gray-200/20 fade-in" style="animation-delay: 0.6s">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/342/60/60" alt="Aisha Patel" class="w-12 h-12 rounded-full object-cover mr-4 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <div>
+                            <h4 class="font-semibold">Aisha Patel</h4>
+                            <p class="text-sm text-gray-400"> indie开发者，从Godot转来</p>
+                        </div>
+                    </div>
+                    <div class="mb-4 text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                    </div>
+                    <p class="text-gray-300 light:text-gray-700 text-sm">
+                        "使用Godot两年后转用Unity，主要是因为需要更多的资源和插件支持。学习曲线比我预期的要平缓，2025版本的新功能让过渡更加顺畅。资源商店的质量确实值得付费。"
+                    </p>
+                    <p class="text-xs text-gray-500 mt-4">2025年1月18日</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA区域 -->
+    <section class="py-20 bg-unity-dark light:bg-unity-light relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <img src="https://unity.com/sites/default/files/2021-08/unity-logo-white.svg" alt="Unity背景" class="w-full h-full object-cover lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+        </div>
+        
+        <div class="container mx-auto px-4 relative z-10 text-center">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6 fade-in">准备好开始您的Unity之旅了吗？</h2>
+            <p class="text-gray-300 light:text-gray-700 max-w-2xl mx-auto mb-10 text-lg fade-in" style="animation-delay: 0.1s">
+                加入全球数百万开发者的行列，用Unity实现您的创意项目
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4 fade-in" style="animation-delay: 0.2s">
+                <a href="https://unity.com/download" target="_blank" rel="noopener noreferrer" 
+                   class="px-8 py-4 bg-unity-blue hover:bg-unity-blue/90 text-white font-medium rounded-md transition-all transform hover:scale-105 shadow-lg">
+                    立即下载Unity
+                </a>
+                <a href="https://learn.unity.com/" target="_blank" rel="noopener noreferrer" 
+                   class="px-8 py-4 bg-transparent border border-gray-400 hover:border-unity-blue hover:text-unity-blue font-medium rounded-md transition-all">
+                    开始学习
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="bg-gray-900 light:bg-gray-800 text-gray-400 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <img src="https://unity.com/themes/contrib/unity_base/images/unity-logo-white.svg" alt="Unity Logo" class="h-6 lazy-load" onload="this.classList.add('loaded')" onerror="this.classList.add('error')">
+                        <span class="text-lg font-bold text-white">Unity</span>
+                    </div>
+                    <p class="text-sm mb-6">
+                        实时3D互动内容创作和运营平台，为全球开发者提供强大的创作工具。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com/unity3d" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://www.facebook.com/unity3d" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">
+                            <i class="fa fa-facebook"></i>
+                        </a>
+                        <a href="https://www.youtube.com/c/Unity" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/unity-technologies" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6">产品</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="https://unity.com/products/unity-engine" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">Unity引擎</a></li>
+                        <li><a href="https://unity.com/products/unity-cloud" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">Unity云服务</a></li>
+                        <li><a href="https://assetstore.unity.com/" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">资源商店</a></li>
+                        <li><a href="https://unity.com/solutions" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">行业解决方案</a></li>
+                        <li><a href="https://unity.com/pricing" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">定价</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6">资源</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="https://learn.unity.com/" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">学习中心</a></li>
+                        <li><a href="https://docs.unity3d.com/Manual/index.html" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">官方文档</a></li>
+                        <li><a href="https://forum.unity.com/" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">社区论坛</a></li>
+                        <li><a href="https://unity.com/asset-store/templates" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">项目模板</a></li>
+                        <li><a href="https://unity.com/events" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">活动</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-semibold mb-6">公司</h4>
+                    <ul class="space-y-3 text-sm">
+                        <li><a href="https://unity.com/company" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">关于我们</a></li>
+                        <li><a href="https://unity.com/careers" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">招贤纳士</a></li>
+                        <li><a href="https://unity.com/news" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">新闻中心</a></li>
+                        <li><a href="https://unity.com/legal" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">法律条款</a></li>
+                        <li><a href="https://unity.com/contact" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">联系我们</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm mb-4 md:mb-0">© 2025 Unity Technologies. 保留所有权利。</p>
+                <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
+                    <a href="/sitemap.html" class="hover:text-unity-blue transition-colors">网站地图</a>
+                    <a href="https://unity.com/legal/terms-of-service" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">服务条款</a>
+                    <a href="https://unity.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">隐私政策</a>
+                    <a href="https://unity.com/legal/cookie-policy" target="_blank" rel="noopener noreferrer" class="hover:text-unity-blue transition-colors">Cookie政策</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 主题切换功能
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+        
+        // 检查本地存储中的主题偏好
+        if (localStorage.getItem('theme') === 'light' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+            html.classList.add('light');
+        } else {
+            html.classList.remove('light');
+        }
+        
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('light');
+            
+            // 保存主题偏好到本地存储
+            if (html.classList.contains('light')) {
+                localStorage.setItem('theme', 'light');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+        
+        // 移动端菜单
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // 导航栏滚动效果
+        const navbar = document.getElementById('navbar');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 50) {
+                navbar.classList.add('bg-gray-900/90', 'light:bg-white/90', 'backdrop-blur-md', 'shadow-lg');
+            } else {
+                navbar.classList.remove('bg-gray-900/90', 'light:bg-white/90', 'backdrop-blur-md', 'shadow-lg');
+            }
+        });
+        
+        // 滚动指示器
+        const scrollIndicator = document.getElementById('scrollIndicator');
+        
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollIndicator.style.width = scrolled + "%";
+        });
+        
+        // 延迟加载图片增强版
+        document.addEventListener('DOMContentLoaded', function() {
+            const lazyImages = document.querySelectorAll('.lazy-load');
+            
+            // 重试加载失败的图片
+            function retryImageLoad(img, maxRetries = 3, delay = 1000) {
+                let retries = 0;
+                
+                function attemptLoad() {
+                    if (retries >= maxRetries) return;
+                    
+                    const newImg = new Image();
+                    newImg.src = img.src;
+                    
+                    newImg.onload = function() {
+                        img.src = newImg.src;
+                        img.classList.remove('error');
+                        img.classList.add('loaded');
+                    };
+                    
+                    newImg.onerror = function() {
+                        retries++;
+                        setTimeout(attemptLoad, delay * retries);
+                    };
+                }
+                
+                attemptLoad();
+            }
+            
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const image = entry.target;
+                            // 图片加载失败时重试
+                            image.onerror = function() {
+                                this.classList.add('error');
+                                retryImageLoad(this);
+                            };
+                            // 强制触发加载
+                            if (image.tagName === 'IMG' && !image.srcset) {
+                                image.src = image.src; // 触发加载
+                            }
+                            imageObserver.unobserve(image);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(image => {
+                    imageObserver.observe(image);
+                });
+            } else {
+                // 降级处理
+                lazyImages.forEach(image => {
+                    image.classList.add('loaded');
+                    image.onerror = function() {
+                        this.classList.add('error');
+                        retryImageLoad(this);
+                    };
+                });
+            }
+        });
+        
+        // 雷达图
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // 根据当前主题设置文本颜色
+            const isDarkMode = !html.classList.contains('light');
+            const textColor = isDarkMode ? '#f5f5f5' : '#333333';
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['易用性', '性能表现', '3D图形', '2D支持', '跨平台', '资源生态', '学习资源'],
+                    datasets: [
+                        {
+                            label: 'Unity',
+                            data: [9, 7, 8, 9, 9, 10, 9],
+                            backgroundColor: 'rgba(0, 102, 204, 0.2)',
+                            borderColor: 'rgba(0, 102, 204, 1)',
+                            pointBackgroundColor: 'rgba(0, 102, 204, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(0, 102, 204, 1)'
+                        },
+                        {
+                            label: 'Unreal Engine',
+                            data: [6, 10, 10, 7, 9, 8, 7],
+                            backgroundColor: 'rgba(124, 252, 0, 0.2)',
+                            borderColor: 'rgba(124, 252, 0, 1)',
+                            pointBackgroundColor: 'rgba(124, 252, 0, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(124, 252, 0, 1)'
+                        },
+                        {
+                            label: 'Godot',
+                            data: [9, 6, 6, 9, 8, 5, 6],
+                            backgroundColor: 'rgba(255, 87, 51, 0.2)',
+                            borderColor: 'rgba(255, 87, 51, 1)',
+                            pointBackgroundColor: 'rgba(255, 87, 51, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(255, 87, 51, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            ticks: {
+                                color: textColor,
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    responsive: true
+                }
+            });
+            
+            // 监听主题变化，更新图表颜色
+            themeToggle.addEventListener('click', () => {
+                const newIsDarkMode = !html.classList.contains('light');
+                const newTextColor = newIsDarkMode ? '#f5f5f5' : '#333333';
+                
+                radarChart.options.scales.r.angleLines.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                radarChart.options.scales.r.grid.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                radarChart.options.scales.r.pointLabels.color = newTextColor;
+                radarChart.options.scales.r.ticks.color = newTextColor;
+                radarChart.options.plugins.legend.labels.color = newTextColor;
+                
+                radarChart.update();
+            });
+        });
+        
+        // 滚动动画
+        document.addEventListener('DOMContentLoaded', function() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            if ('IntersectionObserver' in window) {
+                const fadeObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.opacity = 1;
+                            entry.target.style.transform = 'translateY(0)';
+                            fadeObserver.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                fadeElements.forEach(element => {
+                    element.style.opacity = 0;
+                    element.style.transform = 'translateY(20px)';
+                    element.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    fadeObserver.observe(element);
+                });
+            } else {
+                // 降级处理
+                fadeElements.forEach(element => {
+                    element.style.opacity = 1;
+                    element.style.transform = 'translateY(0)';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
+    
