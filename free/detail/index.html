@@ -184,29 +184,7 @@
             </div>
         </section>
 
-        <!-- 邮件订阅 -->
-        <section class="py-16 bg-darker">
-          <div class="container mx-auto px-4">
-            <div class="bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl p-8 border border-gray-800">
-              <h3 class="text-xl font-bold mb-4">订阅免费资源更新</h3>
-              <p class="text-gray-300 mb-6">获取最新免费资源和技术工具动态</p>
-              <div class="flex flex-col sm:flex-row gap-3 max-w-lg">
-                <input 
-                  type="email" 
-                  id="subscribeEmail"
-                  placeholder="输入您的邮箱地址"
-                  class="flex-1 bg-dark/70 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors"
-                >
-                <button 
-                  id="subscribeBtn"
-                  class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 whitespace-nowrap"
-                >
-                  立即订阅
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
+  
 
         <!-- 资源展示区 -->
         <section class="py-12 bg-dark">
@@ -382,8 +360,10 @@
 
     <!-- 资源详情模态框 -->
     <div id="resourceModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" id="modalOverlay"></div>
-        <div class="relative bg-dark-card border border-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+        <!-- Modal Overlay: z-40, pointer-events-none so content is clickable -->
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-sm z-40 pointer-events-none" id="modalOverlay"></div>
+        <!-- Modal Content: z-50, pointer-events-auto, overflow-y-auto -->
+        <div class="relative bg-dark-card border border-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 scale-95 opacity-0 z-50 pointer-events-auto overflow-y-auto" id="modalContent">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
                 <h3 class="text-xl font-bold" id="modalTitle"></h3>
                 <button id="closeModal" class="text-gray-400 hover:text-white transition-colors">
@@ -394,12 +374,20 @@
                 <!-- 模态框内容将通过JavaScript动态生成 -->
             </div>
             <div class="p-4 border-t border-gray-800 flex justify-end gap-3">
-                <a id="modalLink" href="#" target="_blank" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                <a id="modalLink"  href="#" target="_blank" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
                     <i class="fa fa-external-link mr-2"></i>
                     访问官网
                 </a>
-                <a id="modalGuideLink" href="#" class="bg-dark-hover hover:bg-gray-700 text-gray-200 font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                <a href="#" target="_blank" class="bg-dark-hover hover:bg-gray-700 text-gray-200 font-medium py-2 px-6 rounded-lg transition-all flex items-center">
                     <i class="fa fa-book mr-2"></i>
+                    申请指南
+                </a>
+                <a id="modalLink" href="#" target="_blank" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                    <i class="fa fa-flask mr-2"></i>
+                    访问官网
+                </a>
+                                <a id="modalGuideLink" href="/" target="_blank" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                    <i class="fa fa-flask mr-2"></i>
                     申请指南
                 </a>
             </div>
@@ -885,8 +873,10 @@
         function openResourceModal(resource) {
             document.getElementById('modalTitle').textContent = resource.name;
             document.getElementById('modalLink').href = resource.url;
-            document.getElementById('modalGuideLink').href = resource.guideUrl; // 使用修复后的路径
             
+            const guideBtn = document.getElementById('modalGuideLink');
+guideBtn.href = '/' + resource.guideUrl; // 使用修复后的路径
+guideBtn.classList.remove('pointer-events-none'); // 激活点击
             // 构建模态框内容
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = `
@@ -939,6 +929,9 @@
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
                 modalContent.classList.add('scale-100', 'opacity-100');
+                // Enable pointer events for modal overlay and content
+                modalOverlay.classList.remove('pointer-events-none');
+                modalContent.classList.add('pointer-events-auto');
             }, 10);
             
             // 阻止背景滚动
@@ -1073,6 +1066,7 @@
             // 模态框事件
             closeModal.addEventListener('click', closeResourceModal);
             modalOverlay.addEventListener('click', closeResourceModal);
+            // 移除测试按钮关闭模态框事件（不再需要）
             
             // 分类面板事件
             categoryToggle.addEventListener('click', toggleCategoryPanel);

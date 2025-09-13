@@ -1,669 +1,1016 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>免费邮件服务大全（带SMTP和限制信息）</title>
-  <!-- 外部资源引入 -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  
-  <!-- Tailwind配置 - 保持一致的设计系统 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#165DFF',    // 主色调：专业蓝
-            secondary: '#36CFC9',  // 辅助色：科技青
-            dark: '#1D2129',       // 文字深灰
-            light: '#F2F3F5',      // 背景浅灰
-            muted: '#86909C',      // 辅助文字灰
-            success: '#00B42A',    // 成功色
-            warning: '#FF7D00',    // 警告色
-            danger: '#F53F3F',     // 危险/限制提示色
-          },
-          fontFamily: {
-            inter: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  
-  <!-- 自定义工具类 -->
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .content-auto {
-        content-visibility: auto;
-      }
-      .card-hover {
-        @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
-      }
-      .text-balance {
-        text-wrap: balance;
-      }
-      .email-tag {
-        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-      }
-      .smtp-available {
-        @apply inline-flex items-center px-2 py-0.5 rounded bg-success/10 text-success text-xs font-medium;
-      }
-      .smtp-limited {
-        @apply inline-flex items-center px-2 py-0.5 rounded bg-warning/10 text-warning text-xs font-medium;
-      }
-      .smtp-unavailable {
-        @apply inline-flex items-center px-2 py-0.5 rounded bg-danger/10 text-danger text-xs font-medium;
-      }
-    }
-  </style>
-</head>
-
-<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
-  <!-- 顶部导航栏 -->
-  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <!-- Logo区域 -->
-      <a href="..//" class="flex items-center space-x-2">
-        <i class="fa fa-compass text-primary text-2xl"></i>
-        <h1 class="text-xl md:text-2xl font-bold text-primary">资源导航</h1>
-      </a>
-      
-      <!-- 桌面端导航 -->
-      <div class="hidden md:flex items-center space-x-6">
-        <a href="..//" class="text-dark hover:text-primary transition-colors">首页</a>
-        <a href="#" class="text-primary font-medium">资源分类</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
-          <i class="fa fa-github mr-1"></i> 提交资源
-        </a>
-        <a href="/about#about" class="text-muted hover:text-primary transition-colors">关于我们</a>
-      </div>
-      
-      <!-- 移动端菜单按钮 -->
-      <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
-        <i class="fa fa-bars text-xl"></i>
-      </button>
-    </div>
-    
-    <!-- 移动端导航菜单（默认隐藏） -->
-    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
-      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-        <a href="..//" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
-        <a href="#" class="py-2 text-primary font-medium">资源分类</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
-          <i class="fa fa-github mr-1"></i> 提交资源
-        </a>
-        <a href="/about#about" class="py-2 text-muted hover:text-primary transition-colors">关于我们</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- 页面标题区 -->
-  <section class="bg-gradient-to-r from-primary/90 to-primary text-white py-10 md:py-16">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold mb-2 text-balance">免费邮件服务大全</h2>
-          <p class="text-white/90 max-w-2xl text-balance">
-            精选国内外高质量免费邮件服务，重点标注SMTP可用性、发送限制和服务缺点，帮助开发者和个人用户快速选择
-          </p>
-        </div>
-        <!-- 资源统计卡片 -->
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-4 flex items-center space-x-4">
-          <div class="text-center">
-            <p class="text-white/80 text-sm">服务数量</p>
-            <p class="text-2xl font-bold" id="totalServices">0</p>
-          </div>
-          <div class="w-px h-10 bg-white/20"></div>
-          <div class="text-center">
-            <p class="text-white/80 text-sm">SMTP支持</p>
-            <p class="text-lg font-medium" id="smtpCount">0</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 面包屑导航 -->
-  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
-    <nav class="flex text-sm" aria-label="Breadcrumb">
-      <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-          <a href="..//" class="inline-flex items-center text-muted hover:text-primary transition-colors">
-            <i class="fa fa-home mr-2"></i>首页
-          </a>
-        </li>
-        <li>
-          <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <a href="#" class="text-muted hover:text-primary transition-colors">资源分类</a>
-          </div>
-        </li>
-        <li aria-current="page">
-          <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <span class="text-primary font-medium">免费邮件服务</span>
-          </div>
-        </li>
-      </ol>
-    </nav>
-  </div>
-
-  <!-- 核心内容区 -->
-  <main class="container mx-auto px-4 py-8 flex-grow">
-    <!-- 知识科普卡片 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-4 flex items-center">
-        <i class="fa fa-envelope text-primary mr-2"></i>邮件服务选择指南
-      </h3>
-      <div class="bg-light rounded-lg p-4 mb-4">
-        <p class="text-muted">
-          <i class="fa fa-info-circle text-primary mr-2"></i>
-          选择邮件服务时，除了基础功能外，SMTP可用性、发送限制、反垃圾邮件政策和稳定性是关键考量因素，特别是对于需要程序自动发送邮件的场景。
-        </p>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- SMTP说明 -->
-        <div class="bg-light rounded-lg p-4">
-          <h4 class="font-medium text-primary mb-2 flex items-center">
-            <i class="fa fa-server mr-2"></i>SMTP 重要性
-          </h4>
-          <p class="text-muted text-sm">
-            SMTP接口允许程序自动发送邮件，对网站通知、系统告警、用户验证等场景至关重要。不同服务对SMTP的支持程度和配置复杂度差异较大。
-          </p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <span class="smtp-available"><i class="fa fa-check mr-1 text-xs"></i> 完全支持</span>
-            <span class="smtp-limited"><i class="fa fa-exclamation mr-1 text-xs"></i> 有限支持</span>
-            <span class="smtp-unavailable"><i class="fa fa-times mr-1 text-xs"></i> 不支持</span>
-          </div>
-        </div>
-        
-        <!-- 关键指标 -->
-        <div class="bg-light rounded-lg p-4">
-          <h4 class="font-medium text-primary mb-2 flex items-center">
-            <i class="fa fa-tachometer mr-2"></i>关键评估指标
-          </h4>
-          <p class="text-muted text-sm">
-            评估邮件服务时需关注每日发送限额、附件大小限制、反垃圾邮件政策严格程度、送达率和国内外访问稳定性等因素。
-          </p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <span class="email-tag bg-blue-100 text-blue-800">发送限额</span>
-            <span class="email-tag bg-green-100 text-green-800">送达率</span>
-            <span class="email-tag bg-purple-100 text-purple-800">稳定性</span>
-          </div>
-        </div>
-        
-        <!-- 适用场景 -->
-        <div class="bg-light rounded-lg p-4">
-          <h4 class="font-medium text-primary mb-2 flex items-center">
-            <i class="fa fa-bullseye mr-2"></i>适用场景分析
-          </h4>
-          <p class="text-muted text-sm">
-            个人通讯、开发测试、企业应用等不同场景对邮件服务有不同需求。临时邮箱适合注册验证，而企业邮箱适合正式业务沟通。
-          </p>
-          <div class="mt-3 flex flex-wrap gap-2">
-            <span class="email-tag bg-blue-100 text-blue-800">个人通讯</span>
-            <span class="email-tag bg-green-100 text-green-800">开发测试</span>
-            <span class="email-tag bg-purple-100 text-purple-800">企业应用</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 邮件服务列表 - 桌面端表格视图 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm hidden md:block">
-      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-        <h3 class="text-xl font-bold flex items-center">
-          <i class="fa fa-th-list text-primary mr-2"></i>免费邮件服务对比
-        </h3>
-        <div class="flex flex-wrap gap-2" id="desktopTags">
-          <!-- 标签将从JSON数据动态生成 -->
-        </div>
-      </div>
-      
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-light">
-              <th class="py-3 px-4 text-left border-b">服务名称</th>
-              <th class="py-3 px-4 text-left border-b">官网链接</th>
-              <th class="py-3 px-4 text-left border-b">SMTP 接口</th>
-              <th class="py-3 px-4 text-left border-b">每日发送上限</th>
-              <th class="py-3 px-4 text-left border-b">附件大小限制</th>
-              <th class="py-3 px-4 text-left border-b">缺点 / 限制</th>
-            </tr>
-          </thead>
-          <tbody id="desktopTableBody">
-            <tr>
-              <td colspan="6" class="py-8 text-center text-muted">
-                <i class="fa fa-spinner fa-spin mr-2"></i>加载邮件服务数据中...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- 邮件服务列表 - 移动端卡片视图 -->
-    <div class="md:hidden mb-8 space-y-4">
-      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-sm">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <h3 class="text-xl font-bold flex items-center">
-            <i class="fa fa-th-list text-primary mr-2"></i>免费邮件服务
-          </h3>
-          <div class="flex flex-wrap gap-2" id="mobileTags">
-            <!-- 标签将从JSON数据动态生成 -->
-          </div>
-        </div>
-        
-        <!-- 服务卡片列表 -->
-        <div class="space-y-4" id="mobileCardsContainer">
-          <div class="text-center py-8 text-muted">
-            <i class="fa fa-spinner fa-spin mr-2"></i>加载邮件服务数据中...
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 使用指南与最佳实践 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-4 flex items-center">
-        <i class="fa fa-lightbulb-o text-primary mr-2"></i>邮件服务使用指南
-      </h3>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- 开发场景选择 -->
-        <div>
-          <h4 class="font-medium text-dark mb-3 flex items-center">
-            <i class="fa fa-code text-primary mr-2"></i>开发场景选择建议
-          </h4>
-          <ul class="text-muted space-y-2 text-sm">
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>用户验证邮件</strong>：优先选择Gmail或Outlook，送达率高，被标记为垃圾邮件概率低</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>国内项目通知</strong>：推荐QQ邮箱或网易邮箱，国内访问稳定，发送限制较宽松</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>测试环境</strong>：可使用InfinityFree或000WebHost邮箱，降低主邮箱被封禁风险</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>隐私敏感邮件</strong>：选择ProtonMail，提供端到端加密，但需接受功能限制</span>
-            </li>
-          </ul>
-        </div>
-        
-        <!-- 避免被封技巧 -->
-        <div>
-          <h4 class="font-medium text-dark mb-3 flex items-center">
-            <i class="fa fa-shield text-primary mr-2"></i>避免邮箱被封禁技巧
-          </h4>
-          <ul class="text-muted space-y-2 text-sm">
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>控制发送频率</strong>：避免短时间内发送大量邮件，尽量分散发送时间</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>规范邮件内容</strong>：避免使用垃圾邮件关键词，添加清晰的退订选项</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>正确配置SPF/DKIM</strong>：对于自定义域名邮箱，配置这些记录可提高送达率</span>
-            </li>
-            <li class="flex items-start">
-              <i class="fa fa-angle-right text-primary mt-1 mr-2"></i>
-              <span><strong>监控退信和投诉</strong>：及时处理退信，降低投诉率，避免触发反垃圾机制</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- 资源贡献区域 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-4 flex items-center">
-        <i class="fa fa-github text-primary mr-2"></i>贡献资源
-      </h3>
-      <p class="text-muted mb-4">
-        发现了不错的免费邮件服务？或者对现有服务的限制有补充信息？欢迎通过GitHub issues提交贡献！
-      </p>
-      <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
-        <i class="fa fa-github mr-2"></i> 提交issue
-      </a>
-    </div>
-  </main>
-
-  <!-- 页脚 -->
-  <footer class="bg-dark text-white py-10 mt-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <!-- 品牌信息 -->
-        <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <i class="fa fa-compass text-secondary text-2xl"></i>
-            <h3 class="text-xl font-bold">资源导航</h3>
-          </div>
-          <p class="text-gray-400 mb-4">
-            为开发者提供精选免费资源导航，覆盖域名、服务器、API、工具等全品类需求，助力项目开发与创新
-          </p>
-          <div class="flex space-x-4">
-            <a href="https://github.com/guomengtao/rinuo.com" target="_blank" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-github text-xl"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-twitter text-xl"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-secondary transition-colors">
-              <i class="fa fa-linkedin text-xl"></i>
-            </a>
-          </div>
-        </div>
-        
-        <!-- 快速链接 -->
-        <div>
-          <h4 class="text-lg font-medium mb-4">快速链接</h4>
-          <ul class="space-y-2">
-            <li><a href="..//" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
-            <li><a href="#" class="text-gray-400 hover:text-white transition-colors">资源分类</a></li>
-            <li>
-              <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-gray-400 hover:text-white transition-colors flex items-center">
-                <i class="fa fa-github mr-1"></i> 提交资源
-              </a>
-            </li>
-            <li><a href="/about#terms" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
-            <li><a href="/about#privacy" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
-          </ul>
-        </div>
-        
-        <!-- 订阅更新 -->
-        <div>
-          <h4 class="text-lg font-medium mb-4">订阅资源更新</h4>
-          <p class="text-gray-400 mb-4">获取最新免费资源信息和使用教程</p>
-          <form class="flex flex-col sm:flex-row gap-2">
-            <input type="email" placeholder="输入你的邮箱" class="flex-grow px-4 py-2 rounded-lg focus:outline-none text-dark" required>
-            <button type="submit" class="bg-secondary hover:bg-secondary/90 text-white px-4 py-2 rounded-lg transition-colors whitespace-nowrap">
-              立即订阅
-            </button>
-          </form>
-        </div>
-      </div>
-      
-      <!-- 版权信息 -->
-      <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500 text-sm">
-        <p>© 2025 开发者资源导航 | 本站资源仅供学习使用，版权归原作者所有</p>
-        <p class="mt-2">本页面最后更新时间：<span id="lastUpdated">加载中...</span></p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- 回到顶部按钮 -->
-  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
-    <i class="fa fa-chevron-up"></i>
-  </button>
-
-  <!-- JavaScript 交互逻辑 -->
-  <script>
-    // 移动端菜单切换
-    const menuBtn = document.getElementById('menuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-
-    // 回到顶部按钮
-    const backToTopBtn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        backToTopBtn.classList.remove('opacity-0', 'invisible');
-        backToTopBtn.classList.add('opacity-100', 'visible');
-      } else {
-        backToTopBtn.classList.add('opacity-0', 'invisible');
-        backToTopBtn.classList.remove('opacity-100', 'visible');
-      }
-
-      // 导航栏滚动效果
-      const header = document.querySelector('header');
-      if (window.scrollY > 50) {
-        header.classList.add('py-2');
-        header.classList.remove('py-4');
-      } else {
-        header.classList.add('py-4');
-        header.classList.remove('py-2');
-      }
-    });
-
-    // 回到顶部功能
-    backToTopBtn.addEventListener('click', () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-
-    // 外部链接提示
-    document.addEventListener('click', (e) => {
-      if (e.target.closest('a[target="_blank"]')) {
-        const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
-        if (!confirmLeave) {
-          e.preventDefault();
-        }
-      }
-    });
-
-    // 从email.json加载数据并渲染页面
-    async function loadEmailServices() {
-      try {
-        // 先定义发送限制和附件限制等数据
-        const sendLimits = {
-          'gmail': '100~500 封',
-          'outlook': '约 300 封',
-          'yahoo-mail': '约 500 封',
-          'zoho-mail': '50 封',
-          'proton-mail': '150 封',
-          'qq-mail': '约 200 封',
-          'netease-mail': '约 200 封',
-          'yopmail': '0（仅接收）',
-          'gmx-mail': '约 500 封'
-        };
-        
-        const attachmentLimits = {
-          'gmail': '25MB',
-          'outlook': '20MB',
-          'yahoo-mail': '25MB',
-          'zoho-mail': '25MB',
-          'proton-mail': '25MB',
-          'qq-mail': '50MB',
-          'netease-mail': '50MB',
-          'yopmail': '不支持',
-          'gmx-mail': '50MB'
-        };
-        
-        const limitations = {
-          'gmail': '需 OAuth2 或开启"低安全应用访问"；国内访问可能慢；反垃圾邮件政策严格',
-          'outlook': '需 SSL/TLS；免费版功能有限；垃圾邮件过滤有时过于严格',
-          'yahoo-mail': '需生成应用专用密码；界面广告多；账户安全性一般',
-          'zoho-mail': '仅支持自定义域名；移动端体验一般；设置相对复杂',
-          'proton-mail': '免费版功能有限；Web邮箱延迟大；SMTP配置复杂',
-          'qq-mail': '需开启 SMTP/POP3 服务；国外项目可能受限制；部分邮件易被标记为垃圾邮件',
-          'netease-mail': '需开启 SMTP；广告较多；第三方客户端支持一般',
-          'yopmail': '仅用于接收临时邮件，不支持发信；不适合正式注册；邮件保存时间有限',
-          'gmx-mail': '界面广告较多；国内访问速度一般；反垃圾策略较严格'
-        };
-
-        // 邮件服务数据 - 直接嵌入，无需外部JSON
-        const emailData = {
-          "schemaVersion": 1,
-          "category": "email",
-          "updatedAt": "2025-08-31",
-          "subcategories": [
-            {
-              "slug": "personal",
-              "name": "个人邮箱",
-              "items": [
-                {"id": "gmail", "title": "Gmail", "description": "Google 邮箱，送达率高，SMTP 可用。", "url": "https://mail.google.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "稳定", "个人"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "outlook", "title": "Outlook", "description": "微软邮箱，SMTP 可用且稳定。", "url": "https://outlook.live.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "稳定", "个人"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "yahoo-mail", "title": "Yahoo Mail", "description": "雅虎邮箱，支持应用专用密码，SMTP 可用。", "url": "https://www.yahoo.com/mail", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "个人"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "qq-mail", "title": "QQ 邮箱", "description": "国内常用邮箱，需开启 SMTP/POP3。", "url": "https://mail.qq.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "国内"], "updatedAt": "2025-08-29", "region": "cn"},
-                {"id": "netease-mail", "title": "网易邮箱", "description": "国内常用邮箱，需开启 SMTP。", "url": "https://www.163.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "国内"], "updatedAt": "2025-08-29", "region": "cn"},
-                {"id": "gmx-mail", "title": "GMX Mail", "description": "国外免费邮箱，SMTP 可用。", "url": "https://www.gmx.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "个人"], "updatedAt": "2025-08-29", "region": "global"}
-              ]
-            },
-            {
-              "slug": "enterprise",
-              "name": "企业/自定义域",
-              "items": [
-                {"id": "zoho-mail", "title": "Zoho Mail", "description": "企业邮箱服务，支持自定义域名，免费版有限制。", "url": "https://www.zoho.com/mail/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "企业", "自定义域"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "yandex-mail", "title": "Yandex Mail", "description": "俄罗斯邮箱服务，支持自定义域名，SMTP 可用。", "url": "https://mail.yandex.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "企业", "自定义域"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "mailgun", "title": "Mailgun", "description": "邮件发送服务，提供免费额度，适合开发者。", "url": "https://www.mailgun.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "API", "开发者"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "sendgrid", "title": "SendGrid", "description": "邮件发送服务，免费版每月可发送 100 封邮件。", "url": "https://sendgrid.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "API", "开发者"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "mailjet", "title": "Mailjet", "description": "邮件营销服务，免费版每月可发送 200 封邮件。", "url": "https://www.mailjet.com/", "isFree": true, "isOpenSource": false, "tags": ["SMTP", "营销", "模板"], "updatedAt": "2025-08-29", "region": "global"}
-              ]
-            },
-            {
-              "slug": "temporary",
-              "name": "临时邮箱",
-              "items": [
-                {"id": "yopmail", "title": "YOPmail", "description": "临时邮箱服务，无需注册，适合临时使用。", "url": "https://yopmail.com/", "isFree": true, "isOpenSource": false, "tags": ["临时", "无需注册"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "10minutemail", "title": "10 Minute Mail", "description": "10分钟临时邮箱，自动销毁，适合测试。", "url": "https://10minutemail.com/", "isFree": true, "isOpenSource": false, "tags": ["临时", "自动销毁"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "guerrillamail", "title": "Guerrilla Mail", "description": "一次性临时邮箱，支持多种域名。", "url": "https://www.guerrillamail.com/", "isFree": true, "isOpenSource": false, "tags": ["临时", "一次性"], "updatedAt": "2025-08-29", "region": "global"},
-                {"id": "tempmail", "title": "Temp Mail", "description": "临时邮箱服务，支持多种语言。", "url": "https://temp-mail.org/", "isFree": true, "isOpenSource": false, "tags": ["临时", "多语言"], "updatedAt": "2025-08-29", "region": "global"}
-              ]
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Top Secure & Free Email Services - Comprehensive list of privacy-focused, business-ready email providers with SMTP support, ratings, and comparison tools">
+    <meta name="keywords" content="free email service, secure email, privacy email, SMTP email, business email, transactional email, email API">
+    <meta name="author" content="Rinuo Resources">
+    <meta name="googlebot" content="index, follow">
+    <meta property="og:title" content="Secure Free Email Services | Top Rated Providers">
+    <meta property="og:description" content="Discover the best secure and free email services with SMTP support, privacy features, and business tools. Compare ratings, features, pros and cons.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rinuo.com/free/detail/email-services">
+    <meta property="og:image" content="https://rinuo.com/og-email-services.jpg">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Top Secure Free Email Services">
+    <meta name="twitter:description" content="Compare the best free email services with security, privacy, and SMTP support. Find your ideal email provider today.">
+    <title>Top Secure Free Email Services | Rated & Compared</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a',
+                        darker: '#030712',
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        accent: '#ec4899',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        neutral: '#64748b'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
             }
-          ]
-        };
-        
-        // 更新最后更新时间
-        document.getElementById('lastUpdated').textContent = emailData.updatedAt || '未知';
-        
-        // 收集所有邮件服务项目
-        const allItems = [];
-        emailData.subcategories.forEach(subcat => {
-          subcat.items.forEach(item => {
-            allItems.push({...item, subcategory: subcat.name});
-          });
-        });
-        
-        // 更新统计数据
-        document.getElementById('totalServices').textContent = allItems.length;
-        const smtpSupported = allItems.filter(item => 
-          item.tags && item.tags.includes('SMTP')
-        ).length;
-        document.getElementById('smtpCount').textContent = `${smtpSupported}+ 服务`;
-        
-        // 提取并显示所有唯一标签
-        const allTags = new Set();
-        allItems.forEach(item => {
-          if (item.tags) {
-            item.tags.forEach(tag => allTags.add(tag));
-          }
-        });
-        
-        const tagContainerDesktop = document.getElementById('desktopTags');
-        const tagContainerMobile = document.getElementById('mobileTags');
-        allTags.forEach(tag => {
-          const tagEl = document.createElement('span');
-          tagEl.className = 'email-tag bg-primary/10 text-primary';
-          tagEl.textContent = tag;
-          
-          // 复制标签到桌面端和移动端
-          tagContainerDesktop.appendChild(tagEl.cloneNode(true));
-          tagContainerMobile.appendChild(tagEl);
-        });
-        
-        // 渲染桌面端表格
-        const tableBody = document.getElementById('desktopTableBody');
-        tableBody.innerHTML = '';
-        
-        allItems.forEach(item => {
-          const row = document.createElement('tr');
-          row.className = 'hover:bg-gray-50 transition-colors';
-          
-          // 确定SMTP状态标签
-          let smtpStatus = '<span class="smtp-unavailable">不可用</span>';
-          if (item.tags && item.tags.includes('SMTP')) {
-            smtpStatus = '<span class="smtp-available">可用，稳定</span>';
-          }
-          
-          row.innerHTML = `
-            <td class="py-3 px-4 border-b font-medium">${item.title}</td>
-            <td class="py-3 px-4 border-b">
-              <a href="${item.url}" target="_blank" class="text-primary hover:underline flex items-center">
-                访问 <i class="fa fa-external-link ml-1 text-xs"></i>
-              </a>
-            </td>
-            <td class="py-3 px-4 border-b">${smtpStatus}</td>
-            <td class="py-3 px-4 border-b">${sendLimits[item.id] || '未知'}</td>
-            <td class="py-3 px-4 border-b">${attachmentLimits[item.id] || '未知'}</td>
-            <td class="py-3 px-4 border-b text-sm">${limitations[item.id] || '无详细信息'}</td>
-          `;
-          
-          tableBody.appendChild(row);
-        });
-        
-        // 渲染移动端卡片
-        const mobileContainer = document.getElementById('mobileCardsContainer');
-        mobileContainer.innerHTML = '';
-        
-        allItems.forEach(item => {
-          const card = document.createElement('div');
-          card.className = 'border border-gray-100 rounded-lg p-4 card-hover';
-          
-          // 确定SMTP状态标签
-          let smtpBadge = '<span class="smtp-unavailable">无SMTP</span>';
-          if (item.tags && item.tags.includes('SMTP')) {
-            smtpBadge = '<span class="smtp-available">SMTP可用</span>';
-          }
-          
-          // 发送上限和附件限制
-          const sendLimit = sendLimits[item.id] || '未知';
-          const attachmentLimit = attachmentLimits[item.id] || '未知';
-          
-          card.innerHTML = `
-            <div class="flex justify-between items-start mb-2">
-              <h5 class="font-medium">${item.title}</h5>
-              ${smtpBadge}
-            </div>
-            <p class="text-muted text-sm mb-2">每日发送上限: ${sendLimit} | 附件限制: ${attachmentLimit}</p>
-            
-            <!-- 限制和缺点 -->
-            <div class="bg-danger/5 p-3 rounded-lg mb-3 text-sm">
-              <p class="font-medium text-danger mb-1 flex items-center">
-                <i class="fa fa-exclamation-circle mr-1"></i> 限制与缺点
-              </p>
-              <p class="text-muted">${limitations[item.id] || '无详细信息'}</p>
-            </div>
-            
-            <a href="${item.url}" target="_blank" class="text-primary hover:underline flex items-center text-sm">
-              访问服务 <i class="fa fa-external-link ml-1 text-xs"></i>
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1;
+            }
+            .bg-gradient-dark {
+                background: linear-gradient(135deg, #030712 0%, #0f172a 100%);
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-dark text-gray-200 min-h-screen">
+    <!-- Header Navigation -->
+    <header class="sticky top-0 z-50 bg-darker/90 backdrop-blur-md border-b border-gray-800 animate-fade-in">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="/" class="flex items-center gap-2 text-primary font-bold text-xl">
+                <i class="fa fa-rocket text-accent animate-pulse-slow"></i>
+                <span>Rinuo Resources</span>
             </a>
-          `;
-          
-          mobileContainer.appendChild(card);
-        });
-        
-      } catch (error) {
-        console.error('加载邮件服务数据失败:', error);
-        // 显示错误信息
-        document.getElementById('desktopTableBody').innerHTML = `
-          <tr><td colspan="6" class="py-8 text-center text-danger">
-            <i class="fa fa-exclamation-circle mr-2"></i>数据加载失败，请稍后重试
-          </td></tr>
-        `;
-        document.getElementById('mobileCardsContainer').innerHTML = `
-          <div class="text-center py-8 text-danger">
-            <i class="fa fa-exclamation-circle mr-2"></i>数据加载失败，请稍后重试
-          </div>
-        `;
-      }
-    }
+            <nav class="hidden md:flex items-center gap-6">
+                <a href="/" class="text-gray-300 hover:text-primary transition-colors">Home</a>
+                <a href="/free" class="text-gray-300 hover:text-primary transition-colors">Free Resources</a>
+                <a href="/sitemap.html" class="text-gray-300 hover:text-primary transition-colors">Sitemap</a>
+                <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener" class="flex items-center gap-1 text-gray-300 hover:text-accent transition-colors">
+                    <i class="fa fa-github"></i>
+                    <span>Fork Repo</span>
+                </a>
+            </nav>
+            <button class="md:hidden text-gray-300 hover:text-primary">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+    </header>
 
-    // 页面加载完成后加载邮件服务数据
-    document.addEventListener('DOMContentLoaded', loadEmailServices);
-  </script>
-<script type="module" src="/main.js"></script>
+    <main class="container mx-auto px-4 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="mb-8 text-sm text-gray-400 animate-fade-in" aria-label="Breadcrumb">
+            <ol class="flex items-center gap-2">
+                <li><a href="/" class="hover:text-primary transition-colors">Home</a></li>
+                <li class="flex items-center gap-2">
+                    <i class="fa fa-chevron-right text-xs"></i>
+                    <a href="/free" class="hover:text-primary transition-colors">Resource Categories</a>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i class="fa fa-chevron-right text-xs"></i>
+                    <a href="/free/detail/" class="hover:text-primary transition-colors">Resource List</a>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i class="fa fa-chevron-right text-xs"></i>
+                    <span class="text-primary">Secure Email Services</span>
+                </li>
+            </ol>
+        </nav>
+
+        <!-- Page Title & Introduction -->
+        <section class="mb-12 animate-slide-up">
+            <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-white mb-4 text-shadow">
+                Top <span class="text-primary">Secure</span> & <span class="text-accent">Free</span> Email Services
+            </h1>
+            <p class="text-lg text-gray-400 max-w-3xl">
+                Discover the best email services that prioritize privacy, security, and reliability. 
+                Our curated list includes both free and premium options with detailed comparisons, 
+                pros and cons, and easy access to setup guides.
+            </p>
+        </section>
+
+        <!-- Radar Chart Comparison -->
+        <section class="mb-16 bg-darker rounded-xl p-6 border border-gray-800 animate-slide-up" style="animation-delay: 0.2s">
+            <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-2">
+                <i class="fa fa-line-chart text-warning"></i>
+                Service Performance Comparison
+            </h2>
+            <div class="h-[400px] w-full">
+                <canvas id="emailRadarChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Email Service Cards Grid -->
+        <section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+            <!-- Posteo Mail Card -->
+            <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 card-hover animate-slide-up" style="animation-delay: 0.3s">
+                <div class="h-2 bg-primary"></div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold text-white">Posteo Mail</h3>
+                        <div class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+                            Premium
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-warning mr-2">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                        </div>
+                        <span class="text-gray-400">8/10</span>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-6">
+                        Secure, privacy-focused email service with reliable delivery and strong encryption protocols.
+                    </p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm uppercase text-gray-500 mb-2">Key Features</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Secure</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Privacy</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Reliable</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">SMTP Support</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Pros</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Privacy-first approach</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>End-to-end encryption</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Excellent reliability</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Cons</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>No free tier</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Limited business tools</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Rate limits depend on plan</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://posteo.de/en/help/api" target="_blank" rel="noopener" class="flex-1 bg-gray-800 hover:bg-gray-700 text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <a href="https://posteo.de/" target="_blank" rel="noopener" class="flex-1 bg-primary hover:bg-primary/90 text-white text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-external-link"></i>
+                            <span>Visit Site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zoho Mail Card -->
+            <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 card-hover animate-slide-up" style="animation-delay: 0.4s">
+                <div class="h-2 bg-secondary"></div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold text-white">Zoho Mail</h3>
+                        <div class="bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium">
+                            Free Tier
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-warning mr-2">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                        </div>
+                        <span class="text-gray-400">8/10</span>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-6">
+                        Professional email service with integrated business tools, clean interface, and SMTP support.
+                    </p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm uppercase text-gray-500 mb-2">Key Features</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Business</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">SMTP</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Free Tier</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Integrated Tools</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Pros</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Business-ready features</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Free tier available</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Clean, intuitive interface</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Cons</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Limited storage on free plan</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Advanced features require upgrade</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Steeper learning curve</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://www.zoho.com/mail/help/api/" target="_blank" rel="noopener" class="flex-1 bg-gray-800 hover:bg-gray-700 text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <a href="https://www.zoho.com/mail/" target="_blank" rel="noopener" class="flex-1 bg-secondary hover:bg-secondary/90 text-white text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-external-link"></i>
+                            <span>Visit Site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GMX Mail Card -->
+            <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 card-hover animate-slide-up" style="animation-delay: 0.5s">
+                <div class="h-2 bg-warning"></div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold text-white">GMX Mail</h3>
+                        <div class="bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium">
+                            Free
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-warning mr-2">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-o"></i>
+                        </div>
+                        <span class="text-gray-400">7/10</span>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-6">
+                        Free email provider with robust spam protection, generous storage, and SMTP support.
+                    </p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm uppercase text-gray-500 mb-2">Key Features</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Free</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">SMTP</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Spam Protection</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Generous Storage</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Pros</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Completely free to use</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Excellent spam filtering</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>SMTP support included</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Cons</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Contains advertisements</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Limited privacy features</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Basic interface</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://www.gmx.com/mail/help/api" target="_blank" rel="noopener" class="flex-1 bg-gray-800 hover:bg-gray-700 text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <a href="https://www.gmx.com/" target="_blank" rel="noopener" class="flex-1 bg-warning hover:bg-warning/90 text-white text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-external-link"></i>
+                            <span>Visit Site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mailjet Card -->
+            <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 card-hover animate-slide-up" style="animation-delay: 0.6s">
+                <div class="h-2 bg-success"></div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold text-white">Mailjet</h3>
+                        <div class="bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium">
+                            Free Tier
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-warning mr-2">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                        </div>
+                        <span class="text-gray-400">8/10</span>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-6">
+                        Email API service with marketing and transactional support, easy integration, and analytics.
+                    </p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm uppercase text-gray-500 mb-2">Key Features</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Transactional</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Marketing</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">API</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">6k Emails/Month Free</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Pros</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Marketing + transactional</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>6,000 free emails/month</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Easy integration</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Cons</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Limited features on free plan</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Basic analytics only</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Not for personal email use</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://dev.mailjet.com/" target="_blank" rel="noopener" class="flex-1 bg-gray-800 hover:bg-gray-700 text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <a href="https://www.mailjet.com" target="_blank" rel="noopener" class="flex-1 bg-success hover:bg-success/90 text-white text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-external-link"></i>
+                            <span>Visit Site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SparkPost Card -->
+            <div class="bg-darker rounded-xl overflow-hidden border border-gray-800 card-hover animate-slide-up" style="animation-delay: 0.7s">
+                <div class="h-2 bg-accent"></div>
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-semibold text-white">SparkPost</h3>
+                        <div class="bg-success/10 text-success px-3 py-1 rounded-full text-sm font-medium">
+                            Free Tier
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center mb-4">
+                        <div class="flex text-warning mr-2">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <span class="text-gray-400">9/10</span>
+                    </div>
+                    
+                    <p class="text-gray-400 mb-6">
+                        Cloud email service with high deliverability, strong analytics, and reliable SMTP support.
+                    </p>
+                    
+                    <div class="mb-6">
+                        <h4 class="text-sm uppercase text-gray-500 mb-2">Key Features</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Cloud</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Analytics</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">Reliable</span>
+                            <span class="bg-gray-800 text-gray-300 px-2 py-1 rounded text-xs">15k Emails/Month Free</span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Pros</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>15,000 free emails/month</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>High deliverability rates</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-check text-success mt-1"></i>
+                                    <span>Advanced analytics</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="text-sm uppercase text-gray-500 mb-2">Cons</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Complex setup for beginners</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Focused on developers</span>
+                                </li>
+                                <li class="flex items-start gap-1">
+                                    <i class="fa fa-times text-danger mt-1"></i>
+                                    <span>Limited support on free plan</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <a href="https://developers.sparkpost.com/api/" target="_blank" rel="noopener" class="flex-1 bg-gray-800 hover:bg-gray-700 text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-book"></i>
+                            <span>Documentation</span>
+                        </a>
+                        <a href="https://www.sparkpost.com" target="_blank" rel="noopener" class="flex-1 bg-accent hover:bg-accent/90 text-white text-center py-2 rounded transition-colors flex items-center justify-center gap-1">
+                            <i class="fa fa-external-link"></i>
+                            <span>Visit Site</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- How to Get Started Card -->
+            <div class="bg-gradient-to-br from-primary/20 to-accent/20 rounded-xl overflow-hidden border border-gray-800 p-6 animate-float animate-slide-up" style="animation-delay: 0.8s">
+                <h3 class="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+                    <i class="fa fa-lightbulb-o text-warning"></i>
+                    How to Get Started
+                </h3>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="bg-darker/70 p-4 rounded-lg backdrop-blur-sm">
+                        <h4 class="font-medium text-white mb-2">1. Choose Your Provider</h4>
+                        <p class="text-gray-300 text-sm">
+                            Select an email service based on your needs (personal, business, marketing) and budget.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-darker/70 p-4 rounded-lg backdrop-blur-sm">
+                        <h4 class="font-medium text-white mb-2">2. Sign Up for an Account</h4>
+                        <p class="text-gray-300 text-sm">
+                            Visit the provider's website and create an account. For free tiers, no payment is required.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-darker/70 p-4 rounded-lg backdrop-blur-sm">
+                        <h4 class="font-medium text-white mb-2">3. Configure SMTP (Optional)</h4>
+                        <p class="text-gray-300 text-sm">
+                            Use the provider's documentation to set up SMTP for third-party application integration.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-darker/70 p-4 rounded-lg backdrop-blur-sm">
+                        <h4 class="font-medium text-white mb-2">4. Start Using Your Email</h4>
+                        <p class="text-gray-300 text-sm">
+                            Begin sending and receiving emails, using additional features based on your selected plan.
+                        </p>
+                    </div>
+                </div>
+                
+                <a href="/free" class="block w-full bg-white/10 hover:bg-white/20 text-center py-3 rounded-lg transition-colors text-white font-medium">
+                    Explore More Free Resources
+                </a>
+            </div>
+        </section>
+
+        <!-- Comparison Table -->
+        <section class="mb-16 overflow-hidden bg-darker rounded-xl border border-gray-800 animate-slide-up" style="animation-delay: 0.9s">
+            <h2 class="text-2xl font-semibold text-white mb-6 p-6 border-b border-gray-800">
+                Detailed Service Comparison
+            </h2>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-gray-800/50">
+                            <th class="px-6 py-4 text-sm font-semibold text-gray-300">Service Name</th>
+                            <th class="px-6 py-4 text-sm font-semibold text-gray-300">Pricing</th>
+                            <th class="px-6 py-4 text-sm font-semibold text-gray-300">Rating</th>
+                            <th class="px-6 py-4 text-sm font-semibold text-gray-300">Free Tier</th>
+                            <th class="px-6 py-4 text-sm font-semibold text-gray-300">SMTP Support</th>
+                            <th class="px-6 py-4 text-sm font-semibold text-gray-300">Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-800">
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-medium text-white">Posteo Mail</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Premium</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex text-warning mr-2">
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star-half-o text-xs"></i>
+                                    </div>
+                                    <span class="text-gray-400 text-sm">8/10</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-danger/10 text-danger px-2 py-1 rounded text-xs">No</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Privacy-focused users</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-medium text-white">Zoho Mail</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Free + Premium</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex text-warning mr-2">
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star-half-o text-xs"></i>
+                                    </div>
+                                    <span class="text-gray-400 text-sm">8/10</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Small businesses</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-medium text-white">GMX Mail</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Free</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex text-warning mr-2">
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star-o text-xs"></i>
+                                    </div>
+                                    <span class="text-gray-400 text-sm">7/10</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Personal use</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-medium text-white">Mailjet</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Free + Premium</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex text-warning mr-2">
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star-half-o text-xs"></i>
+                                    </div>
+                                    <span class="text-gray-400 text-sm">8/10</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes (6k/month)</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Marketing emails</td>
+                        </tr>
+                        <tr class="hover:bg-gray-800/30 transition-colors">
+                            <td class="px-6 py-4">
+                                <span class="font-medium text-white">SparkPost</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Free + Premium</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center">
+                                    <div class="flex text-warning mr-2">
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                        <i class="fa fa-star text-xs"></i>
+                                    </div>
+                                    <span class="text-gray-400 text-sm">9/10</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes (15k/month)</span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="bg-success/10 text-success px-2 py-1 rounded text-xs">Yes</span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-400">Developers/Transactional</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="mb-16 bg-gradient-to-r from-primary/20 to-accent/20 rounded-xl p-8 border border-gray-800 text-center animate-slide-up" style="animation-delay: 1s">
+            <h2 class="text-2xl font-bold text-white mb-4">Find Your Perfect Email Service Today</h2>
+            <p class="text-gray-300 max-w-2xl mx-auto mb-8">
+                All services listed offer free options or trials to get you started. 
+                Click through to the provider's website to create your account and start using your new email service.
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="/free" class="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-lg transition-colors font-medium">
+                    Explore More Free Resources
+                </a>
+                <a href="/sitemap.html" class="bg-gray-800 hover:bg-gray-700 text-white px-6 py-3 rounded-lg transition-colors font-medium">
+                    View Full Sitemap
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-darker border-t border-gray-800 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <i class="fa fa-rocket text-accent"></i>
+                        Rinuo Resources
+                    </h3>
+                    <p class="text-gray-400 text-sm">
+                        Curated collection of the best free and premium digital resources for developers, designers, and businesses.
+                    </p>
+                </div>
+                <div>
+                    <h4 class="text-md font-medium text-white mb-4">Quick Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/" class="text-gray-400 hover:text-primary transition-colors">Home</a></li>
+                        <li><a href="/free" class="text-gray-400 hover:text-primary transition-colors">Free Resources</a></li>
+                        <li><a href="/sitemap.html" class="text-gray-400 hover:text-primary transition-colors">Sitemap</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-medium text-white mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Email Services</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">API Collections</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">Development Tools</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-md font-medium text-white mb-4">Connect</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li>
+                            <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener" class="text-gray-400 hover:text-primary transition-colors flex items-center gap-2">
+                                <i class="fa fa-github"></i>
+                                <span>Fork on GitHub</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="text-gray-400 hover:text-primary transition-colors flex items-center gap-2">
+                                <i class="fa fa-twitter"></i>
+                                <span>Follow on Twitter</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0">
+                    &copy; 2024 Rinuo Resources. All rights reserved.
+                </p>
+                <div class="flex gap-4">
+                    <a href="/sitemap.html" class="text-gray-500 hover:text-primary text-sm transition-colors">Sitemap</a>
+                    <a href="#" class="text-gray-500 hover:text-primary text-sm transition-colors">Privacy Policy</a>
+                    <a href="#" class="text-gray-500 hover:text-primary text-sm transition-colors">Terms of Service</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Radar Chart Initialization -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize radar chart
+            const ctx = document.getElementById('emailRadarChart').getContext('2d');
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Security', 
+                        'Privacy', 
+                        'Reliability', 
+                        'Ease of Use', 
+                        'Features', 
+                        'Free Tier Value'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Posteo Mail',
+                            data: [9, 10, 8, 7, 7, 2],
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                        },
+                        {
+                            label: 'Zoho Mail',
+                            data: [7, 6, 8, 8, 9, 7],
+                            backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                            borderColor: 'rgba(139, 92, 246, 1)',
+                            pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                        },
+                        {
+                            label: 'GMX Mail',
+                            data: [6, 5, 7, 9, 6, 10],
+                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(245, 158, 11, 1)'
+                        },
+                        {
+                            label: 'Mailjet',
+                            data: [7, 6, 8, 6, 9, 8],
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
+                        },
+                        {
+                            label: 'SparkPost',
+                            data: [8, 7, 9, 5, 10, 9],
+                            backgroundColor: 'rgba(236, 72, 153, 0.2)',
+                            borderColor: 'rgba(236, 72, 153, 1)',
+                            pointBackgroundColor: 'rgba(236, 72, 153, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(236, 72, 153, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                font: {
+                                    size: 11
+                                }
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.5)',
+                                backdropColor: 'transparent',
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                padding: 20,
+                                font: {
+                                    size: 11
+                                },
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                            borderColor: 'rgba(255, 255, 255, 0.1)',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleColor: 'rgba(255, 255, 255, 1)',
+                            bodyColor: 'rgba(255, 255, 255, 0.8)',
+                            titleFont: {
+                                size: 14,
+                                weight: 'bold'
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            displayColors: true,
+                            boxPadding: 4
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+
+            // Add intersection observer for animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fade-in');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe all cards for lazy animation
+            document.querySelectorAll('.card-hover').forEach(card => {
+                observer.observe(card);
+            });
+        });
+    </script>
 </body>
 </html>

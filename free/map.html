@@ -1,955 +1,1076 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>免费地图与地理位置接口 | 开发者资源导航</title>
-  <!-- 外部资源引入 -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="../assets/js/email-subscription.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  
-  <!-- Tailwind配置 - 保持一致的设计系统 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#165DFF',    // 主色调：专业蓝
-            secondary: '#36CFC9',  // 辅助色：科技青
-            dark: '#1D2129',       // 文字深灰
-            light: '#F2F3F5',      // 背景浅灰
-            muted: '#86909C',      // 辅助文字灰
-            success: '#00B42A',    // 成功色
-            warning: '#FF7D00',    // 警告色
-            danger: '#F53F3F',     // 危险/限制提示色
-            maps: '#3B82F6',       // 地图主题色（蓝色系，代表地图和导航）
-          },
-          fontFamily: {
-            inter: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  
-  <!-- 自定义工具类 -->
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .content-auto {
-        content-visibility: auto;
-      }
-      .card-hover {
-        @apply transition-all duration-300 hover:shadow-lg hover:border-primary/30 hover:-translate-y-1;
-      }
-      .feature-card {
-        @apply bg-white rounded-xl border border-gray-100 p-5 shadow-sm card-hover;
-      }
-      .text-balance {
-        text-wrap: balance;
-      }
-      .service-tag {
-        @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
-      }
-      .filter-active {
-        @apply bg-primary text-white;
-      }
-    }
-  </style>
-</head>
-
-<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
-  <!-- 顶部导航栏 -->
-  <header class="bg-white shadow-sm sticky top-0 z-50 transition-all duration-300">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <!-- Logo区域 -->
-      <a href="/" class="flex items-center space-x-2">
-        <i class="fa fa-compass text-primary text-2xl"></i>
-        <h1 class="text-xl md:text-2xl font-bold text-primary">资源导航</h1>
-      </a>
-      
-      <!-- 桌面端导航 -->
-      <div class="hidden md:flex items-center space-x-6">
-        <a href="/" class="text-dark hover:text-primary transition-colors">首页</a>
-        <a href="ai" class="text-dark hover:text-primary transition-colors">AI接口</a>
-        <a href="education" class="text-dark hover:text-primary transition-colors">教育接口</a>
-        <a href="#maps" class="text-primary font-medium">地图接口</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="text-muted hover:text-primary transition-colors flex items-center">
-          <i class="fa fa-github mr-1"></i> 提交资源
-        </a>
-        <a href="/about#about" class="text-muted hover:text-primary transition-colors">关于我们</a>
-      </div>
-      
-      <!-- 移动端菜单按钮 -->
-      <button class="md:hidden text-dark focus:outline-none" id="menuBtn">
-        <i class="fa fa-bars text-xl"></i>
-      </button>
-    </div>
-    
-    <!-- 移动端导航菜单（默认隐藏） -->
-    <div class="md:hidden hidden bg-white border-t border-gray-100" id="mobileMenu">
-      <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-        <a href="/" class="py-2 text-dark hover:text-primary transition-colors">首页</a>
-        <a href="ai" class="py-2 text-dark hover:text-primary transition-colors">AI接口</a>
-        <a href="education" class="py-2 text-dark hover:text-primary transition-colors">教育接口</a>
-        <a href="#maps" class="py-2 text-primary font-medium">地图接口</a>
-        <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="py-2 text-muted hover:text-primary transition-colors flex items-center">
-          <i class="fa fa-github mr-1"></i> 提交资源
-        </a>
-        <a href="/about#about" class="py-2 text-muted hover:text-primary transition-colors">关于我们</a>
-      </div>
-    </div>
-  </header>
-
-  <!-- 页面标题区 -->
-  <section class="bg-gradient-to-r from-maps/90 to-maps text-white py-10 md:py-16">
-    <div class="container mx-auto px-4">
-      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-        <div>
-          <div class="flex items-center space-x-3 mb-4">
-            <i class="fa fa-map-marker text-3xl"></i>
-            <h2 class="text-[clamp(1.5rem,4vw,2.5rem)] font-bold text-balance">免费地图与地理位置接口</h2>
-          </div>
-          <p class="text-white/90 max-w-2xl text-balance">
-            精选全球优质地图与地理位置相关API服务，涵盖地图显示、地理编码、路线规划、IP定位等解决方案，详细对比各平台的免费额度、功能特性和开发集成难度，帮助开发者快速实现位置相关应用功能
-          </p>
-          
-          <div class="flex flex-wrap gap-3 mt-6">
-            <a href="#comparison" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
-              <i class="fa fa-table mr-2"></i> 查看对比表
-            </a>
-            <a href="#categories" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg transition-colors">
-              <i class="fa fa-th-large mr-2"></i> 按分类浏览
-            </a>
-          </div>
-        </div>
-        
-        <!-- 数据概览卡片 -->
-        <div class="bg-white/15 backdrop-blur-sm rounded-lg p-5 flex flex-col space-y-4 max-w-xs">
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">收录地图API</span>
-            <span class="font-bold">35 项</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">完全免费服务</span>
-            <span class="font-bold">18 项</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">最高免费额度</span>
-            <span class="font-bold">250,000请求/月</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">开源解决方案</span>
-            <span class="font-bold">12 项</span>
-          </div>
-          <div class="flex justify-between items-center">
-            <span class="text-white/80">覆盖功能</span>
-            <span class="font-bold">全类别</span>
-          </div>
-          <div class="border-t border-white/20 pt-4 mt-2">
-            <span class="text-white/90 text-sm">最后更新：2025-08-29</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 面包屑导航 -->
-  <div class="container mx-auto px-4 py-4 bg-white shadow-sm">
-    <nav class="flex text-sm" aria-label="Breadcrumb">
-      <ol class="inline-flex items-center space-x-1 md:space-x-3">
-        <li class="inline-flex items-center">
-          <a href="/" class="inline-flex items-center text-muted hover:text-primary transition-colors">
-            <i class="fa fa-home mr-2"></i>首页
-          </a>
-        </li>
-        <li>
-          <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <a href="#" class="text-muted hover:text-primary transition-colors">资源分类</a>
-          </div>
-        </li>
-        <li>
-          <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <a href="#" class="text-muted hover:text-primary transition-colors">地图位置</a>
-          </div>
-        </li>
-        <li aria-current="page">
-          <div class="flex items-center">
-            <i class="fa fa-chevron-right text-muted mx-2 text-xs"></i>
-            <span class="text-primary font-medium">免费地图与地理位置接口</span>
-          </div>
-        </li>
-      </ol>
-    </nav>
-  </div>
-
-  <!-- 核心内容区 -->
-  <main class="container mx-auto px-4 py-8 flex-grow">
-    <!-- 简介卡片 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <div class="flex items-start">
-        <div class="flex-shrink-0 bg-maps/10 p-3 rounded-lg mr-4">
-          <i class="fa fa-map text-maps text-xl"></i>
-        </div>
-        <div>
-          <h3 class="text-xl font-bold mb-3">关于地图与地理位置接口 API</h3>
-          <p class="text-muted mb-4">
-            地图与地理位置API提供了访问地图数据、地理编码、路线规划和位置信息的接口，使开发者能够构建地图应用、导航系统、位置服务和地理分析工具等。这些API涵盖从基础地图显示到复杂的地理空间分析等多个领域，为位置相关应用开发提供强大支持。
-          </p>
-          <div class="flex flex-wrap gap-2">
-            <span class="service-tag bg-blue-100 text-blue-800">地图API</span>
-            <span class="service-tag bg-green-100 text-green-800">地理编码</span>
-            <span class="service-tag bg-purple-100 text-purple-800">路线规划</span>
-            <span class="service-tag bg-yellow-100 text-yellow-800">IP定位</span>
-            <span class="service-tag bg-red-100 text-red-800">部分需授权</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 筛选工具栏 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 mb-8 shadow-sm">
-      <h3 class="text-lg font-medium mb-4">地图接口筛选</h3>
-      <div class="flex flex-wrap gap-2">
-        <button class="filter-btn filter-active px-4 py-2 rounded-full text-sm transition-colors" data-filter="all">
-          全部地图接口
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="completely-free">
-          完全免费
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="high-quota">
-          高免费额度
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="open-source">
-          开源免费
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="maps-display">
-          地图显示
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="geocoding">
-          地理编码
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="routing">
-          路线规划
-        </button>
-        <button class="filter-btn bg-light hover:bg-gray-200 px-4 py-2 rounded-full text-sm transition-colors" data-filter="ip-location">
-          IP定位
-        </button>
-      </div>
-    </div>
-
-    <!-- 地图API对比表格 -->
-    <div id="comparison" class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-10 shadow-sm overflow-hidden">
-      <h3 class="text-xl font-bold mb-6 flex items-center">
-        <i class="fa fa-table text-maps mr-2"></i>地图接口对比表
-      </h3>
-      
-      <div class="overflow-x-auto">
-        <table class="w-full border-collapse">
-          <thead>
-            <tr class="bg-light">
-              <th class="py-3 px-4 text-left border-b">服务名称</th>
-              <th class="py-3 px-4 text-left border-b">官网链接</th>
-              <th class="py-3 px-4 text-left border-b">免费额度</th>
-              <th class="py-3 px-4 text-left border-b">特点与注意事项</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- 推荐服务 -->
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="completely-free open-source maps-display">
-              <td class="py-3 px-4 border-b font-medium">OpenStreetMap / OSM</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.openstreetmap.org/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">完全免费</td>
-              <td class="py-3 px-4 border-b text-sm">
-                开源地图数据；可自建服务器或使用第三方托管服务
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="high-quota maps-display geocoding routing">
-              <td class="py-3 px-4 border-b font-medium">Google Maps API</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://developers.google.com/maps" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 $200 免费额度</td>
-              <td class="py-3 px-4 border-b text-sm">
-                功能强大，支持地图显示、路线、地理编码；免费额度适合小项目
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="high-quota maps-display geocoding routing">
-              <td class="py-3 px-4 border-b font-medium">Mapbox API</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://www.mapbox.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 50,000 请求免费</td>
-              <td class="py-3 px-4 border-b text-sm">
-                可自定义地图样式，支持路线、地理编码；免费额度有限
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="high-quota maps-display geocoding routing">
-              <td class="py-3 px-4 border-b font-medium">Here Maps API</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://developer.here.com/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 250,000 请求免费</td>
-              <td class="py-3 px-4 border-b text-sm">
-                支持地图、路线、地理编码、交通信息；需注册账号
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="completely-free geocoding open-source">
-              <td class="py-3 px-4 border-b font-medium">Nominatim API (OpenStreetMap)</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://nominatim.org/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">完全免费</td>
-              <td class="py-3 px-4 border-b text-sm">
-                正向和反向地理编码；开源，可自建服务
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="high-quota ip-location">
-              <td class="py-3 px-4 border-b font-medium">IPinfo API</td>
-              <td class="py-3 px-4 border-b">
-                <a href="https://ipinfo.io/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">每月 50,000 请求免费</td>
-              <td class="py-3 px-4 border-b text-sm">
-                IP 定位和地理信息；免费额度适合轻量使用
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50 transition-colors service-row" data-category="completely-free routing open-source">
-              <td class="py-3 px-4 border-b font-medium">OSRM API</td>
-              <td class="py-3 px-4 border-b">
-                <a href="http://project-osrm.org/" target="_blank" class="text-primary hover:underline flex items-center">
-                  <i class="fa fa-external-link mr-1 text-xs"></i> 访问官网
-                </a>
-              </td>
-              <td class="py-3 px-4 border-b text-sm">开源免费</td>
-              <td class="py-3 px-4 border-b text-sm">
-                可自建路线规划服务；无需付费
-              </td>
-            </tr>
-            
-            <!-- 更多地图服务... -->
-          </tbody>
-        </table>
-      </div>
-      
-      <div class="bg-light rounded-lg p-4 mt-6">
-        <p class="text-muted">
-          <i class="fa fa-info-circle text-primary mr-2"></i>
-          注意：地图API的使用条款可能因服务提供商而异，部分API可能要求明确标注来源或限制商业用途。API的免费额度和服务条款可能随时间变化，请以各服务官网最新信息为准。
-        </p>
-      </div>
-    </div>
-
-    <!-- 按分类浏览 -->
-    <div id="categories" class="mb-8">
-      <h3 class="text-xl font-bold mb-6 flex items-center">
-        <i class="fa fa-th-large text-maps mr-2"></i>按分类浏览
-      </h3>
-      
-      <!-- 地图显示接口 -->
-      <div class="mb-8">
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-map text-blue-500 mr-2"></i>地图显示接口
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-blue-100 p-2 rounded mr-3">
-                  <i class="fa fa-map-o text-blue-600"></i>
-                </div>
-                <h5 class="font-medium">OpenStreetMap / OSM</h5>
-              </div>
-              <span class="service-tag bg-green-100 text-green-800">完全免费</span>
-            </div>
-            <p class="text-muted text-sm mb-3">开源地图数据，可自建服务器或使用第三方托管服务，完全免费且开源，适合各类地图应用。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-blue-100 text-blue-800">地图显示</span>
-              <span class="service-tag bg-purple-100 text-purple-800">开源</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.openstreetmap.org/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-blue-100 p-2 rounded mr-3">
-                  <i class="fa fa-google text-blue-600"></i>
-                </div>
-                <h5 class="font-medium">Google Maps API</h5>
-              </div>
-              <span class="service-tag bg-blue-100 text-blue-800">高额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">功能强大的地图服务，支持地图显示、路线规划、地理编码等，每月提供$200免费额度。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-blue-100 text-blue-800">地图显示</span>
-              <span class="service-tag bg-green-100 text-green-800">多功能</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://developers.google.com/maps" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-blue-100 p-2 rounded mr-3">
-                  <i class="fa fa-map text-blue-600"></i>
-                </div>
-                <h5 class="font-medium">Mapbox API</h5>
-              </div>
-              <span class="service-tag bg-blue-100 text-blue-800">高额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">可高度自定义的地图服务，支持个性化地图样式，每月提供50,000次免费请求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-blue-100 text-blue-800">地图显示</span>
-              <span class="service-tag bg-yellow-100 text-yellow-800">可定制</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.mapbox.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 地理编码接口 -->
-      <div class="mb-8">
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-crosshairs text-green-500 mr-2"></i>地理编码接口
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-green-100 p-2 rounded mr-3">
-                  <i class="fa fa-map-marker text-green-600"></i>
-                </div>
-                <h5 class="font-medium">Nominatim API</h5>
-              </div>
-              <span class="service-tag bg-green-100 text-green-800">完全免费</span>
-            </div>
-            <p class="text-muted text-sm mb-3">基于OpenStreetMap数据的地理编码服务，支持正向和反向地理编码，完全免费且开源。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-green-100 text-green-800">地理编码</span>
-              <span class="service-tag bg-purple-100 text-purple-800">开源</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://nominatim.org/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-green-100 p-2 rounded mr-3">
-                  <i class="fa fa-search text-green-600"></i>
-                </div>
-                <h5 class="font-medium">OpenCage Geocoding API</h5>
-              </div>
-              <span class="service-tag bg-blue-100 text-blue-800">高额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">多源地理编码数据聚合服务，支持全球地址解析，每日提供2,500次免费请求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-green-100 text-green-800">地理编码</span>
-              <span class="service-tag bg-blue-100 text-blue-800">全球覆盖</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://opencagedata.com/api" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-green-100 p-2 rounded mr-3">
-                  <i class="fa fa-map-signs text-green-600"></i>
-                </div>
-                <h5 class="font-medium">PositionStack API</h5>
-              </div>
-              <span class="service-tag bg-blue-100 text-blue-800">高额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">提供地理编码和反向地理编码服务，支持全球地址解析，每月提供25,000次免费请求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-green-100 text-green-800">地理编码</span>
-              <span class="service-tag bg-yellow-100 text-yellow-800">高准确率</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://positionstack.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 路线规划接口 -->
-      <div class="mb-8">
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-road text-purple-500 mr-2"></i>路线规划接口
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-purple-100 p-2 rounded mr-3">
-                  <i class="fa fa-location-arrow text-purple-600"></i>
-                </div>
-                <h5 class="font-medium">OSRM API</h5>
-              </div>
-              <span class="service-tag bg-green-100 text-green-800">开源免费</span>
-            </div>
-            <p class="text-muted text-sm mb-3">开源路由机器，可自建路线规划服务，支持多种交通方式，完全免费使用。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-purple-100 text-purple-800">路线规划</span>
-              <span class="service-tag bg-blue-100 text-blue-800">开源</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="http://project-osrm.org/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-purple-100 p-2 rounded mr-3">
-                  <i class="fa fa-compass text-purple-600"></i>
-                </div>
-                <h5 class="font-medium">Mapbox Directions API</h5>
-              </div>
-              <span class="service-tag bg-blue-100 text-blue-800">高额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">提供详细的路线规划和导航服务，支持多种交通方式，每月50,000次免费请求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-purple-100 text-purple-800">路线规划</span>
-              <span class="service-tag bg-green-100 text-green-800">多模式</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://docs.mapbox.com/api/navigation/directions/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-purple-100 p-2 rounded mr-3">
-                  <i class="fa fa-map-o text-purple-600"></i>
-                </div>
-                <h5 class="font-medium">GraphHopper API</h5>
-              </div>
-              <span class="service-tag bg-green-100 text-green-800">开源免费</span>
-            </div>
-            <p class="text-muted text-sm mb-3">开源路线规划引擎，支持多种交通方式和自定义路线，可自建服务或使用托管服务。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-purple-100 text-purple-800">路线规划</span>
-              <span class="service-tag bg-blue-100 text-blue-800">开源</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.graphhopper.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- IP定位接口 -->
-      <div>
-        <h4 class="text-lg font-medium mb-4 flex items-center">
-          <i class="fa fa-globe text-yellow-500 mr-2"></i>IP定位接口
-        </h4>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-yellow-100 p-2 rounded mr-3">
-                  <i class="fa fa-ipod text-yellow-600"></i>
-                </div>
-                <h5 class="font-medium">IPinfo API</h5>
-              </div>
-              <span class="service-tag bg-blue-100 text-blue-800">高额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">提供IP地址定位和地理信息服务，包括国家、城市、经纬度等，每月50,000次免费请求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-yellow-100 text-yellow-800">IP定位</span>
-              <span class="service-tag bg-blue-100 text-blue-800">高准确率</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://ipinfo.io/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-yellow-100 p-2 rounded mr-3">
-                  <i class="fa fa-server text-yellow-600"></i>
-                </div>
-                <h5 class="font-medium">ipstack API</h5>
-              </div>
-              <span class="service-tag bg-green-100 text-green-800">免费额度</span>
-            </div>
-            <p class="text-muted text-sm mb-3">提供IP地址定位服务，支持IPv4和IPv6，包括详细地理位置信息，每月5,000次免费请求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-yellow-100 text-yellow-800">IP定位</span>
-              <span class="service-tag bg-purple-100 text-purple-800">高精度</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://ipstack.com/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-          
-          <div class="feature-card">
-            <div class="flex justify-between items-start mb-3">
-              <div class="flex items-center">
-                <div class="bg-yellow-100 p-2 rounded mr-3">
-                  <i class="fa fa-globe text-yellow-600"></i>
-                </div>
-                <h5 class="font-medium">GeoJS API</h5>
-              </div>
-              <span class="service-tag bg-green-100 text-green-800">完全免费</span>
-            </div>
-            <p class="text-muted text-sm mb-3">轻量级基于IP的地理定位服务，无需API密钥，完全免费使用，适合简单的位置识别需求。</p>
-            <div class="flex flex-wrap gap-2 mb-3">
-              <span class="service-tag bg-yellow-100 text-yellow-800">IP定位</span>
-              <span class="service-tag bg-blue-100 text-blue-800">无需密钥</span>
-            </div>
-            <div class="flex justify-end">
-              <a href="https://www.geojs.io/" target="_blank" class="text-primary text-sm hover:underline">访问 <i class="fa fa-external-link text-xs ml-1"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 缺点和限制 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-5 flex items-center">
-        <i class="fa fa-exclamation-circle text-danger mr-2"></i>缺点和限制
-      </h3>
-      
-      <div class="space-y-5">
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-ban text-danger mr-2"></i>免费地图接口的普遍限制
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>使用额度限制：免费API通常有请求次数限制，难以满足高流量应用</li>
-            <li>功能限制：高级功能如批量处理、自定义图层通常仅在付费版本中提供</li>
-            <li>商业使用限制：许多免费地图API对商业用途有严格限制或需要付费许可</li>
-            <li>品牌归因要求：部分API要求在应用中明确标注来源和版权信息</li>
-            <li>数据更新延迟：开源地图数据可能不如商业服务更新及时和准确</li>
-            <li>服务稳定性：免费API可能在高负载时限制请求速度或降低服务质量</li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-map-marker text-warning mr-2"></i>特定类型服务的额外限制
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>地图显示API：免费版本可能包含水印、限制地图样式自定义或功能</li>
-            <li>地理编码API：免费额度通常较低，批量处理功能受限，精度可能不高</li>
-            <li>路线规划API：免费版本可能限制路线复杂度、交通方式或导航功能</li>
-            <li>IP定位API：免费版本定位精度较低，可能仅能定位到国家或城市级别</li>
-            <li>开源地图系统：需要专业技术维护，数据更新需自行负责，初始设置复杂</li>
-            <li>跨国地图服务：可能存在地区限制，部分国家或地区的数据不完整</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- 选择建议 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-5 flex items-center">
-        <i class="fa fa-lightbulb-o text-warning mr-2"></i>选择建议
-      </h3>
-      
-      <div class="space-y-5">
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-check-circle text-success mr-2"></i>根据业务场景选择
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>基础地图显示：优先选择OpenStreetMap或Mapbox，平衡免费额度和可定制性</li>
-            <li>全球覆盖需求：Google Maps API或Here Maps API提供更全面的全球数据</li>
-            <li>高请求量应用：考虑MapTiler Cloud API或Here Maps API的高免费额度</li>
-            <li>地理编码需求：Nominatim API完全免费，适合轻量使用；OpenCage提供更高精度</li>
-            <li>路线规划应用：OSRM或GraphHopper开源方案适合自建服务；Mapbox适合快速集成</li>
-            <li>IP定位功能：IPinfo API提供较高免费额度；GeoJS API适合简单需求且无需密钥</li>
-            <li>商业应用：评估Google Maps或Mapbox的付费方案，确保合规使用</li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="font-medium mb-2 flex items-center">
-            <i class="fa fa-exclamation-triangle text-warning mr-2"></i>重要注意事项
-          </h4>
-          <ul class="text-muted space-y-2 ml-6 list-disc">
-            <li>合规使用：严格遵守各API的使用条款，特别是商业用途和品牌归因要求</li>
-            <li>成本规划：预估API使用量，避免超出免费额度导致额外费用或服务中断</li>
-            <li>数据缓存：实施合理的缓存策略，减少API请求量并提高应用性能</li>
-            <li>服务备份：关键应用考虑多API提供商方案，避免单一服务依赖风险</li>
-            <li>隐私保护：处理地理位置数据时，遵守相关隐私法规和用户数据保护要求</li>
-            <li>性能测试：评估API在目标用户地区的响应速度和稳定性，选择最合适的服务</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-
-    <!-- 相关资源与链接 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-5 flex items-center">
-        <i class="fa fa-link text-primary mr-2"></i>相关资源与工具
-      </h3>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a href="#" class="flex items-center p-3 border border-gray-100 rounded-lg hover:border-primary/30 transition-colors">
-          <i class="fa fa-code text-maps mr-3"></i>
-          <div>
-            <h4 class="font-medium">地图API开发指南</h4>
-            <p class="text-sm text-muted">地图与地理位置API集成最佳实践和开发教程</p>
-          </div>
-        </a>
-        
-        <a href="#" class="flex items-center p-3 border border-gray-100 rounded-lg hover:border-primary/30 transition-colors">
-          <i class="fa fa-copyright text-maps mr-3"></i>
-          <div>
-            <h4 class="font-medium">地图数据版权指南</h4>
-            <p class="text-sm text-muted">地图资源使用的版权和许可条款解读</p>
-          </div>
-        </a>
-        
-        <a href="#" class="flex items-center p-3 border border-gray-100 rounded-lg hover:border-primary/30 transition-colors">
-          <i class="fa fa-code-fork text-maps mr-3"></i>
-          <div>
-            <h4 class="font-medium">地图API示例代码库</h4>
-            <p class="text-sm text-muted">多种编程语言的地图接口调用示例</p>
-          </div>
-        </a>
-        
-        <a href="#" class="flex items-center p-3 border border-gray-100 rounded-lg hover:border-primary/30 transition-colors">
-          <i class="fa fa-map-o text-maps mr-3"></i>
-          <div>
-            <h4 class="font-medium">地图应用开发框架</h4>
-            <p class="text-sm text-muted">地理位置应用开发的相关工具和框架</p>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- 资源贡献区域 -->
-    <div class="bg-white rounded-xl border border-gray-100 p-5 md:p-6 mb-8 shadow-sm">
-      <h3 class="text-xl font-bold mb-4 flex items-center">
-        <i class="fa fa-github text-primary mr-2"></i>贡献资源
-      </h3>
-      <p class="text-muted mb-4">
-        知道更多优质的地图与地理位置接口服务？欢迎通过GitHub issues提交补充内容！
-      </p>
-      <a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">
-        <i class="fa fa-github mr-2"></i> 提交issue
-      </a>
-    </div>
-  </main>
-
-  <!-- 页脚 -->
-  <footer class="bg-dark text-white py-10 mt-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <i class="fa fa-compass text-primary text-2xl"></i>
-            <h2 class="text-xl font-bold text-white">资源导航</h2>
-          </div>
-          <p class="text-gray-400 text-sm">
-            精选优质开发者资源，助力快速开发。包含API服务、开发工具、学习资源等分类导航。
-          </p>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium mb-4">资源分类</h3>
-          <ul class="space-y-2 text-gray-400">
-            <li><a href="#" class="hover:text-primary transition-colors">图像处理API</a></li>
-            <li><a href="#" class="hover:text-primary transition-colors">音频处理API</a></li>
-            <li><a href="#" class="hover:text-primary transition-colors">支付接口</a></li>
-            <li><a href="#" class="hover:text-primary transition-colors">翻译接口</a></li>
-            <li><a href="#" class="hover:text-primary transition-colors">教育接口</a></li>
-            <li><a href="#" class="hover:text-primary transition-colors">地图接口</a></li>
-            <li><a href="#" class="hover:text-primary transition-colors">更多分类...</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium mb-4">相关链接</h3>
-          <ul class="space-y-2 text-gray-400">
-            <li><a href="/about#about" class="hover:text-primary transition-colors">关于我们</a></li>
-            <li><a href="/about#terms" class="hover:text-primary transition-colors">使用条款</a></li>
-            <li><a href="/about#privacy" class="hover:text-primary transition-colors">隐私政策</a></li>
-            <li><a href="https://github.com/guomengtao/rinuo.com/issues" target="_blank" class="hover:text-primary transition-colors">提交资源</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h3 class="text-lg font-medium mb-4">关注我们</h3>
-          <div class="flex space-x-4">
-            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-              <i class="fa fa-github"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-              <i class="fa fa-twitter"></i>
-            </a>
-            <a href="#" class="text-gray-400 hover:text-primary transition-colors text-xl">
-              <i class="fa fa-linkedin"></i>
-            </a>
-          </div>
-          <p class="text-gray-400 text-sm mt-4">
-            订阅更新，获取最新资源信息
-          </p>
-          <div id="mapPageSubscription" class="mt-2"></div>
-        </div>
-      </div>
-      
-      <div class="border-t border-gray-800 mt-8 pt-6 text-center text-gray-500 text-sm">
-        <p>© 2025 开发者资源导航. 保留所有权利.</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- 回到顶部按钮 -->
-  <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 opacity-0 invisible">
-    <i class="fa fa-chevron-up"></i>
-  </button>
-
-  <!-- JavaScript 交互逻辑 -->
-  <script>
-    // 移动端菜单切换
-    const menuBtn = document.getElementById('menuBtn');
-    const mobileMenu = document.getElementById('mobileMenu');
-    menuBtn.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-
-    // 回到顶部按钮
-    const backToTopBtn = document.getElementById('backToTop');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        backToTopBtn.classList.remove('opacity-0', 'invisible');
-        backToTopBtn.classList.add('opacity-100', 'visible');
-      } else {
-        backToTopBtn.classList.add('opacity-0', 'invisible');
-        backToTopBtn.classList.remove('opacity-100', 'visible');
-      }
-
-      // 导航栏滚动效果
-      const header = document.querySelector('header');
-      if (window.scrollY > 50) {
-        header.classList.add('py-2');
-        header.classList.remove('py-4');
-      } else {
-        header.classList.add('py-4');
-        header.classList.remove('py-2');
-      }
-    });
-
-    // 回到顶部功能
-    backToTopBtn.addEventListener('click', () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-
-    // 平滑滚动到锚点
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-        
-        if (targetElement) {
-          window.scrollTo({
-            top: targetElement.offsetTop - 100,
-            behavior: 'smooth'
-          });
-          
-          // 如果是移动端且菜单打开，则关闭菜单
-          if (!mobileMenu.classList.contains('hidden')) {
-            mobileMenu.classList.add('hidden');
-          }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Map Services API Directory | Free Developer Resources</title>
+    <meta name="description" content="Comprehensive directory of 11 Map Services APIs including Google Maps, OpenStreetMap, Mapbox. Compare features, free plans, endpoints, and integration guides for developers.">
+    <meta name="keywords" content="Map APIs, Geocoding API, Routing API, Navigation Services, Free Map APIs, Google Maps Platform, OpenStreetMap, Mapbox">
+    <meta name="author" content="Developer Resources">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/free/detail/map-services">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0F172A',
+                        darker: '#020617',
+                        primary: '#3B82F6',
+                        secondary: '#818CF8',
+                        accent: '#10B981',
+                        neutral: '#64748B',
+                        'card-dark': '#1E293B',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
         }
-      });
-    });
-
-    // 地图接口筛选功能
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const serviceRows = document.querySelectorAll('.service-row');
-    
-    filterButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        // 更新按钮状态
-        filterButtons.forEach(btn => btn.classList.remove('filter-active', 'bg-primary', 'text-white'));
-        filterButtons.forEach(btn => btn.classList.add('bg-light', 'hover:bg-gray-200'));
-        button.classList.add('filter-active', 'bg-primary', 'text-white');
-        button.classList.remove('bg-light', 'hover:bg-gray-200');
-        
-        const filter = button.getAttribute('data-filter');
-        
-        // 筛选服务
-        serviceRows.forEach(row => {
-          if (filter === 'all' || row.getAttribute('data-category').includes(filter)) {
-            row.style.display = '';
-          } else {
-            row.style.display = 'none';
-          }
-        });
-      });
-    });
-
-    // 外部链接提示
-    const externalLinks = document.querySelectorAll('a[target="_blank"]');
-    externalLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        const confirmLeave = confirm('即将跳转到外部网站，是否继续？');
-        if (!confirmLeave) {
-          e.preventDefault();
-        }
-      });
-    });
-    
-    // 初始化邮件订阅组件
-    if (typeof initEmailSubscription === "function") {
-        initEmailSubscription("mapPageSubscription", {
-            title: "订阅更新",
-            description: "获取最新资源信息",
-            buttonText: "订阅",
-            style: "tailwind",
-            successMessage: "订阅请求已发送！\n请查收来自 noreply@free.rinuo.com 的邮件，并点击验证链接完成订阅\n\n如果没有收到邮件，请检查垃圾邮件文件夹",
-            errorMessage: "订阅失败，请稍后重试。"
-        });
-    } else {
-        console.error("邮件订阅组件未加载");
-    }
     </script>
-<script type="module" src="/main.js"></script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-1;
+            }
+            .gradient-border {
+                position: relative;
+                border-radius: 0.75rem;
+                z-index: 0;
+            }
+            .gradient-border::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                border-radius: 0.75rem;
+                padding: 2px;
+                background: linear-gradient(135deg, #3B82F6, #818CF8, #10B981);
+                -webkit-mask: 
+                    linear-gradient(#fff 0 0) content-box, 
+                    linear-gradient(#fff 0 0);
+                mask: 
+                    linear-gradient(#fff 0 0) content-box, 
+                    linear-gradient(#fff 0 0);
+                -webkit-mask-composite: xor;
+                mask-composite: exclude;
+                z-index: -1;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-darker text-gray-200 font-inter min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-dark/80 backdrop-blur-md sticky top-0 z-50 border-b border-neutral/20">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-map-marker text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-white">MapAPI Directory</h1>
+            </div>
+            <nav class="hidden md:flex items-center space-x-6">
+                <a href="/" class="text-neutral hover:text-primary transition-colors">Home</a>
+                <a href="/free" class="text-neutral hover:text-primary transition-colors">Free Resources</a>
+                <a href="/sitemap.html" class="text-neutral hover:text-primary transition-colors">Sitemap</a>
+                <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener" class="flex items-center space-x-1 text-neutral hover:text-primary transition-colors">
+                    <i class="fa fa-github"></i>
+                    <span>Fork Repo</span>
+                </a>
+            </nav>
+            <button class="md:hidden text-white text-xl">
+                <i class="fa fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="bg-dark border-b border-neutral/20 py-3">
+        <div class="container mx-auto px-4">
+            <ol class="flex items-center space-x-2 text-sm">
+                <li>
+                    <a href="/" class="text-neutral hover:text-primary transition-colors">
+                        <i class="fa fa-home mr-1"></i>Home
+                    </a>
+                </li>
+                <li class="text-neutral">
+                    <i class="fa fa-angle-right"></i>
+                </li>
+                <li>
+                    <a href="/free" class="text-neutral hover:text-primary transition-colors">Resource Categories</a>
+                </li>
+                <li class="text-neutral">
+                    <i class="fa fa-angle-right"></i>
+                </li>
+                <li>
+                    <a href="/free/detail/" class="text-neutral hover:text-primary transition-colors">Resource List</a>
+                </li>
+                <li class="text-neutral">
+                    <i class="fa fa-angle-right"></i>
+                </li>
+                <li class="text-primary font-medium">Map Services APIs</li>
+            </ol>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-b from-dark to-darker py-12 md:py-20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center animate-fade-in">
+                <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-white mb-4 text-shadow">
+                    Map Services <span class="text-primary">API Directory</span>
+                </h2>
+                <p class="text-lg md:text-xl text-neutral mb-8 leading-relaxed">
+                    Explore 11 comprehensive mapping APIs for geocoding, routing, navigation, and location-based services. 
+                    Compare features, free plans, and integration details to find the perfect solution for your project.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#api-comparison" class="bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 flex items-center space-x-2">
+                        <i class="fa fa-table"></i>
+                        <span>View API Comparison</span>
+                    </a>
+                    <a href="#free-resources" class="bg-accent hover:bg-accent/90 text-white font-medium px-6 py-3 rounded-lg transition-all duration-300 flex items-center space-x-2">
+                        <i class="fa fa-gift"></i>
+                        <span>Free Map APIs</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Metrics Section -->
+    <section class="bg-dark py-10 border-b border-neutral/20">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="gradient-border bg-card-dark p-6 text-center animate-slide-up" style="animation-delay: 0.1s">
+                    <div class="text-4xl md:text-5xl font-bold text-primary mb-2">11</div>
+                    <p class="text-neutral">Total Map APIs</p>
+                </div>
+                <div class="gradient-border bg-card-dark p-6 text-center animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="text-4xl md:text-5xl font-bold text-accent mb-2">6</div>
+                    <p class="text-neutral">Free API Options</p>
+                </div>
+                <div class="gradient-border bg-card-dark p-6 text-center animate-slide-up" style="animation-delay: 0.3s">
+                    <div class="text-4xl md:text-5xl font-bold text-secondary mb-2">3</div>
+                    <p class="text-neutral">Core Function Types</p>
+                </div>
+                <div class="gradient-border bg-card-dark p-6 text-center animate-slide-up" style="animation-delay: 0.4s">
+                    <div class="text-4xl md:text-5xl font-bold text-purple-400 mb-2">Global</div>
+                    <p class="text-neutral">Coverage</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Radar Chart Section -->
+    <section class="bg-darker py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">API Feature Comparison</h3>
+                <div class="bg-card-dark p-4 md:p-6 rounded-xl shadow-xl animate-fade-in">
+                    <canvas id="mapApiRadarChart" height="400"></canvas>
+                </div>
+                <p class="text-center text-neutral mt-4 text-sm">
+                    Comparing key features across popular map service APIs (score 1-5, higher = better)
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- API Comparison Table -->
+    <section id="api-comparison" class="bg-dark py-16 border-b border-neutral/20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-8 text-center">Map Services API Comparison</h3>
+                
+                <div class="overflow-x-auto bg-card-dark rounded-xl shadow-xl">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-neutral/30">
+                                <th class="px-4 py-4 font-semibold text-white">API Name</th>
+                                <th class="px-4 py-4 font-semibold text-white">Pricing</th>
+                                <th class="px-4 py-4 font-semibold text-white">Rate Limit</th>
+                                <th class="px-4 py-4 font-semibold text-white">Response Format</th>
+                                <th class="px-4 py-4 font-semibold text-white">Key Features</th>
+                                <th class="px-4 py-4 font-semibold text-white">Docs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Google Maps Platform -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">Google Maps Platform</td>
+                                <td class="px-4 py-4"><span class="text-red-400 font-medium">Paid</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON/XML</td>
+                                <td class="px-4 py-4 text-neutral">Full Features, Global Coverage</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://developers.google.com/maps" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- OpenStreetMap -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">OpenStreetMap</td>
+                                <td class="px-4 py-4"><span class="text-accent font-medium">Free</span></td>
+                                <td class="px-4 py-4 text-neutral">1 request/sec</td>
+                                <td class="px-4 py-4 text-neutral">JSON/XML</td>
+                                <td class="px-4 py-4 text-neutral">Open Source, Community Driven</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://nominatim.org/release-docs/develop/api/Overview/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- Mapbox -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">Mapbox</td>
+                                <td class="px-4 py-4"><span class="text-accent font-medium">Free Plan</span></td>
+                                <td class="px-4 py-4 text-neutral">100,000 req/month (free)</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Modern Platform, Custom Maps</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://docs.mapbox.com/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- Here Maps -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">Here Maps</td>
+                                <td class="px-4 py-4"><span class="text-red-400 font-medium">Paid</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">High Quality, Professional Service</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://developer.here.com/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- Bing Maps -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">Bing Maps</td>
+                                <td class="px-4 py-4"><span class="text-red-400 font-medium">Paid</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Enterprise, Worldwide Coverage</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://docs.microsoft.com/en-us/bingmaps/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- TomTom -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">TomTom</td>
+                                <td class="px-4 py-4"><span class="text-red-400 font-medium">Paid</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Professional Navigation, Traffic Info</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://developer.tomtom.com/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- MapTiler -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">MapTiler</td>
+                                <td class="px-4 py-4"><span class="text-accent font-medium">Free Plan</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">PNG</td>
+                                <td class="px-4 py-4 text-neutral">Static Maps, Custom Style</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://www.maptiler.com/cloud/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- ArcGIS Online -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">ArcGIS Online</td>
+                                <td class="px-4 py-4"><span class="text-red-400 font-medium">Paid</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Professional GIS, Enterprise</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://developers.arcgis.com/rest/services-reference/enterprise/map-service/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- Radar -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">Radar</td>
+                                <td class="px-4 py-4"><span class="text-accent font-medium">Free Plan</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Full Features, Location Tracking</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://radar.io/docs" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- Geoapify -->
+                            <tr class="border-b border-neutral/20 hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">Geoapify</td>
+                                <td class="px-4 py-4"><span class="text-accent font-medium">Free Plan</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Geocoding, Map Rendering, Routing</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://apidocs.geoapify.com/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                            <!-- MapQuest -->
+                            <tr class="hover:bg-dark/50 transition-colors">
+                                <td class="px-4 py-4 font-medium text-white">MapQuest</td>
+                                <td class="px-4 py-4"><span class="text-accent font-medium">Free Plan</span></td>
+                                <td class="px-4 py-4 text-neutral">Depends on plan</td>
+                                <td class="px-4 py-4 text-neutral">JSON</td>
+                                <td class="px-4 py-4 text-neutral">Maps, Geocoding, Routing</td>
+                                <td class="px-4 py-4">
+                                    <a href="https://developer.mapquest.com/documentation/" target="_blank" rel="noopener" class="text-primary hover:underline flex items-center">
+                                        <i class="fa fa-external-link mr-1"></i> Docs
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Free Resources Section -->
+    <section id="free-resources" class="bg-darker py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-7xl mx-auto">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-2 text-center">Free Map Services APIs</h3>
+                <p class="text-neutral text-center mb-12 max-w-2xl mx-auto">
+                    Discover 6 free map APIs that offer robust features for developers. 
+                    Perfect for startups, personal projects, and small businesses with budget constraints.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- OpenStreetMap -->
+                    <div class="bg-card-dark rounded-xl shadow-lg overflow-hidden card-hover animate-slide-up" style="animation-delay: 0.1s">
+                        <div class="h-40 bg-gradient-to-r from-primary/20 to-secondary/20 flex items-center justify-center">
+                            <i class="fa fa-map-o text-6xl text-white/80"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-white">OpenStreetMap</h4>
+                                <span class="bg-accent/20 text-accent text-xs font-medium px-2.5 py-0.5 rounded">Free</span>
+                            </div>
+                            <p class="text-neutral mb-4">
+                                Open-source map data providing free map services with community-driven updates and global coverage.
+                            </p>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">1 request/sec rate limit</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">JSON/XML response formats</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">No API key required</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="https://nominatim.org/release-docs/develop/api/Overview/" target="_blank" rel="noopener" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg transition-colors text-center">
+                                    Documentation
+                                </a>
+                                <a href="https://www.openstreetmap.org" target="_blank" rel="noopener" class="bg-neutral/10 hover:bg-neutral/20 text-neutral font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mapbox -->
+                    <div class="bg-card-dark rounded-xl shadow-lg overflow-hidden card-hover animate-slide-up" style="animation-delay: 0.2s">
+                        <div class="h-40 bg-gradient-to-r from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                            <i class="fa fa-map text-6xl text-white/80"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-white">Mapbox</h4>
+                                <span class="bg-accent/20 text-accent text-xs font-medium px-2.5 py-0.5 rounded">Free Plan</span>
+                            </div>
+                            <p class="text-neutral mb-4">
+                                Modern mapping platform with customizable maps and navigation, offering 100,000 free requests per month.
+                            </p>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">100,000 requests/month (free)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Custom map styles</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Geocoding and routing</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="https://docs.mapbox.com/" target="_blank" rel="noopener" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg transition-colors text-center">
+                                    Documentation
+                                </a>
+                                <a href="https://www.mapbox.com" target="_blank" rel="noopener" class="bg-neutral/10 hover:bg-neutral/20 text-neutral font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MapTiler -->
+                    <div class="bg-card-dark rounded-xl shadow-lg overflow-hidden card-hover animate-slide-up" style="animation-delay: 0.3s">
+                        <div class="h-40 bg-gradient-to-r from-green-500/20 to-teal-500/20 flex items-center justify-center">
+                            <i class="fa fa-image text-6xl text-white/80"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-white">MapTiler</h4>
+                                <span class="bg-accent/20 text-accent text-xs font-medium px-2.5 py-0.5 rounded">Free Plan</span>
+                            </div>
+                            <p class="text-neutral mb-4">
+                                Provides detailed map data and static map services with customizable styles for web and mobile apps.
+                            </p>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">PNG static map output</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Custom map styles</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Global map coverage</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="https://www.maptiler.com/cloud/" target="_blank" rel="noopener" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg transition-colors text-center">
+                                    Documentation
+                                </a>
+                                <a href="https://www.maptiler.com" target="_blank" rel="noopener" class="bg-neutral/10 hover:bg-neutral/20 text-neutral font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Radar -->
+                    <div class="bg-card-dark rounded-xl shadow-lg overflow-hidden card-hover animate-slide-up" style="animation-delay: 0.4s">
+                        <div class="h-40 bg-gradient-to-r from-indigo-500/20 to-pink-500/20 flex items-center justify-center">
+                            <i class="fa fa-location-arrow text-6xl text-white/80"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-white">Radar</h4>
+                                <span class="bg-accent/20 text-accent text-xs font-medium px-2.5 py-0.5 rounded">Free Plan</span>
+                            </div>
+                            <p class="text-neutral mb-4">
+                                Full-featured map API including geocoding, routing, and location tracking with developer-friendly tools.
+                            </p>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Location tracking</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Geocoding and routing</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Developer-friendly docs</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="https://radar.io/docs" target="_blank" rel="noopener" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg transition-colors text-center">
+                                    Documentation
+                                </a>
+                                <a href="https://radar.io" target="_blank" rel="noopener" class="bg-neutral/10 hover:bg-neutral/20 text-neutral font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Geoapify -->
+                    <div class="bg-card-dark rounded-xl shadow-lg overflow-hidden card-hover animate-slide-up" style="animation-delay: 0.5s">
+                        <div class="h-40 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 flex items-center justify-center">
+                            <i class="fa fa-compass text-6xl text-white/80"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-white">Geoapify</h4>
+                                <span class="bg-accent/20 text-accent text-xs font-medium px-2.5 py-0.5 rounded">Free Plan</span>
+                            </div>
+                            <p class="text-neutral mb-4">
+                                API for geocoding, map rendering, and route planning with easy integration and flexible pricing.
+                            </p>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Geocoding services</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Map rendering</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Route planning</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="https://apidocs.geoapify.com/" target="_blank" rel="noopener" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg transition-colors text-center">
+                                    Documentation
+                                </a>
+                                <a href="https://www.geoapify.com" target="_blank" rel="noopener" class="bg-neutral/10 hover:bg-neutral/20 text-neutral font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MapQuest -->
+                    <div class="bg-card-dark rounded-xl shadow-lg overflow-hidden card-hover animate-slide-up" style="animation-delay: 0.6s">
+                        <div class="h-40 bg-gradient-to-r from-red-500/20 to-purple-500/20 flex items-center justify-center">
+                            <i class="fa fa-road text-6xl text-white/80"></i>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <h4 class="text-xl font-bold text-white">MapQuest</h4>
+                                <span class="bg-accent/20 text-accent text-xs font-medium px-2.5 py-0.5 rounded">Free Plan</span>
+                            </div>
+                            <p class="text-neutral mb-4">
+                                Classic maps, geocoding, and routing API services with straightforward integration and reliable performance.
+                            </p>
+                            <div class="space-y-3 mb-6">
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Geocoding</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Routing services</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fa fa-check-circle text-accent mr-2"></i>
+                                    <span class="text-sm text-neutral">Map visualization</span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-3">
+                                <a href="https://developer.mapquest.com/documentation/" target="_blank" rel="noopener" class="flex-1 bg-primary/10 hover:bg-primary/20 text-primary font-medium px-4 py-2 rounded-lg transition-colors text-center">
+                                    Documentation
+                                </a>
+                                <a href="https://developer.mapquest.com" target="_blank" rel="noopener" class="bg-neutral/10 hover:bg-neutral/20 text-neutral font-medium px-4 py-2 rounded-lg transition-colors">
+                                    <i class="fa fa-external-link"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How to Use Section -->
+    <section class="bg-dark py-16 border-b border-neutral/20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-2 text-center">How to Use Free Map APIs</h3>
+                <p class="text-neutral text-center mb-12 max-w-2xl mx-auto">
+                    Step-by-step guide to getting started with free map services APIs for your projects
+                </p>
+
+                <div class="space-y-8">
+                    <!-- Step 1 -->
+                    <div class="bg-card-dark p-6 rounded-xl shadow-lg flex flex-col md:flex-row gap-6 animate-fade-in" style="animation-delay: 0.1s">
+                        <div class="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary font-bold text-lg">1</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-white mb-3">Choose the Right API</h4>
+                            <p class="text-neutral">
+                                Evaluate your project requirements including geocoding needs, routing features, 
+                                map customization, and expected request volume. Consider factors like global coverage, 
+                                response time, and documentation quality.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-card-dark p-6 rounded-xl shadow-lg flex flex-col md:flex-row gap-6 animate-fade-in" style="animation-delay: 0.2s">
+                        <div class="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary font-bold text-lg">2</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-white mb-3">Sign Up for an Account</h4>
+                            <p class="text-neutral">
+                                For most APIs (except OpenStreetMap), create a developer account on the provider's 
+                                website. This usually involves providing basic information and agreeing to terms of service.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-card-dark p-6 rounded-xl shadow-lg flex flex-col md:flex-row gap-6 animate-fade-in" style="animation-delay: 0.3s">
+                        <div class="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary font-bold text-lg">3</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-white mb-3">Generate API Key</h4>
+                            <p class="text-neutral">
+                                In your developer dashboard, create a new API key. Configure permissions and restrictions 
+                                (like allowed domains or IP addresses) to enhance security and prevent unauthorized use.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Step 4 -->
+                    <div class="bg-card-dark p-6 rounded-xl shadow-lg flex flex-col md:flex-row gap-6 animate-fade-in" style="animation-delay: 0.4s">
+                        <div class="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary font-bold text-lg">4</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-white mb-3">Integrate the API</h4>
+                            <p class="text-neutral mb-4">
+                                Use the provider's documentation to integrate the API into your application. Most APIs 
+                                support RESTful requests with your API key included as a parameter.
+                            </p>
+                            <div class="bg-dark p-4 rounded-lg text-sm font-mono text-gray-300 overflow-x-auto">
+                                <code>// Example Mapbox Geocoding Request<br>
+GET https://api.mapbox.com/geocoding/v5/mapbox.places/London.json?access_token=YOUR_API_KEY</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 5 -->
+                    <div class="bg-card-dark p-6 rounded-xl shadow-lg flex flex-col md:flex-row gap-6 animate-fade-in" style="animation-delay: 0.5s">
+                        <div class="bg-primary/10 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0">
+                            <span class="text-primary font-bold text-lg">5</span>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-bold text-white mb-3">Test and Optimize</h4>
+                            <p class="text-neutral">
+                                Test your implementation thoroughly to ensure it meets your requirements. Monitor usage 
+                                to stay within free plan limits, and optimize requests to minimize latency and improve performance.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pros and Cons Section -->
+    <section class="bg-darker py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-12 text-center">Pros & Cons of Top Map APIs</h3>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                    <!-- Pros Column -->
+                    <div>
+                        <h4 class="text-xl font-bold text-accent mb-6 flex items-center">
+                            <i class="fa fa-thumbs-up mr-2"></i> Key Advantages
+                        </h4>
+                        <div class="space-y-6">
+                            <!-- Google Maps -->
+                            <div class="bg-card-dark p-5 rounded-xl shadow-md">
+                                <h5 class="font-bold text-white mb-3">Google Maps Platform</h5>
+                                <ul class="space-y-2 text-neutral">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Comprehensive feature set with global coverage</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Highly accurate geocoding and routing</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Extensive documentation and developer community</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- OpenStreetMap -->
+                            <div class="bg-card-dark p-5 rounded-xl shadow-md">
+                                <h5 class="font-bold text-white mb-3">OpenStreetMap</h5>
+                                <ul class="space-y-2 text-neutral">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Completely free with no API key required</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Open-source data that's constantly updated</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>No usage limits beyond rate limiting</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Mapbox -->
+                            <div class="bg-card-dark p-5 rounded-xl shadow-md">
+                                <h5 class="font-bold text-white mb-3">Mapbox</h5>
+                                <ul class="space-y-2 text-neutral">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Excellent map customization options</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Generous free tier (100,000 requests/month)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-check text-accent mt-1 mr-2"></i>
+                                        <span>Modern, developer-friendly API design</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cons Column -->
+                    <div>
+                        <h4 class="text-xl font-bold text-red-400 mb-6 flex items-center">
+                            <i class="fa fa-thumbs-down mr-2"></i> Key Disadvantages
+                        </h4>
+                        <div class="space-y-6">
+                            <!-- Google Maps -->
+                            <div class="bg-card-dark p-5 rounded-xl shadow-md">
+                                <h5 class="font-bold text-white mb-3">Google Maps Platform</h5>
+                                <ul class="space-y-2 text-neutral">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Expensive pricing model for high-volume usage</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Strict terms of service for commercial use</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Limited customization compared to Mapbox</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- OpenStreetMap -->
+                            <div class="bg-card-dark p-5 rounded-xl shadow-md">
+                                <h5 class="font-bold text-white mb-3">OpenStreetMap</h5>
+                                <ul class="space-y-2 text-neutral">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Strict rate limits (1 request per second)</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Less accurate than commercial alternatives</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Limited advanced features like real-time traffic</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Mapbox -->
+                            <div class="bg-card-dark p-5 rounded-xl shadow-md">
+                                <h5 class="font-bold text-white mb-3">Mapbox</h5>
+                                <ul class="space-y-2 text-neutral">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Steeper learning curve for advanced features</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Pricing can become expensive at scale</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-times text-red-400 mt-1 mr-2"></i>
+                                        <span>Some regions have less detailed data</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="bg-gradient-to-r from-primary/20 to-secondary/20 py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center animate-pulse-slow">
+                <h3 class="text-2xl md:text-3xl font-bold text-white mb-6">Ready to Start Building with Map APIs?</h3>
+                <p class="text-neutral mb-8 text-lg">
+                    Explore our comprehensive directory and choose the perfect map service for your next project.
+                    Whether you need free options or enterprise-grade solutions, we've got you covered.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#free-resources" class="bg-accent hover:bg-accent/90 text-white font-medium px-8 py-3 rounded-lg transition-all duration-300 shadow-lg shadow-accent/20">
+                        Browse Free APIs
+                    </a>
+                    <a href="/sitemap.html" class="bg-transparent border border-white/30 hover:border-white/50 text-white font-medium px-8 py-3 rounded-lg transition-all duration-300">
+                        View Sitemap
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark py-12 border-t border-neutral/20">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                    <div>
+                        <div class="flex items-center space-x-2 mb-4">
+                            <i class="fa fa-map-marker text-primary text-2xl"></i>
+                            <h4 class="text-xl font-bold text-white">MapAPI Directory</h4>
+                        </div>
+                        <p class="text-neutral mb-4">
+                            Comprehensive directory of map services APIs for developers,
+                            featuring free and paid options with detailed comparisons.
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener" class="text-neutral hover:text-primary transition-colors">
+                                <i class="fa fa-github text-xl"></i>
+                            </a>
+                            <a href="#" class="text-neutral hover:text-primary transition-colors">
+                                <i class="fa fa-twitter text-xl"></i>
+                            </a>
+                            <a href="#" class="text-neutral hover:text-primary transition-colors">
+                                <i class="fa fa-linkedin text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-bold text-white mb-4">Quick Links</h4>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="/" class="text-neutral hover:text-primary transition-colors">Home</a>
+                            </li>
+                            <li>
+                                <a href="/free" class="text-neutral hover:text-primary transition-colors">Free Resources</a>
+                            </li>
+                            <li>
+                                <a href="/free/detail/" class="text-neutral hover:text-primary transition-colors">Resource List</a>
+                            </li>
+                            <li>
+                                <a href="/sitemap.html" class="text-neutral hover:text-primary transition-colors">Sitemap</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-bold text-white mb-4">Resources</h4>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">API Documentation</a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">Integration Guides</a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">Pricing Comparison</a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">Developer Tools</a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-bold text-white mb-4">Legal</h4>
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">Terms of Service</a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">Privacy Policy</a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-neutral hover:text-primary transition-colors">Cookie Policy</a>
+                            </li>
+                            <li>
+                                <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener" class="text-neutral hover:text-primary transition-colors">Fork Repository</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="pt-8 border-t border-neutral/20 text-center text-neutral text-sm">
+                    <p>© 2024 MapAPI Directory. All rights reserved. Data last updated: September 13, 2025.</p>
+                    <p class="mt-2">
+                        <a href="/sitemap.html" class="hover:text-primary transition-colors">Sitemap</a> | 
+                        <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener" class="hover:text-primary transition-colors">GitHub Repository</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Radar Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('mapApiRadarChart').getContext('2d');
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Geocoding Accuracy',
+                        'Routing Capabilities',
+                        'Customization',
+                        'Free Tier',
+                        'Documentation',
+                        'Global Coverage'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Google Maps',
+                            data: [5, 5, 3, 1, 5, 5],
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)'
+                        },
+                        {
+                            label: 'OpenStreetMap',
+                            data: [3, 3, 4, 5, 3, 4],
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderColor: 'rgba(16, 185, 129, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(16, 185, 129, 1)'
+                        },
+                        {
+                            label: 'Mapbox',
+                            data: [4, 4, 5, 4, 4, 5],
+                            backgroundColor: 'rgba(129, 140, 248, 0.2)',
+                            borderColor: 'rgba(129, 140, 248, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(129, 140, 248, 1)'
+                        },
+                        {
+                            label: 'Here Maps',
+                            data: [5, 5, 3, 1, 4, 5],
+                            backgroundColor: 'rgba(244, 114, 182, 0.2)',
+                            borderColor: 'rgba(244, 114, 182, 1)',
+                            borderWidth: 2,
+                            pointBackgroundColor: 'rgba(244, 114, 182, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(100, 116, 139, 0.2)'
+                            },
+                            grid: {
+                                color: 'rgba(100, 116, 139, 0.2)'
+                            },
+                            pointLabels: {
+                                color: 'rgba(203, 213, 225, 0.8)',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            ticks: {
+                                color: 'rgba(203, 213, 225, 0.6)',
+                                backdropColor: 'transparent',
+                                stepSize: 1,
+                                max: 5,
+                                min: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: 'rgba(203, 213, 225, 0.8)',
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            tension: 0.2
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                }
+            });
+
+            // Add lazy loading for images (native)
+            const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const image = entry.target;
+                            image.src = image.dataset.src;
+                            imageObserver.unobserve(image);
+                        }
+                    });
+                });
+
+                lazyImages.forEach(image => {
+                    imageObserver.observe(image);
+                });
+            }
+        });
+    </script>
 </body>
 </html>
