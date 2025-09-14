@@ -1,32 +1,33 @@
 #!/bin/bash
+# 用法: ./check_add_mainjs.sh [起始目录]
 
-# 精确替换"关于我们"且href="#"的链接为"/about.html#about"
+ROOT_DIR="${1:-.}"
 
-if [ $# -eq 0 ]; then
-    echo "Usage: $0 [directory]"
-    exit 1
-fi
+total=0
+modified=0
 
-target_dir=$1
-count=0
-
-# 查找所有包含"关于我们"且href="#"的链接
-files_to_update=$(grep -rl '关于我们' --include="*.html" "$target_dir" | xargs grep -l 'href=["'']#["'']' 2>/dev/null)
-
-for file in $files_to_update; do
-    # 跳过about.html文件
-    if [[ $file == *"about.html" ]]; then
-        continue
+find "$ROOT_DIR" -type f -name "*.html" | while read -r html; do
+  total=$((total+1))
+  if grep -q '/main.js' "$html"; then
+    echo "✔ 已包含 /main.js: $html"
+  else
+    echo "⚠ 未包含 /main.js: $html"
+    # 默认回车 = yes
+    read -p "要在这个文件中添加吗? (Y/n): " ans < /dev/tty
+    ans=${ans:-y}
+    if [[ "$ans" == "y" || "$ans" == "Y" ]]; then
+      # 在 </body> 前插入，不生成备份
+      sed -i '' '/<\/body>/i\
+  <script type="module" src="/main.js"></script>
+' "$html"
+      echo "✅ 已添加到: $html"
+      modified=$((modified+1))
+    else
+      echo "跳过: $html"
     fi
-    
-    # 精确替换，保留原有属性
-    sed -i '' -E 's/(<a[^>]*href=["''])#(["''][^>]*>关于我们<\/a>)/\1\/about.html#about\2/g' "$file"
-    
-    # 统计替换数量
-    changes_in_file=$(grep -c '/about.html#about' "$file")
-    count=$((count + changes_in_file))
-    
-    echo "已更新: $file (替换了 $changes_in_file 处)"
+  fi
 done
 
-echo "操作完成。共替换了 $count 个关于我们链接(仅替换href='#'的链接)。"
+echo "——— 汇总 ———"
+echo "共检查 $total 个 HTML 文件"
+echo "修改了 $modified 个文件"
