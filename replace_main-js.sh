@@ -1,33 +1,69 @@
 #!/bin/bash
-# 用法: ./check_add_mainjs.sh [起始目录]
 
-ROOT_DIR="${1:-.}"
+echo "开始日本节点测试..."
+echo
 
-total=0
-modified=0
+# 日本1节点测试（总超时10秒）
+echo "1. 日本1节点测试:"
+if timeout 10 nc -z -w 5 x88tt-g04.jp01-nn-vm0.entry.fr0528.art 21584; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
 
-find "$ROOT_DIR" -type f -name "*.html" | while read -r html; do
-  total=$((total+1))
-  if grep -q '/main.js' "$html"; then
-    echo "✔ 已包含 /main.js: $html"
-  else
-    echo "⚠ 未包含 /main.js: $html"
-    # 默认回车 = yes
-    read -p "要在这个文件中添加吗? (Y/n): " ans < /dev/tty
-    ans=${ans:-y}
-    if [[ "$ans" == "y" || "$ans" == "Y" ]]; then
-      # 在 </body> 前插入，不生成备份
-      sed -i '' '/<\/body>/i\
-  <script type="module" src="/main.js"></script>
-' "$html"
-      echo "✅ 已添加到: $html"
-      modified=$((modified+1))
-    else
-      echo "跳过: $html"
-    fi
-  fi
-done
+# 日本2节点测试（总超时10秒）
+echo "2. 日本2节点测试:"
+if timeout 10 nc -z -w 5 awwns-g04.jp02-e3-vm0.entry.fr0528.art 11776; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
 
-echo "——— 汇总 ———"
-echo "共检查 $total 个 HTML 文件"
-echo "修改了 $modified 个文件"
+# 日本3节点测试（总超时10秒）
+echo "3. 日本3节点测试:"
+if timeout 10 nc -z -w 5 wgl4l-g04.jp03-j7-vm0.entry.fr0528.art 21584; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
+
+# 日本4节点测试（总超时10秒）
+echo "4. 日本4节点测试:"
+if timeout 10 nc -z -w 5 5gisz-g04.jp04-1d-vm0.entry.fr0528.art 447; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
+
+# 日本5节点测试（总超时10秒，解决之前的长时间卡住问题）
+echo "5. 日本5节点测试:"
+if timeout 10 nc -z -w 9 ivgxw-g04.jp05-h6-vm0.entry.fr0528.art 46485; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
+
+# 日本6节点测试（总超时10秒）
+echo "6. 日本6节点测试:"
+if timeout 10 nc -z -w 5 kk3f0-g04.jp06-jz-vm0.entry.fr0528.art 28786; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
+
+# 日本7节点测试（总超时10秒）
+echo "7. 日本7节点测试:"
+if timeout 10 nc -z -w 5 0zhk4-g04.jp07-sh-vm0.entry.fr0528.art 28786; then
+    echo "  测试成功 - 端口可访问"
+else
+    echo "  测试失败 - 端口不可访问或超时"
+fi
+echo
+
+echo "所有节点测试完成"
