@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qwik: The Instant-Loading Web Framework | Rinuo</title>
+    <!-- Google SEO Meta Tags -->
+    <meta name="description" content="Discover Qwik, the revolutionary web framework that delivers instant-loading applications with minimal JavaScript. Learn about its unique resumable architecture and how to build lightning-fast web apps.">
+    <meta name="keywords" content="Qwik, JavaScript Framework, Web Development, Frontend, Instant Loading, Resumable, SPA, Single Page Application, Performance">
+    <meta name="author" content="Rinuo">
+    <meta name="robots" content="index, follow">
+    <meta name="googlebot" content="index, follow">
+    <meta name="revisit-after" content="7 days">
+    
+    <!-- Open Graph and Twitter Card Tags -->
+    <meta property="og:title" content="Qwik: The Instant-Loading Web Framework">
+    <meta property="og:description" content="Discover Qwik, the revolutionary web framework that delivers instant-loading applications with minimal JavaScript. Learn about its unique resumable architecture.">
+    <meta property="og:url" content="https://rinuo.com/free/detail/qwik.html">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://qwik.builder.io/qwik-logo.svg">
+    <meta property="og:image:alt" content="Qwik Logo">
+    <meta property="og:site_name" content="Rinuo">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Qwik: The Instant-Loading Web Framework">
+    <meta name="twitter:description" content="Discover Qwik, the revolutionary web framework that delivers instant-loading applications with minimal JavaScript.">
+    <meta name="twitter:image" content="https://qwik.builder.io/qwik-logo.svg">
+    <meta name="twitter:image:alt" content="Qwik Logo">
+    <meta name="twitter:creator" content="@rinuo">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0091FF', // Qwik Blue
+                        secondary: '#00DC82', // Qwik Green
+                        accent: '#FF6B6B',
+                        light: '#F8FAFC',
+                        dark: '#0F172A',
+                        'light-card': '#FFFFFF',
+                        'dark-card': '#1E293B',
+                        'light-text': '#1E293B',
+                        'dark-text': '#F8FAFC'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- Custom Utilities -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .grid-bg {
+                background-image: radial-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+                background-size: 20px 20px;
+            }
+            .dark .grid-bg {
+                background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            }
+            .animate-slide-up {
+                animation: slideUp 0.6s ease-out forwards;
+            }
+            .animate-slide-in {
+                animation: slideIn 0.6s ease-out forwards;
+            }
+            @keyframes slideUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(-30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+        }
+    </style>
+    
+    <!-- Custom Styles -->
+    <style>
+        /* Scrollbar styles */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #aaa;
+        }
+        .dark ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
+</head>
+<body class="bg-light dark:bg-dark text-light-text dark:text-dark-text transition-colors duration-300">
+    <!-- Header -->
+    <header class="sticky top-0 z-50 bg-light-card/90 dark:bg-dark-card/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 py-4 transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">R</span>
+                    </div>
+                    <span class="text-xl font-bold">Rinuo</span>
+                </a>
+                
+                <!-- Navigation and Theme Toggle -->
+                <div class="flex items-center gap-6">
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fa fa-moon-o text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-10">
+        <!-- Breadcrumb Navigation -->
+        <nav class="mb-8 text-sm">
+            <ol class="flex flex-wrap items-center gap-2">
+                <li><a href="/" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">Home</a></li>
+                <li><i class="fa fa-chevron-right text-gray-400 dark:text-gray-500 text-xs"></i></li>
+                <li><a href="/free" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">Resources</a></li>
+                <li><i class="fa fa-chevron-right text-gray-400 dark:text-gray-500 text-xs"></i></li>
+                <li><a href="/free/detail/" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">Resource List</a></li>
+                <li><i class="fa fa-chevron-right text-gray-400 dark:text-gray-500 text-xs"></i></li>
+                <li class="text-gray-800 dark:text-gray-200 font-medium">Qwik</li>
+            </ol>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="mb-20 relative overflow-hidden">
+            <div class="grid-bg absolute inset-0 -z-10"></div>
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center gap-12">
+                    <div class="md:w-1/2 animate-slide-up opacity-0">
+                        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-balance">
+                            Build <span class="text-primary">Instant-Loading</span> Web Apps with Qwik
+                        </h1>
+                        <p class="text-xl text-gray-600 dark:text-gray-300 mb-8">
+                            The world's first HTML-first framework that delivers instant-loading applications with minimal JavaScript, powered by revolutionary resumable architecture.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="https://qwik.builder.io/docs/" target="_blank" rel="noopener noreferrer" class="px-6 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                                <i class="fa fa-play-circle"></i> Get Started
+                            </a>
+                            <a href="https://github.com/BuilderIO/qwik" target="_blank" rel="noopener noreferrer" class="px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium rounded-lg transition-all transform hover:-translate-y-1 flex items-center gap-2">
+                                <i class="fa fa-github"></i> View on GitHub
+                            </a>
+                        </div>
+                    </div>
+                    <div class="md:w-1/2 animate-float">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-primary/20 rounded-full blur-3xl -z-10 animate-pulse-slow"></div>
+                            <img 
+                                src="https://qwik.builder.io/qwik-logo.svg" 
+                                alt="Qwik Logo" 
+                                class="w-full max-w-md mx-auto"
+                                loading="lazy"
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Project Overview Section -->
+        <section class="mb-20 scroll-mt-24" id="overview">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Project Overview</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Qwik is a new kind of web framework that can achieve instant loading web applications regardless of their size or complexity.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="w-16 h-16 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-bolt text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-secondary">Instant Loading</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Achieve instant loading times by only executing JavaScript when needed, thanks to Qwik's resumable architecture.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="w-16 h-16 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-code text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-secondary">HTML-First</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Build applications that work without JavaScript first, then progressively enhance with interactivity.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.4s">
+                    <div class="w-16 h-16 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-rocket text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold mb-4 text-secondary">Fine-Grained Lazy Loading</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Load only the code that's needed for user interactions, resulting in minimal JavaScript bundles.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Stack Section -->
+        <section class="mb-20 scroll-mt-24" id="tech-stack">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Technology Stack</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Qwik is built with cutting-edge web technologies to deliver unprecedented performance.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <i class="fa fa-code text-blue-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold">TypeScript</h3>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">Strongly typed JavaScript for better developer experience.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <i class="fa fa-leaf text-green-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold">JSX/TSX</h3>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">Familiar syntax for building user interfaces with components.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                <i class="fa fa-puzzle-piece text-purple-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold">Qwik CLI</h3>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">Powerful command-line tools for development and deployment.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center">
+                                <i class="fa fa-magic text-yellow-500 text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-semibold">Vite Integration</h3>
+                                <p class="text-gray-600 dark:text-gray-300 text-sm">Blazing fast build tool and development server.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-center animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="w-full max-w-md">
+                        <canvas id="techRadarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Founder and Origin Section -->
+        <section class="mb-20 scroll-mt-24" id="founder-origin">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Founder & Origin Story</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    The visionaries behind Qwik and their mission to revolutionize web performance.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="relative animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="absolute inset-0 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+                    <img 
+                        src="https://picsum.photos/id/64/600/400" 
+                        alt="Builder.io Team" 
+                        class="w-full h-auto rounded-2xl shadow-xl object-cover"
+                        loading="lazy"
+                    >
+                </div>
+
+                <div class="space-y-6 animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-secondary">The Visionaries</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Qwik was created by Miško Hevery (creator of Angular) and Adam Abrons at Builder.io. With decades of experience in web development, they set out to solve the fundamental performance problems plaguing modern web applications.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-secondary">The Problem</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Modern web frameworks require downloading and executing large amounts of JavaScript before any interactivity is possible. This leads to slow loading times and poor user experience, especially on mobile devices and slow connections.
+                        </p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-secondary">The Solution</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Qwik introduces the concept of "resumable" applications. Instead of rehydrating the entire application, Qwik can pause and resume execution at any point, allowing for instant loading times by only downloading JavaScript when user interactions occur.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="mb-20 scroll-mt-24" id="features">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Key Features</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Discover the revolutionary capabilities that make Qwik the future of web development.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-bolt text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Resumable Architecture</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Applications can be paused and resumed at any point, enabling instant loading experiences.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-mobile text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Edge Optimized</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Designed from the ground up to work seamlessly with edge computing and CDNs.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.4s">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-plug text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Framework Agnostic</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Use Qwik with any UI framework or library, including React, Vue, and Angular.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.5s">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-search text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">SEO Friendly</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Server-side rendering and static site generation built-in for optimal search engine visibility.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.6s">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-tachometer text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Developer Experience</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Familiar JSX syntax, TypeScript support, and powerful developer tools.
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl hover:-translate-y-1 animate-slide-up opacity-0" style="animation-delay: 0.7s">
+                    <div class="w-14 h-14 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-puzzle-piece text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-4">Ecosystem Integration</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Works with your existing tools and libraries, including Tailwind CSS, React Query, and more.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons Section -->
+        <section class="mb-20 scroll-mt-24" id="pros-cons">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Pros & Cons</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Like any technology, Qwik has its strengths and areas to consider before adoption.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <i class="fa fa-check text-green-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">Advantages</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span>Instant loading times regardless of application size</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span>Minimal JavaScript execution for better performance</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span>Excellent Core Web Vitals scores out of the box</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span>SEO-friendly with built-in SSR and SSG</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span>Familiar JSX syntax for React developers</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span>Works with existing frameworks and libraries</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <i class="fa fa-times text-red-500"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">Limitations</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span>Relatively new framework with smaller community</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span>Limited third-party libraries and components</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span>Learning curve for understanding resumable concepts</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span>Documentation still evolving</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span>Fewer enterprise adoption examples</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Reviews Section -->
+        <section class="mb-20 scroll-mt-24" id="community-reviews">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Community Reviews</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    What developers are saying about their experience with Qwik.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="flex items-center gap-4 mb-6">
+                        <img 
+                            src="https://picsum.photos/id/1015/100/100" 
+                            alt="Jessica Williams" 
+                            class="w-16 h-16 rounded-full object-cover border-2 border-primary" 
+                            loading="lazy"
+                        >
+                        <div>
+                            <h3 class="text-xl font-semibold">Jessica Williams</h3>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Senior Frontend Engineer</p>
+                        </div>
+                    </div>
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "Qwik has completely changed how I think about web performance. The instant loading times are real, and the developer experience is fantastic. It's the future of web development!"
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="flex items-center gap-4 mb-6">
+                        <img 
+                            src="https://picsum.photos/id/1018/100/100" 
+                            alt="David Martinez" 
+                            class="w-16 h-16 rounded-full object-cover border-2 border-primary" 
+                            loading="lazy"
+                        >
+                        <div>
+                            <h3 class="text-xl font-semibold">David Martinez</h3>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">Full Stack Developer</p>
+                        </div>
+                    </div>
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "Coming from React, Qwik felt familiar but the performance improvements are mind-blowing. My Lighthouse scores went from 60 to 95 without any optimization effort."
+                    </p>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.4s">
+                    <div class="flex items-center gap-4 mb-6">
+                        <img 
+                            src="https://picsum.photos/id/1022/100/100" 
+                            alt="Sarah Thompson" 
+                            class="w-16 h-16 rounded-full object-cover border-2 border-primary" 
+                            loading="lazy"
+                        >
+                        <div>
+                            <h3 class="text-xl font-semibold">Sarah Thompson</h3>
+                            <p class="text-gray-500 dark:text-gray-400 text-sm">CTO, TechStart Inc.</p>
+                        </div>
+                    </div>
+                    <div class="flex text-yellow-400 mb-4">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-o"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "We migrated our e-commerce platform to Qwik and saw a 70% improvement in conversion rates. The instant loading experience is exactly what modern users expect."
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- GitHub Stats Section -->
+        <section class="mb-20 scroll-mt-24" id="github-stats">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">GitHub Statistics</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Qwik's open-source community is growing rapidly as developers discover its potential.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 text-center">
+                    <div class="text-4xl font-bold mb-2 text-primary">18.5k+</div>
+                    <p class="text-gray-600 dark:text-gray-300">Stars</p>
+                </div>
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 text-center">
+                    <div class="text-4xl font-bold mb-2 text-secondary">642</div>
+                    <p class="text-gray-600 dark:text-gray-300">Forks</p>
+                </div>
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 text-center">
+                    <div class="text-4xl font-bold mb-2 text-accent">892</div>
+                    <p class="text-gray-600 dark:text-gray-300">Contributors</p>
+                </div>
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 text-center">
+                    <div class="text-4xl font-bold mb-2 text-red-500">1.2k+</div>
+                    <p class="text-gray-600 dark:text-gray-300">Open Issues</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Updates Section -->
+        <section class="mb-20 scroll-mt-24" id="latest-updates">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Latest Updates</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Stay updated with the latest developments in the Qwik ecosystem.
+                </p>
+            </div>
+
+            <div class="space-y-8">
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                            <i class="fa fa-rocket text-2xl text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold">Qwik 1.0 Released</h3>
+                            <p class="text-gray-500 dark:text-gray-400">November 2023</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Qwik 1.0 marks the first stable release of the revolutionary web framework. This milestone includes improved developer tools, enhanced performance optimizations, and comprehensive documentation.
+                    </p>
+                    <a href="https://qwik.builder.io/blog/qwik-1-0/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary font-medium hover:underline">
+                        Read More <i class="fa fa-external-link ml-2 text-xs"></i>
+                    </a>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                            <i class="fa fa-book text-2xl text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold">New Qwik City Features</h3>
+                            <p class="text-gray-500 dark:text-gray-400">October 2023</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Qwik City, the meta-framework built on Qwik, introduces new features including enhanced routing, improved middleware support, and better integration with popular services.
+                    </p>
+                    <a href="https://qwik.builder.io/docs/qwikcity/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary font-medium hover:underline">
+                        View Documentation <i class="fa fa-external-link ml-2 text-xs"></i>
+                    </a>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card p-8 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.4s">
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-xl bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                            <i class="fa fa-users text-2xl text-primary"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold">QwikConf 2023</h3>
+                            <p class="text-gray-500 dark:text-gray-400">September 2023</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        The first annual Qwik conference brought together developers from around the world to share experiences, learn best practices, and connect with the Qwik team.
+                    </p>
+                    <a href="https://qwik.builder.io/community/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary font-medium hover:underline">
+                        Join Community <i class="fa fa-external-link ml-2 text-xs"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Free Resources Section -->
+        <section class="mb-20 scroll-mt-24" id="free-resources">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Free Resources</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Enhance your Qwik development with these free tools and learning materials.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                    <div class="h-40 overflow-hidden">
+                        <img 
+                            src="https://picsum.photos/id/28/600/400" 
+                            alt="Qwik documentation screenshot" 
+                            class="w-full h-full object-cover transition-transform hover:scale-110 duration-500" 
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">Official Documentation</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            Comprehensive guides, tutorials, and API references for mastering Qwik.
+                        </p>
+                        <a href="https://qwik.builder.io/docs/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary font-medium hover:underline">
+                            Visit Documentation <i class="fa fa-external-link ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl animate-slide-up opacity-0" style="animation-delay: 0.3s">
+                    <div class="h-40 overflow-hidden">
+                        <img 
+                            src="https://picsum.photos/id/52/600/400" 
+                            alt="Qwik starter templates" 
+                            class="w-full h-full object-cover transition-transform hover:scale-110 duration-500" 
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">Starter Templates</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            Pre-built templates for various types of Qwik applications and use cases.
+                        </p>
+                        <a href="https://qwik.builder.io/examples/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary font-medium hover:underline">
+                            Browse Templates <i class="fa fa-external-link ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 transition-all hover:shadow-xl animate-slide-up opacity-0" style="animation-delay: 0.4s">
+                    <div class="h-40 overflow-hidden">
+                        <img 
+                            src="https://picsum.photos/id/26/600/400" 
+                            alt="Qwik tutorials" 
+                            class="w-full h-full object-cover transition-transform hover:scale-110 duration-500" 
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-3">Interactive Tutorials</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">
+                            Hands-on tutorials and courses to learn Qwik concepts by building real applications.
+                        </p>
+                        <a href="https://qwik.builder.io/tutorial/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary font-medium hover:underline">
+                            Start Learning <i class="fa fa-external-link ml-2 text-xs"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section class="mb-20 scroll-mt-24" id="getting-started">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Get Started for Free</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Start building with Qwik in just a few simple steps.
+                </p>
+            </div>
+
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl p-8 md:p-12 border border-gray-100 dark:border-gray-800 animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                <div class="space-y-8">
+                    <div class="flex">
+                        <div class="mr-6 flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-3">Install Node.js and npm</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Make sure you have Node.js (version 18.0 or newer) installed on your machine.
+                            </p>
+                            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                <code># Check your Node.js version
+node -v</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex">
+                        <div class="mr-6 flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-3">Create a New Project</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Use npm to create a new Qwik application with the official starter template.
+                            </p>
+                            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                <code># Create a new Qwik project
+npm create qwik@latest
+
+# Navigate to the project directory
+cd my-qwik-app</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex">
+                        <div class="mr-6 flex-shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-semibold mb-3">Start Development Server</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Start the development server and see your Qwik application in action.
+                            </p>
+                            <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                <code># Install dependencies
+npm install
+
+# Start the development server
+npm run dev
+
+# Build for production
+npm run build</code>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 text-center">
+                        <a href="https://github.com/BuilderIO/qwik" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg shadow-primary/20 hover:shadow-primary/30 transition-all transform hover:-translate-y-1">
+                            <i class="fa fa-github"></i> Star on GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Comparison Radar Chart Section -->
+        <section class="mb-20 scroll-mt-24" id="comparison">
+            <div class="max-w-3xl mx-auto text-center mb-16 animate-slide-up opacity-0" style="animation-delay: 0.1s">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Framework Comparison</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    How Qwik compares to other popular frontend frameworks.
+                </p>
+            </div>
+
+            <div class="flex justify-center animate-slide-up opacity-0" style="animation-delay: 0.2s">
+                <div class="w-full max-w-2xl">
+                    <canvas id="frameworksRadarChart"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light-card dark:bg-dark-card border-t border-gray-200 dark:border-gray-800">
+        <div class="container mx-auto px-4 py-12">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">R</span>
+                        </div>
+                        <h3 class="text-xl font-bold">Rinuo</h3>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">
+                        A comprehensive resource for learning and mastering modern web technologies and frameworks.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Resources</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://qwik.builder.io/docs/" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Documentation</a></li>
+                        <li><a href="https://qwik.builder.io/examples/" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Examples</a></li>
+                        <li><a href="https://qwik.builder.io/tutorial/" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Tutorials</a></li>
+                        <li><a href="https://qwik.builder.io/blog/" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Community</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="https://discord.gg/qwik" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Discord</a></li>
+                        <li><a href="https://twitter.com/QwikDev" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Twitter</a></li>
+                        <li><a href="https://github.com/BuilderIO/qwik" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">GitHub</a></li>
+                        <li><a href="https://qwik.builder.io/community/" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Events</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-semibold mb-4">Site Links</h4>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Home</a></li>
+                        <li><a href="/free" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Resources</a></li>
+                        <li><a href="/free/detail/" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Resource List</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    &copy; 2023 Rinuo. All rights reserved.
+                </p>
+                <div class="flex gap-4">
+                    <a href="https://github.com/guomengtao/rinuo.com" target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="https://twitter.com/QwikDev" target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                    <a href="https://discord.gg/qwik" target="_blank" rel="noopener noreferrer" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-discord text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            htmlElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            
+            // Update icon
+            if (htmlElement.classList.contains('dark')) {
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+                localStorage.setItem('theme', 'light');
+            }
+            
+            // Update chart colors
+            updateChartColors();
+        });
+
+        // Radar chart for technology stack
+        const techCtx = document.getElementById('techRadarChart').getContext('2d');
+        const techChart = new Chart(techCtx, {
+            type: 'radar',
+            data: {
+                labels: ['TypeScript', 'JSX/TSX', 'Qwik CLI', 'Vite', 'Performance', 'SEO'],
+                datasets: [{
+                    label: 'Qwik Components',
+                    data: [90, 95, 85, 90, 98, 95],
+                    backgroundColor: 'rgba(0, 145, 255, 0.2)',
+                    borderColor: 'rgba(0, 145, 255, 1)',
+                    pointBackgroundColor: 'rgba(0, 145, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(0, 145, 255, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            color: htmlElement.classList.contains('dark') ? '#e0e0e0' : '#333'
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: htmlElement.classList.contains('dark') ? '#aaa' : '#666'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+
+        // Radar chart for framework comparison
+        const frameworksCtx = document.getElementById('frameworksRadarChart').getContext('2d');
+        const frameworksChart = new Chart(frameworksCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Performance', 'Learning Curve', 'Bundle Size', 'Developer Experience', 'Community', 'SEO'],
+                datasets: [{
+                    label: 'Qwik',
+                    data: [98, 70, 95, 85, 75, 95],
+                    backgroundColor: 'rgba(0, 145, 255, 0.2)',
+                    borderColor: 'rgba(0, 145, 255, 1)',
+                    pointBackgroundColor: 'rgba(0, 145, 255, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(0, 145, 255, 1)'
+                }, {
+                    label: 'React',
+                    data: [75, 85, 70, 90, 95, 80],
+                    backgroundColor: 'rgba(97, 218, 251, 0.2)',
+                    borderColor: 'rgba(97, 218, 251, 1)',
+                    pointBackgroundColor: 'rgba(97, 218, 251, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(97, 218, 251, 1)'
+                }, {
+                    label: 'Vue',
+                    data: [80, 90, 85, 85, 85, 85],
+                    backgroundColor: 'rgba(65, 184, 131, 0.2)',
+                    borderColor: 'rgba(65, 184, 131, 1)',
+                    pointBackgroundColor: 'rgba(65, 184, 131, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(65, 184, 131, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            color: htmlElement.classList.contains('dark') ? '#e0e0e0' : '#333'
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: htmlElement.classList.contains('dark') ? '#aaa' : '#666'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: htmlElement.classList.contains('dark') ? '#e0e0e0' : '#333'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update chart colors when theme changes
+        function updateChartColors() {
+            const isDark = htmlElement.classList.contains('dark');
+            const textColor = isDark ? '#e0e0e0' : '#333';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const tickColor = isDark ? '#aaa' : '#666';
+            
+            // Update tech chart
+            techChart.options.scales.r.angleLines.color = gridColor;
+            techChart.options.scales.r.grid.color = gridColor;
+            techChart.options.scales.r.pointLabels.color = textColor;
+            techChart.options.scales.r.ticks.color = tickColor;
+            techChart.update();
+            
+            // Update frameworks chart
+            frameworksChart.options.scales.r.angleLines.color = gridColor;
+            frameworksChart.options.scales.r.grid.color = gridColor;
+            frameworksChart.options.scales.r.pointLabels.color = textColor;
+            frameworksChart.options.scales.r.ticks.color = tickColor;
+            frameworksChart.options.plugins.legend.labels.color = textColor;
+            frameworksChart.update();
+        }
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Animation on scroll
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.animate-slide-up, .animate-slide-in');
+            
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.style.opacity = '1';
+                }
+            });
+        };
+
+        // Initial check for visible elements
+        window.addEventListener('load', animateOnScroll);
+        // Check on scroll
+        window.addEventListener('scroll', animateOnScroll);
+
+        // Header scroll effect
+        const header = document.querySelector('header');
+        let lastScrollY = window.scrollY;
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('py-2', 'shadow');
+                header.classList.remove('py-4');
+            } else {
+                header.classList.add('py-4');
+                header.classList.remove('py-2', 'shadow');
+            }
+            
+            lastScrollY = window.scrollY;
+        });
+    </script>
+</body>
+</html>

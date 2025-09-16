@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LlamaIndex - Powering Your LLM Applications</title>
+    <meta name="description" content="LlamaIndex is a data framework for building LLM applications. Discover how to connect your LLMs to external data with our powerful toolkit.">
+    <meta name="keywords" content="LlamaIndex, LLM, AI, data framework, machine learning, natural language processing">
+    <meta name="author" content="LlamaIndex Team">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="LlamaIndex - Powering Your LLM Applications">
+    <meta property="og:description" content="Connect your LLMs to external data with LlamaIndex's powerful framework.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/llamaindex">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="LlamaIndex - Powering Your LLM Applications">
+    <meta name="twitter:description" content="Connect your LLMs to external data with LlamaIndex's powerful framework.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .gradient-text {
+                @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-700 dark:from-primary-400 dark:to-primary-600;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .section-padding {
+                @apply py-16 md:py-24;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
+    <!-- Header with Navigation -->
+    <header class="fixed w-full top-0 z-50 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md transition-all duration-300 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16 md:h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">L</span>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">LlamaIndex</span>
+                </a>
+                
+                <!-- Breadcrumb Navigation -->
+                <nav class="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-400">
+                    <a href="/" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Home</a>
+                    <span class="mx-2"><i class="fa fa-chevron-right text-xs"></i></span>
+                    <a href="/free" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Free Resources</a>
+                    <span class="mx-2"><i class="fa fa-chevron-right text-xs"></i></span>
+                    <a href="/free/detail/" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Resource List</a>
+                    <span class="mx-2"><i class="fa fa-chevron-right text-xs"></i></span>
+                    <span class="text-gray-700 dark:text-gray-300">LlamaIndex</span>
+                </nav>
+                
+                <!-- Theme Toggle Button -->
+                <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i id="theme-icon" class="fa fa-moon-o text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-16 md:pt-20">
+        <!-- Hero Section -->
+        <section class="section-padding relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-primary-50/50 to-transparent dark:from-primary-900/20 dark:to-transparent -z-10"></div>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 opacity-0 animate-fade-in" style="animation-delay: 0.1s;">
+                        <span class="gradient-text">LlamaIndex</span>
+                    </h1>
+                    <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-10 opacity-0 animate-fade-in text-balance" style="animation-delay: 0.3s;">
+                        The data framework for building powerful LLM applications
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 opacity-0 animate-fade-in" style="animation-delay: 0.5s;">
+                        <a href="#get-started" class="px-8 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-primary-500/30">
+                            Get Started
+                        </a>
+                        <a href="#features" class="px-8 py-3 bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 font-medium rounded-lg transition-all shadow-md hover:shadow-lg border border-gray-200 dark:border-gray-700">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Hero Image -->
+                <div class="mt-16 max-w-4xl mx-auto opacity-0 animate-fade-in" style="animation-delay: 0.7s;">
+                    <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+                        <img src="https://picsum.photos/id/180/1200/600" alt="LlamaIndex Framework Visualization" class="w-full h-auto object-cover rounded-2xl" loading="lazy">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    </div>
+                </div>
+                
+                <!-- GitHub Stats -->
+                <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto opacity-0 animate-slide-up" style="animation-delay: 0.9s;">
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1">36.5k+</div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm">GitHub Stars</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1">890+</div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm">Forks</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1">142</div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm">Open Issues</div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="text-3xl font-bold text-primary-600 dark:text-primary-400 mb-1">180+</div>
+                        <div class="text-gray-600 dark:text-gray-400 text-sm">Contributors</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="section-padding bg-white dark:bg-gray-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">What is LlamaIndex?</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        LlamaIndex is a powerful data framework that connects large language models (LLMs) to your external data, enabling you to build context-augmented LLM applications.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="order-2 md:order-1">
+                        <h3 class="text-2xl font-bold mb-4">Project Origin</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            LlamaIndex emerged from the need to bridge the gap between LLMs and private or domain-specific data. As LLMs gained popularity, developers realized they needed a standardized way to connect these models to external information sources.
+                        </p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            The project started in late 2022 as an open-source initiative to simplify the process of building LLM applications that can reason over private data, and has since grown into a robust framework with a thriving community.
+                        </p>
+                        <div class="flex items-center gap-4 mt-8">
+                            <div class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                                <i class="fa fa-code text-primary-600 dark:text-primary-400 text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold">Open Source</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">MIT Licensed</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="order-1 md:order-2">
+                        <div class="relative">
+                            <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary-200 dark:bg-primary-800/30 rounded-lg -z-10 animate-pulse-slow"></div>
+                            <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-primary-100 dark:bg-primary-700/20 rounded-lg -z-10 animate-pulse-slow" style="animation-delay: 1s;"></div>
+                            <img src="https://picsum.photos/id/0/600/400" alt="LlamaIndex Development Concept" class="w-full h-auto rounded-xl shadow-xl" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Founder Section -->
+        <section class="section-padding bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">The Founder</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        Meet the visionary behind LlamaIndex
+                    </p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                    <div class="grid md:grid-cols-3">
+                        <div class="md:col-span-1">
+                            <img src="https://picsum.photos/id/1005/400/600" alt="Jerry Liu - Founder of LlamaIndex" class="w-full h-full object-cover" loading="lazy">
+                        </div>
+                        <div class="md:col-span-2 p-8 md:p-10">
+                            <h3 class="text-2xl font-bold mb-2">Jerry Liu</h3>
+                            <p class="text-primary-600 dark:text-primary-400 mb-6">Founder & CEO</p>
+                            
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                Jerry Liu is the founder of LlamaIndex, bringing extensive experience from the AI and machine learning space. Prior to creating LlamaIndex, Jerry worked at tech companies like Roblox and Twitter, where he focused on machine learning infrastructure and NLP applications.
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                With a background in computer science and a passion for making AI accessible, Jerry recognized the need for better tooling to connect LLMs with real-world data, leading to the creation of LlamaIndex.
+                            </p>
+                            
+                            <div class="flex gap-4 mt-6">
+                                <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
+                                    <i class="fa fa-twitter text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
+                                    <i class="fa fa-github text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-primary-100 dark:hover:bg-primary-900/30 transition-colors">
+                                    <i class="fa fa-linkedin text-gray-600 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Stack Section -->
+        <section id="features" class="section-padding bg-white dark:bg-gray-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">Technology Stack</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        LlamaIndex works seamlessly with these powerful technologies
+                    </p>
+                </div>
+                
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Tech 1 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-python text-blue-600 dark:text-blue-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Python</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Core framework built with Python, leveraging its rich ecosystem of data processing libraries.
+                        </p>
+                    </div>
+                    
+                    <!-- Tech 2 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-brain text-purple-600 dark:text-purple-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">LLMs</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Integrates with GPT, Claude, Llama, and other major language models through unified interfaces.
+                        </p>
+                    </div>
+                    
+                    <!-- Tech 3 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-database text-green-600 dark:text-green-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Databases</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Connects with SQL, NoSQL, vector databases, and other storage solutions for your data.
+                        </p>
+                    </div>
+                    
+                    <!-- Tech 4 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-cloud text-yellow-600 dark:text-yellow-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Cloud Integration</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Deploy on AWS, GCP, Azure, and other cloud platforms with optimized performance.
+                        </p>
+                    </div>
+                    
+                    <!-- Tech 5 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-code text-red-600 dark:text-red-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">APIs & SDKs</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Comprehensive APIs and SDKs for seamless integration into your existing applications.
+                        </p>
+                    </div>
+                    
+                    <!-- Tech 6 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-search text-indigo-600 dark:text-indigo-400 text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Embeddings</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Supports various embedding models for efficient vectorization of your documents.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Radar Chart Section -->
+        <section class="section-padding bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">Framework Capabilities</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        How LlamaIndex compares across key dimensions
+                    </p>
+                </div>
+                
+                <div class="max-w-3xl mx-auto bg-white dark:bg-gray-800 p-6 md:p-8 rounded-xl shadow-xl">
+                    <canvas id="radarChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons Section -->
+        <section class="section-padding bg-white dark:bg-gray-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">Advantages & Limitations</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        A balanced look at LlamaIndex's strengths and areas for improvement
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-12 max-w-5xl mx-auto">
+                    <!-- Pros -->
+                    <div>
+                        <div class="flex items-center mb-8">
+                            <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-4">
+                                <i class="fa fa-plus text-green-600 dark:text-green-400 text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold">Advantages</h3>
+                        </div>
+                        
+                        <ul class="space-y-6">
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-check text-green-600 dark:text-green-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Easy integration with multiple LLMs through a unified interface
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-check text-green-600 dark:text-green-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Comprehensive tooling for data ingestion, indexing, and querying
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-check text-green-600 dark:text-green-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Strong documentation and active community support
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-check text-green-600 dark:text-green-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Flexible architecture that adapts to various use cases
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-check text-green-600 dark:text-green-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Regular updates and improvements from a dedicated team
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- Cons -->
+                    <div>
+                        <div class="flex items-center mb-8">
+                            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-4">
+                                <i class="fa fa-minus text-red-600 dark:text-red-400 text-xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold">Limitations</h3>
+                        </div>
+                        
+                        <ul class="space-y-6">
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-times text-red-600 dark:text-red-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Primary focus on Python, limiting options for other languages
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-times text-red-600 dark:text-red-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Steeper learning curve for complex use cases
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-times text-red-600 dark:text-red-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Some advanced features require understanding of vector databases
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-times text-red-600 dark:text-red-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Performance optimization may require significant tuning
+                                </p>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mt-0.5 mr-4">
+                                    <i class="fa fa-times text-red-600 dark:text-red-400 text-xs"></i>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300">
+                                    Rapid development pace means occasional breaking changes
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Reviews Section -->
+        <section class="section-padding bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">Community Feedback</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        What developers are saying about LlamaIndex
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- Review 1 -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/1012/100/100" alt="Sarah Johnson" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-bold">Sarah Johnson</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            "LlamaIndex transformed how we build our LLM applications. The ability to connect multiple data sources seamlessly has been a game-changer for our product."
+                        </p>
+                    </div>
+                    
+                    <!-- Review 2 -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/1025/100/100" alt="Michael Chen" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-bold">Michael Chen</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            "The documentation is excellent, and the community support on Discord is incredibly responsive. We were able to get our prototype up and running in just a few days."
+                        </p>
+                    </div>
+                    
+                    <!-- Review 3 -->
+                    <div class="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/id/1074/100/100" alt="Alex Rodriguez" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-bold">Alex Rodriguez</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            "As someone new to LLM development, LlamaIndex provided the structure I needed to build something meaningful. The abstractions are well-designed and intuitive."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest News Section -->
+        <section class="section-padding bg-white dark:bg-gray-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto mb-16 text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6 gradient-text">Latest Updates</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        Stay up to date with LlamaIndex's latest developments
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <!-- News 1 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden shadow-md card-hover">
+                        <img src="https://picsum.photos/id/1/600/400" alt="LlamaIndex v0.9.0 Release" class="w-full h-48 object-cover" loading="lazy">
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">June 15, 2023</div>
+                            <h3 class="text-xl font-bold mb-3">LlamaIndex v0.9.0 Released</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                New features include improved embedding models, better caching, and enhanced observability tools.
+                            </p>
+                            <a href="#" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">
+                                Read more <i class="fa fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- News 2 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden shadow-md card-hover">
+                        <img src="https://picsum.photos/id/2/600/400" alt="LlamaIndex Conference" class="w-full h-48 object-cover" loading="lazy">
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">May 22, 2023</div>
+                            <h3 class="text-xl font-bold mb-3">First LlamaIndex Conference</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Join us for our virtual conference featuring talks from industry leaders and core contributors.
+                            </p>
+                            <a href="#" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">
+                                Read more <i class="fa fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- News 3 -->
+                    <div class="bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden shadow-md card-hover">
+                        <img src="https://picsum.photos/id/3/600/400" alt="LlamaIndex Enterprise" class="w-full h-48 object-cover" loading="lazy">
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">April 10, 2023</div>
+                            <h3 class="text-xl font-bold mb-3">Introducing LlamaIndex Enterprise</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                New enterprise-grade features including advanced security, SLA guarantees, and priority support.
+                            </p>
+                            <a href="#" class="text-primary-600 dark:text-primary-400 font-medium hover:underline">
+                                Read more <i class="fa fa-arrow-right ml-1"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Get Started Section -->
+        <section id="get-started" class="section-padding bg-gradient-to-br from-primary-500 to-primary-700 dark:from-primary-800 dark:to-primary-900 text-white">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Get Started with LlamaIndex</h2>
+                    <p class="text-xl text-primary-100 mb-10 max-w-2xl mx-auto">
+                        Start building powerful LLM applications today with our free, open-source framework
+                    </p>
+                    
+                    <div class="bg-white dark:bg-gray-800 text-gray-800 dark:text-white p-8 rounded-2xl shadow-2xl max-w-3xl mx-auto">
+                        <h3 class="text-2xl font-bold mb-6">Free Resources</h3>
+                        
+                        <div class="space-y-6 mb-8">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mt-1 mr-4">
+                                    <i class="fa fa-book text-primary-600 dark:text-primary-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">Documentation</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">
+                                        Comprehensive guides, tutorials, and API references to help you get started quickly.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mt-1 mr-4">
+                                    <i class="fa fa-code-fork text-primary-600 dark:text-primary-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">GitHub Repository</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">
+                                        Access the source code, contribute to the project, and explore examples.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center mt-1 mr-4">
+                                    <i class="fa fa-graduation-cap text-primary-600 dark:text-primary-400"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-lg mb-1">Learning Courses</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">
+                                        Free video tutorials and interactive courses for all skill levels.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-lg font-mono text-sm text-gray-800 dark:text-gray-200 mb-6 overflow-x-auto">
+                            pip install llama-index
+                        </div>
+                        
+                        <a href="https://github.com/jerryjliu/llama_index" target="_blank" class="inline-flex items-center px-8 py-3 bg-primary-600 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600 text-white font-medium rounded-lg transition-all shadow-lg hover:shadow-primary-500/30">
+                            <i class="fa fa-github mr-2"></i> Get Started on GitHub
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Social Links Section -->
+        <section class="py-16 bg-white dark:bg-gray-800">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-8 gradient-text">Join the Community</h2>
+                    
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="#" class="flex flex-col items-center w-20 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                                <i class="fa fa-github text-2xl text-gray-800 dark:text-gray-200"></i>
+                            </div>
+                            <span class="text-sm font-medium">GitHub</span>
+                        </a>
+                        
+                        <a href="#" class="flex flex-col items-center w-20 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                                <i class="fa fa-twitter text-2xl text-gray-800 dark:text-gray-200"></i>
+                            </div>
+                            <span class="text-sm font-medium">Twitter</span>
+                        </a>
+                        
+                        <a href="#" class="flex flex-col items-center w-20 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                                <i class="fa fa-discord text-2xl text-gray-800 dark:text-gray-200"></i>
+                            </div>
+                            <span class="text-sm font-medium">Discord</span>
+                        </a>
+                        
+                        <a href="#" class="flex flex-col items-center w-20 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                                <i class="fa fa-youtube-play text-2xl text-gray-800 dark:text-gray-200"></i>
+                            </div>
+                            <span class="text-sm font-medium">YouTube</span>
+                        </a>
+                        
+                        <a href="#" class="flex flex-col items-center w-20 p-4 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                            <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                                <i class="fa fa-linkedin text-2xl text-gray-800 dark:text-gray-200"></i>
+                            </div>
+                            <span class="text-sm font-medium">LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div class="md:col-span-1">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">L</span>
+                        </div>
+                        <span class="text-xl font-bold text-white">LlamaIndex</span>
+                    </div>
+                    <p class="text-gray-400 mb-6">
+                        The data framework for building powerful LLM applications.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Examples</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">API Reference</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-white font-bold mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="/sitemap" class="text-gray-400 hover:text-white transition-colors">Sitemap</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">License</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 text-sm mb-4 md:mb-0">
+                    &copy; 2023 LlamaIndex. All rights reserved.
+                </p>
+                <div class="flex gap-4">
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fa fa-github"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fa fa-twitter"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fa fa-discord"></i>
+                    </a>
+                    <a href="#" class="text-gray-500 hover:text-white transition-colors">
+                        <i class="fa fa-youtube-play"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
+        });
+        
+        // Radar Chart Initialization
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Set chart colors based on current theme
+            const getChartColors = () => {
+                const isDark = document.documentElement.classList.contains('dark');
+                return {
+                    backgroundColor: isDark ? 'rgba(14, 165, 233, 0.2)' : 'rgba(14, 165, 233, 0.2)',
+                    borderColor: isDark ? 'rgba(14, 165, 233, 1)' : 'rgba(14, 165, 233, 1)',
+                    pointBackgroundColor: isDark ? 'rgba(14, 165, 233, 1)' : 'rgba(14, 165, 233, 1)',
+                    textColor: isDark ? '#e2e8f0' : '#1e293b'
+                };
+            };
+            
+            let colors = getChartColors();
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Ease of Use',
+                        'Flexibility',
+                        'Performance',
+                        'Documentation',
+                        'Community Support',
+                        'LLM Integration'
+                    ],
+                    datasets: [{
+                        label: 'LlamaIndex',
+                        data: [85, 90, 80, 95, 85, 95],
+                        backgroundColor: colors.backgroundColor,
+                        borderColor: colors.borderColor,
+                        pointBackgroundColor: colors.pointBackgroundColor,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: colors.borderColor
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: colors.textColor,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: colors.textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: colors.textColor
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    }
+                }
+            });
+            
+            // Update chart colors when theme changes
+            themeToggle.addEventListener('click', () => {
+                colors = getChartColors();
+                radarChart.data.datasets[0].backgroundColor = colors.backgroundColor;
+                radarChart.data.datasets[0].borderColor = colors.borderColor;
+                radarChart.data.datasets[0].pointBackgroundColor = colors.pointBackgroundColor;
+                radarChart.options.scales.r.angleLines.color = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                radarChart.options.scales.r.grid.color = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                radarChart.options.scales.r.pointLabels.color = colors.textColor;
+                radarChart.options.scales.r.ticks.color = colors.textColor;
+                radarChart.options.plugins.legend.labels.color = colors.textColor;
+                radarChart.update();
+            });
+        });
+        
+        // Intersection Observer for animations
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-slide-up');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe sections for animation on scroll
+            document.querySelectorAll('section > div > div:not(.animate-fade-in):not(.animate-slide-up)').forEach(section => {
+                section.style.opacity = '0';
+                observer.observe(section);
+            });
+        });
+    </script>
+</body>
+</html>

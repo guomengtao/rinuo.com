@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PostHog - Open Source Product Analytics | Free Alternative to Proprietary Tools</title>
+    <meta name="description" content="PostHog is an open-source product analytics platform that helps engineers build better products. Self-hosted or cloud, capture, analyze, and act on user data.">
+    <meta name="keywords" content="PostHog, product analytics, open source, self-hosted analytics, product insights, user behavior">
+    <meta name="author" content="PostHog Team">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/free/detail/posthog">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/free/detail/posthog">
+    <meta property="og:title" content="PostHog - Open Source Product Analytics">
+    <meta property="og:description" content="Capture, analyze, and act on user data with PostHog's open-source platform.">
+    <meta property="og:image" content="https://picsum.photos/1200/630?random=1">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://example.com/free/detail/posthog">
+    <meta property="twitter:title" content="PostHog - Open Source Product Analytics">
+    <meta property="twitter:description" content="Capture, analyze, and act on user data with PostHog's open-source platform.">
+    <meta property="twitter:image" content="https://picsum.photos/1200/630?random=1">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#50FA7B',
+                        secondary: '#8BE9FD',
+                        dark: {
+                            bg: '#121212',
+                            card: '#1E1E1E',
+                            text: '#E0E0E0'
+                        },
+                        light: {
+                            bg: '#FFFFFF',
+                            card: '#F8F9FA',
+                            text: '#212529'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.8s ease-in-out forwards'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(150, 150, 150, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(150, 150, 150, 0.05) 1px, transparent 1px);
+            }
+            .dark .bg-grid {
+                background-image: 
+                    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 bg-grid">
+    <!-- Header Navigation -->
+    <header class="fixed w-full z-50 backdrop-blur-md bg-light-bg/80 dark:bg-dark-bg/80 border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <!-- Logo -->
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                    <span class="font-bold text-xl">P</span>
+                </div>
+                <span class="font-bold text-xl">PostHog</span>
+            </div>
+            
+            <!-- Navigation Links - Desktop -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <a href="#about" class="hover:text-primary transition-colors">About</a>
+                <a href="#tech-stack" class="hover:text-primary transition-colors">Tech Stack</a>
+                <a href="#founders" class="hover:text-primary transition-colors">Founders</a>
+                <a href="#community" class="hover:text-primary transition-colors">Community</a>
+                <a href="#resources" class="hover:text-primary transition-colors">Resources</a>
+            </nav>
+            
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa fa-sun-o text-yellow-500 dark:hidden"></i>
+                <i class="fa fa-moon-o text-blue-300 hidden dark:block"></i>
+            </button>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden p-2">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Navigation -->
+        <div id="mobile-menu" class="md:hidden hidden bg-light-bg dark:bg-dark-bg border-t border-gray-200 dark:border-gray-800">
+            <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
+                <a href="#about" class="hover:text-primary transition-colors py-2">About</a>
+                <a href="#tech-stack" class="hover:text-primary transition-colors py-2">Tech Stack</a>
+                <a href="#founders" class="hover:text-primary transition-colors py-2">Founders</a>
+                <a href="#community" class="hover:text-primary transition-colors py-2">Community</a>
+                <a href="#resources" class="hover:text-primary transition-colors py-2">Resources</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-24 pb-4 px-4 container mx-auto">
+        <nav class="text-sm" aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center">
+                <li><a href="/" class="hover:text-primary transition-colors">Home</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free" class="hover:text-primary transition-colors">Free Resources</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free/detail/" class="hover:text-primary transition-colors">Resource List</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li aria-current="page" class="text-primary font-medium">PostHog</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="py-12 px-4 container mx-auto">
+        <div class="flex flex-col md:flex-row items-center gap-12">
+            <div class="md:w-1/2 space-y-6 animate-fade-in">
+                <h1 class="text-4xl md:text-6xl font-bold leading-tight text-shadow">
+                    <span class="bg-gradient-to-r from-primary to-secondary text-gradient">PostHog</span>
+                </h1>
+                <p class="text-xl md:text-2xl">Open Source Product Analytics that helps you build better products</p>
+                <p class="text-gray-600 dark:text-gray-400">Capture, analyze, and act on user data without giving up control. Self-hosted or cloud, it's your choice.</p>
+                <div class="flex flex-wrap gap-4 pt-4">
+                    <a href="#get-started" class="px-8 py-3 bg-primary text-dark-bg font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1">
+                        Get Started Free
+                    </a>
+                    <a href="https://github.com/PostHog/posthog" target="_blank" class="px-8 py-3 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all flex items-center gap-2">
+                        <i class="fa fa-github"></i> GitHub
+                    </a>
+                </div>
+            </div>
+            <div class="md:w-1/2 animate-float">
+                <img src="https://picsum.photos/800/600?random=2" alt="PostHog Dashboard Interface" class="rounded-xl shadow-2xl w-full h-auto" loading="lazy">
+            </div>
+        </div>
+    </section>
+
+    <!-- GitHub Stats -->
+    <section class="py-12 px-4 container mx-auto">
+        <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl p-8">
+            <h2 class="text-3xl font-bold mb-8">GitHub Repository</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <i class="fa fa-star text-yellow-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Stars</p>
+                            <p class="text-3xl font-bold">25.6k</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <i class="fa fa-exclamation-circle text-red-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Open Issues</p>
+                            <p class="text-3xl font-bold">247</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-6 rounded-xl border border-gray-200 dark:border-gray-700 hover:border-primary transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                            <i class="fa fa-code-fork text-green-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-500 dark:text-gray-400">Forks</p>
+                            <p class="text-3xl font-bold">1.1k</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-8 flex justify-center">
+                <a href="https://github.com/PostHog/posthog" target="_blank" class="inline-flex items-center gap-2 text-primary hover:underline">
+                    View on GitHub <i class="fa fa-external-link"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 px-4 container mx-auto scroll-mt-24">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">About PostHog</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div class="space-y-6">
+                <h3 class="text-2xl font-bold">What is PostHog?</h3>
+                <p>PostHog is an all-in-one platform for product analytics, session recording, feature flags, and A/B testing. Unlike proprietary tools that lock you into their ecosystem, PostHog gives you full control over your data.</p>
+                
+                <h3 class="text-2xl font-bold">Project Origin</h3>
+                <p>PostHog started in 2020 when the founders got frustrated with the complexity and cost of existing analytics tools. They wanted something that's easy to set up, open source, and gives developers full control over their user data.</p>
+                
+                <p>What began as a side project quickly gained traction in the developer community, with thousands of companies adopting it to understand user behavior and build better products.</p>
+            </div>
+            
+            <div class="relative">
+                <div class="absolute -top-4 -left-4 w-24 h-24 bg-primary/20 rounded-full blur-xl"></div>
+                <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-secondary/20 rounded-full blur-xl"></div>
+                <img src="https://picsum.photos/600/800?random=3" alt="PostHog Team Working" class="rounded-2xl shadow-xl relative z-10 w-full h-auto" loading="lazy">
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="tech-stack" class="py-16 px-4 container mx-auto scroll-mt-24">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">Tech Stack</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="relative">
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl p-8 shadow-xl">
+                    <h3 class="text-2xl font-bold mb-6 text-center">Technology Radar</h3>
+                    <div class="h-80 md:h-96">
+                        <canvas id="techRadar"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="space-y-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">Core Technologies</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span><strong>Backend:</strong> Python with Django and Django REST Framework</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span><strong>Frontend:</strong> React with TypeScript for the user interface</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span><strong>Database:</strong> PostgreSQL for relational data storage</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span><strong>Event Processing:</strong> ClickHouse for high-performance analytics</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-check-circle text-primary mt-1"></i>
+                            <span><strong>Deployment:</strong> Docker and Kubernetes for containerization</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">Integration Ecosystem</h3>
+                    <p>PostHog offers SDKs for all major platforms including JavaScript, Python, Ruby, Go, iOS, and Android. It also integrates with popular tools like Slack, GitHub, and various CI/CD pipelines.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founders Section -->
+    <section id="founders" class="py-16 px-4 container mx-auto scroll-mt-24">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">The Founders</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <!-- Founder 1 -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl overflow-hidden shadow-xl transition-transform hover:-translate-y-2 duration-300">
+                <div class="h-64 overflow-hidden">
+                    <img src="https://picsum.photos/600/400?random=4" alt="James Hawkins - Co-founder of PostHog" class="w-full h-full object-cover transition-transform hover:scale-110 duration-700" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold">James Hawkins</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Co-founder & CEO</p>
+                    <p>James previously worked at Monzo and before that, built products at various startups. He's passionate about making analytics accessible to all developers.</p>
+                    <div class="mt-4 flex gap-4">
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Founder 2 -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl overflow-hidden shadow-xl transition-transform hover:-translate-y-2 duration-300">
+                <div class="h-64 overflow-hidden">
+                    <img src="https://picsum.photos/600/400?random=5" alt="Tim Glaser - Co-founder of PostHog" class="w-full h-full object-cover transition-transform hover:scale-110 duration-700" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold">Tim Glaser</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Co-founder & CTO</p>
+                    <p>Tim is a software engineer with a background in machine learning. Before PostHog, he worked on recommendation systems and large-scale data processing.</p>
+                    <div class="mt-4 flex gap-4">
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pros and Cons -->
+    <section class="py-16 px-4 container mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">Pros & Cons</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+            <!-- Pros -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl p-8 shadow-xl border-l-4 border-green-500">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i class="fa fa-thumbs-up text-green-500"></i> Advantages
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                        <span>100% open source with no hidden features behind paywalls</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                        <span>Full control over your data - self-host or use their cloud</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                        <span>Comprehensive feature set that rivals enterprise tools</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                        <span>Developer-friendly with great documentation and APIs</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                        <span>Generous free tier and transparent pricing</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Cons -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl p-8 shadow-xl border-l-4 border-red-500">
+                <h3 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i class="fa fa-thumbs-down text-red-500"></i> Disadvantages
+                </h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                        <span>Self-hosting requires DevOps knowledge and resources</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                        <span>Some advanced features still in development</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                        <span>Smaller third-party integration ecosystem than established tools</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                        <span>Learning curve for non-technical users</span>
+                    </li>
+                    <li class="flex items-start gap-3">
+                        <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                        <span>Support primarily through community channels for free users</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section id="community" class="py-16 px-4 container mx-auto scroll-mt-24">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">Community & Reviews</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- Review 1 -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div class="flex items-center gap-1 text-yellow-500 mb-4">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                </div>
+                <p class="italic mb-4">"PostHog has completely replaced our analytics stack. As a privacy-focused company, we love that we control our data while still getting powerful insights."</p>
+                <div class="flex items-center gap-3">
+                    <img src="https://picsum.photos/50/50?random=6" alt="Sarah Johnson profile" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+                    <div>
+                        <p class="font-medium">Sarah Johnson</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">CTO, FinTech Startup</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Review 2 -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div class="flex items-center gap-1 text-yellow-500 mb-4">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star-half-o"></i>
+                </div>
+                <p class="italic mb-4">"The self-hosted option was a game-changer for us. The setup was straightforward, and the documentation is excellent. Feature flags alone make it worth using."</p>
+                <div class="flex items-center gap-3">
+                    <img src="https://picsum.photos/50/50?random=7" alt="Michael Chen profile" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+                    <div>
+                        <p class="font-medium">Michael Chen</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Product Manager</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Review 3 -->
+            <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow">
+                <div class="flex items-center gap-1 text-yellow-500 mb-4">
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star"></i>
+                    <i class="fa fa-star-o"></i>
+                </div>
+                <p class="italic mb-4">"As a developer, I appreciate how PostHog is built with engineers in mind. The API is clean, and the ability to extend it with plugins is fantastic. Some UI improvements would make it perfect."</p>
+                <div class="flex items-center gap-3">
+                    <img src="https://picsum.photos/50/50?random=8" alt="Alex Rodriguez profile" class="w-10 h-10 rounded-full object-cover" loading="lazy">
+                    <div>
+                        <p class="font-medium">Alex Rodriguez</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">Senior Developer</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Media Links -->
+        <div class="bg-light-card dark:bg-dark-card rounded-2xl p-8 shadow-xl text-center">
+            <h3 class="text-2xl font-bold mb-6">Join the Community</h3>
+            <p class="mb-8 max-w-2xl mx-auto">Connect with other PostHog users, get help, and stay updated on the latest developments.</p>
+            <div class="flex flex-wrap justify-center gap-6">
+                <a href="https://twitter.com/posthog" target="_blank" class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa fa-twitter text-xl"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="https://github.com/posthog/posthog" target="_blank" class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa fa-github text-xl"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://discord.com/invite/posthog" target="_blank" class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa fa-comments text-xl"></i>
+                    <span>Discord</span>
+                </a>
+                <a href="https://posthog.com/blog" target="_blank" class="flex items-center gap-2 px-6 py-3 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa fa-rss text-xl"></i>
+                    <span>Blog</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest News -->
+    <section class="py-16 px-4 container mx-auto">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">Latest Updates</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- News Item 1 -->
+            <article class="bg-light-card dark:bg-dark-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                <img src="https://picsum.photos/600/400?random=9" alt="PostHog 1.40 Release" class="w-full h-48 object-cover" loading="lazy">
+                <div class="p-6">
+                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">June 15, 2023</div>
+                    <h3 class="text-xl font-bold mb-3">PostHog 1.40 Released with Advanced Funnel Analysis</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">The latest version introduces improved funnel visualization and better performance for large datasets.</p>
+                    <a href="#" class="text-primary hover:underline inline-flex items-center gap-1">
+                        Read more <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </article>
+            
+            <!-- News Item 2 -->
+            <article class="bg-light-card dark:bg-dark-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                <img src="https://picsum.photos/600/400?random=10" alt="PostHog Cloud EU Launch" class="w-full h-48 object-cover" loading="lazy">
+                <div class="p-6">
+                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">May 2, 2023</div>
+                    <h3 class="text-xl font-bold mb-3">PostHog Cloud EU Now Available for GDPR Compliance</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">New European data center option helps companies meet strict data residency requirements.</p>
+                    <a href="#" class="text-primary hover:underline inline-flex items-center gap-1">
+                        Read more <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </article>
+            
+            <!-- News Item 3 -->
+            <article class="bg-light-card dark:bg-dark-card rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 duration-300">
+                <img src="https://picsum.photos/600/400?random=11" alt="PostHog Funding Announcement" class="w-full h-48 object-cover" loading="lazy">
+                <div class="p-6">
+                    <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">March 28, 2023</div>
+                    <h3 class="text-xl font-bold mb-3">PostHog Raises $30M Series B Funding</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Funding will accelerate product development and expand the team to better serve enterprise customers.</p>
+                    <a href="#" class="text-primary hover:underline inline-flex items-center gap-1">
+                        Read more <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- Resources Section -->
+    <section id="resources" class="py-16 px-4 container mx-auto scroll-mt-24">
+        <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center">Free Resources & How to Get Started</h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            <!-- Getting Started Guide -->
+            <div class="lg:col-span-2 bg-gradient-to-br from-primary/20 to-secondary/20 rounded-2xl p-8 shadow-xl">
+                <h3 class="text-2xl font-bold mb-6">Getting Started</h3>
+                <ol class="space-y-4">
+                    <li class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                        <div>
+                            <p class="font-medium">Choose Your Deployment</p>
+                            <p class="text-gray-600 dark:text-gray-400">Use PostHog Cloud or self-host on your infrastructure</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                        <div>
+                            <p class="font-medium">Install the SDK</p>
+                            <p class="text-gray-600 dark:text-gray-400">Add a few lines of code to your application</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                        <div>
+                            <p class="font-medium">Start Capturing Events</p>
+                            <p class="text-gray-600 dark:text-gray-400">Track user behavior and interactions</p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0 font-bold">4</div>
+                        <div>
+                            <p class="font-medium">Analyze & Improve</p>
+                            <p class="text-gray-600 dark:text-gray-400">Use insights to build better products</p>
+                        </div>
+                    </li>
+                </ol>
+                <a href="https://posthog.com/docs" target="_blank" class="mt-8 inline-block px-6 py-3 bg-primary text-dark-bg font-semibold rounded-lg hover:bg-primary/90 transition-all">
+                    View Documentation
+                </a>
+            </div>
+            
+            <!-- Resources -->
+            <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-book text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Tutorials & Guides</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Step-by-step instructions for implementing common use cases.</p>
+                    <a href="https://posthog.com/tutorials" target="_blank" class="text-primary hover:underline inline-flex items-center gap-1">
+                        Browse Tutorials <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-code text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">SDK Documentation</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Integrate PostHog with any language or framework.</p>
+                    <a href="https://posthog.com/docs/libraries" target="_blank" class="text-primary hover:underline inline-flex items-center gap-1">
+                        View SDKs <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-video-camera text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Video Tutorials</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Visual guides to help you get the most out of PostHog.</p>
+                    <a href="https://www.youtube.com/c/PostHog" target="_blank" class="text-primary hover:underline inline-flex items-center gap-1">
+                        Watch Videos <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700">
+                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
+                        <i class="fa fa-plug text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Plugins & Integrations</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">Extend PostHog with community-built plugins.</p>
+                    <a href="https://posthog.com/plugins" target="_blank" class="text-primary hover:underline inline-flex items-center gap-1">
+                        Explore Plugins <i class="fa fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section id="get-started" class="py-20 px-4 container mx-auto scroll-mt-24">
+        <div class="bg-gradient-to-r from-primary/20 to-secondary/20 rounded-3xl p-10 md:p-16 shadow-2xl text-center">
+            <h2 class="text-3xl md:text-5xl font-bold mb-6">Ready to Try PostHog?</h2>
+            <p class="text-xl max-w-3xl mx-auto mb-10">Start analyzing user behavior and building better products today. Free forever for small projects.</p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="https://app.posthog.com/register" target="_blank" class="px-8 py-4 bg-primary text-dark-bg font-semibold rounded-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30 hover:-translate-y-1 text-lg">
+                    Start Free Trial
+                </a>
+                <a href="https://github.com/PostHog/posthog" target="_blank" class="px-8 py-4 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all flex items-center gap-2 justify-center text-lg">
+                    <i class="fa fa-github"></i> Self-Host on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-light-card dark:bg-dark-card border-t border-gray-200 dark:border-gray-800 py-12 px-4">
+        <div class="container mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                            <span class="font-bold text-xl">P</span>
+                        </div>
+                        <span class="font-bold text-xl">PostHog</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">Open source product analytics for developers.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Product</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Features</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Roadmap</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Blog</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Sitemap</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Company</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-gray-600 dark:text-gray-400">
+                <p>&copy; 2023 PostHog, Inc. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const htmlElement = document.documentElement;
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+        } else {
+            htmlElement.classList.remove('dark');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            htmlElement.classList.toggle('dark');
+            
+            // Save preference to localStorage
+            if (htmlElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+        
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Close mobile menu when clicking a link
+        const mobileLinks = mobileMenu.querySelectorAll('a');
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+        
+        // Tech Radar Chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('techRadar').getContext('2d');
+            
+            // Radar chart data
+            const data = {
+                labels: [
+                    'Analytics',
+                    'Session Recording',
+                    'Feature Flags',
+                    'A/B Testing',
+                    'Data Privacy',
+                    'Developer Experience'
+                ],
+                datasets: [{
+                    label: 'PostHog',
+                    data: [90, 85, 95, 80, 95, 90],
+                    backgroundColor: 'rgba(80, 250, 123, 0.2)',
+                    borderColor: 'rgba(80, 250, 123, 1)',
+                    pointBackgroundColor: 'rgba(80, 250, 123, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(80, 250, 123, 1)'
+                }, {
+                    label: 'Industry Average',
+                    data: [70, 65, 50, 60, 65, 55],
+                    backgroundColor: 'rgba(139, 233, 253, 0.2)',
+                    borderColor: 'rgba(139, 233, 253, 1)',
+                    pointBackgroundColor: 'rgba(139, 233, 253, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(139, 233, 253, 1)'
+                }]
+            };
+            
+            // Radar chart configuration
+            const config = {
+                type: 'radar',
+                data: data,
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: htmlElement.classList.contains('dark') ? '#E0E0E0' : '#212529'
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: htmlElement.classList.contains('dark') ? '#E0E0E0' : '#212529'
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    }
+                }
+            };
+            
+            // Create the radar chart
+            const techRadar = new Chart(ctx, config);
+            
+            // Update chart colors when theme changes
+            themeToggle.addEventListener('click', () => {
+                techRadar.options.scales.r.angleLines.color = htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                techRadar.options.scales.r.grid.color = htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                techRadar.options.scales.r.pointLabels.color = htmlElement.classList.contains('dark') ? '#E0E0E0' : '#212529';
+                techRadar.options.scales.r.ticks.color = htmlElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+                techRadar.options.plugins.legend.labels.color = htmlElement.classList.contains('dark') ? '#E0E0E0' : '#212529';
+                techRadar.update();
+            });
+        });
+        
+        // Add scroll animation for elements
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('section > div > h2, section > div > div');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementPosition < windowHeight - 100) {
+                    element.classList.add('animate-fade-in');
+                }
+            });
+        };
+        
+        // Run on load and scroll
+        window.addEventListener('load', animateOnScroll);
+        window.addEventListener('scroll', animateOnScroll);
+    </script>
+</body>
+</html>

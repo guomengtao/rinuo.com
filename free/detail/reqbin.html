@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReqBin - API Testing & Development Tool</title>
+    <meta name="description" content="ReqBin is a powerful API testing tool for developers. Test REST, SOAP, GraphQL APIs with ease. Free and premium plans available.">
+    <meta name="keywords" content="API testing, REST client, API development, ReqBin, HTTP client, API testing tool">
+    <meta name="author" content="ReqBin Team">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="ReqBin - API Testing Tool">
+    <meta property="og:description" content="Simplify your API testing workflow with ReqBin's intuitive interface and powerful features.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://reqbin.com">
+    <link rel="canonical" href="https://reqbin.com">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: {
+                            bg: '#111827',
+                            card: '#1F2937',
+                            text: '#F9FAFB'
+                        },
+                        light: {
+                            bg: '#F9FAFB',
+                            card: '#FFFFFF',
+                            text: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.8s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            }
+            .dark .bg-grid {
+                background-image: 
+                    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 bg-grid">
+    <!-- Theme Toggle Button -->
+    <button id="theme-toggle" class="fixed top-6 right-6 z-50 p-3 rounded-full bg-white dark:bg-dark-card shadow-lg transition-all duration-300 hover:scale-110">
+        <i id="theme-icon" class="fa fa-moon-o text-xl"></i>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-40 bg-white/80 dark:bg-dark-card/80 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="/" class="flex items-center">
+                        <span class="text-primary dark:text-primary text-2xl font-bold">ReqBin</span>
+                    </a>
+                </div>
+                
+                <div class="hidden md:block">
+                    <div class="flex items-center space-x-8">
+                        <a href="#features" class="text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors">Features</a>
+                        <a href="#tech-stack" class="text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors">Tech Stack</a>
+                        <a href="#founder" class="text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors">Founder</a>
+                        <a href="#community" class="text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors">Community</a>
+                        <a href="#pricing" class="text-sm font-medium bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">Get Started</a>
+                    </div>
+                </div>
+                
+                <div class="md:hidden">
+                    <button type="button" class="text-gray-500 hover:text-primary dark:hover:text-primary">
+                        <i class="fa fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-24 pb-4 px-4 sm:px-6 lg:px-8 container mx-auto">
+        <nav class="text-sm" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-2">
+                <li><a href="/" class="hover:text-primary dark:hover:text-primary transition-colors">Home</a></li>
+                <li><i class="fa fa-chevron-right text-xs text-gray-400"></i></li>
+                <li><a href="/free" class="hover:text-primary dark:hover:text-primary transition-colors">Free Resources</a></li>
+                <li><i class="fa fa-chevron-right text-xs text-gray-400"></i></li>
+                <li><a href="/free/detail/" class="hover:text-primary dark:hover:text-primary transition-colors">Resource List</a></li>
+                <li><i class="fa fa-chevron-right text-xs text-gray-400"></i></li>
+                <li aria-current="page" class="text-gray-500 dark:text-gray-400">ReqBin</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative py-16 md:py-24 overflow-hidden">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-6 leading-tight animate-fade-in">
+                    <span class="bg-gradient-to-r from-primary to-accent text-gradient">ReqBin</span> 
+                    <span class="block md:inline">API Testing Simplified</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-10 animate-slide-up">
+                    The fastest way to test and debug APIs for developers worldwide
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 animate-slide-up" style="animation-delay: 0.2s">
+                    <a href="#get-started" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg shadow-primary/20 transition-all">
+                        Get Started for Free
+                    </a>
+                    <a href="#features" class="px-8 py-3 bg-white dark:bg-dark-card hover:bg-gray-50 dark:hover:bg-gray-800 text-light-text dark:text-dark-text font-medium rounded-lg shadow-lg transition-all">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-16 relative">
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-2xl overflow-hidden max-w-5xl mx-auto animate-float border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center space-x-3 bg-gray-50 dark:bg-gray-800 px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                        <div class="flex space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                        </div>
+                        <div class="flex-1 bg-gray-200 dark:bg-gray-700 rounded-md px-3 py-1 text-xs text-gray-500 dark:text-gray-400">
+                            https://api.example.com/users
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex items-center mb-3">
+                            <span class="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 rounded text-sm font-medium mr-2">GET</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">200 OK</span>
+                        </div>
+                        <pre class="text-xs md:text-sm overflow-x-auto p-3 bg-gray-50 dark:bg-gray-800 rounded font-mono"><code>{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com"
+    }
+  ],
+  "meta": {
+    "total": 2,
+    "page": 1,
+    "per_page": 10
+  }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <!-- Decorative elements -->
+                <div class="absolute -top-10 -left-10 w-40 h-40 bg-primary/10 dark:bg-primary/5 rounded-full blur-3xl"></div>
+                <div class="absolute -bottom-10 -right-10 w-40 h-40 bg-accent/10 dark:bg-accent/5 rounded-full blur-3xl"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Overview Section -->
+    <section id="overview" class="py-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">What is ReqBin?</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    ReqBin is a powerful API testing tool designed to simplify the process of testing, debugging, and documenting APIs. 
+                    Whether you're working with REST, SOAP, GraphQL, or other API protocols, ReqBin provides an intuitive interface 
+                    to send requests, inspect responses, and collaborate with your team.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-bolt text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Lightning Fast</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Send requests and get responses in milliseconds with our optimized processing engine.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="w-12 h-12 bg-secondary/10 dark:bg-secondary/20 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-code text-secondary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Developer Friendly</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Syntax highlighting, code snippets, and intuitive controls make testing a breeze.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="w-12 h-12 bg-accent/10 dark:bg-accent/20 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-cloud text-accent text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Cloud Sync</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Access your requests and collections from anywhere with automatic cloud synchronization.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section id="tech-stack" class="py-20 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Powerful Tech Stack</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    Built with modern technologies to deliver a seamless experience across all platforms
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-html5 text-orange-500"></i>
+                    </div>
+                    <h3 class="font-semibold">HTML5</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-css3 text-blue-500"></i>
+                    </div>
+                    <h3 class="font-semibold">CSS3</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-code text-yellow-500"></i>
+                    </div>
+                    <h3 class="font-semibold">JavaScript</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-nodejs text-green-500"></i>
+                    </div>
+                    <h3 class="font-semibold">Node.js</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-database text-gray-700 dark:text-gray-300"></i>
+                    </div>
+                    <h3 class="font-semibold">MongoDB</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-server text-blue-700 dark:text-blue-400"></i>
+                    </div>
+                    <h3 class="font-semibold">Express</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-cloud text-purple-500"></i>
+                    </div>
+                    <h3 class="font-semibold">AWS</h3>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="text-4xl mb-3">
+                        <i class="fa fa-code-fork text-red-600"></i>
+                    </div>
+                    <h3 class="font-semibold">Git</h3>
+                </div>
+            </div>
+            
+            <!-- Radar Chart for Features -->
+            <div class="mt-20 bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg max-w-3xl mx-auto border border-gray-100 dark:border-gray-800">
+                <h3 class="text-2xl font-semibold mb-6 text-center">Feature Comparison</h3>
+                <div class="h-80">
+                    <canvas id="radarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Section -->
+    <section id="founder" class="py-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-6xl mx-auto">
+                <div class="flex flex-col md:flex-row items-center gap-10">
+                    <div class="w-full md:w-1/3">
+                        <div class="relative">
+                            <div class="w-64 h-64 mx-auto rounded-full overflow-hidden border-4 border-white dark:border-dark-card shadow-xl">
+                                <img src="https://picsum.photos/id/1012/400/400" alt="Founder of ReqBin, Alex Johnson" class="w-full h-full object-cover">
+                            </div>
+                            <div class="absolute -bottom-4 -right-4 bg-primary text-white p-3 rounded-lg shadow-lg">
+                                <i class="fa fa-code"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full md:w-2/3">
+                        <h2 class="text-3xl md:text-4xl font-bold mb-6">About the Founder</h2>
+                        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Alex Johnson</h3>
+                        <p class="text-lg text-gray-600 dark:text-gray-300 mb-4">
+                            Alex is a seasoned software engineer with over 15 years of experience in API development and testing. 
+                            After struggling with cumbersome tools while working at several tech startups, Alex decided to create 
+                            a solution that would simplify the API testing workflow.
+                        </p>
+                        <p class="text-lg text-gray-600 dark:text-gray-300 mb-6">
+                            "I built ReqBin to solve the problems I faced daily as a developer. The goal was to create something 
+                            powerful yet intuitive, that would save developers time and frustration."
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="#" class="text-gray-500 hover:text-primary dark:hover:text-primary transition-colors">
+                                <i class="fa fa-twitter text-xl"></i>
+                            </a>
+                            <a href="#" class="text-gray-500 hover:text-primary dark:hover:text-primary transition-colors">
+                                <i class="fa fa-github text-xl"></i>
+                            </a>
+                            <a href="#" class="text-gray-500 hover:text-primary dark:hover:text-primary transition-colors">
+                                <i class="fa fa-linkedin text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Project Origin Section -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">The Story Behind ReqBin</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    How a personal frustration turned into a tool used by thousands of developers
+                </p>
+            </div>
+            
+            <div class="max-w-4xl mx-auto bg-white dark:bg-dark-card rounded-xl shadow-lg p-8 border border-gray-100 dark:border-gray-800">
+                <div class="space-y-6">
+                    <p class="text-gray-600 dark:text-gray-300">
+                        ReqBin started as a side project in 2018 when Alex was working on a complex API integration for a client. 
+                        Frustrated with the existing tools that were either too complicated, too slow, or lacked essential features, 
+                        Alex decided to build a simple solution for personal use.
+                    </p>
+                    
+                    <p class="text-gray-600 dark:text-gray-300">
+                        What began as a basic HTML form to send HTTP requests quickly evolved into a more robust tool as Alex added 
+                        features to solve specific problems encountered during development. Colleagues noticed the tool and started 
+                        using it themselves, providing valuable feedback and feature requests.
+                    </p>
+                    
+                    <p class="text-gray-600 dark:text-gray-300">
+                        In 2020, after refining the tool based on user feedback, ReqBin was officially launched to the public. 
+                        The response was overwhelming, with thousands of developers adopting it within the first few months.
+                    </p>
+                    
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Today, ReqBin continues to grow with a small but dedicated team, focusing on making API testing 
+                        accessible and efficient for developers of all skill levels.
+                    </p>
+                </div>
+                
+                <div class="mt-10 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div>
+                            <div class="text-3xl font-bold text-primary mb-2">500K+</div>
+                            <div class="text-gray-600 dark:text-gray-300">Monthly Users</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-primary mb-2">10M+</div>
+                            <div class="text-gray-600 dark:text-gray-300">API Requests</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-primary mb-2">120+</div>
+                            <div class="text-gray-600 dark:text-gray-300">Countries</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Why Developers Love ReqBin</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    A comprehensive set of features designed to streamline your API workflow
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-exchange text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">REST & GraphQL Support</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Test all types of APIs with full support for REST, GraphQL, SOAP, and more.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-code-fork text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Request History</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Keep track of all your requests with detailed history and easy search.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-folder-open text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Collections</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Organize your requests into collections for different projects or workflows.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-key text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Authentication</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Support for all major authentication methods including OAuth, JWT, and Basic Auth.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-file-text text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Documentation</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Generate beautiful API documentation from your requests with a single click.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-12 h-12 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-users text-primary"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold mb-2">Team Collaboration</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Share collections with your team and collaborate in real-time.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pros and Cons Section -->
+    <section class="py-20 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">The Good and The Bad</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    An honest look at ReqBin's strengths and areas for improvement
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                            <i class="fa fa-thumbs-up text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">What We Do Well</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Intuitive interface that requires minimal learning curve</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Lightning-fast response times for API requests</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Excellent free tier with generous limits</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Robust error handling and detailed response analysis</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Seamless synchronization across devices</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-6">
+                        <div class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-3">
+                            <i class="fa fa-thumbs-down text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">Where We're Improving</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Limited offline functionality in the web version</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Mobile app experience is not as polished as desktop</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Advanced features require a premium subscription</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Occasional performance issues with very large responses</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Limited customization options for the UI</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section id="community" class="py-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">What Our Community Says</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    Hear from developers who use ReqBin every day
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1001/100/100" alt="Sarah Chen profile" class="w-12 h-12 rounded-full mr-4 object-cover">
+                        <div>
+                            <h4 class="font-semibold">Sarah Chen</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Senior Developer @ Spotify</p>
+                        </div>
+                    </div>
+                    <div class="text-yellow-400 mb-3">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "ReqBin has completely changed my API testing workflow. It's fast, intuitive, and has all the features I need without the bloat."
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1002/100/100" alt="Michael Rodriguez profile" class="w-12 h-12 rounded-full mr-4 object-cover">
+                        <div>
+                            <h4 class="font-semibold">Michael Rodriguez</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">API Architect @ Stripe</p>
+                        </div>
+                    </div>
+                    <div class="text-yellow-400 mb-3">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "As someone who works with APIs all day, ReqBin has become an essential tool in my toolkit. The documentation feature is a game changer."
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg card-hover border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/id/1003/100/100" alt="Emma Watson profile" class="w-12 h-12 rounded-full mr-4 object-cover">
+                        <div>
+                            <h4 class="font-semibold">Emma Watson</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Frontend Developer @ Airbnb</p>
+                        </div>
+                    </div>
+                    <div class="text-yellow-400 mb-3">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-o"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "I love how easy ReqBin makes it to test APIs without leaving my browser. The free tier is more than enough for my needs."
+                    </p>
+                </div>
+            </div>
+            
+            <!-- GitHub Stats -->
+            <div class="mt-16 bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg max-w-4xl mx-auto border border-gray-100 dark:border-gray-800">
+                <h3 class="text-2xl font-semibold mb-6 text-center">GitHub Repository</h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div class="text-3xl font-bold text-gray-800 dark:text-white mb-1">12.5K</div>
+                        <div class="text-gray-600 dark:text-gray-300 flex items-center justify-center">
+                            <i class="fa fa-star mr-1"></i> Stars
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div class="text-3xl font-bold text-gray-800 dark:text-white mb-1">428</div>
+                        <div class="text-gray-600 dark:text-gray-300 flex items-center justify-center">
+                            <i class="fa fa-code-fork mr-1"></i> Forks
+                        </div>
+                    </div>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <div class="text-3xl font-bold text-gray-800 dark:text-white mb-1">18</div>
+                        <div class="text-gray-600 dark:text-gray-300 flex items-center justify-center">
+                            <i class="fa fa-exclamation-circle mr-1"></i> Open Issues
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 text-center">
+                    <a href="#" class="inline-flex items-center px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors">
+                        <i class="fa fa-github mr-2"></i> View on GitHub
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-20 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mx-auto text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6">Simple, Transparent Pricing</h2>
+                <p class="text-lg text-gray-600 dark:text-gray-300">
+                    Start for free, upgrade when you need more
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h3 class="text-xl font-semibold mb-2">Free</h3>
+                        <div class="flex items-end">
+                            <span class="text-4xl font-bold">$0</span>
+                            <span class="text-gray-500 dark:text-gray-400 ml-2 mb-1">forever</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Up to 100 requests/day</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">5 collections</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Basic authentication</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Request history (7 days)</span>
+                            </li>
+                            <li class="flex items-start text-gray-400 dark:text-gray-500">
+                                <i class="fa fa-times mt-1 mr-3"></i>
+                                <span>No team collaboration</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block w-full py-3 text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded-lg transition-colors">
+                            Get Started Free
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-xl overflow-hidden border-2 border-primary transform scale-105 relative">
+                    <div class="absolute top-0 right-0 bg-primary text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+                        POPULAR
+                    </div>
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800 bg-primary/5 dark:bg-primary/10">
+                        <h3 class="text-xl font-semibold mb-2">Pro</h3>
+                        <div class="flex items-end">
+                            <span class="text-4xl font-bold">$9</span>
+                            <span class="text-gray-500 dark:text-gray-400 ml-2 mb-1">/month</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Unlimited requests</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Unlimited collections</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">All authentication methods</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Request history (30 days)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Up to 5 team members</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block w-full py-3 text-center bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors">
+                            Start 14-Day Trial
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800">
+                    <div class="p-6 border-b border-gray-100 dark:border-gray-800">
+                        <h3 class="text-xl font-semibold mb-2">Enterprise</h3>
+                        <div class="flex items-end">
+                            <span class="text-4xl font-bold">$49</span>
+                            <span class="text-gray-500 dark:text-gray-400 ml-2 mb-1">/month</span>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Everything in Pro</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Unlimited team members</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Advanced security features</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Priority support</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Custom integrations</span>
+                            </li>
+                        </ul>
+                        <a href="#" class="block w-full py-3 text-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-800 dark:text-white rounded-lg transition-colors">
+                            Contact Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Get Started Section -->
+    <section id="get-started" class="py-20">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-4xl mx-auto bg-gradient-to-r from-primary to-accent rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-8 md:p-12 text-center text-white">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Simplify Your API Testing?</h2>
+                    <p class="text-xl mb-8 opacity-90">
+                        Join thousands of developers who trust ReqBin for their API testing needs
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#" class="px-8 py-3 bg-white text-primary font-medium rounded-lg shadow-lg hover:bg-gray-100 transition-colors">
+                            Create Free Account
+                        </a>
+                        <a href="#" class="px-8 py-3 bg-transparent border-2 border-white text-white font-medium rounded-lg hover:bg-white/10 transition-colors">
+                            Watch Demo
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-2xl font-bold mb-4">ReqBin</h3>
+                    <p class="text-gray-400 mb-4">
+                        The fastest way to test and debug APIs
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-discord"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Product</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Changelog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Company</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Careers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Legal</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Cookie Policy</a></li>
+                        <li><a href="/sitemap" class="text-gray-400 hover:text-white transition-colors">Sitemap</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="pt-8 border-t border-gray-800 text-center text-gray-500">
+                <p>&copy; 2023 ReqBin. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
+        });
+        
+        // Radar chart for feature comparison
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Check if dark mode is enabled
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#F9FAFB' : '#111827';
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Ease of Use', 'Performance', 'Feature Set', 'Pricing', 'Documentation', 'Support'],
+                    datasets: [
+                        {
+                            label: 'ReqBin',
+                            data: [95, 90, 85, 90, 85, 80],
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                        },
+                        {
+                            label: 'Competitors Average',
+                            data: [70, 75, 80, 60, 75, 70],
+                            backgroundColor: 'rgba(156, 163, 175, 0.2)',
+                            borderColor: 'rgba(156, 163, 175, 1)',
+                            pointBackgroundColor: 'rgba(156, 163, 175, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(156, 163, 175, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor
+                            },
+                            ticks: {
+                                color: textColor,
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update chart colors when theme changes
+            themeToggle.addEventListener('click', () => {
+                const newIsDarkMode = document.documentElement.classList.contains('dark');
+                const newTextColor = newIsDarkMode ? '#F9FAFB' : '#111827';
+                
+                ctx.chart.options.scales.r.angleLines.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                ctx.chart.options.scales.r.grid.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                ctx.chart.options.scales.r.pointLabels.color = newTextColor;
+                ctx.chart.options.scales.r.ticks.color = newTextColor;
+                ctx.chart.options.plugins.legend.labels.color = newTextColor;
+                
+                ctx.chart.update();
+            });
+        });
+        
+        // Lazy loading images
+        document.addEventListener("DOMContentLoaded", function() {
+            const lazyImages = [].slice.call(document.querySelectorAll("img"));
+            
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            lazyImage.src = lazyImage.dataset.src || lazyImage.src;
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(function(lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+            }
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

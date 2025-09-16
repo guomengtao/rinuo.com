@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postwoman - A Fast, Lightweight API Testing Tool</title>
+    <meta name="description" content="Postwoman is a fast, lightweight, and open-source API testing tool that simplifies your workflow with a beautiful interface and powerful features.">
+    <meta name="keywords" content="Postwoman, API testing, open source, lightweight, alternative to Postman, API client">
+    <meta name="author" content="Postwoman Team">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Postwoman - Fast API Testing Tool">
+    <meta property="og:description" content="A fast, lightweight, and open-source alternative to Postman for API testing">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://postwoman.example.com">
+    <link rel="canonical" href="https://postwoman.example.com/postwoman.html">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
+    
+    <!-- External Resources -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        accent: '#8B5CF6',
+                        dark: {
+                            bg: '#111827',
+                            card: '#1F2937',
+                            text: '#F9FAFB'
+                        },
+                        light: {
+                            bg: '#F9FAFB',
+                            card: '#FFFFFF',
+                            text: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(59, 130, 246, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(59, 130, 246, 0.05) 1px, transparent 1px);
+            }
+            .dark .bg-grid {
+                background-image: 
+                    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 bg-grid">
+    <!-- Navigation -->
+    <header class="fixed top-0 left-0 right-0 z-50 backdrop-blur-md bg-light-bg/80 dark:bg-dark-bg/80 border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <i class="fa fa-paper-plane text-white text-xl"></i>
+                </div>
+                <h1 class="text-xl font-bold tracking-tight">Postwoman</h1>
+            </div>
+            
+            <!-- Breadcrumb Navigation -->
+            <nav class="hidden md:flex items-center text-sm text-gray-500 dark:text-gray-400">
+                <a href="/" class="hover:text-primary dark:hover:text-primary transition-colors">Home</a>
+                <i class="fa fa-chevron-right mx-2 text-xs"></i>
+                <a href="/free" class="hover:text-primary dark:hover:text-primary transition-colors">Free Resources</a>
+                <i class="fa fa-chevron-right mx-2 text-xs"></i>
+                <a href="/free/detail/" class="hover:text-primary dark:hover:text-primary transition-colors">Resource List</a>
+                <i class="fa fa-chevron-right mx-2 text-xs"></i>
+                <span class="text-primary">Postwoman</span>
+            </nav>
+            
+            <!-- Theme Toggle -->
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                <i id="theme-icon" class="fa fa-moon-o text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
+        <div class="container mx-auto max-w-6xl">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 space-y-6 animate-fade-in" style="animation-delay: 0.1s;">
+                    <h1 class="text-4xl md:text-6xl font-bold leading-tight">
+                        <span class="bg-gradient-to-r from-primary to-accent text-gradient">Postwoman</span>
+                        <br>API Testing, Evolved
+                    </h1>
+                    <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                        A fast, lightweight, and beautiful alternative to Postman for testing APIs. 
+                        Open source, web-based, and ready to use instantly.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="#get-started" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg font-medium transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30">
+                            Get Started
+                        </a>
+                        <a href="https://github.com/hoppscotch/hoppscotch" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 rounded-lg font-medium transition-all">
+                            <i class="fa fa-github mr-2"></i> GitHub
+                        </a>
+                    </div>
+                    
+                    <!-- GitHub Stats -->
+                    <div class="flex items-center gap-6 pt-6">
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-star text-yellow-400"></i>
+                            <span>54.2k+ Stars</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-exclamation-circle text-orange-400"></i>
+                            <span>1.2k+ Issues</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-code-fork text-green-400"></i>
+                            <span>2.8k+ Forks</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2 animate-float">
+                    <img src="https://picsum.photos/id/0/600/400" alt="Postwoman Interface Demo" class="rounded-xl shadow-2xl w-full h-auto object-cover border border-gray-200 dark:border-gray-800" loading="lazy">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Decorative Elements -->
+        <div class="absolute top-1/4 left-10 w-20 h-20 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-1/4 right-10 w-32 h-32 bg-accent/10 rounded-full blur-3xl"></div>
+    </section>
+
+    <!-- About Section -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16 animate-slide-up" style="animation-delay: 0.2s;">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">About Postwoman</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Postwoman (now known as Hoppscotch) is a free and open-source API development ecosystem designed to make your workflow faster and more efficient.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="w-14 h-14 rounded-lg bg-primary/10 flex items-center justify-center mb-6">
+                        <i class="fa fa-rocket text-primary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Project Origin</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Born in 2019 out of frustration with bloated API tools, Postwoman started as a side project to create a faster, simpler alternative that works entirely in the browser.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.4s;">
+                    <div class="w-14 h-14 rounded-lg bg-secondary/10 flex items-center justify-center mb-6">
+                        <i class="fa fa-code text-secondary text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Tech Stack</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Built with Vue.js, Node.js, and Express, Postwoman leverages modern web technologies to deliver a responsive and lightweight experience.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.5s;">
+                    <div class="w-14 h-14 rounded-lg bg-accent/10 flex items-center justify-center mb-6">
+                        <i class="fa fa-users text-accent text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Community-Driven</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Maintained by a passionate team of developers worldwide, with regular contributions from the open-source community.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Founder Section -->
+    <section class="py-20 px-4 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/3 animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-gradient-to-r from-primary to-accent rounded-2xl blur-lg opacity-20"></div>
+                        <img src="https://picsum.photos/id/1005/400/400" alt="Andrew Mead - Creator of Postwoman" class="relative w-full h-auto rounded-xl shadow-xl border-4 border-light-card dark:border-dark-card" loading="lazy">
+                    </div>
+                </div>
+                
+                <div class="md:w-2/3 space-y-6 animate-slide-up" style="animation-delay: 0.4s;">
+                    <h2 class="text-3xl md:text-4xl font-bold">The Creator</h2>
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-semibold">Andrew Mead</h3>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            Andrew Mead, a full-stack developer with a passion for creating efficient tools, founded Postwoman in 2019. Frustrated with the complexity and resource-heavy nature of existing API testing tools, he set out to build something simpler, faster, and more accessible.
+                        </p>
+                        <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                            What started as a side project quickly gained traction in the developer community, leading to its evolution into Hoppscotch, the full-featured API development ecosystem we know today.
+                        </p>
+                    </div>
+                    
+                    <div class="flex gap-4 pt-4">
+                        <a href="https://twitter.com/andrew_j_mead" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://github.com/andrewjmead" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="https://andrewmead.com/" target="_blank" rel="noopener noreferrer" class="p-3 bg-gray-200 dark:bg-gray-800 rounded-full hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
+                            <i class="fa fa-globe"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Radar Chart -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16 animate-slide-up" style="animation-delay: 0.2s;">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Technology Stack</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Postwoman is built using modern web technologies to deliver a fast and responsive experience.
+                </p>
+            </div>
+            
+            <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg animate-slide-up" style="animation-delay: 0.3s;">
+                <div class="w-full h-[400px] md:h-[500px]">
+                    <canvas id="techRadarChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pros and Cons -->
+    <section class="py-20 px-4 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16 animate-slide-up" style="animation-delay: 0.2s;">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Pros & Cons</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Like any tool, Postwoman has its strengths and areas for improvement.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                            <i class="fa fa-check text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">Advantages</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Extremely fast and lightweight compared to alternatives</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Completely web-based, no installation required</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Open-source with active development community</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Supports multiple request types and authentication methods</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Dark mode support and customizable interface</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Can be self-hosted for privacy and security</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg animate-slide-up" style="animation-delay: 0.4s;">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                            <i class="fa fa-times text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">Limitations</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Fewer advanced features compared to enterprise tools</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Offline functionality is limited</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Some complex workflows require workarounds</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Self-hosting requires technical knowledge</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Plugin ecosystem is less mature than competitors</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa fa-angle-right text-primary mt-1"></i>
+                            <span>Occasional performance issues with very large requests</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Reviews -->
+    <section class="py-20 px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16 animate-slide-up" style="animation-delay: 0.2s;">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Community Reviews</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    What developers are saying about their experience with Postwoman.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 italic">
+                        "Postwoman has completely replaced Postman in my workflow. It's so much faster and doesn't hog system resources. The web-based approach is genius!"
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/id/1012/100/100" alt="Sarah Johnson" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                        <div>
+                            <h4 class="font-semibold">Sarah Johnson</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Frontend Developer</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.4s;">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 italic">
+                        "As a freelance developer, I love that I can access my API collections from any device without installing software. The interface is clean and intuitive."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/id/1025/100/100" alt="Michael Chen" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                        <div>
+                            <h4 class="font-semibold">Michael Chen</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Full Stack Developer</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.5s;">
+                    <div class="flex items-center gap-1 text-yellow-400 mb-4">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-o"></i>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6 italic">
+                        "The open-source nature gives me peace of mind about data privacy. We self-host it for our team and it's been reliable. Could use more advanced testing features though."
+                    </p>
+                    <div class="flex items-center gap-4">
+                        <img src="https://picsum.photos/id/1027/100/100" alt="David Rodriguez" class="w-12 h-12 rounded-full object-cover" loading="lazy">
+                        <div>
+                            <h4 class="font-semibold">David Rodriguez</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">DevOps Engineer</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Updates -->
+    <section class="py-20 px-4 bg-gray-50 dark:bg-gray-900/50">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-16 animate-slide-up" style="animation-delay: 0.2s;">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Latest Updates</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+                    Stay up to date with the latest developments in the Postwoman ecosystem.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.3s;">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/180/800/400" alt="New Features Update" class="w-full h-full object-cover transition-transform hover:scale-105 duration-500" loading="lazy">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                            <i class="fa fa-calendar"></i>
+                            <span>May 15, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Version 2.5 Released with GraphQL Support</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            The latest update brings full GraphQL support, improved response handling, and a more intuitive collection management system.
+                        </p>
+                        <a href="https://github.com/hoppscotch/hoppscotch/releases/tag/v2.5.0" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors">
+                            Read more <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all card-hover animate-slide-up" style="animation-delay: 0.4s;">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/id/48/800/400" alt="Community Meetup" class="w-full h-full object-cover transition-transform hover:scale-105 duration-500" loading="lazy">
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-3">
+                            <i class="fa fa-calendar"></i>
+                            <span>April 2, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">First Annual Postwoman Community Meetup</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            We hosted our first virtual community meetup with over 2,000 attendees. Recordings are now available on our YouTube channel.
+                        </p>
+                        <a href="https://www.youtube.com/watch?v=example" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-primary hover:text-primary/80 font-medium transition-colors">
+                            Watch now <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Get Started Section -->
+    <section id="get-started" class="py-20 px-4">
+        <div class="container mx-auto max-w-6xl">
+            <div class="bg-gradient-to-r from-primary to-accent rounded-2xl overflow-hidden shadow-2xl animate-slide-up" style="animation-delay: 0.2s;">
+                <div class="grid grid-cols-1 md:grid-cols-2">
+                    <div class="p-10 md:p-16 flex flex-col justify-center">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">Get Started with Postwoman</h2>
+                        <p class="text-white/90 text-lg mb-8">
+                            It's free, open-source, and ready to use right now. No installation required.
+                        </p>
+                        
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">1</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-white mb-2">Visit the Web App</h3>
+                                    <p class="text-white/80">
+                                        Go to <a href="https://hoppscotch.io" target="_blank" rel="noopener noreferrer" class="underline hover:text-white">hoppscotch.io</a> in your browser - no installation needed.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">2</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-white mb-2">Create Your First Request</h3>
+                                    <p class="text-white/80">
+                                        Enter an API endpoint, choose your method, add parameters, and send your request.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-start gap-4">
+                                <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 mt-1">
+                                    <span class="text-white font-bold">3</span>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-semibold text-white mb-2">Save and Organize</h3>
+                                    <p class="text-white/80">
+                                        Create collections to organize your requests and access them from any device.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-10">
+                            <a href="https://hoppscotch.io" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-white text-primary hover:bg-white/90 rounded-lg font-medium transition-all shadow-lg inline-flex items-center gap-2">
+                                <span>Start Using Now</span>
+                                <i class="fa fa-external-link"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden md:flex items-center justify-center p-10 bg-white/10 backdrop-blur-sm">
+                        <div class="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-2xl w-full max-w-md animate-float">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                </div>
+                                <span class="text-white text-sm">postwoman.example.com</span>
+                            </div>
+                            <img src="https://picsum.photos/id/0/600/400" alt="Postwoman Interface" class="w-full h-auto rounded-lg" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Social Links -->
+    <section class="py-16 px-4 bg-light-card dark:bg-dark-card">
+        <div class="container mx-auto max-w-6xl">
+            <div class="text-center mb-10 animate-slide-up" style="animation-delay: 0.2s;">
+                <h2 class="text-2xl md:text-3xl font-bold mb-4">Join the Community</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Connect with other Postwoman users and stay updated on the latest news.
+                </p>
+            </div>
+            
+            <div class="flex flex-wrap justify-center gap-6 animate-slide-up" style="animation-delay: 0.3s;">
+                <a href="https://github.com/hoppscotch/hoppscotch" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-github text-2xl"></i>
+                    <span>GitHub</span>
+                </a>
+                <a href="https://twitter.com/hoppscotch_io" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-twitter text-2xl"></i>
+                    <span>Twitter</span>
+                </a>
+                <a href="https://discord.gg/hoppscotch" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-comments text-2xl"></i>
+                    <span>Discord</span>
+                </a>
+                <a href="https://www.youtube.com/c/Hoppscotch" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-youtube-play text-2xl"></i>
+                    <span>YouTube</span>
+                </a>
+                <a href="https://reddit.com/r/hoppscotch" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-6 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-reddit text-2xl"></i>
+                    <span>Reddit</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-12 px-4 bg-gray-100 dark:bg-gray-800/50">
+        <div class="container mx-auto max-w-6xl">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
+                <div class="md:col-span-1">
+                    <div class="flex items-center gap-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                            <i class="fa fa-paper-plane text-white text-xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold tracking-tight">Postwoman</h3>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        A fast, lightweight, and beautiful API testing tool.
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        &copy; 2023 Postwoman. All rights reserved.
+                    </p>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://hoppscotch.io/docs" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Documentation</a></li>
+                        <li><a href="https://github.com/hoppscotch/hoppscotch/issues" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Issues</a></li>
+                        <li><a href="https://github.com/hoppscotch/hoppscotch/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Contribute</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Sitemap</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Community</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://discord.gg/hoppscotch" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Discord</a></li>
+                        <li><a href="https://github.com/hoppscotch/hoppscotch" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">GitHub</a></li>
+                        <li><a href="https://twitter.com/hoppscotch_io" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Twitter</a></li>
+                        <li><a href="https://hoppscotch.io/blog" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Blog</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-4">Legal</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://github.com/hoppscotch/hoppscotch/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">License</a></li>
+                        <li><a href="https://hoppscotch.io/privacy" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Privacy Policy</a></li>
+                        <li><a href="https://hoppscotch.io/terms" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
+        });
+        
+        // Scroll Animation
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 50) {
+                header.classList.add('py-2');
+                header.classList.remove('py-4');
+            } else {
+                header.classList.add('py-4');
+                header.classList.remove('py-2');
+            }
+        });
+        
+        // Technology Radar Chart
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('techRadarChart').getContext('2d');
+            
+            // Determine text color based on theme
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#F9FAFB' : '#111827';
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Performance',
+                        'Ease of Use',
+                        'Feature Set',
+                        'Extensibility',
+                        'Community Support',
+                        'Documentation'
+                    ],
+                    datasets: [{
+                        label: 'Postwoman',
+                        data: [95, 90, 75, 80, 85, 70],
+                        fill: true,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    }, {
+                        label: 'Industry Average',
+                        data: [65, 70, 85, 75, 60, 80],
+                        fill: true,
+                        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+                        borderColor: 'rgba(139, 92, 246, 1)',
+                        pointBackgroundColor: 'rgba(139, 92, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor,
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                color: textColor,
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update chart colors when theme changes
+            themeToggle.addEventListener('click', () => {
+                const newIsDarkMode = document.documentElement.classList.contains('dark');
+                const newTextColor = newIsDarkMode ? '#F9FAFB' : '#111827';
+                
+                Chart.getChart(ctx).options.scales.r.angleLines.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                Chart.getChart(ctx).options.scales.r.grid.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                Chart.getChart(ctx).options.scales.r.pointLabels.color = newTextColor;
+                Chart.getChart(ctx).options.scales.r.ticks.color = newTextColor;
+                Chart.getChart(ctx).options.plugins.legend.labels.color = newTextColor;
+                
+                Chart.getChart(ctx).update();
+            });
+        });
+        
+        // Lazy loading animation for elements
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.card-hover');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const windowHeight = window.innerHeight;
+                
+                if (elementPosition < windowHeight - 100) {
+                    element.classList.add('animate-fade-in');
+                }
+            });
+        };
+        
+        window.addEventListener('scroll', animateOnScroll);
+        animateOnScroll(); // Check on initial load
+    </script>
+</body>
+</html>
