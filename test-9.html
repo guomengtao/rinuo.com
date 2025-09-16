@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dev Tools Catalog</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome图标 -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- 自定义Tailwind配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#3B82F6',
+            secondary: '#10B981',
+            dark: '#1E293B',
+            light: '#F8FAFC'
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .category-item {
+        @apply py-3 px-4 cursor-pointer transition-colors hover:bg-primary/5 
+               border-l-4 border-transparent hover:border-primary/30;
+      }
+      .category-item-active {
+        @apply bg-primary/10 border-primary font-medium;
+      }
+      .tag-item {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-medium cursor-pointer transition-all duration-200;
+      }
+      .tag-item-primary {
+        @apply bg-primary/10 text-primary hover:bg-primary/20;
+      }
+      .tag-item-secondary {
+        @apply bg-secondary/10 text-secondary hover:bg-secondary/20;
+      }
+      .content-section {
+        @apply hidden;
+      }
+      .content-section-active {
+        @apply block;
+      }
+    }
+  </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+  <!-- 页面头部 -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="container mx-auto px-4 py-6">
+      <h1 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold text-primary">
+        <i class="fa fa-wrench mr-3"></i>Dev Tools Catalog
+      </h1>
+      <p class="text-gray-600 mt-1">Browse development tools by category and tags</p>
+    </div>
+  </header>
+
+  <!-- 主要内容区 - 左右结构 -->
+  <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+    <!-- 左侧分类导航 -->
+    <aside class="bg-white w-full md:w-64 border-r border-gray-200 md:h-[calc(100vh-8rem)] overflow-y-auto md:sticky md:top-24">
+      <div class="p-4 border-b border-gray-200">
+        <h2 class="font-bold text-gray-800">Categories</h2>
+        <p class="text-sm text-gray-500 mt-1" id="category-count">0 categories</p>
+      </div>
+      
+      <nav id="categories-nav" class="divide-y divide-gray-100">
+        <!-- 分类将通过JS动态生成 -->
+        <div class="flex justify-center p-8">
+          <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- 右侧内容区域 -->
+    <div class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+      <!-- 搜索框 -->
+      <div class="relative mb-6 max-w-2xl">
+        <input type="text" id="search-input" 
+               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+               placeholder="Search by tag or tool...">
+        <button id="clear-search" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors hidden">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <!-- 默认内容区域 - 欢迎/介绍 -->
+      <div id="default-content" class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+        <h2 class="text-2xl font-bold mb-4">Welcome to Dev Tools Catalog</h2>
+        <p class="text-gray-600 mb-6">
+          Browse development tools by selecting a category from the left sidebar or using the search box above.
+          Discover frameworks, libraries, and utilities for all aspects of software development.
+        </p>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+            <div class="bg-primary/10 text-primary p-3 rounded-full inline-block mb-4">
+              <i class="fa fa-folder-open text-xl"></i>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">Browse Categories</h3>
+            <p class="text-gray-600 text-sm">
+              Select from various development categories on the left to explore related tools.
+            </p>
+          </div>
+          
+          <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+            <div class="bg-secondary/10 text-secondary p-3 rounded-full inline-block mb-4">
+              <i class="fa fa-tags text-xl"></i>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">Filter by Tags</h3>
+            <p class="text-gray-600 text-sm">
+              Click on tags to filter tools and find exactly what you're looking for.
+            </p>
+          </div>
+          
+          <div class="bg-gray-50 p-5 rounded-lg border border-gray-100">
+            <div class="bg-purple-100 text-purple-600 p-3 rounded-full inline-block mb-4">
+              <i class="fa fa-search text-xl"></i>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">Search Tools</h3>
+            <p class="text-gray-600 text-sm">
+              Use the search box to quickly find tools by name or related tags.
+            </p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- 分类内容区域 -->
+      <div id="category-content" class="content-section">
+        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+          <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fa fa-folder-open text-primary mr-2"></i>
+            <span id="category-content-title"></span>
+          </h2>
+          
+          <div class="mb-6">
+            <h3 class="font-semibold text-gray-700 mb-3">Related Tags</h3>
+            <div class="flex flex-wrap gap-2" id="category-tags-container">
+              <!-- 标签将通过JS动态生成 -->
+            </div>
+          </div>
+          
+          <div id="category-tools-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- 工具列表将通过JS动态生成 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 标签内容区域 -->
+      <div id="tag-content" class="content-section">
+        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+          <h2 class="text-2xl font-bold mb-4 flex items-center">
+            <i class="fa fa-tags text-primary mr-2"></i>
+            <span>Tools tagged with: <span id="tag-content-title" class="text-primary"></span></span>
+          </h2>
+          
+          <div id="tag-tools-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- 工具列表将通过JS动态生成 -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- 搜索结果区域 -->
+      <div id="search-results" class="content-section">
+        <div class="bg-white rounded-xl shadow-sm p-6 md:p-8">
+          <h2 class="text-2xl font-bold mb-4">
+            Search results for: <span id="search-term" class="text-primary"></span>
+          </h2>
+          <p class="text-gray-600 mb-6" id="search-results-count"></p>
+          
+          <div id="search-results-content">
+            <!-- 搜索结果内容将通过JS动态生成 -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-dark text-white py-6">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-4 md:mb-0">
+          <p class="font-bold text-lg">Dev Tools Catalog</p>
+          <p class="text-gray-400 text-sm mt-1">A comprehensive collection of development tools</p>
+        </div>
+        <div class="flex space-x-4">
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fa fa-github text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fa fa-twitter text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fa fa-linkedin text-xl"></i>
+          </a>
+        </div>
+      </div>
+      <div class="border-t border-gray-700 mt-4 pt-4 text-center text-gray-400 text-sm">
+        &copy; 2024 Dev Tools Catalog. All rights reserved.
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript 逻辑 -->
+  <script>
+    // 全局变量
+    let toolsData = [];
+    let categories = {}; // 按分类组织的数据 { category: { tags: [], tools: [] } }
+    let allTags = new Set();
+    let activeCategory = null;
+    
+    // DOM 元素
+    const categoriesNav = document.getElementById('categories-nav');
+    const categoryCount = document.getElementById('category-count');
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
+    
+    // 内容区域元素
+    const defaultContent = document.getElementById('default-content');
+    const categoryContent = document.getElementById('category-content');
+    const categoryContentTitle = document.getElementById('category-content-title');
+    const categoryTagsContainer = document.getElementById('category-tags-container');
+    const categoryToolsList = document.getElementById('category-tools-list');
+    const tagContent = document.getElementById('tag-content');
+    const tagContentTitle = document.getElementById('tag-content-title');
+    const tagToolsList = document.getElementById('tag-tools-list');
+    const searchResults = document.getElementById('search-results');
+    const searchTerm = document.getElementById('search-term');
+    const searchResultsCount = document.getElementById('search-results-count');
+    const searchResultsContent = document.getElementById('search-results-content');
+
+    // 初始化函数
+    async function init() {
+      try {
+        // 加载JSON数据（实际使用时替换为你的JSON文件路径）
+        toolsData = await loadToolsData();
+        
+        // 处理数据
+        processData();
+        
+        // 渲染页面
+        renderCategories();
+        
+        // 更新统计数据
+        categoryCount.textContent = `${Object.keys(categories).length} categories`;
+        
+      } catch (error) {
+        categoriesNav.innerHTML = `
+          <div class="p-6 text-center">
+            <i class="fa fa-exclamation-circle text-red-500 text-3xl mb-4"></i>
+            <h3 class="text-lg font-semibold text-red-800 mb-2">Error Loading Data</h3>
+            <p class="text-red-600">${error.message}</p>
+          </div>
+        `;
+        console.error('Initialization error:', error);
+      }
+    }
+
+    // 模拟加载工具数据
+    async function loadToolsData() {
+      // 实际应用中应使用 fetch('tools.json')
+      return [
+        {"file":"react","name":"React","category":"Frontend","tags":["Framework","JavaScript","UI"]},
+        {"file":"vue","name":"Vue","category":"Frontend","tags":["Framework","JavaScript"]},
+        {"file":"svelte","name":"Svelte","category":"Frontend","tags":["Framework","JavaScript"]},
+        {"file":"nextjs","name":"Nextjs","category":"Frontend","tags":["Framework","JavaScript","Fullstack"]},
+        {"file":"flutter","name":"Flutter","category":"Frontend","tags":["Framework","Mobile Development","UI"]},
+        {"file":"expo","name":"Expo","category":"Frontend","tags":["Mobile Development","Framework","JavaScript"]},
+        {"file":"bootstrap","name":"Bootstrap","category":"Frontend","tags":["UI Framework","CSS"]},
+        {"file":"tailwind","name":"Tailwind","category":"Frontend","tags":["UI Framework","CSS Tools"]},
+        {"file":"layui","name":"Layui","category":"Frontend","tags":["UI Framework","CSS"]},
+        {"file":"sass","name":"Sass","category":"Frontend","tags":["CSS Tools","Styling"]},
+        {"file":"less","name":"Less","category":"Frontend","tags":["CSS Tools","Styling"]},
+        {"file":"postcss","name":"PostCSS","category":"Frontend","tags":["CSS Tools","Build"]},
+        {"file":"vite","name":"Vite","category":"Frontend","tags":["Build Tools","JavaScript"]},
+        {"file":"jquery","name":"jQuery","category":"Frontend","tags":["JavaScript Library","DOM"]},
+        {"file":"d3","name":"D3","category":"Frontend","tags":["JavaScript Library","Charts","Visualization"]},
+        {"file":"mocha","name":"Mocha","category":"Testing","tags":["JavaScript","Unit Testing"]},
+        {"file":"jest","name":"Jest","category":"Testing","tags":["JavaScript","Unit Testing"]},
+        {"file":"vitest","name":"Vitest","category":"Testing","tags":["JavaScript","Unit Testing"]},
+        {"file":"reqres","name":"Reqres","category":"Testing","tags":["Mock Data","API"]},
+        {"file":"postman","name":"Postman","category":"Tools","tags":["API Testing","Collaboration"]},
+        {"file":"swagger","name":"Swagger","category":"Tools","tags":["API Docs","Collaboration"]},
+        {"file":"json-placeholder","name":"JSON Placeholder","category":"Tools","tags":["Mock Data","API"]},
+        {"file":"mock-api","name":"Mock API","category":"Tools","tags":["Mock Data","API"]},
+        {"file":"regex101","name":"Regex101","category":"Tools","tags":["Regex","Testing"]},
+        {"file":"express","name":"Express","category":"Backend","tags":["Node.js Framework","API"]},
+        {"file":"spring-boot","name":"Spring Boot","category":"Backend","tags":["Java Framework","API"]},
+        {"file":"symfony","name":"Symfony","category":"Backend","tags":["PHP Framework","Web App"]},
+        {"file":"laravel","name":"Laravel","category":"Backend","tags":["PHP Framework","Web App"]},
+        {"file":"wordpress","name":"WordPress","category":"Backend","tags":["CMS","Website"]},
+        {"file":"apache","name":"Apache","category":"Backend","tags":["Web Server","Deployment"]},
+        {"file":"nginx","name":"Nginx","category":"Backend","tags":["Web Server","Deployment"]},
+        {"file":"centos","name":"CentOS","category":"Backend","tags":["Linux Server","Operating System"]},
+        {"file":"ubuntu","name":"Ubuntu","category":"Backend","tags":["Linux Server","Operating System"]},
+        {"file":"linux","name":"Linux","category":"Backend","tags":["Operating System","Linux"]},
+        {"file":"elasticsearch","name":"Elasticsearch","category":"Backend","tags":["Search Engine","Database"]},
+        {"file":"firebase","name":"Firebase","category":"Backend","tags":["BaaS","Cloud Service","Database"]},
+        {"file":"supabase","name":"Supabase","category":"Backend","tags":["BaaS","API","Database"]},
+        {"file":"mysql","name":"MySQL","category":"Database","tags":["SQL","Backend"]},
+        {"file":"postgresql","name":"PostgreSQL","category":"Database","tags":["SQL","Backend"]},
+        {"file":"sqlite","name":"SQLite","category":"Database","tags":["SQL","Lightweight"]},
+        {"file":"mongodb","name":"MongoDB","category":"Database","tags":["NoSQL","Backend"]},
+        {"file":"redis","name":"Redis","category":"Database","tags":["Cache","NoSQL"]},
+        {"file":"dbeaver","name":"DBeaver","category":"Database","tags":["Management Tool","Visualization"]},
+        {"file":"grafana","name":"Grafana","category":"Monitoring","tags":["Visualization","DevOps"]},
+        {"file":"prometheus","name":"Prometheus","category":"Monitoring","tags":["Data Collection","DevOps"]},
+        {"file":"uptimerobot","name":"UptimeRobot","category":"Monitoring","tags":["DevOps","Uptime"]},
+        {"file":"echarts","name":"ECharts","category":"Charts","tags":["Visualization","Frontend"]},
+        {"file":"highcharts","name":"Highcharts","category":"Charts","tags":["Visualization","Frontend"]},
+        {"file":"chart","name":"Chart","category":"Charts","tags":["Visualization","Frontend"]},
+        {"file":"helm","name":"Helm","category":"DevOps","tags":["Container Deployment","Kubernetes"]},
+        {"file":"docker","name":"Docker","category":"DevOps","tags":["Container Management","Deployment"]},
+        {"file":"kubernetes","name":"Kubernetes","category":"DevOps","tags":["Container Orchestration","Deployment"]},
+        {"file":"vercel","name":"Vercel","category":"DevOps","tags":["Cloud Deployment","Frontend"]},
+        {"file":"netlify","name":"Netlify","category":"DevOps","tags":["Cloud Deployment","Frontend"]},
+        {"file":"render","name":"Render","category":"DevOps","tags":["Cloud Deployment","Fullstack"]},
+        {"file":"fly-io","name":"Fly.io","category":"DevOps","tags":["Cloud Deployment","App Hosting"]},
+        {"file":"circlecl","name":"CircleCI","category":"DevOps","tags":["CI/CD","Automation"]},
+        {"file":"cloudflare","name":"Cloudflare","category":"Networking","tags":["CDN","Security","DevOps"]},
+        {"file":"cloudflare-warp","name":"Cloudflare Warp","category":"Networking","tags":["VPN","Security"]},
+        {"file":"letsencrypt","name":"Let's Encrypt","category":"Security","tags":["Certificate Management","HTTPS"]},
+        {"file":"figma","name":"Figma","category":"Design","tags":["UI","Collaboration","Prototyping"]},
+        {"file":"canva","name":"Canva","category":"Design","tags":["UI","Graphics Tool"]},
+        {"file":"lottiefiles","name":"LottieFiles","category":"Design","tags":["Animation","Assets"]},
+        {"file":"unsplash","name":"Unsplash","category":"Design","tags":["Image Assets","Resources"]},
+        {"file":"excalidraw","name":"Excalidraw","category":"Design","tags":["Drawing Tool","Collaboration"]},
+        {"file":"notion","name":"Notion","category":"Collaboration","tags":["Notes","Docs","Team"]},
+        {"file":"obsidian","name":"Obsidian","category":"Collaboration","tags":["Notes","Knowledge Management"]},
+        {"file":"slack","name":"Slack","category":"Collaboration","tags":["Chat Tool","Team"]},
+        {"file":"discord","name":"Discord","category":"Collaboration","tags":["Chat Tool","Team"]},
+        {"file":"asana","name":"Asana","category":"Collaboration","tags":["Project Management","Team"]},
+        {"file":"trello","name":"Trello","category":"Collaboration","tags":["Project Management","Team"]},
+        {"file":"zoom","name":"Zoom","category":"Collaboration","tags":["Video Meeting","Multimedia"]},
+        {"file":"github","name":"GitHub","category":"Collaboration","tags":["Version Control","Development"]},
+        {"file":"bitbucket","name":"Bitbucket","category":"Collaboration","tags":["Version Control","Development"]},
+        {"file":"freecodecamp","name":"FreeCodeCamp","category":"Learning","tags":["Coding Practice","Learning"]},
+        {"file":"exercism","name":"Exercism","category":"Learning","tags":["Coding Practice","Learning"]},
+        {"file":"leetcode","name":"LeetCode","category":"Learning","tags":["Algorithm Practice","Learning"]},
+        {"file":"kaggle","name":"Kaggle","category":"Learning","tags":["Data Analysis","AI","Learning"]},
+        {"file":"doubao","name":"Doubao","category":"Learning","tags":["Learning Resources","Learning"]},
+        {"file":"runway","name":"Runway","category":"AI Tools","tags":["Video Generation","Multimedia"]},
+        {"file":"whisper","name":"Whisper","category":"AI Tools","tags":["Speech Recognition","NLP"]},
+        {"file":"pytorch","name":"PyTorch","category":"AI Tools","tags":["Framework","Machine Learning"]},
+        {"file":"openai","name":"OpenAI","category":"AI Tools","tags":["API","NLP"]},
+        {"file":"copilot","name":"Copilot","category":"AI Tools","tags":["Dev Assistance","Code Tools"]},
+        {"file":"deepseek","name":"DeepSeek","category":"AI Tools","tags":["Search","Assistance"]},
+        {"file":"gradio","name":"Gradio","category":"AI Tools","tags":["Web UI","Prototyping"]},
+        {"file":"obs-studio","name":"OBS Studio","category":"Multimedia","tags":["Video Recording","Streaming"]},
+        {"file":"unity","name":"Unity","category":"Multimedia","tags":["Game Development","3D"]},
+        {"file":"vscode","name":"VSCode","category":"Dev Tools","tags":["IDE","Editor"]},
+        {"file":"xcode","name":"Xcode","category":"Dev Tools","tags":["IDE","Mobile Development"]},
+        {"file":"replit","name":"Replit","category":"Online Dev","tags":["IDE","Collaboration"]},
+        {"file":"cursor","name":"Cursor","category":"Tools","tags":["Dev Assistance","AI Assistance"]},
+        {"file":"grammarly","name":"Grammarly","category":"Tools","tags":["Writing Assistance","AI Assistance"]},
+        {"file":"prettier","name":"Prettier","category":"Tools","tags":["Code Formatting","Dev Assistance"]},
+        {"file":"eslint","name":"ESLint","category":"Tools","tags":["Code Linting","Dev Assistance"]},
+        {"file":"npm","name":"NPM","category":"Tools","tags":["Package Manager","JavaScript"]},
+        {"file":"pnpm","name":"PNPM","category":"Tools","tags":["Package Manager","JavaScript"]},
+        {"file":"yarn","name":"Yarn","category":"Tools","tags":["Package Manager","JavaScript"]},
+        {"file":"zapier","name":"Zapier","category":"Tools","tags":["Automation","Collaboration"]},
+        {"file":"docusaurus","name":"Docusaurus","category":"Tools","tags":["Docs Generator","Static Site"]},
+        {"file":"gmail","name":"Gmail","category":"Tools","tags":["Email","Collaboration"]},
+        {"file":"freenom","name":"Freenom","category":"Tools","tags":["Domain Service","Website"]},
+        {"file":"7-zip","name":"7-Zip","category":"Tools","tags":["Compression","File Management"]}
+      ];
+    }
+
+    // 处理数据：按分类组织并提取标签
+    function processData() {
+      toolsData.forEach(tool => {
+        const { category } = tool;
+        
+        // 如果分类不存在，创建新分类
+        if (!categories[category]) {
+          categories[category] = {
+            tags: new Set(),
+            tools: []
+          };
+        }
+        
+        // 将工具添加到分类中
+        categories[category].tools.push(tool);
+        
+        // 提取标签并添加到分类的标签集合中
+        tool.tags.forEach(tag => {
+          categories[category].tags.add(tag);
+          allTags.add(tag);
+        });
+      });
+    }
+
+    // 渲染分类导航
+    function renderCategories() {
+      // 按分类名称排序
+      const sortedCategories = Object.keys(categories).sort();
+      
+      let html = '';
+      
+      sortedCategories.forEach(category => {
+        const { tools } = categories[category];
+        html += `
+          <div class="category-item" data-category="${category}">
+            <div class="flex justify-between items-center">
+              <span>${category}</span>
+              <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">
+                ${tools.length}
+              </span>
+            </div>
+          </div>
+        `;
+      });
+      
+      categoriesNav.innerHTML = html;
+      
+      // 为分类添加点击事件
+      document.querySelectorAll('.category-item').forEach(el => {
+        el.addEventListener('click', () => {
+          // 移除所有分类的活跃状态
+          document.querySelectorAll('.category-item').forEach(item => {
+            item.classList.remove('category-item-active');
+          });
+          
+          // 添加当前分类的活跃状态
+          el.classList.add('category-item-active');
+          
+          const category = el.dataset.category;
+          showCategoryContent(category);
+          
+          // 重置搜索
+          searchInput.value = '';
+          clearSearchBtn.classList.add('hidden');
+        });
+      });
+    }
+
+    // 显示分类内容
+    function showCategoryContent(category) {
+      activeCategory = category;
+      
+      // 隐藏所有内容区域
+      hideAllContentSections();
+      
+      // 显示分类内容区域
+      categoryContent.classList.add('content-section-active');
+      
+      // 更新标题
+      categoryContentTitle.textContent = category;
+      
+      // 获取分类数据
+      const { tags, tools } = categories[category];
+      const categoryTags = Array.from(tags);
+      
+      // 渲染标签
+      categoryTagsContainer.innerHTML = categoryTags.map((tag, index) => `
+        <span class="tag-item ${index % 2 === 0 ? 'tag-item-primary' : 'tag-item-secondary'}" 
+              data-tag="${tag}">
+          ${tag}
+          <span class="ml-1 bg-white/30 text-xs rounded-full px-1.5">
+            ${countToolsWithTag(tag)}
+          </span>
+        </span>
+      `).join('');
+      
+      // 为标签添加点击事件
+      document.querySelectorAll('#category-tags-container .tag-item').forEach(tagEl => {
+        tagEl.addEventListener('click', () => {
+          const tag = tagEl.dataset.tag;
+          showTagContent(tag);
+        });
+      });
+      
+      // 渲染工具列表
+      renderToolsList(categoryToolsList, tools);
+      
+      // 滚动到顶部
+      scrollToContentTop();
+    }
+
+    // 显示标签内容
+    function showTagContent(tag) {
+      // 隐藏所有内容区域
+      hideAllContentSections();
+      
+      // 显示标签内容区域
+      tagContent.classList.add('content-section-active');
+      
+      // 更新标题
+      tagContentTitle.textContent = tag;
+      
+      // 筛选具有该标签的工具
+      const filteredTools = toolsData.filter(tool => tool.tags.includes(tag));
+      
+      // 渲染工具列表
+      renderToolsList(tagToolsList, filteredTools);
+      
+      // 滚动到顶部
+      scrollToContentTop();
+    }
+
+    // 渲染工具列表
+    function renderToolsList(container, tools) {
+      if (tools.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full bg-gray-50 rounded-lg p-8 text-center">
+            <i class="fa fa-search text-gray-300 text-3xl mb-4"></i>
+            <p class="text-gray-500">No tools found matching this criteria</p>
+          </div>
+        `;
+      } else {
+        container.innerHTML = tools.map(tool => {
+          const toolLink = `/free/detail/${tool.file}`;
+          return `
+            <div class="bg-gray-50 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition-shadow p-4">
+              <h3 class="font-semibold text-lg mb-2">
+                <a href="${toolLink}" class="text-primary hover:underline" target="_blank">
+                  ${tool.name}
+                </a>
+              </h3>
+              <div class="flex flex-wrap gap-1.5 mb-3">
+                ${tool.tags.map(tag => `
+                  <span class="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded tag-item" data-tag="${tag}">
+                    ${tag}
+                  </span>
+                `).join('')}
+              </div>
+              <div class="flex items-center text-xs text-gray-500">
+                <span class="category-item bg-gray-100 px-2 py-0.5 rounded" data-category="${tool.category}">
+                  ${tool.category}
+                </span>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        // 为工具卡片中的标签添加点击事件
+        container.querySelectorAll('.tag-item').forEach(tagEl => {
+          tagEl.addEventListener('click', () => {
+            const tag = tagEl.dataset.tag;
+            showTagContent(tag);
+          });
+        });
+        
+        // 为工具卡片中的分类添加点击事件
+        container.querySelectorAll('.category-item').forEach(catEl => {
+          catEl.addEventListener('click', () => {
+            const category = catEl.dataset.category;
+            
+            // 更新左侧导航选中状态
+            document.querySelectorAll('.category-item').forEach(item => {
+              if (item.dataset.category === category) {
+                item.classList.add('category-item-active');
+              } else {
+                item.classList.remove('category-item-active');
+              }
+            });
+            
+            showCategoryContent(category);
+          });
+        });
+      }
+    }
+
+    // 计算具有特定标签的工具数量
+    function countToolsWithTag(tag) {
+      return toolsData.filter(tool => tool.tags.includes(tag)).length;
+    }
+
+    // 处理搜索功能
+    function handleSearch() {
+      const searchTermValue = searchInput.value.toLowerCase().trim();
+      
+      // 显示/隐藏清空按钮
+      if (searchTermValue) {
+        clearSearchBtn.classList.remove('hidden');
+      } else {
+        clearSearchBtn.classList.add('hidden');
+        // 搜索为空时重置显示
+        hideAllContentSections();
+        defaultContent.classList.remove('content-section');
+        return;
+      }
+      
+      // 隐藏所有内容区域
+      hideAllContentSections();
+      
+      // 显示搜索结果区域
+      searchResults.classList.add('content-section-active');
+      
+      // 查找匹配的标签或工具
+      const matchedTags = Array.from(allTags).filter(tag => 
+        tag.toLowerCase().includes(searchTermValue)
+      );
+      
+      const matchedTools = toolsData.filter(tool => 
+        tool.name.toLowerCase().includes(searchTermValue) ||
+        tool.file.toLowerCase().includes(searchTermValue) ||
+        tool.tags.some(tag => tag.toLowerCase().includes(searchTermValue))
+      );
+      
+      // 计算总结果数
+      const totalResults = matchedTags.length + matchedTools.length;
+      
+      // 更新搜索结果显示
+      searchTerm.textContent = `"${searchTermValue}"`;
+      searchResultsCount.textContent = `Found ${totalResults} result${totalResults !== 1 ? 's' : ''}`;
+      
+      // 生成搜索结果HTML
+      let resultsHtml = '';
+      
+      if (matchedTags.length > 0) {
+        resultsHtml += `
+          <div class="mb-6">
+            <h3 class="font-semibold text-gray-700 mb-2">Matching Tags</h3>
+            <div class="flex flex-wrap gap-2">
+              ${matchedTags.map((tag, index) => `
+                <span class="tag-item ${index % 2 === 0 ? 'tag-item-primary' : 'tag-item-secondary'}" 
+                      data-tag="${tag}">
+                  ${tag}
+                  <span class="ml-1 bg-white/30 text-xs rounded-full px-1.5">
+                    ${countToolsWithTag(tag)}
+                  </span>
+                </span>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      if (matchedTools.length > 0) {
+        resultsHtml += `
+          <div>
+            <h3 class="font-semibold text-gray-700 mb-2">Matching Tools</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              ${matchedTools.map(tool => {
+                const toolLink = `/free/detail/${tool.file}`;
+                return `
+                  <div class="bg-gray-50 rounded-lg p-3 border border-gray-100 hover:shadow-sm transition-shadow">
+                    <h4 class="font-medium">
+                      <a href="${toolLink}" class="text-primary hover:underline" target="_blank">
+                        ${tool.name}
+                      </a>
+                    </h4>
+                    <p class="text-xs text-gray-500 mt-1">
+                      <span class="category-item bg-gray-100 px-2 py-0.5 rounded" data-category="${tool.category}">
+                        ${tool.category}
+                      </span>
+                    </p>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+      }
+      
+      if (matchedTags.length === 0 && matchedTools.length === 0) {
+        resultsHtml = `
+          <div class="bg-gray-50 rounded-lg p-8 text-center">
+            <i class="fa fa-search text-gray-300 text-3xl mb-4"></i>
+            <h3 class="text-lg font-medium text-gray-700 mb-2">No results found</h3>
+            <p class="text-gray-500">Try a different search term</p>
+          </div>
+        `;
+      }
+      
+      searchResultsContent.innerHTML = resultsHtml;
+      
+      // 为搜索结果中的标签添加点击事件
+      document.querySelectorAll('#search-results-content .tag-item').forEach(tagEl => {
+        tagEl.addEventListener('click', () => {
+          const tag = tagEl.dataset.tag;
+          showTagContent(tag);
+        });
+      });
+      
+      // 为搜索结果中的分类添加点击事件
+      document.querySelectorAll('#search-results-content .category-item').forEach(catEl => {
+        catEl.addEventListener('click', () => {
+          const category = catEl.dataset.category;
+          
+          // 更新左侧导航选中状态
+          document.querySelectorAll('.category-item').forEach(item => {
+            if (item.dataset.category === category) {
+              item.classList.add('category-item-active');
+            } else {
+              item.classList.remove('category-item-active');
+            }
+          });
+          
+          showCategoryContent(category);
+        });
+      });
+      
+      // 滚动到顶部
+      scrollToContentTop();
+    }
+
+    // 清空搜索
+    function clearSearch() {
+      searchInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+      hideAllContentSections();
+      defaultContent.classList.remove('content-section');
+    }
+
+    // 隐藏所有内容区域
+    function hideAllContentSections() {
+      defaultContent.classList.add('content-section');
+      categoryContent.classList.remove('content-section-active');
+      tagContent.classList.remove('content-section-active');
+      searchResults.classList.remove('content-section-active');
+    }
+
+    // 滚动到内容区域顶部
+    function scrollToContentTop() {
+      setTimeout(() => {
+        const contentArea = document.querySelector('.content-section-active');
+        if (contentArea) {
+          contentArea.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'start' 
+          });
+        }
+      }, 100);
+    }
+
+    // 事件监听
+    searchInput.addEventListener('input', handleSearch);
+    clearSearchBtn.addEventListener('click', clearSearch);
+
+    // 页面加载完成后初始化
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
+    

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dev Tools Directory</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#10b981',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .category-gradient {
+                background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+            }
+            .tag-hover {
+                @apply transition-all duration-200 hover:bg-primary hover:text-white cursor-pointer;
+            }
+            .tool-card {
+                @apply bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition-all duration-300 border border-gray-100;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark">
+    <!-- 页面头部 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                <h1 class="text-2xl md:text-3xl font-bold text-primary flex items-center">
+                    <i class="fa fa-wrench mr-2"></i>Dev Tools Directory
+                </h1>
+                
+                <!-- 搜索框 -->
+                <div class="w-full md:w-auto relative">
+                    <input type="text" id="search-input" 
+                           placeholder="Search by tool name or tag..." 
+                           class="pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary w-full md:w-64 transition-all">
+                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+            
+            <!-- 统计信息 -->
+            <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                <div><span id="total-categories" class="font-semibold text-primary">0</span> categories</div>
+                <div><span id="total-tools" class="font-semibold text-primary">0</span> tools</div>
+                <div><span id="total-tags" class="font-semibold text-primary">0</span> unique tags</div>
+                <div id="active-filter" class="hidden ml-auto"><span class="bg-primary/10 text-primary px-2 py-1 rounded-full text-xs">Filtering: <span id="active-filter-text"></span></span></div>
+                <button id="clear-filter" class="hidden text-sm text-gray-500 hover:text-primary"><i class="fa fa-times-circle mr-1"></i>Clear filter</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="container mx-auto px-4 py-6">
+        <!-- 加载状态 -->
+        <div id="loading" class="py-16 text-center">
+            <i class="fa fa-spinner fa-spin text-3xl text-primary/50 mb-4"></i>
+            <p class="text-gray-500">Loading tools directory...</p>
+        </div>
+        
+        <!-- 错误状态 -->
+        <div id="error" class="py-16 text-center hidden">
+            <i class="fa fa-exclamation-triangle text-3xl text-amber-500 mb-4"></i>
+            <p class="text-gray-500">Failed to load data. Please try again later.</p>
+        </div>
+        
+        <!-- 分类和工具内容区 -->
+        <div id="content" class="space-y-8 hidden">
+            <!-- 分类将通过JS动态生成 -->
+        </div>
+        
+        <!-- 工具列表区域 -->
+        <div id="tool-list-container" class="mt-8">
+            <h2 class="text-xl font-semibold mb-4 flex items-center">
+                <i class="fa fa-th-large text-primary mr-2"></i>
+                <span id="tool-list-title">All Tools</span>
+            </h2>
+            <div id="tool-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- 工具卡片将通过JS动态生成 -->
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white mt-12 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-400 text-sm">
+            <p>Dev Tools Directory &copy; 2024</p>
+            <p class="mt-1">Click on tool names to view detailed information</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局数据存储
+        let toolsData = [];
+        let categories = new Map(); // 存储分类及其相关数据
+        let allTags = new Set();
+        let activeFilter = null; // 可以是分类名或标签名
+        
+        // DOM元素
+        const contentEl = document.getElementById('content');
+        const toolListEl = document.getElementById('tool-list');
+        const toolListTitleEl = document.getElementById('tool-list-title');
+        const loadingEl = document.getElementById('loading');
+        const errorEl = document.getElementById('error');
+        const searchInput = document.getElementById('search-input');
+        const activeFilterEl = document.getElementById('active-filter');
+        const activeFilterTextEl = document.getElementById('active-filter-text');
+        const clearFilterBtn = document.getElementById('clear-filter');
+        const totalCategoriesEl = document.getElementById('total-categories');
+        const totalToolsEl = document.getElementById('total-tools');
+        const totalTagsEl = document.getElementById('total-tags');
+        
+        // 初始化函数
+        async function init() {
+            try {
+                // 加载JSON数据
+                const response = await fetch('tools-2.json');
+                if (!response.ok) throw new Error('Failed to fetch data');
+                toolsData = await response.json();
+                
+                // 处理数据
+                processData();
+                
+                // 渲染页面
+                renderCategories();
+                renderTools();
+                
+                // 更新统计信息
+                updateStats();
+                
+                // 显示内容，隐藏加载状态
+                loadingEl.classList.add('hidden');
+                contentEl.classList.remove('hidden');
+                
+            } catch (err) {
+                console.error('Error:', err);
+                loadingEl.classList.add('hidden');
+                errorEl.classList.remove('hidden');
+            }
+        }
+        
+        // 处理数据：按分类分组并提取标签
+        function processData() {
+            toolsData.forEach(tool => {
+                // 如果分类不存在，则创建
+                if (!categories.has(tool.category)) {
+                    categories.set(tool.category, {
+                        tools: [],
+                        tags: new Set()
+                    });
+                }
+                
+                // 获取分类数据并添加工具
+                const categoryData = categories.get(tool.category);
+                categoryData.tools.push(tool);
+                
+                // 添加标签到分类和全局标签集合
+                tool.tags.forEach(tag => {
+                    categoryData.tags.add(tag);
+                    allTags.add(tag);
+                });
+            });
+        }
+        
+        // 渲染分类
+        function renderCategories() {
+            contentEl.innerHTML = '';
+            
+            // 将分类转换为数组并排序
+            const sortedCategories = Array.from(categories.keys()).sort();
+            
+            sortedCategories.forEach(category => {
+                const categoryData = categories.get(category);
+                const tagsArray = Array.from(categoryData.tags);
+                
+                // 创建分类元素
+                const categoryEl = document.createElement('div');
+                categoryEl.className = 'bg-white rounded-lg shadow-sm overflow-hidden';
+                
+                // 分类标题
+                categoryEl.innerHTML = `
+                    <div class="category-gradient text-white px-6 py-3">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-semibold">${category}</h2>
+                            <span class="bg-white/20 text-white text-sm px-2 py-1 rounded-full">
+                                ${categoryData.tools.length} tools
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <!-- 分类标签 -->
+                    <div class="p-4">
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${tagsArray.map(tag => {
+                                // 计算该标签在分类中的工具数量
+                                const tagCount = categoryData.tools.filter(tool => 
+                                    tool.tags.includes(tag)
+                                ).length;
+                                
+                                return `
+                                    <span class="tag-hover inline-flex items-center px-3 py-1 rounded-full text-sm bg-gray-100"
+                                          data-tag="${tag}">
+                                        ${tag}
+                                        <span class="ml-1 bg-gray-200 rounded-full px-1.5 text-xs">${tagCount}</span>
+                                    </span>
+                                `;
+                            }).join('')}
+                        </div>
+                        
+                        <!-- 查看全部按钮 -->
+                        <button class="view-all-tools text-primary hover:text-primary/80 text-sm font-medium flex items-center"
+                                data-category="${category}">
+                            <i class="fa fa-list-ul mr-1"></i> View all ${category} tools
+                        </button>
+                    </div>
+                `;
+                
+                contentEl.appendChild(categoryEl);
+            });
+            
+            // 添加标签点击事件
+            document.querySelectorAll('.tag-hover').forEach(tagEl => {
+                tagEl.addEventListener('click', () => {
+                    const tag = tagEl.dataset.tag;
+                    activeFilter = { type: 'tag', value: tag };
+                    renderTools();
+                    showActiveFilter();
+                    scrollToToolList();
+                });
+            });
+            
+            // 添加"查看全部"按钮点击事件
+            document.querySelectorAll('.view-all-tools').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const category = btn.dataset.category;
+                    activeFilter = { type: 'category', value: category };
+                    renderTools();
+                    showActiveFilter();
+                    scrollToToolList();
+                });
+            });
+        }
+        
+        // 渲染工具列表
+        function renderTools() {
+            let filteredTools = [...toolsData];
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            
+            // 应用搜索过滤
+            if (searchTerm) {
+                filteredTools = filteredTools.filter(tool => 
+                    tool.name.toLowerCase().includes(searchTerm) || 
+                    tool.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            // 应用分类或标签过滤
+            if (activeFilter) {
+                if (activeFilter.type === 'category') {
+                    filteredTools = filteredTools.filter(tool => 
+                        tool.category === activeFilter.value
+                    );
+                    toolListTitleEl.textContent = `${activeFilter.value} Tools`;
+                } else if (activeFilter.type === 'tag') {
+                    filteredTools = filteredTools.filter(tool => 
+                        tool.tags.includes(activeFilter.value)
+                    );
+                    toolListTitleEl.textContent = `Tools tagged with "${activeFilter.value}"`;
+                }
+            } else {
+                toolListTitleEl.textContent = searchTerm ? `Search results for "${searchTerm}"` : 'All Tools';
+            }
+            
+            // 渲染工具
+            if (filteredTools.length === 0) {
+                toolListEl.innerHTML = `
+                    <div class="col-span-full py-16 text-center text-gray-500">
+                        <i class="fa fa-search text-3xl mb-4"></i>
+                        <p>No tools found matching your criteria</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 生成工具卡片
+            toolListEl.innerHTML = filteredTools.map(tool => {
+                // 生成工具链接
+                const toolLink = `/free/detail/${tool.file}`;
+                
+                return `
+                    <div class="tool-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-semibold text-lg">
+                                <a href="${toolLink}" class="text-primary hover:underline" target="_blank">
+                                    ${tool.name}
+                                </a>
+                            </h3>
+                            <span class="text-xs bg-gray-100 px-2 py-0.5 rounded text-gray-600">
+                                ${tool.category}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-1 mb-3">
+                            ${tool.tags.map(tag => `
+                                <span class="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded tag-hover"
+                                      data-tag="${tag}">
+                                    ${tag}
+                                </span>
+                            `).join('')}
+                        </div>
+                        <a href="${toolLink}" class="text-sm text-primary/80 hover:text-primary flex items-center">
+                            Details <i class="fa fa-arrow-right ml-1 text-xs"></i>
+                        </a>
+                    </div>
+                `;
+            }).join('');
+            
+            // 为工具卡片中的标签添加点击事件
+            toolListEl.querySelectorAll('.tag-hover').forEach(tagEl => {
+                tagEl.addEventListener('click', (e) => {
+                    e.preventDefault(); // 防止链接跳转
+                    const tag = tagEl.dataset.tag;
+                    activeFilter = { type: 'tag', value: tag };
+                    renderTools();
+                    showActiveFilter();
+                });
+            });
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            totalCategoriesEl.textContent = categories.size;
+            totalToolsEl.textContent = toolsData.length;
+            totalTagsEl.textContent = allTags.size;
+        }
+        
+        // 显示当前激活的过滤器
+        function showActiveFilter() {
+            if (activeFilter) {
+                activeFilterTextEl.textContent = activeFilter.value;
+                activeFilterEl.classList.remove('hidden');
+                clearFilterBtn.classList.remove('hidden');
+            } else {
+                activeFilterEl.classList.add('hidden');
+                clearFilterBtn.classList.add('hidden');
+            }
+        }
+        
+        // 滚动到工具列表
+        function scrollToToolList() {
+            document.getElementById('tool-list-container').scrollIntoView({
+                behavior: 'smooth'
+            });
+        }
+        
+        // 事件监听
+        clearFilterBtn.addEventListener('click', () => {
+            activeFilter = null;
+            searchInput.value = '';
+            renderTools();
+            showActiveFilter();
+        });
+        
+        searchInput.addEventListener('input', () => {
+            // 如果搜索框为空且没有激活的过滤器，保持现状
+            if (!searchInput.value.trim() && !activeFilter) return;
+            
+            // 如果搜索框有内容，清除激活的过滤器
+            if (searchInput.value.trim()) {
+                activeFilter = null;
+            }
+            
+            renderTools();
+            showActiveFilter();
+        });
+        
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
+    
