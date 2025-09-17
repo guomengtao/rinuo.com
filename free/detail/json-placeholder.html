@@ -1,184 +1,505 @@
-<!DOCTYPE html><html lang="en"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JSONPlaceholder - 免费的在线REST API服务</title>
-    <meta name="description" content="JSONPlaceholder是一个免费的在线REST API服务，用于前端开发和测试。了解其起源、使用方法、优缺点及社区评价。">
-    <meta name="keywords" content="JSONPlaceholder, REST API, 免费API, 前端测试, 模拟数据, API服务">
-    <meta name="author" content="JSONPlaceholder 社区">
-    <meta property="og:title" content="JSONPlaceholder - 免费的在线REST API服务">
-    <meta property="og:description" content="JSONPlaceholder是一个免费的在线REST API服务，用于前端开发和测试。">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://jsonplaceholder.typicode.com/">
-    <link rel="canonical" href="https://jsonplaceholder.typicode.com/">
+    <title>JSONPlaceholder - Free Fake REST API for Testing & Prototyping</title>
+    <meta name="description" content="JSONPlaceholder is a free online REST API that you can use whenever you need some fake data. It's great for tutorials, testing new libraries, or prototyping applications.">
+    <meta name="keywords" content="JSONPlaceholder, fake API, REST API, testing, prototyping, JSON data, free API">
+    <meta name="author" content="JSONPlaceholder">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/json-placeholder">
     <link rel="sitemap" type="application/xml" href="/sitemap">
-    
-    <!-- 外部资源 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     
-    <!-- Tailwind 配置 -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366f1', // 主色调：靛蓝色
-                        secondary: '#10b981', // 辅助色：绿色
-                        dark: '#0f172a', // 深色背景
-                        darker: '#020617', // 更深色背景
-                        light: '#e2e8f0', // 浅色文本
+                        primary: '#0070f3',
+                        secondary: '#10b981',
+                        dark: {
+                            primary: '#3b82f6',
+                            background: '#111827',
+                            card: '#1f2937'
+                        }
                     },
                     fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
                     },
                 }
             }
         }
     </script>
     
-    <!-- 自定义样式 -->
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
-            }
             .content-auto {
                 content-visibility: auto;
             }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
-            }
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
+            .text-balance {
+                text-wrap: balance;
             }
             .animate-float {
                 animation: float 6s ease-in-out infinite;
             }
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-20px); }
-                100% { transform: translateY(0px); }
+            .animate-pulse-slow {
+                animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
             }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
         }
     </style>
 </head>
 
-<body class="bg-dark text-light font-inter antialiased">
-    <!-- 导航栏 -->
-                   
-                 <header class="fixed w-full z-50 transition-all duration-300" id="navbar">
-        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-            <a href="/" class="flex items-center space-x-2">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                    <i class="fa fa-code text-white text-xl"></i>
-                </div>
-                <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">JSONPlaceholder</span>
-            </a>
-            
-            <!-- 桌面导航 -->
-            <div class="hidden md:flex mx-4 items-center relative">
-    <div class="relative w-64">
-        <input type="text" id="searchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-        <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-            <i class="fa fa-search"></i>
-        </button>
-    </div>
-    <!-- 搜索结果浮动容器 -->
-    <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-        <div id="searchResults" class="max-h-80 overflow-y-auto">
-            <!-- 搜索结果将在这里动态生成 -->
-        </div>
-    </div>
-</div><nav class="hidden md:flex items-center space-x-8">
-                <a href="#about" class="hover:text-primary transition-colors">关于</a>
-                <a href="#features" class="hover:text-primary transition-colors">功能</a>
-                <a href="#usage" class="hover:text-primary transition-colors">使用方法</a>
-                <a href="#reviews" class="hover:text-primary transition-colors">社区评价</a>
-                <a href="https://jsonplaceholder.typicode.com" target="_blank" class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg transition-all transform hover:scale-105">
-                    访问官网
+<body class="bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Return to top button -->
+    <button id="backToTop" class="fixed bottom-8 right-8 bg-primary hover:bg-primary/90 dark:bg-dark-primary text-white rounded-full p-3 shadow-lg opacity-0 invisible transition-all duration-300 z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- Header with navigation -->
+    <header class="sticky top-0 z-40 bg-white/90 dark:bg-dark-card/90 shadow-md backdrop-blur-sm transition-all duration-300">
+        <div class="container mx-auto px-4">
+            <nav class="flex items-center justify-between h-16 md:h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center">
+                        <i class="fa fa-code text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary dark:from-dark-primary dark:to-secondary text-transparent bg-clip-text">JSONPlaceholder</span>
                 </a>
+                
+                <!-- Search bar - centered on desktop -->
+                <div class="hidden md:block flex-1 max-w-md mx-8">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            autocomplete="off" 
+                            placeholder="Search API endpoints..." 
+                            class="w-full py-2 px-4 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                        >
+                        <i class="fa fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Navigation links and theme toggle -->
+                <div class="flex items-center space-x-4 md:space-x-6">
+                    <!-- Mobile search button -->
+                    <button class="md:hidden p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fa fa-search"></i>
+                    </button>
+                    
+                    <!-- GitHub link -->
+                    <a href="https://github.com/typicode/jsonplaceholder" target="_blank" rel="noopener noreferrer" class="hidden md:flex items-center space-x-1 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                        <span>GitHub</span>
+                    </a>
+                    
+                    <!-- Favorite button -->
+                    <button id="favoriteBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors relative">
+                        <i class="fa fa-heart-o text-xl"></i>
+                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-primary dark:bg-dark-primary text-white text-xs rounded-full flex items-center justify-center">124</span>
+                    </button>
+                    
+                    <!-- Theme toggle -->
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i id="themeIcon" class="fa fa-moon-o text-xl"></i>
+                    </button>
+                </div>
             </nav>
-            
-            <!-- 移动端菜单按钮 -->
-            <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-    <i class="fa fa-search text-xl"></i>
-</button><button class="md:hidden text-2xl" id="menu-toggle">
-                <i class="fa fa-bars"></i>
-            </button>
         </div>
         
-        <!-- 移动端导航菜单 -->
-        <div class="md:hidden hidden bg-darker absolute w-full" id="mobile-menu">
-            <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
-                <a href="#about" class="hover:text-primary transition-colors py-2">关于</a>
-                <a href="#features" class="hover:text-primary transition-colors py-2">功能</a>
-                <a href="#usage" class="hover:text-primary transition-colors py-2">使用方法</a>
-                <a href="#reviews" class="hover:text-primary transition-colors py-2">社区评价</a>
-                <a href="https://jsonplaceholder.typicode.com" target="_blank" class="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-center">
-                    访问官网
-                </a>
-            </div>
-        </div>
-            <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
-            </div>
+        <!-- Mobile search bar (hidden by default) -->
+        <div id="mobileSearch" class="md:hidden hidden px-4 pb-4">
+            <input 
+                type="text" 
+                placeholder="Search API endpoints..." 
+                class="w-full py-2 px-4 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+            >
         </div>
     </header>
 
-    <!-- 面包屑导航 -->
-    <div class="pt-24 pb-4 px-4 container mx-auto">
-        <nav class="text-sm text-gray-400">
-            <a href="/" class="hover:text-primary transition-colors">首页</a>
-            <span class="mx-2">/</span>
-            <a href="/free" class="hover:text-primary transition-colors">资源分类</a>
-            <span class="mx-2">/</span>
-            <a href="/free/detail/" class="hover:text-primary transition-colors">资源列表</a>
-            <span class="mx-2">/</span>
-            <span class="text-primary">JSONPlaceholder</span>
+    <main class="container mx-auto px-4 py-8">
+        <!-- Breadcrumb navigation -->
+        <nav class="text-sm mb-8" aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center">
+                <li><a href="/" class="text-primary dark:text-dark-primary hover:underline">Home</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs text-gray-400"></i></li>
+                <li><a href="/free" class="text-primary dark:text-dark-primary hover:underline">Free Resources</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs text-gray-400"></i></li>
+                <li><a href="/free/detail/" class="text-primary dark:text-dark-primary hover:underline">Resource List</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs text-gray-400"></i></li>
+                <li aria-current="page" class="text-gray-500 dark:text-gray-400">JSONPlaceholder</li>
+            </ol>
         </nav>
-    </div>
 
-    <!-- 英雄区域 -->
-    <section class="relative overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-b from-darker to-dark opacity-80"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(99,102,241,0.15),transparent_40%),radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.1),transparent_40%)]"></div>
-        
-        <div class="container mx-auto px-4 py-16 md:py-24 relative z-10">
-            <div class="max-w-4xl mx-auto text-center">
-                <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                    <span class="bg-gradient-to-r from-primary to-secondary text-gradient">JSONPlaceholder</span>
-                </h1>
-                <p class="text-xl md:text-2xl text-gray-300 mb-10">免费的在线REST API，为前端开发者提供模拟数据服务</p>
-                
-                <div class="flex flex-col sm:flex-row justify-center gap-4 mb-16">
-                    <a href="#usage" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-lg text-lg font-medium transition-all transform hover:scale-105">
-                        开始使用
-                    </a>
-                    <a href="#about" class="bg-transparent border-2 border-primary text-primary hover:bg-primary/10 px-8 py-4 rounded-lg text-lg font-medium transition-all">
-                        了解更多
-                    </a>
+        <!-- Hero section -->
+        <section class="mb-20">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 space-y-6">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight text-balance">
+                        The Free Fake <span class="bg-gradient-to-r from-primary to-secondary dark:from-dark-primary dark:to-secondary text-transparent bg-clip-text">REST API</span> for Developers
+                    </h1>
+                    <p class="text-xl text-gray-600 dark:text-gray-300">
+                        JSONPlaceholder gives you ready-to-use fake JSON data for testing, prototyping, and learning. No setup required.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="#how-to-use" class="px-8 py-3 bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-medium rounded-full shadow-lg shadow-primary/20 dark:shadow-dark-primary/20 hover:shadow-xl hover:shadow-primary/30 dark:hover:shadow-dark-primary/30 transition-all transform hover:-translate-y-1">
+                            Get Started
+                        </a>
+                        <a href="https://github.com/typicode/jsonplaceholder" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 hover:border-primary dark:hover:border-dark-primary font-medium rounded-full shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1">
+                            <i class="fa fa-github mr-2"></i> GitHub
+                        </a>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div class="grid grid-cols-3 gap-4 pt-6">
+                        <div class="text-center p-3 rounded-lg bg-gray-100 dark:bg-gray-800/50">
+                            <div class="text-3xl font-bold text-primary dark:text-dark-primary">1.2M+</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Monthly Users</div>
+                        </div>
+                        <div class="text-center p-3 rounded-lg bg-gray-100 dark:bg-gray-800/50">
+                            <div class="text-3xl font-bold text-primary dark:text-dark-primary">38.5k</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">GitHub Stars</div>
+                        </div>
+                        <div class="text-center p-3 rounded-lg bg-gray-100 dark:bg-gray-800/50">
+                            <div class="text-3xl font-bold text-primary dark:text-dark-primary">12</div>
+                            <div class="text-sm text-gray-600 dark:text-gray-400">Open Issues</div>
+                        </div>
+                    </div>
                 </div>
                 
-                <!-- 动画展示区 -->
-                <div class="relative bg-darker/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-xl animate-float">
-                    <div class="flex justify-between items-center mb-4">
-                        <div class="flex space-x-2">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <div class="md:w-1/2 relative">
+                    <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-dark-primary/20 dark:to-secondary/20 rounded-3xl blur-3xl animate-pulse-slow"></div>
+                    <div class="relative bg-white dark:bg-dark-card rounded-2xl shadow-2xl overflow-hidden border border-gray-100 dark:border-gray-800 animate-float">
+                        <div class="bg-gray-50 dark:bg-gray-800 px-4 py-2 flex items-center border-b border-gray-100 dark:border-gray-700">
+                            <div class="flex space-x-2">
+                                <div class="w-3 h-3 rounded-full bg-red-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-400"></div>
+                            </div>
+                            <div class="ml-4 text-sm text-gray-500 dark:text-gray-400">https://jsonplaceholder.typicode.com/posts/1</div>
                         </div>
-                        <span class="text-sm text-gray-400">api.example.com/posts/1</span>
+                        <div class="p-6">
+                            <pre class="text-sm md:text-base overflow-x-auto text-gray-800 dark:text-gray-200"><code>{
+  "userId": 1,
+  "id": 1,
+  "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
+  "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+}</code></pre>
+                        </div>
                     </div>
-                    <pre class="text-left text-sm md:text-base overflow-x-auto scrollbar-hide text-gray-300"><code>{
+                </div>
+            </div>
+        </section>
+
+        <!-- About section -->
+        <section class="mb-20 scroll-mt-24" id="about">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">About JSONPlaceholder</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">A simple yet powerful tool for developers worldwide</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="space-y-6">
+                    <h3 class="text-2xl font-bold">What is JSONPlaceholder?</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        JSONPlaceholder is a free online REST API that provides fake data for developers. It's perfect for 
+                        testing new libraries, prototyping applications, creating tutorials, or learning new technologies.
+                    </p>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        With endpoints for posts, comments, users, albums, photos, and todos, it covers common data structures 
+                        you'll encounter in real-world applications.
+                    </p>
+                    
+                    <h3 class="text-2xl font-bold pt-4">Project Origin</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        JSONPlaceholder was created in 2013 out of frustration with the lack of simple, free APIs for testing. 
+                        The goal was to provide developers with an instantly available resource that doesn't require registration 
+                        or authentication.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-800">
+                    <h3 class="text-2xl font-bold mb-6">Founder</h3>
+                    <div class="flex items-start gap-6">
+                        <img 
+                            src="https://picsum.photos/200/200?random=1" 
+                            alt="Photo of Typicode founder" 
+                            class="w-24 h-24 rounded-full object-cover border-4 border-primary dark:border-dark-primary shadow-lg"
+                            loading="lazy"
+                        >
+                        <div class="space-y-3">
+                            <h4 class="text-xl font-semibold">Typicode</h4>
+                            <p class="text-gray-600 dark:text-gray-300">
+                                A French developer passionate about simplifying development workflows. Typicode has created 
+                                several popular open-source tools including Husky and lowdb.
+                            </p>
+                            <div class="flex space-x-4 pt-2">
+                                <a href="https://twitter.com/typicode" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                                    <i class="fa fa-twitter text-xl"></i>
+                                </a>
+                                <a href="https://github.com/typicode" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                                    <i class="fa fa-github text-xl"></i>
+                                </a>
+                                <a href="https://typicode.com/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                                    <i class="fa fa-globe text-xl"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technical Stack section with radar chart -->
+        <section class="mb-20 scroll-mt-24" id="tech-stack">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Technical Stack</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">The technology powering JSONPlaceholder</p>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-1/2">
+                    <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl p-6 border border-gray-100 dark:border-gray-800">
+                        <canvas id="techRadarChart" width="400" height="400"></canvas>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 space-y-6">
+                    <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <i class="fa fa-code text-primary dark:text-dark-primary mr-3"></i>
+                            Node.js & Express
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300 mt-2">
+                            The core API is built with Node.js and Express, providing a lightweight and efficient server 
+                            that can handle thousands of concurrent requests.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <i class="fa fa-database text-primary dark:text-dark-primary mr-3"></i>
+                            JSON Server
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300 mt-2">
+                            Under the hood, JSONPlaceholder uses JSON Server to provide a full REST API from a simple JSON file,
+                            making it easy to maintain and extend.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow">
+                        <h3 class="text-xl font-bold flex items-center">
+                            <i class="fa fa-cloud text-primary dark:text-dark-primary mr-3"></i>
+                            Cloud Hosting
+                        </h3>
+                        <p class="text-gray-600 dark:text-gray-300 mt-2">
+                            Hosted on multiple cloud providers with CDN distribution to ensure fast response times 
+                            worldwide, even during peak usage.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons section -->
+        <section class="mb-20">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">The Good and The Bad</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">What makes JSONPlaceholder shine, and where it falls short</p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <!-- Pros -->
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">Advantages</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 dark:text-green-400 mt-1 mr-3"></i>
+                            <span>Completely free to use with no rate limits</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 dark:text-green-400 mt-1 mr-3"></i>
+                            <span>No authentication or registration required</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 dark:text-green-400 mt-1 mr-3"></i>
+                            <span>Supports all standard REST operations (GET, POST, PUT, DELETE)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 dark:text-green-400 mt-1 mr-3"></i>
+                            <span>Realistic data structures that mimic real-world applications</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 dark:text-green-400 mt-1 mr-3"></i>
+                            <span>Blazing fast response times with global CDN distribution</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 dark:text-green-400 mt-1 mr-3"></i>
+                            <span>Great documentation and examples for quick onboarding</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Cons -->
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-800">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-600 dark:text-red-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">Limitations</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 dark:text-red-400 mt-1 mr-3"></i>
+                            <span>Data is not persistent - changes reset periodically</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 dark:text-red-400 mt-1 mr-3"></i>
+                            <span>Limited data models compared to specialized APIs</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 dark:text-red-400 mt-1 mr-3"></i>
+                            <span>Not suitable for production environments</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 dark:text-red-400 mt-1 mr-3"></i>
+                            <span>No advanced query features like complex filtering</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 dark:text-red-400 mt-1 mr-3"></i>
+                            <span>Occasional downtime during maintenance periods</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 dark:text-red-400 mt-1 mr-3"></i>
+                            <span>Limited to JSON format, no XML or other formats</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Updates section -->
+        <section class="mb-20 scroll-mt-24" id="updates">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Latest Updates</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">What's new with JSONPlaceholder</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="h-48 overflow-hidden">
+                        <img 
+                            src="https://picsum.photos/600/400?random=3" 
+                            alt="API performance improvement illustration" 
+                            class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">May 15, 2023</div>
+                        <h3 class="text-xl font-bold mb-3">Performance Optimization</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            40% faster response times after server infrastructure upgrade and CDN optimization.
+                        </p>
+                        <a href="#" class="text-primary dark:text-dark-primary font-medium hover:underline inline-flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="h-48 overflow-hidden">
+                        <img 
+                            src="https://picsum.photos/600/400?random=4" 
+                            alt="New API endpoints illustration" 
+                            class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">March 2, 2023</div>
+                        <h3 class="text-xl font-bold mb-3">New Endpoints Added</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Added /posts/{id}/comments and /users/{id}/posts nested endpoints for easier data retrieval.
+                        </p>
+                        <a href="#" class="text-primary dark:text-dark-primary font-medium hover:underline inline-flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                    <div class="h-48 overflow-hidden">
+                        <img 
+                            src="https://picsum.photos/600/400?random=5" 
+                            alt="Documentation website screenshot" 
+                            class="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                            loading="lazy"
+                        >
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">January 10, 2023</div>
+                        <h3 class="text-xl font-bold mb-3">Documentation Redesign</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Completely redesigned documentation with interactive examples and code snippets.
+                        </p>
+                        <a href="#" class="text-primary dark:text-dark-primary font-medium hover:underline inline-flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How to use section -->
+        <section class="mb-20 scroll-mt-24" id="how-to-use">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Get Started in Seconds</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">It's never been easier to start using fake data</p>
+            </div>
+            
+            <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-800 mb-10">
+                <h3 class="text-2xl font-bold mb-6">Simple Example</h3>
+                <p class="text-gray-600 dark:text-gray-300 mb-6">
+                    Just make a GET request to any endpoint. No setup or authentication required:
+                </p>
+                
+                <div class="bg-gray-900 text-gray-100 rounded-xl p-6 mb-6 overflow-x-auto">
+                    <pre><code class="text-sm md:text-base">// Using fetch API
+fetch('https://jsonplaceholder.typicode.com/posts/1')
+  .then(response => response.json())
+  .then(json => console.log(json))
+
+// Using axios
+axios.get('https://jsonplaceholder.typicode.com/posts/1')
+  .then(response => console.log(response.data))
+
+// Using curl
+curl https://jsonplaceholder.typicode.com/posts/1</code></pre>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-6">
+                    <h4 class="font-semibold mb-3">Response:</h4>
+                    <pre class="text-sm overflow-x-auto"><code>{
   "userId": 1,
   "id": 1,
   "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
@@ -186,1140 +507,436 @@
 }</code></pre>
                 </div>
             </div>
-        </div>
-        
-        <!-- 波浪分隔符 -->
-        <div class="absolute bottom-0 left-0 w-full overflow-hidden">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" class="w-full h-auto fill-dark">
-                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
-            </svg>
-        </div>
-    </section>
-
-    <!-- 关于部分 -->
-    <section id="about" class="py-20 bg-dark">
-        <div class="container mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">关于 JSONPlaceholder</h2>
-                <p class="text-gray-400">一个为前端开发者提供的免费在线REST API服务，让开发和测试变得更加简单</p>
-            </div>
             
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-8">
-                    <div class="bg-darker/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transform transition-all hover:scale-[1.02] hover:shadow-xl">
-                        <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
-                            <i class="fa fa-lightbulb-o text-primary text-xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">名字含义</h3>
-                        <p class="text-gray-400">
-                            "JSONPlaceholder" 这个名字结合了两部分：JSON（JavaScript Object Notation）是一种轻量级的数据交换格式，而Placeholder（占位符）表示它提供的是用于开发和测试的模拟数据，而不是真实的生产数据。
-                        </p>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800">
+                    <div class="w-14 h-14 rounded-full bg-primary/10 dark:bg-dark-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-list text-primary dark:text-dark-primary text-2xl"></i>
                     </div>
-                    
-                    <div class="bg-darker/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transform transition-all hover:scale-[1.02] hover:shadow-xl">
-                        <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4">
-                            <i class="fa fa-history text-primary text-xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">起源</h3>
-                        <p class="text-gray-400">
-                            JSONPlaceholder 由 Typicode 团队创建，首次发布于2014年。它的诞生源于开发者在前端开发过程中对模拟API的需求，使得前端开发者可以在后端API尚未准备好的情况下进行开发和测试。
-                        </p>
-                    </div>
+                    <h3 class="text-xl font-bold mb-3">Available Endpoints</h3>
+                    <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">/posts</code> - 100 posts</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">/comments</code> - 500 comments</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">/users</code> - 10 users</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">/albums</code> - 100 albums</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">/photos</code> - 5000 photos</li>
+                        <li><code class="bg-gray-100 dark:bg-gray-800 px-1 rounded">/todos</code> - 200 todos</li>
+                    </ul>
                 </div>
                 
-                <div class="relative">
-                    <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-2xl blur-3xl opacity-50 animate-pulse"></div>
-                    <div class="relative bg-darker/80 backdrop-blur-sm rounded-2xl p-8 border border-gray-800 shadow-2xl">
-                        <h3 class="text-2xl font-bold mb-6">为什么选择 JSONPlaceholder？</h3>
-                        
-                        <div class="space-y-4">
-                            <div class="flex items-start">
-                                <div class="mt-1 mr-4 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa fa-check text-secondary text-sm"></i>
-                                </div>
-                                <p>完全免费，无需注册或API密钥</p>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="mt-1 mr-4 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa fa-check text-secondary text-sm"></i>
-                                </div>
-                                <p>即开即用，无需复杂配置</p>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="mt-1 mr-4 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa fa-check text-secondary text-sm"></i>
-                                </div>
-                                <p>支持标准的RESTful操作</p>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="mt-1 mr-4 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa fa-check text-secondary text-sm"></i>
-                                </div>
-                                <p>提供多种资源类型：帖子、评论、用户等</p>
-                            </div>
-                            <div class="flex items-start">
-                                <div class="mt-1 mr-4 w-6 h-6 rounded-full bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                                    <i class="fa fa-check text-secondary text-sm"></i>
-                                </div>
-                                <p>支持CORS，可在任何前端项目中使用</p>
-                            </div>
-                        </div>
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800">
+                    <div class="w-14 h-14 rounded-full bg-primary/10 dark:bg-dark-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-refresh text-primary dark:text-dark-primary text-2xl"></i>
                     </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 功能部分 -->
-    <section id="features" class="py-20 bg-darker">
-        <div class="container mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">功能与服务</h2>
-                <p class="text-gray-400">JSONPlaceholder 提供了丰富的模拟API端点，满足各种开发和测试需求</p>
-            </div>
-            
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- 功能卡片 1 -->
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 group">
-                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                        <i class="fa fa-file-text-o text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">帖子 (Posts)</h3>
-                    <p class="text-gray-400 mb-4">提供模拟的文章数据，包含标题、内容、作者ID等字段</p>
-                    <code class="text-sm bg-gray-800/50 px-3 py-1 rounded text-primary">/posts</code>
-                </div>
-                
-                <!-- 功能卡片 2 -->
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 group">
-                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                        <i class="fa fa-comments-o text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">评论 (Comments)</h3>
-                    <p class="text-gray-400 mb-4">模拟的评论数据，与帖子相关联，包含邮箱、内容等信息</p>
-                    <code class="text-sm bg-gray-800/50 px-3 py-1 rounded text-primary">/comments</code>
-                </div>
-                
-                <!-- 功能卡片 3 -->
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 group">
-                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                        <i class="fa fa-user-o text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">用户 (Users)</h3>
-                    <p class="text-gray-400 mb-4">模拟的用户数据，包含姓名、邮箱、地址、公司等详细信息</p>
-                    <code class="text-sm bg-gray-800/50 px-3 py-1 rounded text-primary">/users</code>
-                </div>
-                
-                <!-- 功能卡片 4 -->
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 group">
-                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                        <i class="fa fa-list-o text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">相册 (Albums)</h3>
-                    <p class="text-gray-400 mb-4">模拟的相册数据，包含标题和所属用户ID</p>
-                    <code class="text-sm bg-gray-800/50 px-3 py-1 rounded text-primary">/albums</code>
-                </div>
-                
-                <!-- 功能卡片 5 -->
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 group">
-                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                        <i class="fa fa-picture-o text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">照片 (Photos)</h3>
-                    <p class="text-gray-400 mb-4">模拟的照片数据，包含标题、URL和缩略图URL</p>
-                    <code class="text-sm bg-gray-800/50 px-3 py-1 rounded text-primary">/photos</code>
-                </div>
-                
-                <!-- 功能卡片 6 -->
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 group">
-                    <div class="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                        <i class="fa fa-tasks text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">待办事项 (Todos)</h3>
-                    <p class="text-gray-400 mb-4">模拟的待办事项数据，包含标题和完成状态</p>
-                    <code class="text-sm bg-gray-800/50 px-3 py-1 rounded text-primary">/todos</code>
-                </div>
-            </div>
-            
-            <!-- 优缺点分析 -->
-            <div class="mt-20 grid md:grid-cols-2 gap-10">
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800 shadow-lg">
-                    <div class="flex items-center mb-6">
-                        <div class="w-10 h-10 rounded-full bg-secondary/20 flex items-center justify-center mr-4">
-                            <i class="fa fa-thumbs-up text-secondary"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold">优点</h3>
-                    </div>
-                    
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>完全免费，无需任何费用即可使用全部功能</span>
+                    <h3 class="text-xl font-bold mb-3">Supported Methods</h3>
+                    <ul class="space-y-3 text-gray-600 dark:text-gray-300">
+                        <li class="flex items-center">
+                            <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded mr-3">GET</span>
+                            <span>Retrieve resources</span>
                         </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>无需注册账号或获取API密钥，即开即用</span>
+                        <li class="flex items-center">
+                            <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded mr-3">POST</span>
+                            <span>Create new resources</span>
                         </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>支持所有标准HTTP方法：GET、POST、PUT、PATCH、DELETE</span>
+                        <li class="flex items-center">
+                            <span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 text-xs px-2 py-1 rounded mr-3">PUT</span>
+                            <span>Update existing resources</span>
                         </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>提供跨域资源共享(CORS)支持，可在任何前端项目中使用</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>响应速度快，稳定性高，适合开发和演示环境使用</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>支持查询参数过滤，如按用户ID筛选帖子</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>开源项目，托管在GitHub上，透明度高</span>
+                        <li class="flex items-center">
+                            <span class="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 text-xs px-2 py-1 rounded mr-3">DELETE</span>
+                            <span>Remove resources</span>
                         </li>
                     </ul>
                 </div>
                 
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800 shadow-lg">
-                    <div class="flex items-center mb-6">
-                        <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
-                            <i class="fa fa-thumbs-down text-red-500"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold">缺点</h3>
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800">
+                    <div class="w-14 h-14 rounded-full bg-primary/10 dark:bg-dark-primary/20 flex items-center justify-center mb-6">
+                        <i class="fa fa-server text-primary dark:text-dark-primary text-2xl"></i>
                     </div>
-                    
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>数据是静态的，POST/PUT/DELETE操作不会真正修改服务器数据</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>不适合生产环境使用，仅用于开发和测试</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>数据量有限，每种资源类型只有固定数量的记录</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>不支持复杂查询，如排序、分页等高级功能</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>没有官方的SLA保证，可能会有不定期的维护或 downtime</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>不能自定义数据结构，只能使用预设的资源类型</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>没有用户认证机制，不适合测试需要权限验证的场景</span>
-                        </li>
-                    </ul>
+                    <h3 class="text-xl font-bold mb-3">Self-Hosting</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        For offline use or custom data, you can host JSONPlaceholder yourself:
+                    </p>
+                    <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-3 text-sm font-mono">
+                        npm install -g json-server<br>
+                        json-server --watch db.json
+                    </div>
+                    <a href="https://github.com/typicode/json-server" target="_blank" rel="noopener noreferrer" class="text-primary dark:text-dark-primary text-sm mt-4 inline-block hover:underline">
+                        Learn more about self-hosting
+                    </a>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 使用方法 -->
-    <section id="usage" class="py-20 bg-dark">
-        <div class="container mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">使用方法</h2>
-                <p class="text-gray-400">简单几步，即可在你的项目中使用 JSONPlaceholder</p>
+        <!-- Community Comments section -->
+        <section class="mb-20 scroll-mt-24" id="community">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">What Developers Say</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">Community feedback from around the world</p>
             </div>
             
-            <div class="max-w-4xl mx-auto">
-                <div class="bg-darker/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800 shadow-lg mb-12">
-                    <h3 class="text-2xl font-bold mb-6">基本使用</h3>
-                    <p class="mb-6 text-gray-300">JSONPlaceholder 无需注册，直接通过HTTP请求即可使用。基础URL为：</p>
-                    <code class="block bg-gray-800/50 px-4 py-3 rounded-lg text-primary mb-6">https://jsonplaceholder.typicode.com</code>
-                    
-                    <p class="mb-4 text-gray-300">你可以通过添加不同的端点来获取不同类型的数据：</p>
-                    
-                    <div class="space-y-4 mb-6">
-                        <div class="bg-gray-800/30 p-4 rounded-lg">
-                            <p class="mb-2 font-medium">获取所有帖子：</p>
-                            <code class="text-primary">GET https://jsonplaceholder.typicode.com/posts</code>
-                        </div>
-                        
-                        <div class="bg-gray-800/30 p-4 rounded-lg">
-                            <p class="mb-2 font-medium">获取ID为1的帖子：</p>
-                            <code class="text-primary">GET https://jsonplaceholder.typicode.com/posts/1</code>
-                        </div>
-                        
-                        <div class="bg-gray-800/30 p-4 rounded-lg">
-                            <p class="mb-2 font-medium">获取ID为1的帖子的所有评论：</p>
-                            <code class="text-primary">GET https://jsonplaceholder.typicode.com/posts/1/comments</code>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 relative">
+                    <div class="absolute -top-4 -left-4 text-5xl text-primary/20 dark:text-dark-primary/20">"</div>
+                    <div class="relative z-10">
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            JSONPlaceholder has been a game-changer for my tutorials. I can focus on teaching concepts 
+                            without worrying about setting up a backend.
+                        </p>
+                        <div class="flex items-center">
+                            <img 
+                                src="https://picsum.photos/100/100?random=10" 
+                                alt="Avatar of Sarah Johnson" 
+                                class="w-12 h-12 rounded-full object-cover mr-4"
+                                loading="lazy"
+                            >
+                            <div>
+                                <div class="font-semibold">Sarah Johnson</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Web Developer & Instructor</div>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 代码示例 -->
-                <div class="grid md:grid-cols-2 gap-8">
-                    <!-- JavaScript 示例 -->
-                    <div class="bg-darker/50 backdrop-blur-sm rounded-xl border border-gray-800 shadow-lg overflow-hidden">
-                        <div class="bg-gray-800/50 px-6 py-3 border-b border-gray-800 flex items-center">
-                            <i class="fa fa-code text-yellow-400 mr-2"></i>
-                            <span>JavaScript 示例</span>
-                        </div>
-                        <div class="p-6">
-                            <pre class="text-sm overflow-x-auto scrollbar-hide text-gray-300"><code>// 使用 fetch API 获取帖子
-fetch('https://jsonplaceholder.typicode.com/posts/1')
-  .then(response =&gt; response.json())
-  .then(json =&gt; console.log(json))
-  .catch(error =&gt; console.error('Error:', error));</code></pre>
-                        </div>
-                    </div>
-                    
-                    <!-- jQuery 示例 -->
-                    <div class="bg-darker/50 backdrop-blur-sm rounded-xl border border-gray-800 shadow-lg overflow-hidden">
-                        <div class="bg-gray-800/50 px-6 py-3 border-b border-gray-800 flex items-center">
-                            <i class="fa fa-code text-blue-400 mr-2"></i>
-                            <span>jQuery 示例</span>
-                        </div>
-                        <div class="p-6">
-                            <pre class="text-sm overflow-x-auto scrollbar-hide text-gray-300"><code>// 使用 jQuery 获取帖子
-$.get('https://jsonplaceholder.typicode.com/posts/1', function(data) {
-  console.log(data);
-})
-.fail(function() {
-  console.error('Error fetching data');
-});</code></pre>
-                        </div>
-                    </div>
-                    
-                    <!-- React 示例 -->
-                    <div class="bg-darker/50 backdrop-blur-sm rounded-xl border border-gray-800 shadow-lg overflow-hidden">
-                        <div class="bg-gray-800/50 px-6 py-3 border-b border-gray-800 flex items-center">
-                            <i class="fa fa-code text-blue-500 mr-2"></i>
-                            <span>React 示例</span>
-                        </div>
-                        <div class="p-6">
-                            <pre class="text-sm overflow-x-auto scrollbar-hide text-gray-300"><code>// React 组件中使用
-import { useEffect, useState } from 'react';
-
-function Post() {
-  const [post, setPost] = useState(null);
-  
-  useEffect(() =&gt; {
-    fetch('https://jsonplaceholder.typicode.com/posts/1')
-      .then(res =&gt; res.json())
-      .then(data =&gt; setPost(data));
-  }, []);
-  
-  return post &amp;&amp; (
-    <div>
-      <h1>{post.title}</h1>
-      <p>{post.body}</p>
-    </div>
-  );
-}</code></pre>
-                        </div>
-                    </div>
-                    
-                    <!-- 提交数据示例 -->
-                    <div class="bg-darker/50 backdrop-blur-sm rounded-xl border border-gray-800 shadow-lg overflow-hidden">
-                        <div class="bg-gray-800/50 px-6 py-3 border-b border-gray-800 flex items-center">
-                            <i class="fa fa-paper-plane text-green-400 mr-2"></i>
-                            <span>提交数据示例</span>
-                        </div>
-                        <div class="p-6">
-                            <pre class="text-sm overflow-x-auto scrollbar-hide text-gray-300"><code>// 提交新帖子（模拟）
-fetch('https://jsonplaceholder.typicode.com/posts', {
-  method: 'POST',
-  body: JSON.stringify({
-    title: '新帖子标题',
-    body: '帖子内容',
-    userId: 1
-  }),
-  headers: {
-    'Content-type': 'application/json; charset=UTF-8',
-  },
-})
-.then(response =&gt; response.json())
-.then(json =&gt; console.log(json));</code></pre>
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 relative">
+                    <div class="absolute -top-4 -left-4 text-5xl text-primary/20 dark:text-dark-primary/20">"</div>
+                    <div class="relative z-10">
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            I use JSONPlaceholder every day for prototyping. It's fast, reliable, and the data structures 
+                            are realistic enough for most use cases.
+                        </p>
+                        <div class="flex items-center">
+                            <img 
+                                src="https://picsum.photos/100/100?random=11" 
+                                alt="Avatar of Miguel Rodriguez" 
+                                class="w-12 h-12 rounded-full object-cover mr-4"
+                                loading="lazy"
+                            >
+                            <div>
+                                <div class="font-semibold">Miguel Rodriguez</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Frontend Developer</div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 社区评价 -->
-    <section id="reviews" class="py-20 bg-darker">
-        <div class="container mx-auto px-4">
-            <div class="max-w-3xl mx-auto text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold mb-4">社区评价</h2>
-                <p class="text-gray-400">来自全球开发者的真实评价</p>
-            </div>
-            
-            <!-- 评价统计 -->
-            <div class="max-w-4xl mx-auto mb-16">
-                <div class="bg-dark/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800 shadow-lg">
-                    <div class="grid md:grid-cols-3 gap-8">
-                        <div class="text-center">
-                            <div class="text-4xl font-bold text-primary mb-2">4.8/5</div>
-                            <div class="text-yellow-400 mb-2">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-half-o"></i>
-                            </div>
-                            <div class="text-gray-400">平均评分</div>
-                        </div>
-                        
-                        <div class="text-center">
-                            <div class="text-4xl font-bold text-primary mb-2">10k+</div>
-                            <div class="text-gray-400">每周活跃用户</div>
-                        </div>
-                        
-                        <div class="text-center">
-                            <div class="text-4xl font-bold text-primary mb-2">98%</div>
-                            <div class="text-gray-400">用户满意度</div>
-                        </div>
-                    </div>
-                    
-                    <!-- 评分分布 -->
-                    <div class="mt-10">
-                        <h4 class="text-lg font-medium mb-4">评分分布</h4>
-                        <div class="space-y-2">
-                            <div class="flex items-center">
-                                <span class="w-10 text-sm">5 星</span>
-                                <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 85%"></div>
-                                </div>
-                                <span class="w-10 text-sm text-right">85%</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="w-10 text-sm">4 星</span>
-                                <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 10%"></div>
-                                </div>
-                                <span class="w-10 text-sm text-right">10%</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="w-10 text-sm">3 星</span>
-                                <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 3%"></div>
-                                </div>
-                                <span class="w-10 text-sm text-right">3%</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="w-10 text-sm">2 星</span>
-                                <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 1%"></div>
-                                </div>
-                                <span class="w-10 text-sm text-right">1%</span>
-                            </div>
-                            <div class="flex items-center">
-                                <span class="w-10 text-sm">1 星</span>
-                                <div class="flex-1 h-4 bg-gray-700 rounded-full overflow-hidden ml-2">
-                                    <div class="h-full bg-yellow-400 rounded-full" style="width: 1%"></div>
-                                </div>
-                                <span class="w-10 text-sm text-right">1%</span>
+                
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-800 relative">
+                    <div class="absolute -top-4 -left-4 text-5xl text-primary/20 dark:text-dark-primary/20">"</div>
+                    <div class="relative z-10">
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            As a teacher, JSONPlaceholder has simplified my curriculum. Students can focus on learning 
+                            fetch and axios without getting stuck on backend setup.
+                        </p>
+                        <div class="flex items-center">
+                            <img 
+                                src="https://picsum.photos/100/100?random=12" 
+                                alt="Avatar of Aisha Patel" 
+                                class="w-12 h-12 rounded-full object-cover mr-4"
+                                loading="lazy"
+                            >
+                            <div>
+                                <div class="font-semibold">Aisha Patel</div>
+                                <div class="text-sm text-gray-500 dark:text-gray-400">Computer Science Professor</div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 评价列表 -->
-            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
-                <!-- 评价将通过JavaScript动态生成 -->
-            </div>
-            
-            <!-- 加载更多按钮 -->
-            <div class="text-center mt-12">
-                <button id="load-more" class="bg-primary/20 hover:bg-primary/30 text-primary px-6 py-3 rounded-lg transition-all">
-                    加载更多评价
-                    <i class="fa fa-refresh ml-2"></i>
-                </button>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 收藏/分享区域 -->
-    <section class="py-16 bg-dark">
-        <div class="container mx-auto px-4">
-            <div class="max-w-4xl mx-auto bg-darker/50 backdrop-blur-sm rounded-xl p-8 border border-gray-800 shadow-lg">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <div>
-                        <h3 class="text-2xl font-bold mb-2">喜欢 JSONPlaceholder 吗？</h3>
-                        <p class="text-gray-400">收藏起来或分享给你的开发者朋友</p>
+        <!-- CTA section -->
+        <section class="mb-20">
+            <div class="bg-gradient-to-r from-primary to-secondary dark:from-dark-primary dark:to-secondary rounded-3xl shadow-2xl overflow-hidden">
+                <div class="grid md:grid-cols-2 items-center">
+                    <div class="p-8 md:p-12 lg:p-16">
+                        <h2 class="text-3xl md:text-4xl font-bold text-white mb-6">Start Using JSONPlaceholder Today</h2>
+                        <p class="text-white/90 text-lg mb-8">
+                            It's free, it's fast, and it's ready when you are. Perfect for your next project, tutorial, or learning experience.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="https://jsonplaceholder.typicode.com" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-white text-primary font-medium rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                                Visit API
+                            </a>
+                            <a href="https://github.com/typicode/jsonplaceholder" target="_blank" rel="noopener noreferrer" class="px-8 py-3 bg-transparent border-2 border-white text-white font-medium rounded-full hover:bg-white/10 transition-all transform hover:-translate-y-1">
+                                <i class="fa fa-github mr-2"></i> Star on GitHub
+                            </a>
+                        </div>
                     </div>
-                    
-                    <div class="flex items-center space-x-4 mt-6 md:mt-0">
-                        <!-- 收藏按钮 -->
-                        <button id="bookmark-btn" class="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition-all">
-                            <i class="fa fa-bookmark-o text-primary"></i>
-                            <span>收藏</span>
-                        </button>
-                        
-                        <!-- 分享按钮 -->
-                        <div class="relative group">
-                            <button class="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition-all">
-                                <i class="fa fa-share-alt text-primary"></i>
-                                <span>分享</span>
-                            </button>
-                            
-                            <!-- 分享选项 -->
-                            <div class="absolute right-0 mt-2 w-48 bg-darker rounded-lg shadow-xl border border-gray-800 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-10">
-                                <div class="p-3 border-b border-gray-800">
-                                    <a href="#" class="flex items-center space-x-2 hover:text-primary transition-colors">
-                                        <i class="fa fa-twitter"></i>
-                                        <span>Twitter</span>
-                                    </a>
-                                </div>
-                                <div class="p-3 border-b border-gray-800">
-                                    <a href="#" class="flex items-center space-x-2 hover:text-primary transition-colors">
-                                        <i class="fa fa-facebook"></i>
-                                        <span>Facebook</span>
-                                    </a>
-                                </div>
-                                <div class="p-3 border-b border-gray-800">
-                                    <a href="#" class="flex items-center space-x-2 hover:text-primary transition-colors">
-                                        <i class="fa fa-linkedin"></i>
-                                        <span>LinkedIn</span>
-                                    </a>
-                                </div>
-                                <div class="p-3">
-                                    <a href="#" class="flex items-center space-x-2 hover:text-primary transition-colors">
-                                        <i class="fa fa-copy"></i>
-                                        <span>复制链接</span>
-                                    </a>
-                                </div>
+                    <div class="hidden md:block relative h-full min-h-[300px]">
+                        <img 
+                            src="https://picsum.photos/800/600?random=20" 
+                            alt="Developer working with API data" 
+                            class="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-20"
+                            loading="lazy"
+                        >
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="text-white text-6xl md:text-8xl font-bold animate-pulse-slow">
+                                <i class="fa fa-code"></i>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-darker pt-16 pb-8 border-t border-gray-800">
+    <!-- Footer -->
+    <footer class="bg-gray-100 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 py-12">
         <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-4 gap-10 mb-16">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
                 <div>
-                    <a href="/" class="flex items-center space-x-2 mb-6">
-                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center">
                             <i class="fa fa-code text-white text-xl"></i>
                         </div>
-                        <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">JSONPlaceholder</span>
-                    </a>
-                    <p class="text-gray-400 mb-6">
-                        免费的在线REST API服务，为前端开发者提供模拟数据，简化开发和测试流程。
+                        <span class="text-xl font-bold">JSONPlaceholder</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">
+                        Free fake API for testing and prototyping. Powered by JSON Server and maintained by Typicode.
                     </p>
                     <div class="flex space-x-4">
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                            <i class="fa fa-github text-gray-400 hover:text-primary"></i>
+                        <a href="https://twitter.com/typicode" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                            <i class="fa fa-twitter text-gray-400 hover:text-primary"></i>
+                        <a href="https://github.com/typicode/jsonplaceholder" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa fa-github text-xl"></i>
                         </a>
-                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 hover:bg-primary/20 flex items-center justify-center transition-colors">
-                            <i class="fa fa-linkedin text-gray-400 hover:text-primary"></i>
+                        <a href="https://www.linkedin.com/in/typicode/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
                         </a>
                     </div>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-bold mb-6">快速链接</h4>
+                    <h4 class="text-lg font-semibold mb-6">Resources</h4>
                     <ul class="space-y-3">
-                        <li><a href="#about" class="text-gray-400 hover:text-primary transition-colors">关于</a></li>
-                        <li><a href="#features" class="text-gray-400 hover:text-primary transition-colors">功能</a></li>
-                        <li><a href="#usage" class="text-gray-400 hover:text-primary transition-colors">使用方法</a></li>
-                        <li><a href="#reviews" class="text-gray-400 hover:text-primary transition-colors">社区评价</a></li>
-                        <li><a href="https://jsonplaceholder.typicode.com" target="_blank" class="text-gray-400 hover:text-primary transition-colors">官方网站</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Examples</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">API Endpoints</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Self-Hosting</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Sitemap</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-bold mb-6">资源</h4>
+                    <h4 class="text-lg font-semibold mb-6">Community</h4>
                     <ul class="space-y-3">
-                        <li><a href="https://jsonplaceholder.typicode.com/guide.html" target="_blank" class="text-gray-400 hover:text-primary transition-colors">使用指南</a></li>
-                        <li><a href="https://github.com/typicode/jsonplaceholder" target="_blank" class="text-gray-400 hover:text-primary transition-colors">GitHub 仓库</a></li>
-                        <li><a href="https://typicode.com/blog/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">博客</a></li>
-                        <li><a href="https://github.com/typicode/jsonplaceholder/issues" target="_blank" class="text-gray-400 hover:text-primary transition-colors">问题反馈</a></li>
-                        <li><a href="/sitemap" class="text-gray-400 hover:text-primary transition-colors">网站地图</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">GitHub</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Issues</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Discussions</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Contribute</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">Support</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-bold mb-6">联系我们</h4>
-                    <ul class="space-y-3">
-                        <li class="flex items-start">
-                            <i class="fa fa-envelope text-primary mt-1 mr-3"></i>
-                            <a href="mailto:hello@typicode.com" class="text-gray-400 hover:text-primary transition-colors">hello@typicode.com</a>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-github text-primary mt-1 mr-3"></i>
-                            <a href="https://github.com/typicode" target="_blank" class="text-gray-400 hover:text-primary transition-colors">github.com/typicode</a>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-twitter text-primary mt-1 mr-3"></i>
-                            <a href="https://twitter.com/typicode" target="_blank" class="text-gray-400 hover:text-primary transition-colors">@typicode</a>
-                        </li>
-                    </ul>
+                    <h4 class="text-lg font-semibold mb-6">Stay Updated</h4>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Subscribe to our newsletter for the latest updates and tips.
+                    </p>
+                    <form class="space-y-3">
+                        <div>
+                            <input 
+                                type="email" 
+                                placeholder="Your email address" 
+                                class="w-full px-4 py-2 rounded-lg bg-white dark:bg-dark-card border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary"
+                            >
+                        </div>
+                        <button type="submit" class="w-full px-4 py-2 bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white rounded-lg transition-colors">
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
             </div>
             
-            <div class="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-500 text-sm mb-4 md:mb-0">
-                    © 2023 JSONPlaceholder. 保留所有权利。
-                </p>
-                <div class="flex space-x-6">
-                    <a href="/about#privacy" class="text-gray-500 hover:text-primary text-sm transition-colors">隐私政策</a>
-                    <a href="/about#terms" class="text-gray-500 hover:text-primary text-sm transition-colors">使用条款</a>
-                    <a href="/sitemap" class="text-gray-500 hover:text-primary text-sm transition-colors">网站地图</a>
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <div class="text-gray-500 dark:text-gray-400 text-sm mb-4 md:mb-0">
+                    &copy; 2023 JSONPlaceholder. All rights reserved.
+                </div>
+                <div class="flex space-x-6 text-sm">
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-dark-primary transition-colors">Privacy Policy</a>
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-dark-primary transition-colors">Terms of Service</a>
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-dark-primary transition-colors">Contact</a>
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- JavaScript -->
+    <script type="module" src="/main.js"></script>
     <script>
-        // 导航栏滚动效果
-        const navbar = document.getElementById('navbar');
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            htmlElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                htmlElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
+            
+            // Update radar chart colors when theme changes
+            updateRadarChart();
+        });
+        
+        // Return to top button functionality
+        const backToTopButton = document.getElementById('backToTop');
+        
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('bg-darker/90', 'backdrop-blur-md', 'shadow-lg');
+            if (window.scrollY > 300) {
+                backToTopButton.classList.remove('opacity-0', 'invisible');
+                backToTopButton.classList.add('opacity-100', 'visible');
             } else {
-                navbar.classList.remove('bg-darker/90', 'backdrop-blur-md', 'shadow-lg');
+                backToTopButton.classList.remove('opacity-100', 'visible');
+                backToTopButton.classList.add('opacity-0', 'invisible');
             }
         });
         
-        // 移动端菜单切换
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-            const icon = menuToggle.querySelector('i');
-            if (icon.classList.contains('fa-bars')) {
-                icon.classList.replace('fa-bars', 'fa-times');
-            } else {
-                icon.classList.replace('fa-times', 'fa-bars');
-            }
-        });
-        
-        // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                // 关闭移动菜单（如果打开）
-                if (!mobileMenu.classList.contains('hidden')) {
-                    mobileMenu.classList.add('hidden');
-                    const icon = menuToggle.querySelector('i');
-                    icon.classList.replace('fa-times', 'fa-bars');
-                }
-                
-                document.querySelector(this.getAttribute('href')).scrollIntoView({
-                    behavior: 'smooth'
-                });
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
             });
         });
         
-        // 收藏按钮功能
-        const bookmarkBtn = document.getElementById('bookmark-btn');
-        bookmarkBtn.addEventListener('click', () => {
-            const icon = bookmarkBtn.querySelector('i');
-            if (icon.classList.contains('fa-bookmark-o')) {
-                icon.classList.replace('fa-bookmark-o', 'fa-bookmark');
-                bookmarkBtn.querySelector('span').textContent = '已收藏';
-                showToast('已收藏 JSONPlaceholder');
+        // Favorite button functionality
+        const favoriteBtn = document.getElementById('favoriteBtn');
+        const favoriteIcon = favoriteBtn.querySelector('i');
+        let isFavorite = false;
+        
+        favoriteBtn.addEventListener('click', () => {
+            isFavorite = !isFavorite;
+            
+            if (isFavorite) {
+                favoriteIcon.classList.remove('fa-heart-o');
+                favoriteIcon.classList.add('fa-heart', 'text-red-500');
             } else {
-                icon.classList.replace('fa-bookmark', 'fa-bookmark-o');
-                bookmarkBtn.querySelector('span').textContent = '收藏';
-                showToast('已取消收藏');
+                favoriteIcon.classList.remove('fa-heart', 'text-red-500');
+                favoriteIcon.classList.add('fa-heart-o');
             }
         });
         
-        // 分享功能 - 复制链接
-        const copyLinkBtn = document.querySelector('.fa-copy').parentElement;
-        copyLinkBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            navigator.clipboard.writeText(window.location.href)
-                .then(() => {
-                    showToast('链接已复制到剪贴板');
-                })
-                .catch(err => {
-                    console.error('无法复制链接: ', err);
-                });
-        });
+        // Mobile search toggle
+        const mobileSearchBtn = document.querySelector('.md\\:hidden.p-2');
+        const mobileSearch = document.getElementById('mobileSearch');
         
-        // Toast 提示
-        function showToast(message) {
-            // 检查是否已有toast
-            let toast = document.querySelector('.toast');
-            if (toast) {
-                toast.remove();
-            }
-            
-            // 创建新toast
-            toast = document.createElement('div');
-            toast.className = 'toast fixed bottom-6 right-6 bg-primary text-white px-6 py-3 rounded-lg shadow-lg z-50 transform translate-y-20 opacity-0 transition-all duration-300';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
-            // 显示toast
-            setTimeout(() => {
-                toast.classList.remove('translate-y-20', 'opacity-0');
-            }, 10);
-            
-            // 3秒后隐藏
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-                setTimeout(() => {
-                    toast.remove();
-                }, 300);
-            }, 3000);
+        if (mobileSearchBtn && mobileSearch) {
+            mobileSearchBtn.addEventListener('click', () => {
+                mobileSearch.classList.toggle('hidden');
+            });
         }
         
-        // 社区评价数据
-        const reviews = [
-            {
-                name: "张明",
-                avatar: "https://picsum.photos/id/1/100/100",
-                role: "前端开发者",
-                rating: 5,
-                comment: "JSONPlaceholder 是我开发过程中的救星！在后端API还没准备好的时候，它帮我快速搭建和测试前端界面，大大提高了开发效率。"
-            },
-            {
-                name: "Sarah Johnson",
-                avatar: "https://picsum.photos/id/2/100/100",
-                role: "全栈工程师",
-                rating: 5,
-                comment: "作为一个经常需要演示原型的开发者，JSONPlaceholder 简直是神器。无需配置，直接可用，数据结构也很合理，强烈推荐！"
-            },
-            {
-                name: "李伟",
-                avatar: "https://picsum.photos/id/3/100/100",
-                role: "UI/UX设计师",
-                rating: 4,
-                comment: "虽然我主要做设计，但有时也需要快速搭建可交互原型。JSONPlaceholder 让我能够轻松创建有真实感的数据展示，客户体验更好。"
-            },
-            {
-                name: "Michael Brown",
-                avatar: "https://picsum.photos/id/4/100/100",
-                role: "JavaScript开发者",
-                rating: 5,
-                comment: "免费、稳定、易用 — 这三个词足以形容JSONPlaceholder。支持所有HTTP方法，非常适合教学和学习REST API调用。"
-            },
-            {
-                name: "陈静",
-                avatar: "https://picsum.photos/id/5/100/100",
-                role: "React开发者",
-                rating: 5,
-                comment: "在学习React hooks时，用JSONPlaceholder来练习数据获取非常方便。API响应迅速，数据结构清晰，帮我快速掌握了useEffect和useState的使用。"
-            },
-            {
-                name: "David Wilson",
-                avatar: "https://picsum.photos/id/6/100/100",
-                role: "Vue开发者",
-                rating: 4,
-                comment: "对于Vue项目的开发和测试来说，这是一个非常棒的工具。我唯一的小建议是希望能有更多的数据类型和更大的数据集。"
-            },
-            {
-                name: "王浩",
-                avatar: "https://picsum.photos/id/7/100/100",
-                role: "Angular开发者",
-                rating: 5,
-                comment: "在Angular项目中集成JSONPlaceholder非常简单，它完美支持HttpClient模块。CORS配置也很到位，没有出现任何跨域问题。"
-            },
-            {
-                name: "Emma Davis",
-                avatar: "https://picsum.photos/id/8/100/100",
-                role: "前端讲师",
-                rating: 5,
-                comment: "我在教学中经常使用JSONPlaceholder，它让学生能够专注于学习前端技术，而不必担心后端API的复杂性。学生反馈非常好！"
-            },
-            {
-                name: "刘强",
-                avatar: "https://picsum.photos/id/9/100/100",
-                role: "移动应用开发者",
-                rating: 4,
-                comment: "虽然主要用于Web开发，但我发现它在移动应用原型开发中也非常有用。API响应速度快，数据格式一致，推荐给所有开发者。"
-            },
-            {
-                name: "Olivia Taylor",
-                avatar: "https://picsum.photos/id/10/100/100",
-                role: "前端架构师",
-                rating: 5,
-                comment: "JSONPlaceholder已经成为我们团队开发流程中的标准工具。它帮助我们实现了前后端并行开发，大大缩短了项目周期。"
-            },
-            {
-                name: "赵阳",
-                avatar: "https://picsum.photos/id/11/100/100",
-                role: "实习生",
-                rating: 5,
-                comment: "作为一名刚入行的开发者，JSONPlaceholder让我能够轻松练习API调用，不用自己搭建后端服务器。非常适合初学者！"
-            },
-            {
-                name: "Daniel Anderson",
-                avatar: "https://picsum.photos/id/12/100/100",
-                role: "全栈开发者",
-                rating: 4,
-                comment: "我喜欢它的简单和直接。对于快速原型开发和演示来说非常完美。如果能有一些自定义数据的功能就更好了。"
-            },
-            {
-                name: "林小雨",
-                avatar: "https://picsum.photos/id/13/100/100",
-                role: "前端开发工程师",
-                rating: 5,
-                comment: "在开发博客类网站时，JSONPlaceholder的posts和comments端点简直是为我量身定做的。数据结构非常贴近真实场景。"
-            },
-            {
-                name: "Sophia Thomas",
-                avatar: "https://picsum.photos/id/14/100/100",
-                role: "JavaScript讲师",
-                rating: 5,
-                comment: "我在所有的JavaScript课程中都推荐使用JSONPlaceholder。它让学生能够专注于学习fetch API和异步编程，而不必担心后端问题。"
-            },
-            {
-                name: "黄志强",
-                avatar: "https://picsum.photos/id/15/100/100",
-                role: "前端技术负责人",
-                rating: 4,
-                comment: "作为团队技术负责人，我非常欣赏JSONPlaceholder的稳定性和易用性。它已经成为我们前端开发流程中不可或缺的一部分。"
-            },
-            {
-                name: "James Jackson",
-                avatar: "https://picsum.photos/id/16/100/100",
-                role: "React Native开发者",
-                rating: 5,
-                comment: "虽然主要是为Web开发设计的，但我发现它在React Native项目中同样有用。API简单直观，响应迅速，非常适合移动应用原型开发。"
-            },
-            {
-                name: "张海燕",
-                avatar: "https://picsum.photos/id/17/100/100",
-                role: "前端开发",
-                rating: 5,
-                comment: "用JSONPlaceholder来测试错误处理和加载状态非常方便。它的一致性让我的单元测试变得更加简单可靠。"
-            },
-            {
-                name: "Robert White",
-                avatar: "https://picsum.photos/id/18/100/100",
-                role: "DevOps工程师",
-                rating: 4,
-                comment: "虽然我主要做运维工作，但也经常需要快速搭建演示环境。JSONPlaceholder帮我省去了配置后端服务的麻烦，非常实用。"
-            },
-            {
-                name: "吴明",
-                avatar: "https://picsum.photos/id/19/100/100",
-                role: "前端开发者",
-                rating: 5,
-                comment: "最喜欢它不需要注册和API密钥，直接可用。对于快速验证想法和演示来说，这一点太重要了。"
-            },
-            {
-                name: "Jennifer Harris",
-                avatar: "https://picsum.photos/id/20/100/100",
-                role: "UI工程师",
-                rating: 5,
-                comment: "JSONPlaceholder让我能够专注于UI实现而不必等待后端API。数据结构设计得很合理，贴近真实应用场景。"
-            },
-            {
-                name: "郑华",
-                avatar: "https://picsum.photos/id/21/100/100",
-                role: "前端开发",
-                rating: 4,
-                comment: "用了好几年了，非常稳定。希望能增加一些更复杂的数据关系和查询功能，那就更完美了。"
-            },
-            {
-                name: "William Martin",
-                avatar: "https://picsum.photos/id/22/100/100",
-                role: "JavaScript开发者",
-                rating: 5,
-                comment: "对于学习Promise、async/await和fetch API来说，JSONPlaceholder是一个理想的工具。强烈推荐给所有JavaScript学习者。"
-            },
-            {
-                name: "孙晓",
-                avatar: "https://picsum.photos/id/23/100/100",
-                role: "前端开发工程师",
-                rating: 5,
-                comment: "在开发初期用它来搭建MVP非常高效。等后端API准备好了，只需要替换一下基础URL，几乎不需要修改其他代码。"
-            },
-            {
-                name: "Amanda Thompson",
-                avatar: "https://picsum.photos/id/24/100/100",
-                role: "UX研究员",
-                rating: 4,
-                comment: "作为UX研究员，我经常需要快速搭建可交互原型来测试用户流程。JSONPlaceholder让这个过程变得非常简单。"
-            },
-            {
-                name: "周健",
-                avatar: "https://picsum.photos/id/25/100/100",
-                role: "前端开发",
-                rating: 5,
-                comment: "在面试候选人时，我经常用JSONPlaceholder作为API数据源来考察他们的前端技能。它的一致性和稳定性非常适合这种场景。"
-            },
-            {
-                name: "Matthew Garcia",
-                avatar: "https://picsum.photos/id/26/100/100",
-                role: "前端架构师",
-                rating: 5,
-                comment: "JSONPlaceholder的设计理念非常好 - 简单、实用、专注。它解决了前端开发中一个常见的痛点，而且做得非常出色。"
-            },
-            {
-                name: "刘芳",
-                avatar: "https://picsum.photos/id/27/100/100",
-                role: "Vue开发者",
-                rating: 5,
-                comment: "在Vue项目中使用JSONPlaceholder配合Vuex来管理数据非常顺畅。它的API设计清晰，返回的数据结构也很规范。"
-            },
-            {
-                name: "Patricia Martinez",
-                avatar: "https://picsum.photos/id/28/100/100",
-                role: "React开发者",
-                rating: 4,
-                comment: "我喜欢用它来练习React Query和SWR这类数据获取库。唯一的小缺点是数据不会真正更新，对于测试某些场景有点限制。"
-            },
-            {
-                name: "赵明",
-                avatar: "https://picsum.photos/id/29/100/100",
-                role: "前端开发",
-                rating: 5,
-                comment: "作为一名自由职业者，JSONPlaceholder帮我快速为客户创建演示原型，大大提高了我的工作效率和客户满意度。"
-            },
-            {
-                name: "Andrew Robinson",
-                avatar: "https://picsum.photos/id/30/100/100",
-                role: "全栈开发者",
-                rating: 5,
-                comment: "我同时使用JSONPlaceholder作为前端开发工具和后端API设计的参考。它的数据结构设计得非常合理，值得学习。"
-            },
-            {
-                name: "钱小红",
-                avatar: "https://picsum.photos/id/31/100/100",
-                role: "前端开发工程师",
-                rating: 4,
-                comment: "在开发电商网站原型时，虽然没有专门的产品数据，但用posts和photos来模拟也挺方便的。希望能增加一些电商相关的端点。"
-            },
-            {
-                name: "Elizabeth Clark",
-                avatar: "https://picsum.photos/id/32/100/100",
-                role: "前端开发者",
-                rating: 5,
-                comment: "JSONPlaceholder的稳定性令人印象深刻。我用了三年多，几乎没遇到过宕机的情况，对于一个免费服务来说这非常难得。"
-            },
-            {
-                name: "孙建国",
-                avatar: "https://picsum.photos/id/33/100/100",
-                role: "前端开发",
-                rating: 5,
-                comment: "在教学中使用JSONPlaceholder帮助学生理解前后端分离的概念非常有效。学生可以直观地看到数据如何从API流向前端。"
-            },
-            {
-                name: "Joseph Lewis",
-                avatar: "https://picsum.photos/id/34/100/100",
-                role: "JavaScript开发者",
-                rating: 4,
-                comment: "我喜欢它支持所有HTTP方法，这让我可以完整地测试CRUD操作。虽然数据不会真正保存，但对于前端开发来说已经足够了。"
-            },
-            {
-                name: "林小丽",
-                avatar: "https://picsum.photos/id/35/100/100",
-                role: "前端开发工程师",
-                rating: 5,
-                comment: "在开发响应式布局时，用JSONPlaceholder来测试不同数据量下的显示效果非常方便。强烈推荐给所有前端开发者。"
-            },
-            {
-                name: "Barbara Lee",
-                avatar: "https://picsum.photos/id/36/100/100",
-                role: "前端设计师",
-                rating: 5,
-                comment: "作为设计师，我不擅长后端开发，但JSONPlaceholder让我能够创建有真实数据的交互原型，这对设计决策非常有帮助。"
-            },
-            {
-                name: "吴志强",
-                avatar: "https://picsum.photos/id/37/100/100",
-                role: "前端技术负责人",
-                rating: 5,
-                comment: "在我们团队，JSONPlaceholder已经成为前端开发的标准工具。它帮助我们实现了前后端并行开发，提高了整体效率。"
-            },
-            {
-                name: "Richard Walker",
-                avatar: "https://picsum.photos/id/38/100/100",
-                role: "DevOps工程师",
-                rating: 4,
-                comment: "我在自动化测试中使用JSONPlaceholder作为可靠的数据源。它的一致性让我的测试更加稳定可靠。"
-            },
-            {
-                name: "郑婷婷",
-                avatar: "https://picsum.photos/id/39/100/100",
-                role: "前端开发",
-                rating: 5,
-                comment: "对于快速验证一个想法或者展示一个概念，JSONPlaceholder是无与伦比的。不需要任何设置，立即开始工作。"
-            },
-            {
-                name: "Susan Harris",
-                avatar: "https://picsum.photos/id/40/100/100",
-                role: "技术作家",
-                rating: 5,
-                comment: "在编写技术文档和教程时，JSONPlaceholder提供了一个稳定、一致的API来展示代码示例。读者可以轻松地跟随示例进行实践。"
-            },
-            {
-                name: "王浩",
-                avatar: "https://picsum.photos/id/41/100/100",
-                role: "前端开发工程师",
-                rating: 4,
-                comment: "用了很久了，非常满意。如果能有更多样化的数据类型和更大的数据集就更好了，但目前的功能已经能满足大部分需求。"
-            },
-            {
-                name: "Thomas Young",
-                avatar: "https://picsum.photos/id/42/100/100",
-                role: "React开发者",
-                rating: 5,
-                comment: "在学习React hooks时，JSONPlaceholder是我的得力助手。它让我能够专注于学习前端概念，而不必担心后端复杂性。"
-            },
-            {
-                name: "陈静",
-                avatar: "https://picsum.photos/id/43/100/100",
-                role: "前端开发",
-                rating: 5,
-                comment: "在开发个人项目时，JSONPlaceholder帮我省去了搭建后端的麻烦，让我可以专注于实现我想要的前端功能。"
-            },
-            {
-                name: "Margaret Allen",
-                avatar: "https://picsum.photos/id/44/100/100",
-                role: "前端讲师",
-                rating: 5,
-                comment: "作为讲师，我向所有学生推荐JSONPlaceholder。它简化了学习过程，让学生能够专注于前端技术本身。"
-            },
-            {
-                name: "刘强",
-                avatar: "https://picsum.photos/id/45/100/100",
-                role: "全栈开发者",
-                rating: 4,
-                comment: "JSONPlaceholder的设计非常优雅，简单而强大。它证明了解决问题不一定需要复杂的方案，简单往往更有效。"
-            },
-            {
-                name: "Daniel King",
-                avatar: "https://picsum.photos/id/46/100/100",
-                role: "JavaScript开发者",
-                rating: 5,
-                comment: "我喜欢它的极简主义设计 - 没有多余的功能，只专注于做好一件事：提供可靠的模拟API。这正是开发者需要的。"
-            },
-            {
-                name: "赵阳",
-                avatar: "https://picsum.photos/id/47/100/100",
-                role: "前端开发工程师",
-                rating: 5,
-                comment: "在面试中被要求现场编写代码时，JSONPlaceholder是我的秘密武器。它让我能够快速展示我的技能，而不必担心API问题。"
-            },
-            {
-                name: "Karen Wright",
-                avatar: "https://picsum.photos/id/48/100/100",
-                role: "前端架构师",
-                rating: 5,
-                comment: "JSONPlaceholder已经成为我们前端架构的一部分，用于开发、测试和演示。它的可靠性和一致性令人印象深刻。"
-            },
-            {
-                name: "黄志强",
-                avatar: "https://picsum.photos/id/49/100/100",
-                role: "前端开发",
-                rating: 4,
-                comment: "对于大多数前端开发场景来说，JSONPlaceholder已经足够好了。希望未来能增加一些自定义数据的功能，那就更完美了。"
-            },
-            {
-                name: "Steven Scott",
-                avatar: "https://picsum.photos/id/50/100/100",
-                role: "全栈开发者",
-                rating: 5,
-                comment: "作为全栈开发者，我既用它来开发前端，也参考它的API设计来构建后端。JSONPlaceholder是一个优秀的API设计范例。"
+        // Radar chart initialization
+        let radarChart;
+        
+        function updateRadarChart() {
+            const isDarkMode = htmlElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#e5e7eb' : '#1f2937';
+            
+            const ctx = document.getElementById('techRadarChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (radarChart) {
+                radarChart.destroy();
             }
-        ];
-        
-        // 渲染评价
-        const reviewsContainer = document.getElementById('reviews-container');
-        let displayedReviews = 9; // 初始显示9条评价
-        
-        function renderReviews() {
-            // 清空容器
-            reviewsContainer.innerHTML = '';
             
-            // 只显示到displayedReviews的评价
-            const reviewsToShow = reviews.slice(0, displayedReviews);
-            
-            // 渲染评价
-            reviewsToShow.forEach(review => {
-                const reviewElement = document.createElement('div');
-                reviewElement.className = 'bg-dark/50 backdrop-blur-sm rounded-xl p-6 border border-gray-800 shadow-lg transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20';
-                
-                // 生成星级评分HTML
-                let ratingHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= review.rating) {
-                        ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
-                    } else {
-                        ratingHtml += '<i class="fa fa-star-o text-gray-600"></i>';
+            // Create new chart with updated colors
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Performance',
+                        'Ease of Use',
+                        'Reliability',
+                        'Feature Set',
+                        'Documentation',
+                        'Community Support'
+                    ],
+                    datasets: [{
+                        label: 'JSONPlaceholder',
+                        data: [85, 95, 80, 75, 90, 85],
+                        fill: true,
+                        backgroundColor: 'rgba(0, 112, 243, 0.2)',
+                        borderColor: '#0070f3',
+                        pointBackgroundColor: '#0070f3',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#0070f3'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor
+                            },
+                            ticks: {
+                                color: textColor,
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
                     }
                 }
-                
-                reviewElement.innerHTML = `
-                    <div class="flex items-center mb-4">
-                        <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
-                        <div>
-                            <h4 class="font-bold">${review.name}</h4>
-                            <p class="text-sm text-gray-400">${review.role}</p>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        ${ratingHtml}
-                    </div>
-                    <p class="text-gray-300">${review.comment}</p>
-                `;
-                
-                reviewsContainer.appendChild(reviewElement);
             });
         }
         
-        // 初始渲染
-        renderReviews();
+        // Initialize radar chart when page loads
+        window.addEventListener('load', updateRadarChart);
         
-        // 加载更多评价
-        const loadMoreBtn = document.getElementById('load-more');
-        loadMoreBtn.addEventListener('click', () => {
-            // 每次加载9条，最多显示全部
-            displayedReviews = Math.min(displayedReviews + 9, reviews.length);
-            renderReviews();
-            
-            // 如果已经显示全部，隐藏加载更多按钮
-            if (displayedReviews >= reviews.length) {
-                loadMoreBtn.innerHTML = '已显示全部评价';
-                loadMoreBtn.disabled = true;
-                loadMoreBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            }
-        });
-        
-        // 图片懒加载
-        document.addEventListener('DOMContentLoaded', () => {
-            const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-            
-            if ('IntersectionObserver' in window) {
-                const imageObserver = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const image = entry.target;
-                            image.classList.add('fade-in');
-                            imageObserver.unobserve(image);
-                        }
-                    });
-                });
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
                 
-                lazyImages.forEach(image => {
-                    imageObserver.observe(image);
-                });
-            }
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
         });
     </script>
-<script type="module" src="/main.js"></script>
-
-
-</body></html>
+</body>
+</html>

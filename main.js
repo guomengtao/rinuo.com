@@ -5,4 +5,4 @@ import '/assets/js/main-search.js';      // 搜索功能模块导入
 // import '/assets/js/tawkService.js';      //tawkService.js 
 import '/assets/js/baidutongji.js';     // 百度统计
 import '/assets/js/online.js';     // 在线人数
-import '/assets/js/side-buttons.js'; // side buuton
+// import '/assets/js/side-buttons.js'; // side buuton
