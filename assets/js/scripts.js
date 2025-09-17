@@ -7,6 +7,7 @@ let activeCategory = 'all';
 let showResults = false;
 let isSearching = false; // 搜索状态标志
 let popularTools = []; // 热门工具数据
+let isDataLoaded = false; // 标记数据是否已成功加载
 
 // DOM元素
 const searchInput = document.getElementById('searchInput');
@@ -31,8 +32,16 @@ const darkIcon = document.getElementById('dark-icon');
 
 // 初始化
 function init() {
-  // 从data.json加载数据
-  loadToolsData();
+  // 从与free/index.html相同的数据源加载数据
+  loadToolsDataFromAllSources();
+  
+  // 添加一个小延迟，确保数据有时间加载
+  setTimeout(() => {
+    if (!isDataLoaded) {
+      console.warn('Data might not be fully loaded yet, using fallback temporarily');
+      useFallbackData(true); // 临时使用备用数据
+    }
+  }, 1000);
   
   // 应用保存的主题
   const savedTheme = localStorage.getItem('theme');
@@ -48,41 +57,83 @@ function init() {
   updateThemeIcon();
 }
 
-// 从data.json加载工具数据
-async function loadToolsData() {
+// 统一的数据加载函数，同时尝试多个数据源
+async function loadToolsDataFromAllSources() {
   try {
-    const response = await fetch('assets/data/data.json');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    // 尝试从free/tools.json加载数据（与free/index.html保持一致）
+    const response = await fetch('/free/tools.json');
+    console.log('Fetching from free/tools.json:', response.status);
+    
+    if (response.ok) {
+      const data = await response.json();
+      processLoadedData(data, 'free/tools.json');
+      isDataLoaded = true;
+      return;
     }
-    const data = await response.json();
-    // 处理可能的JSON格式问题
-    tools = Array.isArray(data) ? (Array.isArray(data[0]) ? data[0] : data) : [data];
+    
+    // 如果free/tools.json加载失败，尝试本地数据源
+    console.warn('Failed to load from free/tools.json, trying local data');
+    const localResponse = await fetch('assets/data/data.json');
+    console.log('Fetching from assets/data/data.json:', localResponse.status);
+    
+    if (localResponse.ok) {
+      const localData = await localResponse.json();
+      processLoadedData(localData, 'assets/data/data.json');
+      isDataLoaded = true;
+      return;
+    }
+    
+    // 如果所有数据源都失败，使用备用数据
+    console.error('All data sources failed, using fallback data');
+    useFallbackData();
+    
+  } catch (error) {
+    console.error('Error loading tools data:', error);
+    useFallbackData();
+  }
+}
+
+// 处理加载的数据
+function processLoadedData(data, source) {
+  try {
+    // 确保数据是数组格式
+    tools = Array.isArray(data) ? data : [data];
     filteredTools = [...tools];
     
     // 获取热门工具（根据popularity排序）
     popularTools = [...tools].sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 12);
     
-    // 添加调试信息
-    console.log('Tools loaded successfully:', tools.length, 'tools available');
+    console.log(`Tools loaded successfully from ${source}:`, tools.length, 'tools available');
+    console.log('Sample data:', tools.slice(0, 3)); // 添加调试信息，显示前3个工具
     
-  } catch (error) {
-    console.error('Failed to load tools data:', error);
-    // 加载失败时使用备用数据
-    tools = getFallbackTools();
-    popularTools = getFallbackTools().slice(0, 5);
-    filteredTools = [...tools];
+  } catch (jsonError) {
+    console.error('Failed to process tools data:', jsonError);
+    useFallbackData();
   }
+}
+
+// 使用备用数据
+function useFallbackData(temporary = false) {
+  tools = getFallbackTools();
+  popularTools = tools.slice(0, 5);
+  filteredTools = [...tools];
+  console.log(`Using ${temporary ? 'temporary' : ''} fallback tools data:`, tools.length, 'tools available');
 }
 
 // 添加一个备用数据函数，确保即使数据加载失败也能搜索
 function getFallbackTools() {
+  // 丰富备用数据，添加更多工具并设置不同的popularity值
   return [
-    {file: "react", name: "React", category: "Frontend", tags: ["Framework", "JavaScript", "UI"], popularity: 1},
-    {file: "vue", name: "Vue", category: "Frontend", tags: ["Framework", "JavaScript"], popularity: 1},
-    {file: "nodejs", name: "Node.js", category: "Backend", tags: ["JavaScript", "Runtime"], popularity: 1},
-    {file: "docker", name: "Docker", category: "DevOps", tags: ["Containerization", "Deployment"], popularity: 1},
-    {file: "git", name: "Git", category: "DevTools", tags: ["Version Control", "Collaboration"], popularity: 1}
+    {file: "react", name: "React", category: "Frontend", tags: ["Framework", "JavaScript", "UI", "tool"], popularity: 0.95},
+    {file: "vue", name: "Vue", category: "Frontend", tags: ["Framework", "JavaScript", "tool"], popularity: 0.90},
+    {file: "nodejs", name: "Node.js", category: "Backend", tags: ["JavaScript", "Runtime", "tool"], popularity: 0.92},
+    {file: "docker", name: "Docker", category: "DevOps", tags: ["Containerization", "Deployment", "tool"], popularity: 0.88},
+    {file: "git", name: "Git", category: "DevTools", tags: ["Version Control", "Collaboration", "tool"], popularity: 0.97},
+    {file: "typescript", name: "TypeScript", category: "Language", tags: ["JavaScript", "Typed", "tool"], popularity: 0.85},
+    {file: "webpack", name: "Webpack", category: "Build", tags: ["Bundler", "JavaScript", "tool"], popularity: 0.80},
+    {file: "babel", name: "Babel", category: "Build", tags: ["Transpiler", "JavaScript", "tool"], popularity: 0.78},
+    {file: "jest", name: "Jest", category: "Testing", tags: ["Unit Testing", "JavaScript", "tool"], popularity: 0.83},
+    {file: "express", name: "Express", category: "Backend", tags: ["Framework", "Node.js", "tool"], popularity: 0.87}
   ];
 }
 
@@ -100,7 +151,7 @@ function showLoadingState(show) {
   }
 }
 
-// 按搜索过滤 - 修改为只显示浮动结果并准备跳转到/free/index.html
+// 按搜索过滤 - 修改为与free/index.html保持一致的搜索逻辑
 function filterBySearch() {
   if (!searchInput) return;
   
@@ -116,6 +167,17 @@ function filterBySearch() {
       clearSearch();
       return;
     }
+  }
+
+  // 执行搜索
+  performSearch(searchTerm);
+}
+
+// 执行搜索的核心函数
+function performSearch(searchTerm) {
+  if (!searchTerm.trim()) {
+    clearSearch();
+    return;
   }
   
   // 显示浮动结果
@@ -134,7 +196,7 @@ function performFullSearch(searchTerm) {
   window.location.href = `/free/index.html?${searchParams.toString()}`;
 }
 
-// 显示浮动结果 - 改进样式和交互
+// 显示浮动结果 - 改进样式和交互，与free/index.html保持一致的搜索逻辑
 function showFloatingResults(searchTerm) {
   if (!floatingResults || !floatingResultsContent || !searchTerm.trim()) {
     if (floatingResults) {
@@ -146,16 +208,61 @@ function showFloatingResults(searchTerm) {
   // 确保tools数据已加载
   if (!tools || tools.length === 0) {
     console.warn('No tools data available for search');
-    // 尝试使用备用数据进行搜索
-    const fallbackTools = getFallbackTools();
-    tools = [...fallbackTools];
+    // 使用备用数据进行搜索
+    useFallbackData();
   }
   
-  const floatingFiltered = tools.filter(tool => 
-    (tool.name && tool.name.toLowerCase().includes(searchTerm)) ||
-    (tool.category && tool.category.toLowerCase().includes(searchTerm)) ||
-    (tool.tags && tool.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
-  ).slice(0, 6); // 显示前6个结果作为预览
+  console.log(`Searching for: "${searchTerm}" in ${tools.length} tools`); // 添加搜索调试信息
+  
+  // 增强搜索逻辑，确保能根据不同关键词返回不同结果
+  // 1. 首先筛选完全匹配
+  const exactMatches = tools.filter(tool => {
+    if (!tool) return false;
+    return (tool.name && typeof tool.name === 'string' && tool.name.toLowerCase() === searchTerm) ||
+           (tool.tags && Array.isArray(tool.tags) && tool.tags.some(tag => 
+             typeof tag === 'string' && tag.toLowerCase() === searchTerm
+           ));
+  });
+  
+  // 2. 然后筛选部分匹配
+  const partialMatches = tools.filter(tool => {
+    if (!tool) return false;
+    
+    // 排除已经在完全匹配中的工具
+    const isInExactMatches = exactMatches.some(exact => exact.name === tool.name);
+    if (isInExactMatches) return false;
+    
+    const nameMatch = tool.name && typeof tool.name === 'string' && 
+                      tool.name.toLowerCase().includes(searchTerm);
+    
+    const tagsMatch = tool.tags && Array.isArray(tool.tags) && 
+                      tool.tags.some(tag => 
+                        typeof tag === 'string' && 
+                        tag.toLowerCase().includes(searchTerm)
+                      );
+    
+    // 分类匹配
+    const categoryMatch = tool.category && typeof tool.category === 'string' && 
+                         tool.category.toLowerCase().includes(searchTerm);
+    
+    return nameMatch || tagsMatch || categoryMatch;
+  }).sort((a, b) => {
+    // 按相关性排序：先按名称匹配，再按标签匹配，最后按popularity
+    const aNameRelevance = (a.name && a.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
+    const bNameRelevance = (b.name && b.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
+    const aTagRelevance = (a.tags && a.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
+    const bTagRelevance = (b.tags && b.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
+    
+    if (aNameRelevance !== bNameRelevance) return bNameRelevance - aNameRelevance;
+    if (aTagRelevance !== bTagRelevance) return bTagRelevance - aTagRelevance;
+    return (b.popularity || 0) - (a.popularity || 0);
+  });
+  
+  // 合并结果：完全匹配在前，部分匹配在后
+  const floatingFiltered = [...exactMatches, ...partialMatches].slice(0, 6); // 显示前6个结果作为预览
+  
+  console.log(`Search results for "${searchTerm}": ${floatingFiltered.length} tools found`); // 显示搜索结果数量
+  console.log('Results breakdown:', { exact: exactMatches.length, partial: partialMatches.length });
   
   // 清空浮动结果内容
   floatingResultsContent.innerHTML = '';
@@ -167,8 +274,8 @@ function showFloatingResults(searchTerm) {
       </div>
     `;
   } else {
-    // 渲染简洁的浮动搜索结果项（一行一条数据，高度最小化）
-    floatingFiltered.forEach(tool => {
+    // 渲染简洁的浮动搜索结果项
+    floatingFiltered.forEach((tool, index) => {
       const item = document.createElement('div');
       item.className = 'h-12 px-3 py-2 flex items-center justify-between rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer';
       item.innerHTML = `
@@ -177,18 +284,23 @@ function showFloatingResults(searchTerm) {
             <i class="fa fa-wrench text-xs"></i>
           </div>
           <div class="flex-1 min-w-0">
-            <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">${tool.name}</h4>
+            <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">${tool.name || 'Unknown Tool'}</h4>
           </div>
         </div>
         <div class="flex items-center gap-2 whitespace-nowrap">
           <span class="text-xs text-gray-500 dark:text-gray-400">${tool.category || '-'}</span>
-          ${tool.popularity ? `<span class="text-xs text-primary">${tool.popularity}★</span>` : ''}
+          ${tool.popularity ? `<span class="text-xs text-primary">${Math.round(tool.popularity * 100)}%</span>` : ''}
         </div>
       `;
       
-      // 点击跳转到搜索结果页面
+      // 点击直接跳转到工具详情页
       item.addEventListener('click', () => {
-        performFullSearch(tool.name);
+        if (tool.file) {
+          window.location.href = `/free/detail/${tool.file}.html`;
+        } else {
+          // 如果没有file属性，使用原始的搜索功能
+          performFullSearch(tool.name || searchTerm);
+        }
       });
       
       floatingResultsContent.appendChild(item);

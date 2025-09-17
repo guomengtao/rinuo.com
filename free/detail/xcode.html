@@ -21,6 +21,7 @@
     <!-- Tailwind 配置 -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
@@ -48,106 +49,93 @@
                 -webkit-text-fill-color: transparent;
             }
             .animate-float {
-                animation: float 6s ease-in-out infinite;
+                animation: float 3s ease-in-out infinite;
             }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
+            @keyframes float {
+                0%, 100% {
+                    transform: translateY(0);
+                }
+                50% {
+                    transform: translateY(-10px);
+                }
             }
-            .text-balance {
-                text-wrap: balance;
+            .fade-in {
+                opacity: 0;
+                transform: translateY(20px);
+                transition: opacity 0.6s ease, transform 0.6s ease;
             }
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
+            .fade-in.visible {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg;
+            }
+            .btn-secondary {
+                @apply bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300;
+            }
         }
     </style>
     
-    <style>
-        /* 基础动画定义 */
-        .fade-in {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
-        }
-        
-        .fade-in.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* 平滑滚动 */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* 评论卡片悬停效果 */
-        .review-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .review-card:hover {
-            transform: translateY(-5px);
-        }
-    </style>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
-
-<body class="bg-dark text-gray-200 font-inter min-h-screen flex flex-col">
-    <!-- 导航栏 -->
-    <header class="sticky top-0 z-50 bg-darker/80 backdrop-blur-md border-b border-dark-border transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <!-- Logo -->
-            <a href="/" class="flex items-center space-x-2">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-                    <i class="fa fa-code text-white text-xl"></i>
+<body class="font-inter bg-white dark:bg-dark text-black dark:text-white min-h-screen transition-colors duration-300">
+    <!-- 头部导航 -->
+    <header class="sticky top-0 z-50 bg-white dark:bg-dark-card border-b border-gray-200 dark:border-dark-border transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center">
+                <!-- 网站Logo -->
+                <div class="flex items-center gap-3 mr-auto">
+                    <a href="/" class="text-xl font-bold text-primary">开发资源网</a>
+                    <!-- 移动端搜索按钮 -->
+                    <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary">
+                        <i class="fa fa-search text-xl"></i>
+                    </button>
                 </div>
-                <span class="text-xl font-bold text-white">DevResources</span>
-            </a>
+                
+                <!-- 搜索框 - 居中位置 -->
+                <div class="hidden md:block relative max-w-xs mx-8">
+                    <input type="text" id="searchInput" placeholder="搜索开发资源..." 
+                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm">
+                    <button id="searchButton" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-search"></i>
+                    </button>
+                    <button id="clearSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-dark-card/80 text-gray-600 dark:text-gray-300 w-6 h-6 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-dark-card transition-all duration-300 hidden">
+                        <i class="fa fa-times text-xs"></i>
+                    </button>
+                    
+                    <!-- 浮动结果容器 -->
+                    <div id="floating-results" class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-dark-card rounded-xl shadow-xl z-50 hidden max-h-[70vh] overflow-y-auto border border-light-border dark:border-dark-border animate-fade-in-down">
+                        <div id="floating-results-content" class="p-2">
+                            <!-- 浮动结果将在这里动态生成 -->
+                        </div>
+                        <div class="px-4 py-3 border-t border-light-border dark:border-dark-border text-center">
+                            <button id="view-all-results" class="text-primary hover:underline font-medium transition-colors duration-300">查看全部结果</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 桌面端导航 -->
+                <nav class="hidden md:flex items-center gap-6 ml-auto">
+                    <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">首页</a>
+                    <a href="/free" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">资源分类</a>
+                    <a href="/about" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">关于我们</a>
+                </nav>
+            </div>
             
-            <!-- 搜索框 -->
-            <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+            <!-- 移动端搜索框 (默认隐藏) -->
+            <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
                 <div class="relative w-full">
-                    <input type="text" placeholder="搜索开发资源..." 
-                           class="w-full bg-dark-card border border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                    <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                    <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." 
+                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
+                    <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
                         <i class="fa fa-search"></i>
                     </button>
                 </div>
-            </div>
-            
-            <!-- 导航按钮 -->
-            <div class="flex items-center space-x-4">
-                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-dark-hover transition-colors relative">
-                    <i class="fa fa-bookmark-o text-gray-300"></i>
-                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-primary rounded-full text-[10px] flex items-center justify-center">
-                        收藏
-                    </span>
-                </button>
-                
-                <button class="p-2 rounded-full hover:bg-dark-hover transition-colors md:hidden" id="mobileSearchBtn">
-                    <i class="fa fa-search text-gray-300"></i>
-                </button>
-                
-                <button class="p-2 rounded-full hover:bg-dark-hover transition-colors md:hidden" id="mobileMenuBtn">
-                    <i class="fa fa-bars text-gray-300"></i>
-                </button>
-                
-                <a href="#" class="hidden md:block px-4 py-2 bg-primary hover:bg-primary/90 rounded-full transition-colors">
-                    登录
-                </a>
-            </div>
-        </div>
-        
-        <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" placeholder="搜索开发资源..." 
-                       class="w-full bg-dark-card border border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
             </div>
         </div>
     </header>
@@ -1012,71 +1000,6 @@
     </button>
 
     <!-- JavaScript -->
-    <script type="module" src="/main.js"></script>
-    <script>
-        // 滚动动画
-        document.addEventListener('DOMContentLoaded', function() {
-            // 监听滚动，显示元素动画
-            const fadeElements = document.querySelectorAll('.fade-in');
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, {
-                threshold: 0.1
-            });
-            
-            fadeElements.forEach(element => {
-                observer.observe(element);
-            });
-            
-            // 移动端搜索框切换
-            const mobileSearchBtn = document.getElementById('mobileSearchBtn');
-            const mobileSearchContainer = document.getElementById('mobileSearchContainer');
-            
-            mobileSearchBtn.addEventListener('click', function() {
-                mobileSearchContainer.classList.toggle('hidden');
-            });
-            
-            // 返回顶部按钮
-            const backToTopBtn = document.getElementById('backToTop');
-            
-            window.addEventListener('scroll', function() {
-                if (window.pageYOffset > 300) {
-                    backToTopBtn.classList.remove('opacity-0', 'invisible');
-                    backToTopBtn.classList.add('opacity-100', 'visible');
-                } else {
-                    backToTopBtn.classList.remove('opacity-100', 'visible');
-                    backToTopBtn.classList.add('opacity-0', 'invisible');
-                }
-                
-                // 导航栏滚动效果
-                const header = document.querySelector('header');
-                if (window.pageYOffset > 50) {
-                    header.classList.add('py-2', 'shadow-md');
-                    header.classList.remove('py-3');
-                } else {
-                    header.classList.add('py-3');
-                    header.classList.remove('py-2', 'shadow-md');
-                }
-            });
-            
-            backToTopBtn.addEventListener('click', function() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-            
-            // 图片懒加载
-            document.querySelectorAll('img').forEach(img => {
-                img.loading = 'lazy';
-            });
-        });
-    </script>
+     <script type="module" src="/main.js"></script>
 </body>
 </html>
