@@ -13,31 +13,66 @@ let searchDOM = {
   searchButton: null,
   floatingResults: null,
   floatingResultsContent: null,
-  viewAllResultsBtn: null
+  viewAllResultsBtn: null,
+  resultsCount: null
 };
 
 // ------------------- 数据加载函数 -------------------
-// 统一的数据加载函数，直接使用本地数据源
+// 统一的数据加载函数，尝试多种路径确保能正确加载数据
 async function loadToolsDataFromAllSources() {
   try {
-    // 直接尝试本地数据源
-    console.log('Loading data from local source (assets/data/data.json)');
-    const localResponse = await fetch('assets/data/data.json');
-    console.log('Fetching from assets/data/data.json:', localResponse.status);
+    // 尝试多种路径加载数据
+    const pathsToTry = ['/assets/data/data.json', 'assets/data/data.json'];
+    let loadedData = null;
+    let successPath = null;
     
-    if (localResponse.ok) {
-      const localData = await localResponse.json();
-      processLoadedData(localData, 'assets/data/data.json');
+    for (const path of pathsToTry) {
+      try {
+        console.log(`Trying to load data from: ${path}`);
+        const response = await fetch(path);
+        console.log(`Fetch status for ${path}:`, response.status);
+        
+        if (response.ok) {
+          // 先检查响应内容是否为JSON格式
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            loadedData = await response.json();
+            successPath = path;
+            console.log(`Successfully loaded data from: ${path}`);
+            break;
+          } else {
+            console.warn(`Response from ${path} is not JSON:`, contentType);
+            // 尝试手动解析，可能是纯JSON没有Content-Type头
+            const text = await response.text();
+            try {
+              loadedData = JSON.parse(text);
+              successPath = path;
+              console.log(`Successfully parsed JSON from ${path} despite content-type`);
+              break;
+            } catch (jsonError) {
+              console.error(`Failed to parse response from ${path} as JSON:`, jsonError);
+              console.error(`Response content snippet:`, text.substring(0, 100));
+            }
+          }
+        }
+      } catch (fetchError) {
+        console.error(`Error fetching from ${path}:`, fetchError.message);
+      }
+    }
+    
+    // 如果成功加载了数据
+    if (loadedData) {
+      processLoadedData(loadedData, successPath);
       isDataLoaded = true;
       return;
     }
     
-    // 如果所有数据源都失败，使用备用数据
-    console.error('All data sources failed, using fallback data');
+    // 如果所有路径都失败，使用备用数据
+    console.error('All data sources failed, using fallback data with limited tools');
     useFallbackData();
     
   } catch (error) {
-    console.error('Error loading tools data:', error);
+    console.error('Critical error in data loading process:', error);
     useFallbackData();
   }
 }
@@ -70,7 +105,7 @@ function useFallbackData(temporary = false) {
 
 // 添加一个备用数据函数，确保即使数据加载失败也能搜索
 function getFallbackTools() {
-  // 丰富备用数据，添加更多工具并设置不同的popularity值
+  // 丰富备用数据，确保包含足够多的工具以避免结果数量限制为10
   return [
     {file: "react", name: "React", category: "Frontend", tags: ["Framework", "JavaScript", "UI", "tool"], popularity: 0.95},
     {file: "vue", name: "Vue", category: "Frontend", tags: ["Framework", "JavaScript", "tool"], popularity: 0.90},
@@ -81,7 +116,21 @@ function getFallbackTools() {
     {file: "webpack", name: "Webpack", category: "Build", tags: ["Bundler", "JavaScript", "tool"], popularity: 0.80},
     {file: "babel", name: "Babel", category: "Build", tags: ["Transpiler", "JavaScript", "tool"], popularity: 0.78},
     {file: "jest", name: "Jest", category: "Testing", tags: ["Unit Testing", "JavaScript", "tool"], popularity: 0.83},
-    {file: "express", name: "Express", category: "Backend", tags: ["Framework", "Node.js", "tool"], popularity: 0.87}
+    {file: "express", name: "Express", category: "Backend", tags: ["Framework", "Node.js", "tool"], popularity: 0.87},
+    // 添加更多工具以丰富搜索结果
+    {file: "angular", name: "Angular", category: "Frontend", tags: ["Framework", "TypeScript", "tool"], popularity: 0.85},
+    {file: "svelte", name: "Svelte", category: "Frontend", tags: ["Framework", "JavaScript", "tool"], popularity: 0.82},
+    {file: "nextjs", name: "Next.js", category: "Frontend", tags: ["Framework", "React", "tool"], popularity: 0.94},
+    {file: "nuxt", name: "Nuxt.js", category: "Frontend", tags: ["Framework", "Vue", "tool"], popularity: 0.88},
+    {file: "nestjs", name: "NestJS", category: "Backend", tags: ["Framework", "Node.js", "tool"], popularity: 0.86},
+    {file: "mongodb", name: "MongoDB", category: "Database", tags: ["NoSQL", "Document", "tool"], popularity: 0.91},
+    {file: "postgresql", name: "PostgreSQL", category: "Database", tags: ["SQL", "Relational", "tool"], popularity: 0.93},
+    {file: "mysql", name: "MySQL", category: "Database", tags: ["SQL", "Relational", "tool"], popularity: 0.90},
+    {file: "redis", name: "Redis", category: "Database", tags: ["Cache", "Key-Value", "tool"], popularity: 0.89},
+    {file: "nginx", name: "Nginx", category: "DevOps", tags: ["Web Server", "Reverse Proxy", "tool"], popularity: 0.92},
+    {file: "apache", name: "Apache", category: "DevOps", tags: ["Web Server", "tool"], popularity: 0.85},
+    {file: "cypress", name: "Cypress", category: "Testing", tags: ["E2E", "JavaScript", "tool"], popularity: 0.84},
+    {file: "mocha", name: "Mocha", category: "Testing", tags: ["JavaScript", "tool"], popularity: 0.80}
   ];
 }
 
@@ -146,6 +195,8 @@ function showFloatingResults(searchTerm) {
     // 使用备用数据进行搜索
     useFallbackData();
   }
+  console.log('Total tools available for search:', tools.length);
+  console.log('Tools array sample:', JSON.stringify(tools.slice(0, 3)));
   
   // 增强搜索逻辑，确保能根据不同关键词返回不同结果
   // 1. 首先筛选完全匹配
@@ -197,6 +248,28 @@ function showFloatingResults(searchTerm) {
   // 清空浮动结果内容
   searchDOM.floatingResultsContent.innerHTML = '';
   
+  // 更新结果总数 - 确保显示所有匹配结果的真实数量
+  const totalResults = exactMatches.length + partialMatches.length;
+  console.log('Total search results:', totalResults, 'for search term:', searchTerm);
+  console.log('Exact matches:', exactMatches.length, 'Partial matches:', partialMatches.length);
+  console.log('Total tools available:', tools.length);
+  
+  // 双重保障：首先尝试使用searchDOM引用，如果不存在则直接通过ID查找
+  let resultsCountElement = searchDOM.resultsCount;
+  if (!resultsCountElement) {
+    resultsCountElement = document.getElementById('results-count');
+    console.log('Fallback to getElementById for results-count:', !!resultsCountElement);
+  }
+  
+  if (resultsCountElement) {
+    console.log('Updating results count to:', totalResults);
+    resultsCountElement.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''}`;
+    // 同时更新searchDOM引用，确保后续操作正常
+    searchDOM.resultsCount = resultsCountElement;
+  } else {
+    console.error('Critical: resultsCount element not found in DOM');
+  }
+  
   if (floatingFiltered.length === 0) {
     searchDOM.floatingResultsContent.innerHTML = `
       <div class="p-4 text-center text-gray-500 dark:text-gray-400">
@@ -226,7 +299,7 @@ function showFloatingResults(searchTerm) {
       // 点击直接跳转到工具详情页
       item.addEventListener('click', () => {
         if (tool.file) {
-          window.location.href = `/free/detail/${tool.file}.html`;
+          window.location.href = `/free/detail/${tool.file}`;
         } else {
           // 如果没有file属性，使用原始的搜索功能
           performFullSearch(tool.name || searchTerm);
@@ -264,17 +337,27 @@ function createFloatingResultsContainer() {
   // 创建结果内容容器
   const floatingResultsContent = document.createElement('div');
   floatingResultsContent.id = 'floating-results-content';
-  floatingResultsContent.className = 'max-h-[calc(100%-40px)] overflow-y-auto';
+  floatingResultsContent.className = 'max-h-[calc(100%-70px)] overflow-y-auto';
+  
+  // 创建结果总数显示
+  const resultsCount = document.createElement('div');
+  resultsCount.id = 'results-count';
+  resultsCount.className = 'h-6 px-3 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-gray-100 dark:border-gray-700';
+  resultsCount.textContent = '0 results';
   
   // 创建查看全部结果按钮
   const viewAllResultsBtn = document.createElement('button');
   viewAllResultsBtn.id = 'view-all-results';
-  viewAllResultsBtn.className = 'w-full h-10 text-center text-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm font-medium';
+  viewAllResultsBtn.className = 'w-full h-10 text-center text-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm font-medium border-t border-gray-100 dark:border-gray-700';
   viewAllResultsBtn.textContent = 'View all results';
   
   // 组装容器
   floatingResults.appendChild(floatingResultsContent);
+  floatingResults.appendChild(resultsCount);
   floatingResults.appendChild(viewAllResultsBtn);
+  
+  // 更新DOM引用
+  searchDOM.resultsCount = resultsCount;
   
   // 添加到文档中
   document.body.appendChild(floatingResults);
