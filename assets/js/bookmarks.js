@@ -262,41 +262,6 @@ function hidePopup(){
     setTimeout(()=>popup.classList.add('hidden'),200);
 }
 
-// Initialize bookmark button - handle operations only, don't interfere with styles
-function initBookmarkBtn(selector='#bookmarkBtn'){
-    const btn=document.querySelector(selector);
-    if(!btn) return;
-
-    // Update only text content, don't change other styles
-    function updateBtnState(){
-        const isBookmarkedState = isBookmarked();
-        btn.setAttribute('data-bookmarked', isBookmarkedState);
-        // Only update if button has text content, avoid interfering with icon buttons
-        if (btn.textContent.trim()) {
-            btn.textContent=isBookmarkedState?'Remove bookmark':'Add bookmark';
-        }
-    }
-    updateBtnState();
-
-    btn.addEventListener('click',e=>{
-        e.preventDefault();
-        toggleBookmarkCurrent();
-        updateBtnState();
-    });
-
-    // 优化鼠标交互
-    btn.addEventListener('mouseenter',()=>showPopup(btn));
-    btn.addEventListener('mouseleave',()=>{
-        setTimeout(()=>{
-            if(!popup.matches(':hover')) hidePopup();
-        }, 250);
-    });
-    popup.addEventListener('mouseleave',hidePopup);
-    popup.addEventListener('mouseenter',()=>{
-        popup.classList.remove('hidden');
-    });
-}
-
 // 导出
 export function init(){
     // 初始化所有类型的收藏按钮
@@ -307,7 +272,7 @@ export function init(){
     updateExistingBookmarksNames(); // 在初始化时更新所有现有收藏的名称格式
 }
 
-// 重写initBookmarkBtn以支持传入元素或选择器
+// 初始化收藏按钮 - 支持传入选择器字符串或DOM元素
 function initBookmarkBtn(selectorOrElement){
     let btn;
     if(typeof selectorOrElement === 'string'){

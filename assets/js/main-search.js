@@ -17,22 +17,11 @@ let searchDOM = {
 };
 
 // ------------------- 数据加载函数 -------------------
-// 统一的数据加载函数，同时尝试多个数据源
+// 统一的数据加载函数，直接使用本地数据源
 async function loadToolsDataFromAllSources() {
   try {
-    // 尝试从free/tools.json加载数据
-    const response = await fetch('/free/tools.json');
-    console.log('Fetching from free/tools.json:', response.status);
-    
-    if (response.ok) {
-      const data = await response.json();
-      processLoadedData(data, 'free/tools.json');
-      isDataLoaded = true;
-      return;
-    }
-    
-    // 如果free/tools.json加载失败，尝试本地数据源
-    console.warn('Failed to load from free/tools.json, trying local data');
+    // 直接尝试本地数据源
+    console.log('Loading data from local source (assets/data/data.json)');
     const localResponse = await fetch('assets/data/data.json');
     console.log('Fetching from assets/data/data.json:', localResponse.status);
     

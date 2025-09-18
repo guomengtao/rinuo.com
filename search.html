@@ -1,525 +1,667 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>导航示例</title>
+    <title>搜索功能使用指南 | Rinuo</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
+    <!-- 配置Tailwind CSS -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366f1',
-                        secondary: '#a855f7',
-                        dark: '#0f172a',
-                        'dark-light': '#1e293b',
+                        primary: '#3B82F6', // 蓝色主题色
+                        secondary: '#10B981', // 辅助色
+                        neutral: '#6B7280', // 中性色
                     },
-                }
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                },
             }
         }
     </script>
     
+    <!-- 自定义工具类 -->
     <style type="text/tailwindcss">
         @layer utilities {
             .content-auto {
                 content-visibility: auto;
             }
-            .backdrop-blur {
-                backdrop-filter: blur(8px);
+            .code-block {
+                @apply bg-gray-50 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto font-mono text-sm text-gray-800 dark:text-gray-200;
             }
-            .search-result-enter {
-                animation: fadeIn 0.2s ease-out forwards;
+            .section-title {
+                @apply text-2xl font-bold text-gray-900 dark:text-white mb-4;
             }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(4px); }
-                to { opacity: 1; transform: translateY(0); }
+            .card {
+                @apply bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 mb-6 transition-all duration-300 hover:shadow-lg;
             }
         }
     </style>
+    
+    <style>
+        /* 基础样式 */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+        }
+        
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+        
+        /* 深色模式滚动条 */
+        .dark ::-webkit-scrollbar-track {
+            background: #1f2937;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+        
+        /* 动画效果 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+    </style>
+   
 </head>
-<body class="bg-gray-50 dark:bg-dark text-gray-800 dark:text-gray-200 min-h-screen">
-    <!-- 顶部导航栏 -->
-    <header class="sticky top-0 z-40 bg-white/80 dark:bg-dark/80 backdrop-blur border-b border-gray-200 dark:border-gray-800">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <!-- 导航栏 -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-40 transition-all duration-300">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <!-- Logo -->
-            <a href="#" class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center">
-                    <span class="text-white font-bold">N</span>
+            <div class="flex items-center space-x-2">
+                <a href="/" class="text-xl font-bold text-primary">Rinuo</a>
+            </div>
+            
+            <!-- 搜索框 -->
+            <div class="relative hidden md:block flex-grow max-w-md mx-8">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        class="w-full pl-10 pr-10 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                        placeholder="搜索工具、资源..." 
+                        autocomplete="off"
+                    >
+                    <button 
+                        id="clearSearchBtn" 
+                        class="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hidden"
+                    >
+                        <i class="fa fa-times-circle"></i>
+                    </button>
+                    <button 
+                        id="searchButton" 
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary hover:bg-primary/10 p-1 rounded-full transition-colors"
+                    >
+                        <i class="fa fa-search"></i>
+                    </button>
                 </div>
-                <span class="font-semibold text-lg">导航平台</span>
-            </a>
+            </div>
             
-            <!-- 主导航 - 桌面端 -->
-            <nav class="hidden md:flex items-center gap-6">
-                <a href="#categories" class="nav-item flex items-center gap-1.5 py-2 hover:text-primary transition-colors">
-                    <i class="fa fa-th-large"></i>
-                    <span>分类页</span>
-                </a>
-                <a href="#details" class="nav-item flex items-center gap-1.5 py-2 hover:text-primary transition-colors">
-                    <i class="fa fa-file-text"></i>
-                    <span>详情页</span>
-                </a>
-                <a href="#celebrities" class="nav-item flex items-center gap-1.5 py-2 hover:text-primary transition-colors">
-                    <i class="fa fa-users"></i>
-                    <span>开发名人</span>
-                </a>
-            </nav>
-            
-            <!-- 搜索按钮 -->
-            <button id="searchBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-light transition-colors">
-                <i class="fa fa-search text-gray-500"></i>
-                <span class="hidden sm:inline text-sm">搜索</span>
+            <!-- 主题切换按钮 -->
+            <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa fa-moon-o dark:hidden"></i>
+                <i class="fa fa-sun-o hidden dark:inline-block"></i>
             </button>
         </div>
-    </header>
-
-    <!-- 主要内容区 -->
-    <main class="container mx-auto px-4 py-12">
-        <!-- 分类页导航区 -->
-        <section id="categories" class="mb-16">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i class="fa fa-th-large text-primary"></i>
-                分类页导航
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white dark:bg-dark-light rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 class="font-semibold text-lg mb-3">设计资源</h3>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-300">
-                        <li><a href="#" class="hover:text-primary transition-colors">UI设计素材</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">图标资源</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">字体库</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">图片素材</a></li>
-                    </ul>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-light rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 class="font-semibold text-lg mb-3">开发资源</h3>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-300">
-                        <li><a href="#" class="hover:text-primary transition-colors">前端框架</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">后端工具</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">数据库</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">API接口</a></li>
-                    </ul>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-light rounded-xl p-6 border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <h3 class="font-semibold text-lg mb-3">学习资源</h3>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-300">
-                        <li><a href="#" class="hover:text-primary transition-colors">编程教程</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">开发文档</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">在线课程</a></li>
-                        <li><a href="#" class="hover:text-primary transition-colors">实战项目</a></li>
-                    </ul>
+    </nav>
+    
+    <!-- 主要内容 -->
+    <main class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">搜索功能使用指南</h1>
+        
+        <!-- 快速演示区 -->
+        <section class="card mb-12">
+            <h2 class="section-title">快速演示</h2>
+            <p class="mb-4 text-gray-700 dark:text-gray-300">在下方尝试搜索功能的效果：</p>
+            
+            <!-- 演示搜索框 -->
+            <div class="relative max-w-md mx-auto">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="demoSearchInput" 
+                        class="w-full pl-10 pr-10 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+                        placeholder="尝试搜索 'react', 'vue', 'docker'..." 
+                        autocomplete="off"
+                    >
+                    <button 
+                        id="demoClearSearchBtn" 
+                        class="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hidden"
+                    >
+                        <i class="fa fa-times-circle"></i>
+                    </button>
+                    <button 
+                        id="demoSearchButton" 
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary hover:bg-primary/10 p-1 rounded-full transition-colors"
+                    >
+                        <i class="fa fa-search"></i>
+                    </button>
                 </div>
             </div>
         </section>
         
-        <!-- 详情页导航区 -->
-        <section id="details" class="mb-16">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i class="fa fa-file-text text-primary"></i>
-                详情页导航
-            </h2>
-            <div class="bg-white dark:bg-dark-light rounded-xl p-6 border border-gray-200 dark:border-gray-800">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <h3 class="font-semibold text-lg mb-3">热门资源详情</h3>
-                        <ul class="space-y-3">
-                            <li class="pb-3 border-b border-gray-100 dark:border-gray-800">
-                                <a href="#" class="hover:text-primary transition-colors">Tailwind CSS 完全指南</a>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">包含安装、配置及实战示例</p>
-                            </li>
-                            <li class="pb-3 border-b border-gray-100 dark:border-gray-800">
-                                <a href="#" class="hover:text-primary transition-colors">Figma 设计系统搭建</a>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">从基础到高级的设计系统教程</p>
-                            </li>
-                            <li>
-                                <a href="#" class="hover:text-primary transition-colors">React 性能优化技巧</a>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">提升React应用性能的实用方法</p>
-                            </li>
+        <!-- 集成步骤 -->
+        <section class="mb-12">
+            <h2 class="section-title">集成步骤</h2>
+            
+            <!-- 添加搜索元素 -->
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-4">1. 添加搜索元素</h3>
+                <p class="mb-4 text-gray-700 dark:text-gray-300">在您的HTML中添加搜索输入框、清除按钮和搜索按钮：</p>
+                
+                <div class="code-block mb-4">
+<pre>&lt;div class="relative"&gt;
+    &lt;input 
+        type="text" 
+        id="searchInput" 
+        class="w-full pl-10 pr-10 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all" 
+        placeholder="搜索工具、资源..." 
+        autocomplete="off"
+    &gt;
+    &lt;button 
+        id="clearSearchBtn" 
+        class="absolute right-10 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hidden"
+    &gt;
+        &lt;i class="fa fa-times-circle"&gt;&lt;/i&gt;
+    &lt;/button&gt;
+    &lt;button 
+        id="searchButton" 
+        class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary hover:bg-primary/10 p-1 rounded-full transition-colors"
+    &gt;
+        &lt;i class="fa fa-search"&gt;&lt;/i&gt;
+    &lt;/button&gt;
+&lt;/div&gt;</pre>
+                </div>
+                
+                <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border-l-4 border-blue-500">
+                    <p class="text-blue-700 dark:text-blue-300 text-sm"><i class="fa fa-info-circle mr-2"></i> 重要提示：确保添加 <code class="bg-blue-100 dark:bg-blue-800 px-1 rounded">autocomplete="off"</code> 属性以防止浏览器自动填充干扰搜索体验。</p>
+                </div>
+            </div>
+            
+            <!-- 浮动搜索结果实现原理 -->
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-4">2. 浮动搜索结果实现原理</h3>
+                <p class="mb-4 text-gray-700 dark:text-gray-300">搜索功能会动态创建一个浮动结果容器，并在用户输入时显示相关结果。当用户点击结果项时，会跳转到相应的工具详情页。</p>
+                
+                <div class="bg-gray-100 dark:bg-gray-700 p-6 rounded-lg mb-4">
+                    <h4 class="font-medium mb-3">核心工作流程：</h4>
+                    <ol class="list-decimal list-inside space-y-2 text-gray-700 dark:text-gray-300">
+                        <li>监听搜索框的 <code class="bg-gray-200 dark:bg-gray-600 px-1 rounded">input</code> 事件</li>
+                        <li>根据输入内容过滤工具数据</li>
+                        <li>动态创建并定位浮动结果容器</li>
+                        <li>渲染匹配的搜索结果</li>
+                        <li>处理结果项的点击事件</li>
+                        <li>监听页面点击事件，点击外部时关闭浮动结果</li>
+                    </ol>
+                </div>
+            </div>
+            
+            <!-- 最佳实践 -->
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-4">3. 最佳实践</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border-l-4 border-green-500">
+                        <h4 class="font-medium text-green-700 dark:text-green-300 mb-2">推荐做法</h4>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 text-sm">
+                            <li>始终为搜索框添加 <code class="bg-green-100 dark:bg-green-800 px-1 rounded">autocomplete="off"</code> 属性</li>
+                            <li>确保页面中只有一个 ID 为 "searchInput" 的元素</li>
+                            <li>为移动设备优化搜索体验</li>
+                            <li>实现键盘导航支持</li>
                         </ul>
                     </div>
-                    
-                    <div>
-                        <h3 class="font-semibold text-lg mb-3">最新更新详情</h3>
-                        <ul class="space-y-3">
-                            <li class="pb-3 border-b border-gray-100 dark:border-gray-800">
-                                <a href="#" class="hover:text-primary transition-colors">Vue 3 组件设计模式</a>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">发布于 2 天前</p>
-                            </li>
-                            <li class="pb-3 border-b border-gray-100 dark:border-gray-800">
-                                <a href="#" class="hover:text-primary transition-colors">TypeScript 高级类型</a>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">发布于 5 天前</p>
-                            </li>
-                            <li>
-                                <a href="#" class="hover:text-primary transition-colors">Docker 容器化最佳实践</a>
-                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">发布于 1 周前</p>
-                            </li>
+                    <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg border-l-4 border-red-500">
+                        <h4 class="font-medium text-red-700 dark:text-red-300 mb-2">避免做法</h4>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300 text-sm">
+                            <li>不要在同一页面上使用重复的元素ID</li>
+                            <li>不要忽略移动端的搜索体验</li>
+                            <li>避免使用复杂的CSS选择器定位搜索元素</li>
+                            <li>不要禁用浏览器默认的可访问性特性</li>
                         </ul>
                     </div>
                 </div>
             </div>
-        </section>
-        
-        <!-- 开发名人导航区 -->
-        <section id="celebrities" class="mb-16">
-            <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
-                <i class="fa fa-users text-primary"></i>
-                开发名人
-            </h2>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white dark:bg-dark-light rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-40 bg-gradient-to-r from-blue-500 to-indigo-600 relative">
-                        <img src="https://picsum.photos/id/1/300/300" alt="开发者头像" class="w-20 h-20 rounded-full border-4 border-white dark:border-dark-light absolute -bottom-10 left-6">
+            
+            <!-- 常见问题 -->
+            <div class="card">
+                <h3 class="text-xl font-semibold mb-4">4. 常见问题</h3>
+                <div class="space-y-4">
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <h4 class="font-medium mb-2">搜索结果不显示怎么办？</h4>
+                        <p class="text-gray-700 dark:text-gray-300 text-sm">确保您的页面中正确加载了main.js文件，并且页面上存在ID为"searchInput"的输入元素。检查浏览器控制台是否有错误信息。</p>
                     </div>
-                    <div class="pt-12 p-6">
-                        <h3 class="font-semibold text-lg">张小明</h3>
-                        <p class="text-primary text-sm mb-3">前端架构师</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">专注于React生态系统和前端工程化</p>
-                        <a href="#" class="text-sm text-primary hover:underline">查看详情</a>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <h4 class="font-medium mb-2">如何自定义搜索结果的样式？</h4>
+                        <p class="text-gray-700 dark:text-gray-300 text-sm">浮动结果容器会动态创建，您可以通过修改CSS来调整其样式。建议在main-search.js中扩展或修改相关代码。</p>
                     </div>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-light rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-40 bg-gradient-to-r from-green-500 to-teal-600 relative">
-                        <img src="https://picsum.photos/id/2/300/300" alt="开发者头像" class="w-20 h-20 rounded-full border-4 border-white dark:border-dark-light absolute -bottom-10 left-6">
-                    </div>
-                    <div class="pt-12 p-6">
-                        <h3 class="font-semibold text-lg">李华</h3>
-                        <p class="text-primary text-sm mb-3">全栈开发者</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">精通Node.js和移动端跨平台开发</p>
-                        <a href="#" class="text-sm text-primary hover:underline">查看详情</a>
-                    </div>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-light rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-40 bg-gradient-to-r from-purple-500 to-pink-600 relative">
-                        <img src="https://picsum.photos/id/3/300/300" alt="开发者头像" class="w-20 h-20 rounded-full border-4 border-white dark:border-dark-light absolute -bottom-10 left-6">
-                    </div>
-                    <div class="pt-12 p-6">
-                        <h3 class="font-semibold text-lg">王芳</h3>
-                        <p class="text-primary text-sm mb-3">UI/UX设计师</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">专注于用户体验和交互设计</p>
-                        <a href="#" class="text-sm text-primary hover:underline">查看详情</a>
-                    </div>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-light rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="h-40 bg-gradient-to-r from-amber-500 to-orange-600 relative">
-                        <img src="https://picsum.photos/id/4/300/300" alt="开发者头像" class="w-20 h-20 rounded-full border-4 border-white dark:border-dark-light absolute -bottom-10 left-6">
-                    </div>
-                    <div class="pt-12 p-6">
-                        <h3 class="font-semibold text-lg">赵强</h3>
-                        <p class="text-primary text-sm mb-3">后端架构师</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">分布式系统和云计算专家</p>
-                        <a href="#" class="text-sm text-primary hover:underline">查看详情</a>
+                    <div class="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                        <h4 class="font-medium mb-2">搜索功能在移动端不工作？</h4>
+                        <p class="text-gray-700 dark:text-gray-300 text-sm">确保您的响应式设计正确处理了搜索元素。在移动设备上，可能需要特别注意点击事件和触摸交互。</p>
                     </div>
                 </div>
             </div>
         </section>
     </main>
-
-    <!-- 搜索模态框 -->
-    <div id="searchModal" class="fixed inset-0 z-50 flex items-start justify-center pt-20 opacity-0 invisible transition-all duration-300">
-        <!-- 背景遮罩 -->
-        <div id="modalOverlay" class="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
-        
-        <!-- 搜索框容器 -->
-        <div class="relative w-full max-w-2xl bg-white dark:bg-dark-light rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden transform transition-transform duration-300 scale-95">
-            <div class="p-6">
-                <div class="flex items-center gap-3 mb-4">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-r from-primary to-secondary flex items-center justify-center flex-shrink-0">
-                        <i class="fa fa-search text-white"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold">搜索资源</h3>
-                    <span class="ml-auto text-sm text-gray-500 bg-gray-100 dark:bg-dark px-2 py-1 rounded">按 Esc 关闭</span>
-                </div>
-                
-                <div class="relative">
-                    <input 
-                        type="text" 
-                        id="searchInput" 
-                        placeholder="搜索分类、详情或开发名人..." 
-                        class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-dark focus:outline-none focus:ring-2 focus:ring-primary/50 dark:text-white"
-                    >
-                    <button id="closeSearchBtn" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                        <i class="fa fa-times"></i>
-                    </button>
-                </div>
-                
-                <!-- 搜索提示 -->
-                <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    例如: <span class="text-primary">React</span>、<span class="text-primary">UI设计</span>、<span class="text-primary">张小明</span>
-                </div>
-            </div>
-            
-            <!-- 搜索结果区域 -->
-            <div id="searchResults" class="border-t border-gray-200 dark:border-gray-800 max-h-[60vh] overflow-y-auto">
-                <div class="p-6 text-center text-gray-500 dark:text-gray-400" id="initialState">
-                    输入关键词开始搜索
-                </div>
-                
-                <div id="resultsContainer" class="hidden">
-                    <!-- 搜索结果会通过JS动态插入 -->
-                </div>
-                
-                <div id="loadingState" class="p-6 text-center hidden">
-                    <i class="fa fa-spinner fa-spin text-primary"></i>
-                    <p class="mt-2 text-gray-500 dark:text-gray-400">搜索中...</p>
-                </div>
-                
-                <div id="emptyState" class="p-6 text-center hidden">
-                    <i class="fa fa-search text-4xl text-gray-300 dark:text-gray-600 mb-3"></i>
-                    <p class="text-gray-500 dark:text-gray-400">未找到匹配结果</p>
-                </div>
-            </div>
+    
+    <!-- 页脚 -->
+    <footer class="bg-white dark:bg-gray-800 py-6 mt-12">
+        <div class="container mx-auto px-4 text-center text-gray-600 dark:text-gray-400 text-sm">
+            <p>&copy; 2023 Rinuo. 保留所有权利。</p>
         </div>
-    </div>
-
+    </footer>
+    
     <script>
-        // 模拟搜索数据
-        const searchData = {
-            categories: [
-                { id: 1, name: 'UI设计素材', type: '分类页', url: '#categories' },
-                { id: 2, name: '前端框架', type: '分类页', url: '#categories' },
-                { id: 3, name: '编程教程', type: '分类页', url: '#categories' },
-                { id: 4, name: '图标资源', type: '分类页', url: '#categories' },
-                { id: 5, name: '后端工具', type: '分类页', url: '#categories' }
-            ],
-            details: [
-                { id: 101, name: 'Tailwind CSS 完全指南', type: '详情页', url: '#details' },
-                { id: 102, name: 'React 性能优化技巧', type: '详情页', url: '#details' },
-                { id: 103, name: 'Vue 3 组件设计模式', type: '详情页', url: '#details' },
-                { id: 104, name: 'TypeScript 高级类型', type: '详情页', url: '#details' }
-            ],
-            celebrities: [
-                { id: 201, name: '张小明', type: '开发名人', title: '前端架构师', url: '#celebrities' },
-                { id: 202, name: '李华', type: '开发名人', title: '全栈开发者', url: '#celebrities' },
-                { id: 203, name: '王芳', type: '开发名人', title: 'UI/UX设计师', url: '#celebrities' },
-                { id: 204, name: '赵强', type: '开发名人', title: '后端架构师', url: '#celebrities' }
-            ]
-        };
-
-        // DOM元素
-        const searchModal = document.getElementById('searchModal');
-        const searchBtn = document.getElementById('searchBtn');
-        const closeSearchBtn = document.getElementById('closeSearchBtn');
-        const modalOverlay = document.getElementById('modalOverlay');
-        const searchInput = document.getElementById('searchInput');
-        const searchResults = document.getElementById('searchResults');
-        const initialState = document.getElementById('initialState');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const loadingState = document.getElementById('loadingState');
-        const emptyState = document.getElementById('emptyState');
-
-        // 打开搜索模态框
-        function openSearchModal() {
-            searchModal.classList.remove('opacity-0', 'invisible');
-            searchModal.querySelector('div[class*="scale-"]').classList.remove('scale-95');
-            searchModal.querySelector('div[class*="scale-"]').classList.add('scale-100');
-            setTimeout(() => {
-                searchInput.focus();
-            }, 300);
-        }
-
-        // 关闭搜索模态框
-        function closeSearchModal() {
-            searchModal.classList.add('opacity-0', 'invisible');
-            searchModal.querySelector('div[class*="scale-"]').classList.remove('scale-100');
-            searchModal.querySelector('div[class*="scale-"]').classList.add('scale-95');
-            searchInput.value = '';
-            resetSearchResults();
-        }
-
-        // 重置搜索结果
-        function resetSearchResults() {
-            initialState.classList.remove('hidden');
-            resultsContainer.classList.add('hidden');
-            loadingState.classList.add('hidden');
-            emptyState.classList.add('hidden');
-            resultsContainer.innerHTML = '';
-        }
-
-        // 执行搜索
-        function performSearch(query) {
-            if (!query.trim()) {
-                resetSearchResults();
-                return;
-            }
-
-            // 显示加载状态
-            initialState.classList.add('hidden');
-            resultsContainer.classList.add('hidden');
-            loadingState.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-
-            // 模拟搜索延迟
-            setTimeout(() => {
-                const lowerQuery = query.toLowerCase();
-                const matchedResults = [];
-
-                // 搜索分类
-                searchData.categories.forEach(item => {
-                    if (item.name.toLowerCase().includes(lowerQuery)) {
-                        matchedResults.push(item);
-                    }
-                });
-
-                // 搜索详情
-                searchData.details.forEach(item => {
-                    if (item.name.toLowerCase().includes(lowerQuery)) {
-                        matchedResults.push(item);
-                    }
-                });
-
-                // 搜索开发名人
-                searchData.celebrities.forEach(item => {
-                    if (item.name.toLowerCase().includes(lowerQuery) || 
-                        (item.title && item.title.toLowerCase().includes(lowerQuery))) {
-                        matchedResults.push(item);
-                    }
-                });
-
-                // 显示结果
-                loadingState.classList.add('hidden');
-                
-                if (matchedResults.length > 0) {
-                    displayResults(matchedResults);
-                    resultsContainer.classList.remove('hidden');
-                } else {
-                    emptyState.classList.remove('hidden');
-                }
-            }, 500);
-        }
-
-        // 显示搜索结果
-        function displayResults(results) {
-            resultsContainer.innerHTML = '';
+        // 搜索功能核心实现
+        function initializeSearchFunctionality() {
+            console.log('🔍 DOMContentLoaded 事件触发，准备初始化搜索功能');
             
-            // 按类型分组
-            const groupedResults = {};
-            results.forEach(result => {
-                if (!groupedResults[result.type]) {
-                    groupedResults[result.type] = [];
+            // 检查是否已加载main.js
+            if (window.__hasMainJsLoaded !== false) {
+                // 如果main.js可能已经加载，检查是否存在initSearch函数
+                if (typeof window.initSearch === 'function') {
+                    console.log('🔍 检测到main-search.js已加载，使用原生搜索功能');
+                    return; // 由main-search.js处理搜索功能
                 }
-                groupedResults[result.type].push(result);
+            }
+            
+            // 初始化搜索DOM元素引用
+            const searchDOM = {
+                searchInput: document.getElementById('searchInput'),
+                clearSearchBtn: document.getElementById('clearSearchBtn'),
+                searchButton: document.getElementById('searchButton'),
+                floatingResults: null,
+                floatingResultsContent: null,
+                viewAllResultsBtn: null
+            };
+            
+            // 检查搜索元素加载状态
+            console.log('🔍 搜索元素加载状态:', {
+                searchInput: !!searchDOM.searchInput,
+                clearSearchBtn: !!searchDOM.clearSearchBtn,
+                searchButton: !!searchDOM.searchButton
             });
-
-            // 生成HTML
-            Object.keys(groupedResults).forEach(type => {
-                const typeSection = document.createElement('div');
-                typeSection.className = 'p-4 border-b border-gray-200 dark:border-gray-800';
+            
+            // 备用搜索数据
+            const fallbackTools = [
+                {file: "react", name: "React", category: "Frontend", tags: ["Framework", "JavaScript", "UI"], popularity: 0.95},
+                {file: "vue", name: "Vue", category: "Frontend", tags: ["Framework", "JavaScript"], popularity: 0.90},
+                {file: "nodejs", name: "Node.js", category: "Backend", tags: ["JavaScript", "Runtime"], popularity: 0.92},
+                {file: "docker", name: "Docker", category: "DevOps", tags: ["Containerization", "Deployment"], popularity: 0.88},
+                {file: "git", name: "Git", category: "DevTools", tags: ["Version Control", "Collaboration"], popularity: 0.97},
+                {file: "typescript", name: "TypeScript", category: "Language", tags: ["JavaScript", "Typed"], popularity: 0.85}
+            ];
+            
+            // 动态创建浮动结果容器
+            function createFloatingResultsContainer() {
+                // 检查是否已存在浮动结果容器
+                searchDOM.floatingResults = document.getElementById('floating-results');
+                if (searchDOM.floatingResults) {
+                    searchDOM.floatingResultsContent = document.getElementById('floating-results-content');
+                    searchDOM.viewAllResultsBtn = document.getElementById('view-all-results');
+                    return;
+                }
                 
-                typeSection.innerHTML = `
-                    <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">${type}</h4>
-                    <ul class="space-y-2">
-                        ${groupedResults[type].map(item => `
-                            <li>
-                                <a href="${item.url}" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark transition-colors">
-                                    <div class="w-8 h-8 rounded bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                        <i class="fa ${getIconForType(item.type)} text-primary"></i>
-                                    </div>
-                                    <div class="text-left">
-                                        <div class="font-medium">${highlightMatch(item.name, searchInput.value)}</div>
-                                        ${item.title ? `<div class="text-sm text-gray-500 dark:text-gray-400">${item.title}</div>` : ''}
-                                    </div>
-                                </a>
-                            </li>
-                        `).join('')}
-                    </ul>
-                `;
+                // 创建浮动结果容器
+                const floatingResults = document.createElement('div');
+                floatingResults.id = 'floating-results';
+                floatingResults.className = 'hidden fixed z-50 w-64 sm:w-80 md:w-96 max-h-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden';
                 
-                resultsContainer.appendChild(typeSection);
+                // 创建结果内容容器
+                const floatingResultsContent = document.createElement('div');
+                floatingResultsContent.id = 'floating-results-content';
+                floatingResultsContent.className = 'max-h-[calc(100%-40px)] overflow-y-auto';
                 
-                // 添加动画效果
-                const items = typeSection.querySelectorAll('li');
-                items.forEach((item, index) => {
-                    setTimeout(() => {
-                        item.classList.add('search-result-enter');
-                    }, 50 * index);
-                });
-            });
-        }
-
-        // 根据类型获取图标
-        function getIconForType(type) {
-            switch(type) {
-                case '分类页': return 'fa-th-large';
-                case '详情页': return 'fa-file-text';
-                case '开发名人': return 'fa-user';
-                default: return 'fa-search';
+                // 创建查看全部结果按钮
+                const viewAllResultsBtn = document.createElement('button');
+                viewAllResultsBtn.id = 'view-all-results';
+                viewAllResultsBtn.className = 'w-full h-10 text-center text-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm font-medium';
+                viewAllResultsBtn.textContent = 'View all results';
+                
+                // 组装容器
+                floatingResults.appendChild(floatingResultsContent);
+                floatingResults.appendChild(viewAllResultsBtn);
+                
+                // 添加到文档中
+                document.body.appendChild(floatingResults);
+                
+                // 更新DOM引用
+                searchDOM.floatingResults = floatingResults;
+                searchDOM.floatingResultsContent = floatingResultsContent;
+                searchDOM.viewAllResultsBtn = viewAllResultsBtn;
             }
-        }
-
-        // 高亮匹配的文本
-        function highlightMatch(text, query) {
-            if (!query) return text;
-            const lowerText = text.toLowerCase();
-            const lowerQuery = query.toLowerCase();
-            const index = lowerText.indexOf(lowerQuery);
             
-            if (index === -1) return text;
+            // 更新浮动结果位置
+            function updateFloatingResultsPosition() {
+                if (!searchDOM.floatingResults || !searchDOM.searchInput) return;
+                
+                const inputRect = searchDOM.searchInput.getBoundingClientRect();
+                
+                // 设置浮动结果位置在搜索框下方
+                searchDOM.floatingResults.style.left = `${inputRect.left}px`;
+                searchDOM.floatingResults.style.top = `${inputRect.bottom + 8}px`;
+                searchDOM.floatingResults.style.width = `${inputRect.width}px`;
+            }
             
-            const before = text.substring(0, index);
-            const match = text.substring(index, index + query.length);
-            const after = text.substring(index + query.length);
-            
-            return `${before}<span class="bg-yellow-200 dark:bg-yellow-900/30 px-0.5 rounded">${match}</span>${after}`;
-        }
-
-        // 事件监听
-        searchBtn.addEventListener('click', openSearchModal);
-        closeSearchBtn.addEventListener('click', closeSearchModal);
-        modalOverlay.addEventListener('click', closeSearchModal);
-
-        // 搜索输入事件
-        searchInput.addEventListener('input', (e) => {
-            performSearch(e.target.value);
-        });
-
-        // 键盘事件监听
-        document.addEventListener('keydown', (e) => {
-            // Command+K 打开搜索
-            if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-                e.preventDefault();
-                if (searchModal.classList.contains('invisible')) {
-                    openSearchModal();
+            // 执行搜索
+            function performSearch(searchTerm) {
+                if (!searchTerm.trim() || !searchDOM.floatingResults || !searchDOM.floatingResultsContent) {
+                    if (searchDOM.floatingResults) {
+                        searchDOM.floatingResults.classList.add('hidden');
+                    }
+                    return;
+                }
+                
+                // 构建搜索词的小写形式用于比较
+                const lowerSearchTerm = searchTerm.toLowerCase().trim();
+                
+                // 搜索逻辑：先完全匹配，再部分匹配
+                const exactMatches = fallbackTools.filter(tool => 
+                    (tool.name.toLowerCase() === lowerSearchTerm) ||
+                    (tool.tags.some(tag => tag.toLowerCase() === lowerSearchTerm))
+                );
+                
+                // 排除已经在完全匹配中的工具
+                const partialMatches = fallbackTools.filter(tool => {
+                    const isInExactMatches = exactMatches.some(exact => exact.name === tool.name);
+                    if (isInExactMatches) return false;
+                    
+                    const nameMatch = tool.name.toLowerCase().includes(lowerSearchTerm);
+                    const tagsMatch = tool.tags.some(tag => tag.toLowerCase().includes(lowerSearchTerm));
+                    const categoryMatch = tool.category.toLowerCase().includes(lowerSearchTerm);
+                    
+                    return nameMatch || tagsMatch || categoryMatch;
+                });
+                
+                // 合并结果：完全匹配在前，部分匹配在后
+                const filteredResults = [...exactMatches, ...partialMatches].slice(0, 6);
+                
+                // 清空浮动结果内容
+                searchDOM.floatingResultsContent.innerHTML = '';
+                
+                if (filteredResults.length === 0) {
+                    searchDOM.floatingResultsContent.innerHTML = `
+                        <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+                            <p class="text-sm">No results found</p>
+                        </div>
+                    `;
                 } else {
-                    closeSearchModal();
+                    // 渲染搜索结果项
+                    filteredResults.forEach((tool) => {
+                        const item = document.createElement('div');
+                        item.className = 'h-12 px-3 py-2 flex items-center justify-between rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer';
+                        item.innerHTML = `
+                            <div class="flex items-center gap-3 min-w-0">
+                                <div class="w-6 h-6 bg-primary/10 dark:bg-primary/20 rounded flex items-center justify-center text-primary flex-shrink-0">
+                                    <i class="fa fa-wrench text-xs"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">${tool.name}</h4>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 whitespace-nowrap">
+                                <span class="text-xs text-gray-500 dark:text-gray-400">${tool.category}</span>
+                                <span class="text-xs text-primary">${Math.round(tool.popularity * 100)}%</span>
+                            </div>
+                        `;
+                        
+                        // 点击直接跳转到工具详情页
+                        item.addEventListener('click', () => {
+                            window.location.href = `/free/detail/${tool.file}.html`;
+                        });
+                        
+                        searchDOM.floatingResultsContent.appendChild(item);
+                    });
+                }
+                
+                // 更新浮动结果位置并显示
+                updateFloatingResultsPosition();
+                searchDOM.floatingResults.classList.remove('hidden');
+            }
+            
+            // 清空搜索
+            function clearSearch() {
+                if (searchDOM.searchInput) {
+                    searchDOM.searchInput.value = '';
+                }
+                if (searchDOM.clearSearchBtn) {
+                    searchDOM.clearSearchBtn.classList.add('hidden');
+                }
+                if (searchDOM.floatingResults) {
+                    searchDOM.floatingResults.classList.add('hidden');
                 }
             }
             
-            // Esc 关闭搜索
-            if (e.key === 'Escape' && !searchModal.classList.contains('invisible')) {
-                closeSearchModal();
-            }
-        });
-
-        // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
+            // 初始化搜索功能
+            function initSearch() {
+                try {
+                    // 动态创建浮动结果容器
+                    createFloatingResultsContainer();
+                    
+                    // 添加事件监听
+                    if (searchDOM.searchInput) {
+                        searchDOM.searchInput.addEventListener('input', function() {
+                            // 显示/隐藏清除按钮
+                            if (searchDOM.clearSearchBtn) {
+                                if (this.value) {
+                                    searchDOM.clearSearchBtn.classList.remove('hidden');
+                                } else {
+                                    searchDOM.clearSearchBtn.classList.add('hidden');
+                                    clearSearch();
+                                    return;
+                                }
+                            }
+                            
+                            // 执行搜索
+                            performSearch(this.value);
+                        });
+                        
+                        // 添加回车键搜索支持
+                        searchDOM.searchInput.addEventListener('keyup', function(e) {
+                            if (e.key === 'Enter' && this.value.trim()) {
+                                // 跳转到搜索结果页
+                                const searchParams = new URLSearchParams();
+                                searchParams.append('q', this.value.trim());
+                                window.location.href = `/free/index.html?${searchParams.toString()}`;
+                            }
+                        });
+                    }
+                    
+                    if (searchDOM.clearSearchBtn) {
+                        searchDOM.clearSearchBtn.addEventListener('click', clearSearch);
+                    }
+                    
+                    if (searchDOM.searchButton) {
+                        searchDOM.searchButton.addEventListener('click', function() {
+                            if (searchDOM.searchInput && searchDOM.searchInput.value.trim()) {
+                                // 跳转到搜索结果页
+                                const searchParams = new URLSearchParams();
+                                searchParams.append('q', searchDOM.searchInput.value.trim());
+                                window.location.href = `/free/index.html?${searchParams.toString()}`;
+                            }
+                        });
+                    }
+                    
+                    if (searchDOM.viewAllResultsBtn) {
+                        searchDOM.viewAllResultsBtn.addEventListener('click', function() {
+                            if (searchDOM.searchInput && searchDOM.searchInput.value.trim()) {
+                                // 跳转到搜索结果页
+                                const searchParams = new URLSearchParams();
+                                searchParams.append('q', searchDOM.searchInput.value.trim());
+                                window.location.href = `/free/index.html?${searchParams.toString()}`;
+                            }
+                        });
+                    }
+                    
+                    // 添加点击外部关闭浮动结果的功能
+                    document.addEventListener('click', function(e) {
+                        if (searchDOM.searchInput && searchDOM.floatingResults && 
+                            !searchDOM.searchInput.contains(e.target) && 
+                            !searchDOM.floatingResults.contains(e.target)) {
+                            searchDOM.floatingResults.classList.add('hidden');
+                        }
                     });
                     
-                    // 如果搜索框是打开的，则关闭
-                    if (!searchModal.classList.contains('invisible')) {
-                        closeSearchModal();
+                    // 阻止事件冒泡，防止点击浮动结果时关闭
+                    if (searchDOM.floatingResults) {
+                        searchDOM.floatingResults.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                        });
                     }
+                    
+                    console.log('🔍 备用搜索功能初始化完成');
+                    
+                } catch (error) {
+                    console.error('🔍 备用搜索功能初始化错误:', error);
                 }
-            });
+            }
+            
+            // 初始化搜索功能
+            initSearch();
+            
+            // 为演示搜索框添加特殊处理
+            const demoSearchInput = document.getElementById('demoSearchInput');
+            const demoClearSearchBtn = document.getElementById('demoClearSearchBtn');
+            const demoSearchButton = document.getElementById('demoSearchButton');
+            
+            if (demoSearchInput && demoClearSearchBtn && demoSearchButton) {
+                // 输入事件处理
+                demoSearchInput.addEventListener('input', function() {
+                    console.log('🔍 演示搜索框输入内容:', this.value);
+                    
+                    // 同步到主搜索框以触发搜索功能
+                    if (searchDOM.searchInput) {
+                        searchDOM.searchInput.value = this.value;
+                        
+                        // 触发input事件以更新搜索状态
+                        const inputEvent = new Event('input', { bubbles: true });
+                        searchDOM.searchInput.dispatchEvent(inputEvent);
+                        console.log('🔍 主搜索框事件已触发');
+                    } else {
+                        console.warn('🔍 警告: 找不到主搜索框元素');
+                    }
+                    
+                    // 显示/隐藏清除按钮
+                    if (this.value) {
+                        demoClearSearchBtn.classList.remove('hidden');
+                    } else {
+                        demoClearSearchBtn.classList.add('hidden');
+                    }
+                });
+                
+                // 清除按钮点击事件
+                demoClearSearchBtn.addEventListener('click', function() {
+                    demoSearchInput.value = '';
+                    demoClearSearchBtn.classList.add('hidden');
+                    
+                    // 同步到主搜索框
+                    if (searchDOM.searchInput) {
+                        searchDOM.searchInput.value = '';
+                        clearSearch();
+                    }
+                });
+                
+                // 搜索按钮点击事件
+                demoSearchButton.addEventListener('click', function() {
+                    if (demoSearchInput.value.trim()) {
+                        // 跳转到搜索结果页
+                        const searchParams = new URLSearchParams();
+                        searchParams.append('q', demoSearchInput.value.trim());
+                        window.location.href = `/free/index.html?${searchParams.toString()}`;
+                    }
+                });
+                
+                // 回车键搜索
+                demoSearchInput.addEventListener('keyup', function(e) {
+                    if (e.key === 'Enter' && this.value.trim()) {
+                        // 跳转到搜索结果页
+                        const searchParams = new URLSearchParams();
+                        searchParams.append('q', this.value.trim());
+                        window.location.href = `/free/index.html?${searchParams.toString()}`;
+                    }
+                });
+            }
+            
+            // 检查浮动结果容器状态
+            setTimeout(() => {
+                const floatingResults = document.getElementById('floating-results');
+                console.log('🔍 浮动结果容器状态:', {
+                    exists: !!floatingResults,
+                    visibility: floatingResults ? window.getComputedStyle(floatingResults).display : 'N/A'
+                });
+            }, 1000);
+        }
+        
+        // 主题切换功能
+        document.addEventListener('DOMContentLoaded', function() {
+            // 主题切换功能
+            const themeToggle = document.getElementById('themeToggle');
+            
+            // 检查主题切换按钮是否存在
+            if (themeToggle) {
+                // 初始化主题
+                if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                
+                // 添加点击事件
+                themeToggle.addEventListener('click', function() {
+                    document.documentElement.classList.toggle('dark');
+                    localStorage.theme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+                });
+            } else {
+                console.warn('🔍 警告: 未找到主题切换按钮元素');
+            }
+        });
+        
+        // 监听页面加载完成事件
+        window.addEventListener('load', function() {
+            console.log('🔍 页面加载完成，检查搜索功能状态');
+            
+            // 检查浮动结果容器状态
+            const floatingResults = document.getElementById('floating-results');
+            if (!floatingResults) {
+                console.log('🔍 注意：浮动结果容器尚未创建，请尝试在搜索框中输入内容');
+            }
         });
     </script>
-<script type="module" src="/main.js"></script>
+    <script type="module" src="assets/js/main-search.js"></script>
 </body>
 </html>
