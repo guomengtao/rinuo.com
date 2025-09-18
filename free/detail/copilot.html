@@ -1,1316 +1,1234 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GitHub Copilot 介绍 | 夜间版</title>
-  <!-- 引入Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- 引入Font Awesome -->
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <!-- 引入Chart.js -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-  <!-- 配置Tailwind自定义颜色和字体 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#5E6AD2',
-            secondary: '#10B981',
-            dark: '#121826',
-            darker: '#0A0F1C',
-            light: '#E2E8F0',
-            accent: '#00B42A',
-            warning: '#FF7D00',
-            danger: '#F53F3F'
-          },
-          fontFamily: {
-            inter: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .text-gradient {
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .bg-glass {
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
-      }
-      @keyframes float {
-        0% { transform: translateY(0px); }
-        50% { transform: translateY(-20px); }
-        100% { transform: translateY(0px); }
-      }
-    }
-  </style>
-  <!-- 预加载字体 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Copilot - AI Pair Programmer</title>
+    <meta name="description" content="GitHub Copilot is your AI pair programmer that helps you write better code faster. Learn about its features, technology stack, origin, and how to use it for free.">
+    <meta name="keywords" content="GitHub Copilot, AI programmer, AI coding assistant, OpenAI, Microsoft, pair programming, machine learning">
+    <meta name="author" content="GitHub Copilot Team">
+    <meta property="og:title" content="GitHub Copilot - AI Pair Programmer">
+    <meta property="og:description" content="AI-powered coding assistant developed by GitHub and OpenAI">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/free/detail/copilot">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="GitHub Copilot">
+    <meta name="twitter:description" content="Your AI pair programmer that helps you write better code faster">
+    <link rel="canonical" href="https://example.com/free/detail/copilot">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2eaadc',
+                        secondary: '#f59e0b',
+                        dark: {
+                            bg: '#121212',
+                            card: '#1e1e1e',
+                            text: '#e0e0e0'
+                        },
+                        light: {
+                            bg: '#f8fafc',
+                            card: '#ffffff',
+                            text: '#1e293b'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'fade-in': 'fadeIn 0.5s ease-in-out'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-bg {
+                transition: background-color 0.3s ease;
+            }
+            .transition-color {
+                transition: color 0.3s ease;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .gradient-text {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(to right, #2eaadc, #3b82f6);
+            }
+        }
+    </style>
 </head>
-<body class="font-inter bg-darker text-light min-h-screen flex flex-col">
-  <!-- 导航栏 -->
-                 
-                 <header id="navbar" class="fixed w-full z-50 transition-all duration-300 bg-darker/80 bg-glass">
-    <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-          <i class="fa fa-code text-2xl text-darker"></i>
-        
-            <!-- 搜索框 -->
-            <div class="hidden md:flex mx-4 items-center relative">
-                <div class="relative w-64">
-                    <input type="text" id="searchInput" placeholder="搜索开发资源..." 
-                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                    <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-search"></i>
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-bg duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="fixed top-0 left-0 h-1 bg-primary transform origin-left transition-transform duration-200" style="transform: scaleX(0)"></div>
+
+    <!-- Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 z-50 bg-white/90 dark:bg-dark-card/90 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <nav class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                    </svg>
+                    <span class="font-bold text-xl">Copilot</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="hover:text-primary transition-color">Features</a>
+                    <a href="#technology" class="hover:text-primary transition-color">Technology</a>
+                    <a href="#origin" class="hover:text-primary transition-color">Origin</a>
+                    <a href="#reviews" class="hover:text-primary transition-color">Reviews</a>
+                    <a href="#pricing" class="hover:text-primary transition-color">Pricing</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <!-- Search Box -->
+                    <div class="hidden md:block relative">
+                        <input type="text" id="searchInput" autocomplete="off" 
+                               class="pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 w-48 lg:w-64 transition-all duration-300"
+                               placeholder="Search...">
+                        <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    
+                    <!-- Theme Toggle Button -->
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i id="themeIcon" class="fa fa-moon-o text-xl"></i>
+                    </button>
+                    
+                    <!-- Bookmark Button -->
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fa fa-bookmark-o text-xl"></i>
                     </button>
                 </div>
-                <!-- 搜索结果浮动容器 -->
-                <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-                    <div id="searchResults" class="max-h-80 overflow-y-auto">
-                        <!-- 搜索结果将在这里动态生成 -->
+                
+                <!-- Mobile menu button -->
+                <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </nav>
+            
+            <!-- Mobile menu -->
+            <div id="mobileMenu" class="md:hidden hidden mt-4 pb-2 animate-fade-in">
+                <div class="flex flex-col space-y-3">
+                    <a href="#features" class="hover:text-primary transition-color py-2">Features</a>
+                    <a href="#technology" class="hover:text-primary transition-color py-2">Technology</a>
+                    <a href="#origin" class="hover:text-primary transition-color py-2">Origin</a>
+                    <a href="#reviews" class="hover:text-primary transition-color py-2">Reviews</a>
+                    <a href="#pricing" class="hover:text-primary transition-color py-2">Pricing</a>
+                    <div class="relative mt-2">
+                        <input type="text" id="mobileSearchInput" autocomplete="off" 
+                               class="w-full pl-10 pr-4 py-2 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                               placeholder="Search...">
+                        <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </div>
-            </div>
-</div>
-        <h1 class="text-xl md:text-2xl font-bold text-white">GitHub Copilot</h1>
-      </div>
-      
-      <!-- 桌面导航 -->
-      <nav class="hidden md:flex items-center space-x-8">
-        <a href="#overview" class="text-light/80 hover:text-primary transition-colors">概述</a>
-        <a href="#free-services" class="text-light/80 hover:text-primary transition-colors">免费服务</a>
-        <a href="#pros-cons" class="text-light/80 hover:text-primary transition-colors">优缺点</a>
-        <a href="#community" class="text-light/80 hover:text-primary transition-colors">社区评论</a>
-        <a href="#usage" class="text-light/80 hover:text-primary transition-colors">使用方法</a>
-      </nav>
-      
-      <!-- 移动端菜单按钮 -->
-                          <!-- 移动端搜索按钮 -->
-                    <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-                        <i class="fa fa-search text-xl"></i>
-                    </button>
-<button id="menu-toggle" class="md:hidden text-light text-xl">
-        <i class="fa fa-bars"></i>
-      </button>
-    </div>
-    
-    <!-- 移动端导航菜单 -->
-    <div id="mobile-menu" class="md:hidden hidden bg-dark/95 bg-glass">
-      <div class="container mx-auto px-4 py-4 flex flex-col space-y-4">
-        <a href="#overview" class="text-light/80 hover:text-primary transition-colors py-2">概述</a>
-        <a href="#free-services" class="text-light/80 hover:text-primary transition-colors py-2">免费服务</a>
-        <a href="#pros-cons" class="text-light/80 hover:text-primary transition-colors py-2">优缺点</a>
-        <a href="#community" class="text-light/80 hover:text-primary transition-colors py-2">社区评论</a>
-        <a href="#usage" class="text-light/80 hover:text-primary transition-colors py-2">使用方法</a>
-      </div>
-    </div>
-          <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." 
-                    class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
             </div>
         </div>
     </header>
 
-  <!-- 英雄区域 -->
-  <section id="overview" class="pt-32 pb-20 md:pt-40 md:pb-32 relative overflow-hidden">
-    <!-- 背景装饰 -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-      <div class="flex flex-col md:flex-row items-center gap-12">
-        <div class="md:w-1/2 space-y-6">
-          <h1 class="text-4xl md:text-6xl font-bold leading-tight">
-            <span class="bg-gradient-to-r from-primary to-secondary text-gradient">GitHub Copilot</span>
-            <span class="block mt-2">你的AI编程<br>助手</span>
-          </h1>
-          <p class="text-xl text-light/70 leading-relaxed">
-            GitHub Copilot 是由GitHub和OpenAI合作开发的AI代码助手，能够根据上下文自动生成代码建议，帮助开发者提高编程效率，减少重复工作。
-          </p>
-          <div class="flex flex-wrap gap-4 pt-4">
-            <a href="#usage" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary rounded-lg font-medium text-darker hover:shadow-lg hover:shadow-primary/20 transition-all transform hover:-translate-y-1">
-              开始使用
-            </a>
-            <a href="#community" class="px-8 py-3 bg-transparent border border-primary/50 rounded-lg font-medium text-primary hover:bg-primary/10 transition-all transform hover:-translate-y-1">
-              查看评论
-            </a>
-          </div>
-          
-          <!-- 统计数据 -->
-          <div class="grid grid-cols-3 gap-4 pt-8">
-            <div class="text-center">
-              <div class="text-3xl font-bold text-primary">20+</div>
-              <div class="text-sm text-light/60">支持语言</div>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-primary">1M+</div>
-              <div class="text-sm text-light/60">开发者</div>
-            </div>
-            <div class="text-center">
-              <div class="text-3xl font-bold text-primary">55%</div>
-              <div class="text-sm text-light/60">效率提升</div>
-            </div>
-          </div>
-        </div>
-        
-        <div class="md:w-1/2 animate-float">
-          <img src="https://picsum.photos/id/0/600/400" alt="GitHub Copilot界面展示" class="rounded-xl shadow-2xl shadow-primary/20 w-full object-cover">
-        </div>
-      </div>
-    </div>
-  </section>
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pt-24 pb-16">
+        <!-- Breadcrumb Navigation -->
+        <nav class="mb-8 text-sm" aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center">
+                <li><a href="/" class="hover:text-primary transition-color">Home</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free" class="hover:text-primary transition-color">Free Resources</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free/detail/" class="hover:text-primary transition-color">Resource List</a></li>
+                <li class="mx-2"><i class="fa fa-chevron-right text-xs"></i></li>
+                <li aria-current="page" class="text-primary">GitHub Copilot</li>
+            </ol>
+        </nav>
 
-  <!-- 免费服务部分 -->
-  <section id="free-services" class="py-20 bg-dark relative">
-    <div class="container mx-auto px-4">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">GitHub Copilot 提供的免费服务</h2>
-        <p class="text-light/70 max-w-2xl mx-auto">GitHub Copilot的免费计划包含了基础功能，适合个人开发者体验AI辅助编程</p>
-      </div>
-      
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- 服务卡片 1 -->
-        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
-          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <i class="fa fa-code text-primary text-xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-3">代码自动补全</h3>
-          <p class="text-light/70">
-            根据上下文提供实时代码建议，支持多种编程语言，可补全单行代码或完整函数。
-          </p>
-          <a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
-            了解详情 <i class="fa fa-arrow-right ml-2 text-sm"></i>
-          </a>
-        </div>
-        
-        <!-- 服务卡片 2 -->
-        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
-          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <i class="fa fa-terminal text-primary text-xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-3">命令行辅助</h3>
-          <p class="text-light/70">
-            帮助生成和解释命令行指令，尤其适合不熟悉的命令或复杂的管道操作。
-          </p>
-          <a href="https://github.com/features/copilot/cli" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
-            CLI 详情 <i class="fa fa-arrow-right ml-2 text-sm"></i>
-          </a>
-        </div>
-        
-        <!-- 服务卡片 3 -->
-        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
-          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <i class="fa fa-comment text-primary text-xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-3">自然语言转代码</h3>
-          <p class="text-light/70">
-            将注释或自然语言描述转换为功能代码，支持多种编程范式和设计模式。
-          </p>
-          <a href="https://github.com/features/copilot#write-code-faster-with-your-ai-pair-programmer" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
-            功能介绍 <i class="fa fa-arrow-right ml-2 text-sm"></i>
-          </a>
-        </div>
-        
-        <!-- 服务卡片 4 -->
-        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
-          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <i class="fa fa-refresh text-primary text-xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-3">代码重构建议</h3>
-          <p class="text-light/70">
-            提供代码优化和重构建议，帮助改进代码质量、可读性和性能。
-          </p>
-          <a href="https://docs.github.com/en/copilot/using-github-copilot/using-github-copilot-in-your-editor" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
-            使用指南 <i class="fa fa-arrow-right ml-2 text-sm"></i>
-          </a>
-        </div>
-        
-        <!-- 服务卡片 5 -->
-        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
-          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <i class="fa fa-question-circle text-primary text-xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-3">代码解释</h3>
-          <p class="text-light/70">
-            解释现有代码的功能和工作原理，帮助理解复杂逻辑或不熟悉的库函数。
-          </p>
-          <a href="https://github.com/features/copilot/x" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
-            Copilot X <i class="fa fa-arrow-right ml-2 text-sm"></i>
-          </a>
-        </div>
-        
-        <!-- 服务卡片 6 -->
-        <div class="bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/30 transition-all hover:shadow-lg hover:shadow-primary/10 group">
-          <div class="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-            <i class="fa fa-plug text-primary text-xl"></i>
-          </div>
-          <h3 class="text-xl font-semibold mb-3">主流编辑器支持</h3>
-          <p class="text-light/70">
-            支持VS Code、JetBrains系列IDE、Neovim等主流编辑器，提供一致的使用体验。
-          </p>
-          <a href="https://docs.github.com/en/copilot/installation" target="_blank" rel="noopener noreferrer" class="inline-flex items-center mt-4 text-primary hover:text-primary/80 transition-colors">
-            安装指南 <i class="fa fa-arrow-right ml-2 text-sm"></i>
-          </a>
-        </div>
-      </div>
-      
-      <!-- 免费计划限制说明 -->
-      <div class="mt-12 bg-darker rounded-xl p-6 border border-warning/30">
-        <div class="flex items-start gap-4">
-          <div class="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 mt-1">
-            <i class="fa fa-info text-warning"></i>
-          </div>
-          <div>
-            <h3 class="text-lg font-semibold mb-2 text-warning">免费计划限制说明</h3>
-            <p class="text-light/70 mb-4">
-              GitHub Copilot 免费计划主要面向学生、教师和热门开源项目贡献者。普通个人用户有60天免费试用，之后需要订阅付费计划才能继续使用。
+        <!-- Hero Section -->
+        <section class="mb-20 text-center">
+            <div class="relative inline-block mb-6 animate-float">
+                <div class="absolute -inset-1 bg-gradient-to-r from-primary to-blue-600 rounded-full blur opacity-30"></div>
+                <div class="relative bg-white dark:bg-dark-card p-6 rounded-full shadow-lg">
+                    <svg class="w-20 h-20 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 leading-tight gradient-text">GitHub Copilot</h1>
+            <p class="text-[clamp(1.1rem,2vw,1.5rem)] text-gray-600 dark:text-gray-400 max-w-3xl mx-auto mb-10">
+                Your AI pair programmer that helps you write better code, faster.
             </p>
-            <a href="https://github.com/features/copilot#pricing" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 transition-colors inline-flex items-center">
-              查看完整定价方案 <i class="fa fa-external-link ml-1 text-sm"></i>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+            <div class="flex flex-wrap justify-center gap-4 mb-12">
+                <a href="#get-started" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                    Get Started for Free
+                </a>
+                <a href="#features" class="px-8 py-3 bg-white dark:bg-dark-card hover:bg-gray-50 dark:hover:bg-gray-800 text-light-text dark:text-dark-text font-medium rounded-full shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                    Learn More
+                </a>
+            </div>
+            
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-3xl font-bold text-primary mb-1">1.2M+</div>
+                    <div class="text-gray-600 dark:text-gray-400">Developers</div>
+                </div>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-3xl font-bold text-primary mb-1">400K+</div>
+                    <div class="text-gray-600 dark:text-gray-400">GitHub Stars</div>
+                </div>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-3xl font-bold text-primary mb-1">12K+</div>
+                    <div class="text-gray-600 dark:text-gray-400">Issues Closed</div>
+                </div>
+                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-3xl font-bold text-primary mb-1">20+</div>
+                    <div class="text-gray-600 dark:text-gray-400">Languages</div>
+                </div>
+            </div>
+        </section>
 
-  <!-- 优缺点部分 -->
-  <section id="pros-cons" class="py-20 relative overflow-hidden">
-    <!-- 背景装饰 -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-1/3 right-1/3 w-80 h-80 bg-secondary/10 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">GitHub Copilot 的优点与缺点</h2>
-        <p class="text-light/70 max-w-2xl mx-auto">了解GitHub Copilot的主要优势和潜在局限性，帮助您做出更明智的选择</p>
-      </div>
-      
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        <!-- 优点部分 -->
-        <div class="bg-dark rounded-2xl p-8 border border-light/10">
-          <div class="flex items-center mb-8">
-            <div class="w-12 h-12 bg-accent/20 rounded-full flex items-center justify-center mr-4">
-              <i class="fa fa-thumbs-up text-accent text-xl"></i>
+        <!-- Introduction Section -->
+        <section class="mb-20">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="order-2 md:order-1">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">What is GitHub Copilot?</h2>
+                    <p class="text-lg mb-4">
+                        GitHub Copilot is an AI-powered code completion tool developed by GitHub in collaboration with OpenAI. It acts as your pair programmer, suggesting whole lines or entire functions as you type.
+                    </p>
+                    <p class="text-lg mb-4">
+                        Trained on billions of lines of public code, Copilot helps you write code faster, reduce context switching, and stay focused on building great software.
+                    </p>
+                    <p class="text-lg">
+                        Whether you're working in a new language or framework, or just need a little help with a tricky function, Copilot has your back.
+                    </p>
+                </div>
+                <div class="order-1 md:order-2 relative">
+                    <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-blue-500/20 rounded-2xl blur-3xl opacity-70"></div>
+                    <img src="https://picsum.photos/800/600?random=1" alt="GitHub Copilot in action showing code suggestions" class="relative z-10 rounded-xl shadow-2xl w-full h-auto object-cover">
+                </div>
             </div>
-            <h3 class="text-2xl font-bold">主要优点</h3>
-          </div>
-          
-          <div class="space-y-6">
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">大幅提高开发效率</h4>
-                <p class="text-light/70">自动生成常用代码片段，减少重复劳动，让开发者专注于核心逻辑，平均可节省50%以上的编码时间。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">支持多种编程语言</h4>
-                <p class="text-light/70">对Python、JavaScript、TypeScript、Java、Go等20多种编程语言有良好支持，适应性强。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">学习新语言的好工具</h4>
-                <p class="text-light/70">对于不熟悉的编程语言，能快速生成示例代码，帮助开发者快速上手，降低学习曲线。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">与主流编辑器无缝集成</h4>
-                <p class="text-light/70">在VS Code、JetBrains等常用编辑器中提供自然的使用体验，不打断开发流程。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">理解上下文能力强</h4>
-                <p class="text-light/70">能够理解项目中的现有代码、注释和函数名，生成符合项目风格的代码建议。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">降低记忆负担</h4>
-                <p class="text-light/70">帮助回忆复杂的API调用和语法结构，减少查阅文档的频率，保持开发流畅性。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-check-circle text-accent text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">支持多种编程任务</h4>
-                <p class="text-light/70">从简单的循环逻辑到复杂的算法实现，从单元测试到文档生成，都能提供有效帮助。</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- 缺点部分 -->
-        <div class="bg-dark rounded-2xl p-8 border border-light/10">
-          <div class="flex items-center mb-8">
-            <div class="w-12 h-12 bg-danger/20 rounded-full flex items-center justify-center mr-4">
-              <i class="fa fa-thumbs-down text-danger text-xl"></i>
-            </div>
-            <h3 class="text-2xl font-bold">主要缺点</h3>
-          </div>
-          
-          <div class="space-y-6">
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">免费使用限制多</h4>
-                <p class="text-light/70">普通用户只有60天免费试用期，之后需要付费订阅，对于个人开发者来说是一笔持续开销。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">可能生成错误代码</h4>
-                <p class="text-light/70">AI生成的代码并非总是正确的，有时会存在逻辑错误或安全漏洞，需要开发者仔细检查。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">版权和许可问题</h4>
-                <p class="text-light/70">生成的代码可能与训练数据中的开源代码相似，存在潜在的版权纠纷风险。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">过度依赖可能影响技能提升</h4>
-                <p class="text-light/70">长期依赖可能导致开发者编码能力退化，尤其对初级开发者的成长有负面影响。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">对复杂逻辑支持有限</h4>
-                <p class="text-light/70">对于需要深入领域知识或复杂业务逻辑的代码，生成质量往往不尽如人意。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">需要良好的网络连接</h4>
-                <p class="text-light/70">大部分功能需要实时连接到GitHub服务器，离线环境下使用受限。</p>
-              </div>
-            </div>
-            
-            <div class="flex gap-4">
-              <div class="mt-1 flex-shrink-0">
-                <i class="fa fa-times-circle text-danger text-xl"></i>
-              </div>
-              <div>
-                <h4 class="text-lg font-semibold mb-1">可能泄露敏感信息</h4>
-                <p class="text-light/70">使用过程中代码片段会发送到GitHub服务器，对于包含敏感信息的私有代码存在泄露风险。</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- 满意度图表 -->
-      <div class="mt-16 bg-dark rounded-2xl p-6 md:p-8 border border-light/10">
-        <h3 class="text-2xl font-bold mb-6 text-center">开发者满意度</h3>
-        <div class="h-80">
-          <canvas id="satisfactionChart"></canvas>
-        </div>
-      </div>
-    </div>
-  </section>
+        </section>
 
-  <!-- 社区评论部分 -->
-  <section id="community" class="py-20 bg-dark relative">
-    <!-- 背景装饰 -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">社区评论</h2>
-        <p class="text-light/70 max-w-2xl mx-auto">来自全球开发者的真实评价和使用体验分享</p>
-      </div>
-      
-      <!-- 评论筛选 -->
-      <div class="flex flex-wrap justify-center gap-4 mb-10">
-        <button class="review-filter active px-5 py-2 rounded-full bg-primary text-darker font-medium transition-all" data-filter="all">全部评论</button>
-        <button class="review-filter px-5 py-2 rounded-full bg-darker border border-light/20 hover:border-primary/50 transition-all" data-filter="positive">正面评价</button>
-        <button class="review-filter px-5 py-2 rounded-full bg-darker border border-light/20 hover:border-primary/50 transition-all" data-filter="negative">负面评价</button>
-        <button class="review-filter px-5 py-2 rounded-full bg-darker border border-light/20 hover:border-primary/50 transition-all" data-filter="neutral">中性评价</button>
-      </div>
-      
-      <!-- 评论网格 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
-        <!-- 评论将通过JavaScript动态生成 -->
-      </div>
-      
-      <!-- 加载更多按钮 -->
-      <div class="text-center mt-12">
-        <button id="load-more" class="px-8 py-3 bg-darker border border-primary/50 rounded-lg font-medium text-primary hover:bg-primary/10 transition-all">
-          加载更多评论
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 使用方法部分 -->
-  <section id="usage" class="py-20 relative overflow-hidden">
-    <!-- 背景装饰 -->
-    <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div class="container mx-auto px-4 relative z-10">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">GitHub Copilot 入门使用方法</h2>
-        <p class="text-light/70 max-w-2xl mx-auto">按照以下步骤开始使用GitHub Copilot提升您的编程效率</p>
-      </div>
-      
-      <div class="max-w-4xl mx-auto">
-        <!-- 步骤导航 -->
-        <div class="flex flex-wrap justify-between mb-12 relative">
-          <div class="absolute top-1/2 left-0 right-0 h-1 bg-light/10 -translate-y-1/2 z-0"></div>
-          <div class="absolute top-1/2 left-0 h-1 bg-primary -translate-y-1/2 z-10 transition-all duration-500" id="progress-bar" style="width: 20%"></div>
-          
-          <div class="usage-step relative z-20 flex flex-col items-center" data-step="1">
-            <div class="w-10 h-10 rounded-full bg-primary text-darker flex items-center justify-center font-bold mb-2">1</div>
-            <span class="text-sm text-center">获取访问权限</span>
-          </div>
-          
-          <div class="usage-step relative z-20 flex flex-col items-center" data-step="2">
-            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">2</div>
-            <span class="text-sm text-center">安装插件</span>
-          </div>
-          
-          <div class="usage-step relative z-20 flex flex-col items-center" data-step="3">
-            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">3</div>
-            <span class="text-sm text-center">基本配置</span>
-          </div>
-          
-          <div class="usage-step relative z-20 flex flex-col items-center" data-step="4">
-            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">4</div>
-            <span class="text-sm text-center">开始使用</span>
-          </div>
-          
-          <div class="usage-step relative z-20 flex flex-col items-center" data-step="5">
-            <div class="w-10 h-10 rounded-full bg-darker border border-light/30 text-light flex items-center justify-center font-bold mb-2">5</div>
-            <span class="text-sm text-center">高级技巧</span>
-          </div>
-        </div>
-        
-        <!-- 步骤内容 -->
-        <div class="bg-dark rounded-2xl p-6 md:p-8 border border-light/10">
-          <div class="usage-content" id="step-1">
-            <h3 class="text-2xl font-bold mb-6">步骤 1: 获取GitHub Copilot访问权限</h3>
-            <p class="mb-6 text-light/80">要使用GitHub Copilot，您需要首先获得访问权限：</p>
+        <!-- Features Section -->
+        <section id="features" class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Key Features</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    How GitHub Copilot transforms your coding experience
+                </p>
+            </div>
             
-            <ul class="space-y-4 mb-8">
-              <li class="flex items-start gap-3">
-                <i class="fa fa-check-circle text-accent mt-1"></i>
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fa fa-code text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Real-time Code Suggestions</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Get line-by-line and function-level suggestions as you type, helping you code faster with less effort.
+                    </p>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fa fa-language text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Multi-language Support</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Supports dozens of programming languages including Python, JavaScript, TypeScript, Ruby, Go, and more.
+                    </p>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fa fa-lightbulb-o text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Context-aware</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Understands your code context to provide relevant suggestions that fit naturally with your style.
+                    </p>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fa fa-terminal text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">IDE Integration</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Seamlessly works with Visual Studio Code, Neovim, JetBrains IDEs, and GitHub Codespaces.
+                    </p>
+                </div>
+                
+                <!-- Feature 5 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fa fa-comment text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Natural Language Support</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Write comments describing what you want to do, and Copilot will generate the corresponding code.
+                    </p>
+                </div>
+                
+                <!-- Feature 6 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2">
+                    <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                        <i class="fa fa-paint-brush text-2xl text-primary"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Adapts to Your Style</h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        Learns your coding patterns and preferences over time to provide more personalized suggestions.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons Section -->
+        <section class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Pros & Cons</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    An honest look at what makes Copilot shine and where it could improve
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12">
+                <!-- Pros -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-up text-green-600 dark:text-green-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">Advantages</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Significantly speeds up development workflow</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Great for learning new languages and frameworks</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Reduces repetitive coding tasks and boilerplate</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Helpful for generating test cases and documentation</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Excellent IDE integration with minimal setup</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Cons -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-4">
+                            <i class="fa fa-thumbs-down text-red-600 dark:text-red-400 text-xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold">Limitations</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Occasionally suggests incorrect or non-functional code</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Potential licensing concerns with generated code</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Requires internet connection to function</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Free tier has limited usage for non-students/educators</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>May not understand complex project architectures</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Technology Stack Section -->
+        <section id="technology" class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Technology Stack</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    The powerful technologies behind GitHub Copilot
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-12 items-center">
                 <div>
-                  <span class="font-medium">拥有GitHub账号</span> - 如果没有，请先在<a href="https://github.com/join" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">GitHub官网</a>注册
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg h-full">
+                        <canvas id="radarChart" width="400" height="400"></canvas>
+                    </div>
                 </div>
-              </li>
-              <li class="flex items-start gap-3">
-                <i class="fa fa-check-circle text-accent mt-1"></i>
+                
                 <div>
-                  <span class="font-medium">订阅GitHub Copilot</span> - 访问<a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Copilot页面</a>选择适合的计划
+                    <div class="space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">OpenAI Codex</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                The core AI model that powers GitHub Copilot, based on GPT-3. It's trained on billions of lines of public code from GitHub repositories.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Machine Learning Frameworks</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Built using PyTorch and TensorFlow for model training and inference, with custom optimizations for code generation tasks.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">IDE Extensions</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Lightweight extensions for popular IDEs that communicate with Copilot's backend services while maintaining low resource usage.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Cloud Infrastructure</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Deployed on Microsoft Azure's global cloud network, ensuring low latency and high availability across regions.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-              </li>
-              <li class="flex items-start gap-3">
-                <i class="fa fa-check-circle text-accent mt-1"></i>
+            </div>
+        </section>
+
+        <!-- Origin and Founders Section -->
+        <section id="origin" class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Origin & Founders</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    The story behind GitHub Copilot's creation
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <!-- Founder 1 -->
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="h-64 overflow-hidden">
+                        <img src="https://picsum.photos/400/500?random=10" alt="Nat Friedman, former CEO of GitHub" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">Nat Friedman</h3>
+                        <p class="text-primary mb-3">Former CEO, GitHub</p>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Led GitHub's collaboration with OpenAI to develop Copilot, recognizing the potential for AI to transform software development.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Founder 2 -->
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="h-64 overflow-hidden">
+                        <img src="https://picsum.photos/400/500?random=11" alt="Sam Altman, CEO of OpenAI" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">Sam Altman</h3>
+                        <p class="text-primary mb-3">CEO, OpenAI</p>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Spearheaded OpenAI's research into code generation models that would eventually power GitHub Copilot.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Founder 3 -->
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-lg overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="h-64 overflow-hidden">
+                        <img src="https://picsum.photos/400/500?random=12" alt="Thomas Dohmke, CEO of GitHub" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold mb-1">Thomas Dohmke</h3>
+                        <p class="text-primary mb-3">CEO, GitHub</p>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Continued GitHub's investment in Copilot, leading its commercial launch and expansion to millions of developers.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg">
+                <h3 class="text-2xl font-bold mb-4">Project Origin</h3>
+                <p class="text-lg mb-4">
+                    GitHub Copilot emerged from a collaboration between GitHub and OpenAI that began in 2020. The project aimed to explore how AI could assist developers in writing code more efficiently.
+                </p>
+                <p class="text-lg mb-4">
+                    The initial prototype was built using OpenAI's Codex model, a descendant of GPT-3 fine-tuned specifically on code. After a limited technical preview in June 2021 with over 1.2 million developers, GitHub Copilot was officially launched in June 2022.
+                </p>
+                <p class="text-lg">
+                    The name "Copilot" reflects the tool's intended role – not to replace developers, but to act as a collaborative assistant that helps navigate the complexities of software development.
+                </p>
+            </div>
+        </section>
+
+        <!-- Community Reviews Section -->
+        <section id="reviews" class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Community Reviews</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    What developers are saying about GitHub Copilot
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Review 1 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/100/100?random=20" alt="Sarah Johnson profile" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-bold">Sarah Johnson</h4>
+                            <div class="text-yellow-500">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 italic">
+                        "Copilot has completely changed my workflow. I'm writing code 30-40% faster, and it's especially helpful when working with libraries I'm not familiar with."
+                    </p>
+                    <p class="mt-4 text-gray-500 dark:text-gray-500 text-sm">Senior Software Engineer at Spotify</p>
+                </div>
+                
+                <!-- Review 2 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/100/100?random=21" alt="Michael Chen profile" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-bold">Michael Chen</h4>
+                            <div class="text-yellow-500">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 italic">
+                        "As a full-stack developer, I love how Copilot adapts to different languages and frameworks. It's like having a junior developer who knows every tech stack."
+                    </p>
+                    <p class="mt-4 text-gray-500 dark:text-gray-500 text-sm">Freelance Developer</p>
+                </div>
+                
+                <!-- Review 3 -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/100/100?random=22" alt="Alex Rodriguez profile" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-bold">Alex Rodriguez</h4>
+                            <div class="text-yellow-500">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 italic">
+                        "It's not perfect, but Copilot has become an essential tool in my toolkit. The time it saves on boilerplate code alone makes it worth every penny."
+                    </p>
+                    <p class="mt-4 text-gray-500 dark:text-gray-500 text-sm">CTO at Startup XYZ</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest News Section -->
+        <section class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Latest Updates</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    Stay up to date with GitHub Copilot news
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- News 1 -->
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/600/400?random=30" alt="GitHub Copilot X announcement" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-500 mb-2">May 16, 2023</div>
+                        <h3 class="text-xl font-bold mb-3 group-hover:text-primary transition-color">GitHub Copilot X: The Future of AI Pair Programming</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Introducing Copilot X with chat and voice capabilities, bringing AI-powered assistance to more parts of your development workflow.
+                        </p>
+                        <a href="#" class="text-primary font-medium hover:underline flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- News 2 -->
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/600/400?random=31" alt="JetBrains integration" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-500 mb-2">March 28, 2023</div>
+                        <h3 class="text-xl font-bold mb-3 group-hover:text-primary transition-color">Copilot Now Available for JetBrains IDEs</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Extending Copilot's availability to IntelliJ, PyCharm, WebStorm, and other JetBrains IDEs with native integration.
+                        </p>
+                        <a href="#" class="text-primary font-medium hover:underline flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- News 3 -->
+                <div class="bg-white dark:bg-dark-card rounded-xl shadow-md overflow-hidden group hover:shadow-xl transition-all duration-300">
+                    <div class="h-48 overflow-hidden">
+                        <img src="https://picsum.photos/600/400?random=32" alt="Open source initiative" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    </div>
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-500 mb-2">January 12, 2023</div>
+                        <h3 class="text-xl font-bold mb-3 group-hover:text-primary transition-color">Copilot for Open Source Developers</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Free access to GitHub Copilot for maintainers of popular open source projects.
+                        </p>
+                        <a href="#" class="text-primary font-medium hover:underline flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing and Get Started Section -->
+        <section id="pricing" class="mb-20">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Pricing & Availability</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+                    How to get access to GitHub Copilot
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <!-- Free Tier -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">Free Access</h3>
+                        <div class="text-3xl font-bold mb-1">$0</div>
+                        <div class="text-gray-600 dark:text-gray-400">forever</div>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Students and educators</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Verified open source maintainers</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Limited access for trial users</span>
+                        </li>
+                        <li class="flex items-start text-gray-400 dark:text-gray-600">
+                            <i class="fa fa-times mt-1 mr-3"></i>
+                            <span>Full features</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="#get-started" class="block text-center px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        Check Eligibility
+                    </a>
+                </div>
+                
+                <!-- Individual Plan -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-xl border-2 border-primary relative transform md:-translate-y-4">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary text-white text-sm font-bold px-4 py-1 rounded-full">
+                        Most Popular
+                    </div>
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">Individual</h3>
+                        <div class="text-3xl font-bold mb-1">$19</div>
+                        <div class="text-gray-600 dark:text-gray-400">per month</div>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Full access to all features</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>All supported IDEs</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Priority support</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>30-day free trial</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="#get-started" class="block text-center px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-lg transition-colors">
+                        Start Free Trial
+                    </a>
+                </div>
+                
+                <!-- Business Plan -->
+                <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold mb-2">Business</h3>
+                        <div class="text-3xl font-bold mb-1">$19</div>
+                        <div class="text-gray-600 dark:text-gray-400">per user / month</div>
+                    </div>
+                    
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>All individual features</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Organization management</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Policy controls</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check text-green-500 mt-1 mr-3"></i>
+                            <span>Advanced security features</span>
+                        </li>
+                    </ul>
+                    
+                    <a href="#get-started" class="block text-center px-6 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        Contact Sales
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Get Started Section -->
+            <section id="get-started" class="bg-gradient-to-r from-primary/10 to-blue-500/10 dark:from-primary/5 dark:to-blue-500/5 rounded-2xl p-10 md:p-16">
+                <div class="text-center max-w-3xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Ready to Code Faster?</h2>
+                    <p class="text-xl mb-8">
+                        Join millions of developers who are using GitHub Copilot to write better code, faster.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 mb-10">
+                        <a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" class="px-8 py-4 bg-primary hover:bg-primary/90 text-white font-medium rounded-full shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300">
+                            Get GitHub Copilot
+                        </a>
+                        <a href="https://github.com/features/copilot#try" target="_blank" rel="noopener noreferrer" class="px-8 py-4 bg-white dark:bg-dark-card hover:bg-gray-50 dark:hover:bg-gray-800 text-light-text dark:text-dark-text font-medium rounded-full shadow-md hover:shadow-lg transform hover:-translate-y-1 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+                            Learn More
+                        </a>
+                    </div>
+                    
+                    <div class="flex flex-wrap justify-center gap-6 text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            <span>No credit card required for trial</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            <span>30-day free trial</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fa fa-check-circle text-green-500 mr-2"></i>
+                            <span>Cancel anytime</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- Social Links Section -->
+        <section class="mb-20">
+            <div class="text-center mb-10">
+                <h2 class="text-2xl md:text-3xl font-bold mb-4">Connect With Us</h2>
+                <p class="text-gray-600 dark:text-gray-400">
+                    Follow GitHub Copilot on social media for the latest updates and tips
+                </p>
+            </div>
+            
+            <div class="flex justify-center space-x-6">
+                <a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" class="w-14 h-14 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center text-xl transition-colors">
+                    <i class="fa fa-github"></i>
+                </a>
+                <a href="https://twitter.com/githubcopilot" target="_blank" rel="noopener noreferrer" class="w-14 h-14 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center text-xl transition-colors">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a href="https://www.linkedin.com/company/github" target="_blank" rel="noopener noreferrer" class="w-14 h-14 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center text-xl transition-colors">
+                    <i class="fa fa-linkedin"></i>
+                </a>
+                <a href="https://www.youtube.com/github" target="_blank" rel="noopener noreferrer" class="w-14 h-14 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center text-xl transition-colors">
+                    <i class="fa fa-youtube-play"></i>
+                </a>
+                <a href="https://discord.com/invite/github" target="_blank" rel="noopener noreferrer" class="w-14 h-14 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center text-xl transition-colors">
+                    <i class="fa fa-comments"></i>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-dark-card border-t border-gray-200 dark:border-gray-800 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                 <div>
-                  <span class="font-medium">免费资格</span> - 学生、教师和热门开源项目贡献者可能有资格获得免费访问
+                    <div class="flex items-center space-x-2 mb-6">
+                        <svg class="w-8 h-8 text-primary" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+                        </svg>
+                        <span class="font-bold text-xl">GitHub Copilot</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        Your AI pair programmer that helps you write better code, faster.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary transition-color">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="https://twitter.com/githubcopilot" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary transition-color">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/github" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary transition-color">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                    </div>
                 </div>
-              </li>
-            </ul>
-            
-            <p class="mb-4 text-light/80">学生可以通过<a href="https://education.github.com/pack" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">GitHub Student Developer Pack</a>免费获得Copilot访问权限。</p>
-            
-            <div class="bg-darker rounded-lg p-4 mb-6">
-              <img src="https://picsum.photos/id/180/800/300" alt="GitHub Copilot订阅页面" class="w-full h-auto rounded" />
-            </div>
-            
-            <div class="flex justify-end">
-              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                下一步 <i class="fa fa-arrow-right ml-1"></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="usage-content hidden" id="step-2">
-            <h3 class="text-2xl font-bold mb-6">步骤 2: 安装Copilot插件</h3>
-            <p class="mb-6 text-light/80">根据您使用的编辑器，安装相应的GitHub Copilot插件：</p>
-            
-            <div class="space-y-6 mb-8">
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-code text-primary mr-2"></i>
-                  Visual Studio Code
-                </h4>
-                <ol class="list-decimal list-inside text-light/70 text-sm space-y-2 pl-4">
-                  <li>打开VS Code</li>
-                  <li>进入扩展面板（Ctrl+Shift+X 或 Cmd+Shift+X）</li>
-                  <li>搜索"GitHub Copilot"</li>
-                  <li>点击"安装"按钮</li>
-                  <li>安装完成后可能需要重启VS Code</li>
-                </ol>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-puzzle-piece text-primary mr-2"></i>
-                  JetBrains IDEs（IntelliJ, PyCharm等）
-                </h4>
-                <ol class="list-decimal list-inside text-light/70 text-sm space-y-2 pl-4">
-                  <li>打开IDE，进入File > Settings > Plugins</li>
-                  <li>在Marketplace中搜索"GitHub Copilot"</li>
-                  <li>点击"Install"按钮</li>
-                  <li>安装完成后重启IDE</li>
-                </ol>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-terminal text-primary mr-2"></i>
-                  Neovim
-                </h4>
-                <ol class="list-decimal list-inside text-light/70 text-sm space-y-2 pl-4">
-                  <li>确保使用Neovim 0.7.0或更高版本</li>
-                  <li>通过插件管理器安装GitHub Copilot插件</li>
-                  <li>运行`:Copilot setup`完成配置</li>
-                </ol>
-              </div>
-            </div>
-            
-            <div class="flex justify-between">
-              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
-                <i class="fa fa-arrow-left mr-1"></i> 上一步
-              </button>
-              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                下一步 <i class="fa fa-arrow-right ml-1"></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="usage-content hidden" id="step-3">
-            <h3 class="text-2xl font-bold mb-6">步骤 3: 基本配置与授权</h3>
-            <p class="mb-6 text-light/80">安装插件后，需要完成授权和基本配置：</p>
-            
-            <div class="space-y-4 mb-6">
-              <div>
-                <h4 class="font-semibold mb-1">登录GitHub账号</h4>
-                <p class="text-light/70 text-sm">
-                  首次使用时，编辑器会提示您登录GitHub账号。点击"Sign in to GitHub"，在浏览器中完成授权流程。
-                </p>
-              </div>
-              
-              <div>
-                <h4 class="font-semibold mb-1">基本设置</h4>
-                <p class="text-light/70 text-sm">
-                  在编辑器设置中可以调整Copilot的基本行为：
-                </p>
-                <div class="bg-darker rounded-lg p-3 font-mono text-sm mt-2">
-                  <p># VS Code中：File > Preferences > Settings > GitHub Copilot</p>
-                  <p># 可调整的主要设置：</p>
-                  <p>- 启用/禁用Copilot</p>
-                  <p>- 自动建议延迟时间</p>
-                  <p>- 接受建议的快捷键</p>
-                  <p>- 语言特定设置</p>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">Product</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Features</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Pricing</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Documentation</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Updates</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Roadmap</a></li>
+                    </ul>
                 </div>
-              </div>
-              
-              <div>
-                <h4 class="font-semibold mb-1">隐私设置</h4>
-                <p class="text-light/70 text-sm">
-                  可以在GitHub设置中配置Copilot的隐私选项，决定是否允许GitHub使用您的代码来改进Copilot。
-                </p>
-              </div>
-            </div>
-            
-            <div class="bg-darker rounded-lg p-4 mb-6">
-              <img src="https://picsum.photos/id/48/800/300" alt="GitHub Copilot配置界面" class="w-full h-auto rounded" />
-            </div>
-            
-            <div class="flex justify-between">
-              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
-                <i class="fa fa-arrow-left mr-1"></i> 上一步
-              </button>
-              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                下一步 <i class="fa fa-arrow-right ml-1"></i>
-              </button>
-            </div>
-          </div>
-          
-          <div class="usage-content hidden" id="step-4">
-            <h3 class="text-2xl font-bold mb-6">步骤 4: 开始使用GitHub Copilot</h3>
-            <p class="mb-6 text-light/80">配置完成后，您可以开始使用GitHub Copilot辅助编程：</p>
-            
-            <div class="space-y-6 mb-8">
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2">基本使用方式</h4>
-                <p class="text-light/70 text-sm mb-3">
-                  在编写代码时，Copilot会自动分析上下文并提供建议，显示为灰色的内联文本。
-                </p>
-                <ul class="list-disc list-inside text-light/70 text-sm space-y-1 pl-4">
-                  <li>按Tab键接受当前建议</li>
-                  <li>按Esc键忽略建议</li>
-                  <li>使用Alt+]和Alt+[（Windows）或Option+]和Option+[（Mac）浏览更多建议</li>
-                </ul>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2">通过注释生成代码</h4>
-                <p class="text-light/70 text-sm mb-3">
-                  您可以通过编写注释来描述想要实现的功能，Copilot会根据注释生成相应代码：
-                </p>
-                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 border border-light/5">
-                  <p>// 计算斐波那契数列的第n项</p>
-                  <p>// 使用递归方法实现</p>
-                  <p>function fibonacci(n) {</p>
-                  <p>&nbsp;&nbsp;// Copilot会自动生成实现代码</p>
-                  <p>}</p>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Blog</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Community</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Support</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Sitemap</a></li>
+                    </ul>
                 </div>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2">生成测试用例</h4>
-                <p class="text-light/70 text-sm">
-                  Copilot不仅能生成功能代码，还能帮助生成测试用例：
-                </p>
-                <div class="bg-darker/50 rounded-lg p-3 font-mono text-sm mt-2 border border-light/5">
-                  <p>// 为上述fibonacci函数生成测试用例</p>
-                  <p>// 使用Jest测试框架</p>
-                  <p>test('fibonacci test', () => {</p>
-                  <p>&nbsp;&nbsp;// Copilot会生成测试代码</p>
-                  <p>})</p>
+                
+                <div>
+                    <h4 class="font-bold text-lg mb-6">Company</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://github.com/about" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">About GitHub</a></li>
+                        <li><a href="https://github.com/careers" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Careers</a></li>
+                        <li><a href="https://github.com/security" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Security</a></li>
+                        <li><a href="https://github.com/legal" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Legal</a></li>
+                        <li><a href="https://github.com/contact" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-color">Contact</a></li>
+                    </ul>
                 </div>
-              </div>
             </div>
             
-            <div class="flex justify-between">
-              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
-                <i class="fa fa-arrow-left mr-1"></i> 上一步
-              </button>
-              <button class="next-step px-6 py-2 bg-primary text-darker rounded-lg font-medium hover:bg-primary/90 transition-colors">
-                下一步 <i class="fa fa-arrow-right ml-1"></i>
-              </button>
+            <div class="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-600 dark:text-gray-400 text-sm mb-4 md:mb-0">
+                    &copy; 2023 GitHub, Inc. All rights reserved.
+                </p>
+                <div class="flex space-x-6">
+                    <a href="https://github.com/site/privacy" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary text-sm transition-color">Privacy Policy</a>
+                    <a href="https://github.com/site/terms" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary text-sm transition-color">Terms of Service</a>
+                    <a href="https://github.com/site/cookies" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary text-sm transition-color">Cookie Policy</a>
+                </div>
             </div>
-          </div>
-          
-          <div class="usage-content hidden" id="step-5">
-            <h3 class="text-2xl font-bold mb-6">步骤 5: 高级使用技巧</h3>
-            <p class="mb-6 text-light/80">掌握以下技巧可以更高效地使用GitHub Copilot：</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-keyboard-o text-primary mr-2"></i>
-                  快捷键使用
-                </h4>
-                <p class="text-light/70 text-sm">
-                  熟悉并使用快捷键可以大幅提高效率：
-                </p>
-                <ul class="list-disc list-inside text-light/70 text-sm space-y-1 pl-4 mt-2">
-                  <li>显示更多建议: Alt+Enter</li>
-                  <li>触发建议: Ctrl+I</li>
-                  <li>接受行建议: Tab</li>
-                </ul>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-magic text-primary mr-2"></i>
-                  引导生成高质量代码
-                </h4>
-                <p class="text-light/70 text-sm">
-                  提供更详细的上下文和注释可以获得更好的建议：
-                </p>
-                <ul class="list-disc list-inside text-light/70 text-sm space-y-1 pl-4 mt-2">
-                  <li>编写清晰的函数名和变量名</li>
-                  <li>提供详细的注释说明需求</li>
-                  <li>先定义数据结构再编写逻辑</li>
-                </ul>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-ban text-primary mr-2"></i>
-                  处理不理想的建议
-                </h4>
-                <p class="text-light/70 text-sm">
-                  当建议不理想时：
-                </p>
-                <ul class="list-disc list-inside text-light/70 text-sm space-y-1 pl-4 mt-2">
-                  <li>尝试修改注释或函数名</li>
-                  <li>编写几行示例代码引导方向</li>
-                  <li>使用Alt+[和Alt+]浏览其他建议</li>
-                </ul>
-              </div>
-              
-              <div class="bg-darker p-4 rounded-lg border border-light/10">
-                <h4 class="font-semibold mb-2 flex items-center">
-                  <i class="fa fa-shield text-primary mr-2"></i>
-                  代码审查与安全
-                </h4>
-                <p class="text-light/70 text-sm">
-                  使用Copilot生成的代码时：
-                </p>
-                <ul class="list-disc list-inside text-light/70 text-sm space-y-1 pl-4 mt-2">
-                  <li>始终审查生成的代码</li>
-                  <li>注意潜在的安全漏洞</li>
-                  <li>检查代码是否符合项目规范</li>
-                  <li>确保没有引入不必要的依赖</li>
-                </ul>
-              </div>
-            </div>
-            
-            <p class="mb-6 text-light/80">通过持续使用和探索，您会逐渐掌握GitHub Copilot的使用技巧，使其成为您编程工作中得力的辅助工具。记住，Copilot是助手而非替代者，优秀的代码仍需要人类开发者的智慧和判断。</p>
-            
-            <div class="flex justify-start">
-              <button class="prev-step px-6 py-2 bg-darker border border-light/30 rounded-lg font-medium hover:border-primary/50 transition-colors">
-                <i class="fa fa-arrow-left mr-1"></i> 上一步
-              </button>
-            </div>
-          </div>
         </div>
-      </div>
+    </footer>
+
+    <!-- Share Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center backdrop-blur-sm">
+        <div class="bg-white dark:bg-dark-card rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Share GitHub Copilot</h3>
+                <button id="closeShareModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <p class="text-gray-600 dark:text-gray-400">
+                    Share this page with your friends and colleagues:
+                </p>
+                
+                <div class="flex space-x-4">
+                    <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fexample.com%2Ffree%2Fdetail%2Fcopilot&text=Check%20out%20GitHub%20Copilot%2C%20the%20AI%20pair%20programmer!" target="_blank" rel="noopener noreferrer" class="flex-1 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fa fa-twitter mr-2"></i> Twitter
+                    </a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fexample.com%2Ffree%2Fdetail%2Fcopilot" target="_blank" rel="noopener noreferrer" class="flex-1 py-3 bg-blue-700 hover:bg-blue-800 text-white rounded-lg transition-colors flex items-center justify-center">
+                        <i class="fa fa-linkedin mr-2"></i> LinkedIn
+                    </a>
+                </div>
+                
+                <div class="relative">
+                    <input type="text" id="shareLink" value="https://example.com/free/detail/copilot" readonly class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button id="copyLinkBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded transition-colors">
+                        Copy
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-  </section>
 
-  <!-- 页脚 -->
-  <footer class="bg-dark border-t border-light/10 py-12">
-    <div class="container mx-auto px-4">
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-        <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <div class="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-              <i class="fa fa-code text-lg text-darker"></i>
-            </div>
-            <h3 class="text-lg font-bold text-white">GitHub Copilot</h3>
-          </div>
-          <p class="text-light/60 text-sm">
-            由GitHub和OpenAI合作开发的AI代码助手，根据上下文自动生成代码建议，提高编程效率。
-          </p>
-        </div>
-        
-        <div>
-          <h4 class="text-white font-semibold mb-4">快速链接</h4>
-          <ul class="space-y-2 text-sm text-light/60">
-            <li><a href="#overview" class="hover:text-primary transition-colors">概述</a></li>
-            <li><a href="#free-services" class="hover:text-primary transition-colors">免费服务</a></li>
-            <li><a href="#pros-cons" class="hover:text-primary transition-colors">优缺点</a></li>
-            <li><a href="#community" class="hover:text-primary transition-colors">社区评论</a></li>
-            <li><a href="#usage" class="hover:text-primary transition-colors">使用方法</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="text-white font-semibold mb-4">官方资源</h4>
-          <ul class="space-y-2 text-sm text-light/60">
-            <li><a href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">官方网站</a></li>
-            <li><a href="https://docs.github.com/en/copilot" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">文档中心</a></li>
-            <li><a href="https://github.com/features/copilot/x" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">Copilot X</a></li>
-            <li><a href="https://github.com/features/copilot/pricing" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">定价信息</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="text-white font-semibold mb-4">联系我们</h4>
-          <ul class="space-y-2 text-sm text-light/60">
-            <li class="flex items-center gap-2">
-              <i class="fa fa-envelope-o text-primary"></i>
-              <a href="mailto:support@github.com" class="hover:text-primary transition-colors">support@github.com</a>
-            </li>
-            <li class="flex items-center gap-2">
-              <i class="fa fa-twitter text-primary"></i>
-              <a href="https://twitter.com/github" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">@github</a>
-            </li>
-            <li class="flex items-center gap-2">
-              <i class="fa fa-github text-primary"></i>
-              <a href="https://github.com/github" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">GitHub 组织</a>
-            </li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="pt-8 border-t border-light/10 flex flex-col md:flex-row justify-between items-center">
-        <p class="text-light/50 text-sm mb-4 md:mb-0">
-          &copy; 2023 GitHub Copilot 介绍页面. 保留所有权利.
-        </p>
-        <div class="flex space-x-4">
-          <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
-            <i class="fa fa-github text-lg"></i>
-          </a>
-          <a href="https://twitter.com/github" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
-            <i class="fa fa-twitter text-lg"></i>
-          </a>
-          <a href="https://www.linkedin.com/company/github/" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
-            <i class="fa fa-linkedin text-lg"></i>
-          </a>
-          <a href="https://www.youtube.com/github" target="_blank" rel="noopener noreferrer" class="text-light/50 hover:text-primary transition-colors">
-            <i class="fa fa-youtube-play text-lg"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" class="fixed bottom-8 right-8 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center transform transition-all duration-300 opacity-0 translate-y-10">
+        <i class="fa fa-arrow-up"></i>
+    </button>
 
-  <!-- 返回顶部按钮 -->
-  <button id="back-to-top" class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-darker flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
-    <i class="fa fa-arrow-up"></i>
-  </button>
+    <!-- Share Button -->
+    <button id="shareBtn" class="fixed bottom-8 left-8 bg-white dark:bg-dark-card hover:bg-gray-100 dark:hover:bg-gray-800 text-light-text dark:text-dark-text w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 border border-gray-200 dark:border-gray-700">
+        <i class="fa fa-share-alt"></i>
+    </button>
 
-  <!-- JavaScript -->
-  <script>
-    // 导航栏滚动效果
-    const navbar = document.getElementById('navbar');
-    const backToTop = document.getElementById('back-to-top');
+    <!-- Import main.js as module -->
+    <script type="module" src="/main.js"></script>
     
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 100) {
-        navbar.classList.add('py-2', 'shadow-lg', 'shadow-darker/50');
-        navbar.classList.remove('py-3');
-        backToTop.classList.remove('opacity-0', 'invisible');
-        backToTop.classList.add('opacity-100', 'visible');
-      } else {
-        navbar.classList.add('py-3');
-        navbar.classList.remove('py-2', 'shadow-lg', 'shadow-darker/50');
-        backToTop.classList.add('opacity-0', 'invisible');
-        backToTop.classList.remove('opacity-100', 'visible');
-      }
-    });
-    
-    // 移动端菜单切换
-    const menuToggle = document.getElementById('menu-toggle');
-    const mobileMenu = document.getElementById('mobile-menu');
-    
-    menuToggle.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-      const icon = menuToggle.querySelector('i');
-      if (icon.classList.contains('fa-bars')) {
-        icon.classList.remove('fa-bars');
-        icon.classList.add('fa-times');
-      } else {
-        icon.classList.remove('fa-times');
-        icon.classList.add('fa-bars');
-      }
-    });
-    
-    // 平滑滚动
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
-        
-        // 关闭移动菜单（如果打开）
-        if (!mobileMenu.classList.contains('hidden')) {
-          mobileMenu.classList.add('hidden');
-          const icon = menuToggle.querySelector('i');
-          icon.classList.remove('fa-times');
-          icon.classList.add('fa-bars');
-        }
-        
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-        
-        if (targetElement) {
-          window.scrollTo({
-            top: targetElement.offsetTop - 80,
-            behavior: 'smooth'
-          });
-        }
-      });
-    });
-    
-    // 返回顶部
-    backToTop.addEventListener('click', () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-    
-    // 用户满意度图表
-    const ctx = document.getElementById('satisfactionChart').getContext('2d');
-    const satisfactionChart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['非常满意', '满意', '一般', '不满意', '非常不满意'],
-        datasets: [{
-          label: '开发者比例 (%)',
-          data: [48, 35, 12, 4, 1],
-          backgroundColor: [
-            '#5E6AD2',
-            '#7B85E4',
-            '#FF7D00',
-            '#F53F3F',
-            '#E53E3E'
-          ],
-          borderWidth: 0,
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          y: {
-            beginAtZero: true,
-            max: 60,
-            grid: {
-              color: 'rgba(255, 255, 255, 0.1)'
-            },
-            ticks: {
-              color: 'rgba(255, 255, 255, 0.7)'
+    <!-- Statistics script -->
+    <script async src="https://stats.example.com/analytics.js"></script>
+
+    <!-- Main JavaScript -->
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const shareModal = document.getElementById('shareModal');
+        const closeShareModal = document.getElementById('closeShareModal');
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        const shareLink = document.getElementById('shareLink');
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const searchInput = document.getElementById('searchInput');
+        const mobileSearchInput = document.getElementById('mobileSearchInput');
+
+        // Initialize theme based on user preference
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            } else {
+                document.documentElement.classList.remove('dark');
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
             }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              color: 'rgba(255, 255, 255, 0.7)'
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
             }
-          }
-        },
-        plugins: {
-          legend: {
-            display: false
-          }
         }
-      }
-    });
-    
-    // 社区评论数据生成
-    const reviewContainer = document.getElementById('reviews-container');
-    let currentPage = 1;
-    const reviewsPerPage = 12;
-    
-    // 生成随机评论数据
-    const generateReviews = (count) => {
-      const positiveComments = [
-        "GitHub Copilot彻底改变了我的编程方式，让我能够专注于解决问题而不是编写重复代码。",
-        "作为一名全栈开发者，Copilot帮我节省了至少40%的编码时间，尤其是在处理API和数据库操作时。",
-        "学习新框架时，Copilot简直是神器，它能快速生成符合最佳实践的示例代码。",
-        "写单元测试从未如此简单，Copilot能根据我的功能代码自动生成测试用例，大大提高了测试覆盖率。",
-        "对于经常需要在多种编程语言间切换的开发者来说，Copilot是必备工具，它能帮我记住各种语法细节。",
-        "作为一名教师，我发现Copilot是个好助手，它能快速生成教学示例，让学生更好地理解概念。",
-        "处理JSON数据转换和格式化时，Copilot的表现令人惊叹，节省了我大量时间。",
-        "Copilot的上下文理解能力很强，它能根据我的变量名和注释生成符合我意图的代码。",
-        "在编写正则表达式时特别有用，它能帮我快速构建和测试复杂的模式。",
-        "对于重复性的CRUD操作代码，Copilot几秒钟就能完成，而我以前需要几分钟甚至几小时。",
-        "作为一名初学者，Copilot帮助我理解了很多编程概念，通过查看它生成的代码，我学到了很多技巧。",
-        "Copilot生成的代码质量很高，通常只需要做少量调整就能投入生产环境。",
-        "在处理日期时间操作这种容易出错的代码时，Copilot帮我避免了很多常见错误。",
-        "与VS Code的集成非常流畅，使用体验很自然，不会打断我的开发流程。",
-        "对于开源贡献者来说，Copilot能快速生成符合项目风格的代码，降低了贡献门槛。"
-      ];
-      
-      const negativeComments = [
-        "Copilot经常生成无法运行的代码，尤其是在处理复杂逻辑时，需要花很多时间修正。",
-        "订阅费用太高了，对于独立开发者来说是一笔不小的负担，希望能有更灵活的定价。",
-        "生成的代码有时会包含安全漏洞，比如SQL注入风险，必须仔细审查才能使用。",
-        "过度依赖Copilot后，我发现自己的编程能力有所下降，很多基础语法都记不住了。",
-        "在处理不常见的库或框架时，Copilot的表现很差，生成的代码往往不符合API要求。",
-        "有时会生成与现有代码风格完全不一致的代码，增加了代码维护难度。",
-        "需要稳定的网络连接才能使用，在网络条件差的环境下几乎无法工作。",
-        "对于复杂的算法问题，Copilot生成的解决方案往往效率低下，需要重写。",
-        "有时会生成有版权问题的代码片段，与某些开源项目的代码过于相似。",
-        "在大型项目中，Copilot似乎难以理解整个项目的架构，生成的代码经常不符合项目规范。",
-        "免费试用期太短，还没完全体验就结束了，不足以判断是否值得购买。",
-        "对于函数式编程范式的支持不如面向对象编程，生成的函数式代码质量不高。",
-        "有时会忽略我的注释，生成与我的要求完全无关的代码。",
-        "在处理异步代码和并发问题时，经常生成有潜在bug的代码。",
-        "IDE插件有时会导致编辑器卡顿，尤其是在大型文件中使用时。"
-      ];
-      
-      const neutralComments = [
-        "Copilot是个有用的工具，但远非完美，它生成的代码大约有一半需要修改才能使用。",
-        "对于简单的任务很有帮助，但复杂问题仍然需要人工解决，不能完全依赖。",
-        "使用体验取决于编程语言，在Python和JavaScript中表现很好，但在某些小众语言中效果一般。",
-        "作为一名有经验的开发者，我发现Copilot在某些重复性工作上很有用，但创意性工作还是需要自己来。",
-        "价格有点高，但考虑到节省的时间，对于专业开发者来说可能还是值得的。",
-        "Copilot的建议质量时好时坏，有时很惊艳，有时又很离谱，不太稳定。",
-        "对于学生来说是个好工具，但学校应该强调不能完全依赖它，还是要学习编程基础。",
-        "与其他AI代码助手相比各有优劣，没有明显的绝对优势，选择主要看个人偏好。",
-        "在快速原型开发时非常有用，但在生产环境代码编写时还是要谨慎使用。",
-        "Copilot的发展很快，每个版本都有明显进步，期待未来能更加智能。",
-        "使用Copilot需要掌握一定的技巧，学会如何引导它生成高质量代码很重要。",
-        "对于文档完善的库支持很好，但对于内部API或文档不全的库支持有限。",
-        "在团队开发中使用需要制定规范，否则可能导致代码风格不一致的问题。",
-        "Copilot生成的注释质量不高，往往只是重复代码功能，不能提供真正的解释。",
-        "作为辅助工具很优秀，但不能替代开发者的思考，合理使用才能发挥最大价值。"
-      ];
-      
-      const names = [
-        "张开发", "李程序", "王代码", "赵架构", "陈前端",
-        "杨后端", "黄测试", "吴设计", "郑产品", "孙运维",
-        "周数据", "吴算法", "徐全栈", "马移动", "朱安全"
-      ];
-      
-      const avatars = Array.from({length: 30}, (_, i) => `https://picsum.photos/id/${i+80}/200/200`);
-      
-      const reviews = [];
-      
-      for (let i = 0; i < count; i++) {
-        const type = Math.random();
-        let comment, rating;
-        
-        if (type < 0.6) { // 60% 正面评论
-          comment = positiveComments[Math.floor(Math.random() * positiveComments.length)];
-          rating = Math.floor(Math.random() * 2) + 4; // 4-5星
-        } else if (type < 0.85) { // 25% 中性评论
-          comment = neutralComments[Math.floor(Math.random() * neutralComments.length)];
-          rating = Math.floor(Math.random() * 2) + 3; // 3-4星
-        } else { // 15% 负面评论
-          comment = negativeComments[Math.floor(Math.random() * negativeComments.length)];
-          rating = Math.floor(Math.random() * 3) + 1; // 1-3星
+
+        // Update scroll progress indicator
+        function updateScrollProgress() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrollPercentage = scrollTop / scrollHeight;
+            
+            scrollProgress.style.transform = `scaleX(${scrollPercentage})`;
+            
+            // Show/hide back to top button based on scroll position
+            if (scrollTop > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'translate-y-10');
+                backToTopBtn.classList.add('opacity-100', 'translate-y-0');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'translate-y-0');
+                backToTopBtn.classList.add('opacity-0', 'translate-y-10');
+            }
         }
-        
-        const date = new Date();
-        date.setDate(date.getDate() - Math.floor(Math.random() * 365));
-        
-        reviews.push({
-          id: i + 1,
-          name: names[Math.floor(Math.random() * names.length)],
-          avatar: avatars[Math.floor(Math.random() * avatars.length)],
-          comment,
-          rating,
-          date: date.toLocaleDateString(),
-          type: rating >= 4 ? 'positive' : rating === 3 ? 'neutral' : 'negative'
+
+        // Scroll to top
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+
+        // Toggle share modal
+        function toggleShareModal() {
+            if (shareModal.classList.contains('hidden')) {
+                shareModal.classList.remove('hidden');
+                shareModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            } else {
+                shareModal.classList.add('hidden');
+                shareModal.classList.remove('flex');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Copy share link to clipboard
+        function copyShareLink() {
+            shareLink.select();
+            shareLink.setSelectionRange(0, 99999);
+            document.execCommand('copy');
+            
+            const originalText = copyLinkBtn.textContent;
+            copyLinkBtn.textContent = 'Copied!';
+            
+            setTimeout(() => {
+                copyLinkBtn.textContent = originalText;
+            }, 2000);
+        }
+
+        // Toggle bookmark
+        function toggleBookmark() {
+            const icon = bookmarkBtn.querySelector('i');
+            if (icon.classList.contains('fa-bookmark-o')) {
+                icon.classList.remove('fa-bookmark-o');
+                icon.classList.add('fa-bookmark');
+                localStorage.setItem('copilot_bookmarked', 'true');
+            } else {
+                icon.classList.remove('fa-bookmark');
+                icon.classList.add('fa-bookmark-o');
+                localStorage.removeItem('copilot_bookmarked');
+            }
+        }
+
+        // Initialize bookmark state
+        function initBookmark() {
+            if (localStorage.getItem('copilot_bookmarked') === 'true') {
+                const icon = bookmarkBtn.querySelector('i');
+                icon.classList.remove('fa-bookmark-o');
+                icon.classList.add('fa-bookmark');
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Initialize radar chart
+        function initRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Check if dark mode is active
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#e0e0e0' : '#1e293b';
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Code Generation',
+                        'Language Support',
+                        'IDE Integration',
+                        'Speed',
+                        'Accuracy',
+                        'Ease of Use'
+                    ],
+                    datasets: [{
+                        label: 'GitHub Copilot',
+                        data: [95, 90, 85, 88, 82, 92],
+                        fill: true,
+                        backgroundColor: 'rgba(46, 170, 220, 0.2)',
+                        borderColor: 'rgba(46, 170, 220, 1)',
+                        pointBackgroundColor: 'rgba(46, 170, 220, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(46, 170, 220, 1)'
+                    }, {
+                        label: 'Competitors Average',
+                        data: [70, 65, 75, 60, 68, 72],
+                        fill: true,
+                        backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                        borderColor: 'rgba(245, 158, 11, 1)',
+                        pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(245, 158, 11, 1)'
+                    }]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Handle theme change for chart
+        function handleThemeChangeForChart() {
+            // Destroy existing chart if it exists
+            const chart = Chart.getChart('radarChart');
+            if (chart) {
+                chart.destroy();
+            }
+            // Reinitialize with new theme
+            initRadarChart();
+        }
+
+        // Search functionality
+        function handleSearch(e) {
+            e.preventDefault();
+            const query = searchInput.value.trim() || mobileSearchInput.value.trim();
+            if (query) {
+                alert(`Searching for: ${query}`);
+                // In a real implementation, you would redirect to a search results page
+                // window.location.href = `/search?q=${encodeURIComponent(query)}`;
+            }
+        }
+
+        // Event Listeners
+        themeToggle.addEventListener('click', () => {
+            toggleTheme();
+            handleThemeChangeForChart();
         });
-      }
-      
-      return reviews;
-    };
-    
-    // 渲染评论
-    const renderReviews = (reviews, container) => {
-      container.innerHTML = '';
-      
-      reviews.forEach(review => {
-        const reviewEl = document.createElement('div');
-        reviewEl.className = `bg-darker rounded-xl p-6 border border-light/10 hover:border-primary/20 transition-all review-item ${review.type}`;
-        reviewEl.setAttribute('data-type', review.type);
         
-        // 生成星级评分HTML
-        let ratingHtml = '';
-        for (let i = 1; i <= 5; i++) {
-          if (i <= review.rating) {
-            ratingHtml += '<i class="fa fa-star text-warning"></i>';
-          } else {
-            ratingHtml += '<i class="fa fa-star-o text-light/30"></i>';
-          }
-        }
+        window.addEventListener('scroll', updateScrollProgress);
+        backToTopBtn.addEventListener('click', scrollToTop);
+        shareBtn.addEventListener('click', toggleShareModal);
+        closeShareModal.addEventListener('click', toggleShareModal);
+        copyLinkBtn.addEventListener('click', copyShareLink);
+        bookmarkBtn.addEventListener('click', toggleBookmark);
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
         
-        reviewEl.innerHTML = `
-          <div class="flex items-start gap-4">
-            <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
-            <div class="flex-1">
-              <div class="flex justify-between items-start mb-2">
-                <h4 class="font-semibold">${review.name}</h4>
-                <span class="text-sm text-light/50">${review.date}</span>
-              </div>
-              <div class="mb-3">${ratingHtml}</div>
-              <p class="text-light/70 text-sm">${review.comment}</p>
-            </div>
-          </div>
-        `;
-        
-        container.appendChild(reviewEl);
-      });
-    };
-    
-    // 初始生成50+评论
-    const allReviews = generateReviews(60);
-    renderReviews(allReviews.slice(0, reviewsPerPage), reviewContainer);
-    
-    // 加载更多评论
-    document.getElementById('load-more').addEventListener('click', () => {
-      currentPage++;
-      const startIndex = (currentPage - 1) * reviewsPerPage;
-      const endIndex = startIndex + reviewsPerPage;
-      const nextReviews = allReviews.slice(startIndex, endIndex);
-      
-      if (nextReviews.length > 0) {
-        renderReviews(allReviews.slice(0, endIndex), reviewContainer);
-        
-        // 如果没有更多评论了，隐藏按钮
-        if (endIndex >= allReviews.length) {
-          document.getElementById('load-more').style.display = 'none';
-        }
-      }
-    });
-    
-    // 评论筛选
-    document.querySelectorAll('.review-filter').forEach(button => {
-      button.addEventListener('click', () => {
-        // 更新按钮样式
-        document.querySelectorAll('.review-filter').forEach(btn => {
-          btn.classList.remove('active', 'bg-primary', 'text-darker');
-          btn.classList.add('bg-darker', 'border', 'border-light/20', 'hover:border-primary/50');
+        // Close share modal when clicking outside
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) {
+                toggleShareModal();
+            }
         });
         
-        button.classList.add('active', 'bg-primary', 'text-darker');
-        button.classList.remove('bg-darker', 'border', 'border-light/20', 'hover:border-primary/50');
+        // Search form submission
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearch(e);
+        });
         
-        const filter = button.getAttribute('data-filter');
-        let filteredReviews;
-        
-        if (filter === 'all') {
-          filteredReviews = allReviews.slice(0, currentPage * reviewsPerPage);
-        } else {
-          filteredReviews = allReviews.filter(review => review.type === filter)
-            .slice(0, currentPage * reviewsPerPage);
-        }
-        
-        renderReviews(filteredReviews, reviewContainer);
-      });
-    });
-    
-    // 使用方法步骤导航
-    const usageSteps = document.querySelectorAll('.usage-step');
-    const usageContents = document.querySelectorAll('.usage-content');
-    const progressBar = document.getElementById('progress-bar');
-    let currentStep = 1;
-    
-    // 更新步骤显示
-    const updateStep = (step) => {
-      // 隐藏所有内容
-      usageContents.forEach(content => content.classList.add('hidden'));
-      
-      // 显示当前步骤内容
-      document.getElementById(`step-${step}`).classList.remove('hidden');
-      
-      // 更新步骤指示器
-      usageSteps.forEach((stepEl, index) => {
-        const stepNum = index + 1;
-        const circle = stepEl.querySelector('div');
-        
-        if (stepNum === step) {
-          circle.classList.remove('bg-darker', 'border', 'border-light/30', 'text-light');
-          circle.classList.add('bg-primary', 'text-darker');
-        } else if (stepNum < step) {
-          circle.classList.remove('bg-darker', 'border', 'border-light/30', 'text-light');
-          circle.classList.add('bg-accent', 'text-darker');
-          circle.innerHTML = '<i class="fa fa-check"></i>';
-        } else {
-          circle.classList.remove('bg-primary', 'bg-accent', 'text-darker');
-          circle.classList.add('bg-darker', 'border', 'border-light/30', 'text-light');
-          circle.textContent = stepNum;
-        }
-      });
-      
-      // 更新进度条
-      progressBar.style.width = `${(step - 1) * 25}%`;
-      
-      currentStep = step;
-    };
-    
-    // 步骤点击事件
-    usageSteps.forEach(step => {
-      step.addEventListener('click', () => {
-        const stepNum = parseInt(step.getAttribute('data-step'));
-        updateStep(stepNum);
-      });
-    });
-    
-    // 下一步按钮
-    document.querySelectorAll('.next-step').forEach(button => {
-      button.addEventListener('click', () => {
-        if (currentStep < 5) {
-          updateStep(currentStep + 1);
-        }
-      });
-    });
-    
-    // 上一步按钮
-    document.querySelectorAll('.prev-step').forEach(button => {
-      button.addEventListener('click', () => {
-        if (currentStep > 1) {
-          updateStep(currentStep - 1);
-        }
-      });
-    });
-    
-    // 页面加载动画
-    document.addEventListener('DOMContentLoaded', () => {
-      document.body.classList.add('opacity-100');
-      document.body.classList.remove('opacity-0');
-    });
-  </script>
-<script type="module" src="/main.js"></script>
+        mobileSearchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSearch(e);
+        });
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            initTheme();
+            initBookmark();
+            initRadarChart();
+            updateScrollProgress();
+            
+            // Add smooth scrolling for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                    
+                    const targetId = this.getAttribute('href');
+                    if (targetId === '#') return;
+                    
+                    const targetElement = document.querySelector(targetId);
+                    if (targetElement) {
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
-    

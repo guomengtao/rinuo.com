@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My History - Bookmarks & Recent Visits</title>
+  <meta name="description" content="View and manage all your bookmarked resources and recent visits in one place.">
+  <meta property="og:title" content="My History - Bookmarks & Recent Visits">
+  <meta property="og:description" content="View and manage all your bookmarked resources and recent visits in one place.">
+  <meta property="og:type" content="website">
+  <link rel="canonical" href="https://rinuo.com/my-history.html">
+  
+  <!-- External Resources -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4F46E5', // Indigo for trust and professionalism
+            secondary: '#10B981', // Green for action and positivity
+            accent: '#F59E0B', // Amber for attention
+            dark: {
+              bg: '#111827',
+              card: '#1F2937',
+              text: '#F3F4F6',
+              border: '#374151'
+            },
+            light: {
+              bg: '#F9FAFB',
+              card: '#FFFFFF',
+              text: '#111827',
+              border: '#E5E7EB'
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+  
+  <!-- Custom Utilities -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .hero-gradient {
+        background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg;
+      }
+      .btn-secondary {
+        @apply bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300;
+      }
+      .category-card {
+        @apply bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border card-hover;
+      }
+      .text-balance {
+        text-wrap: balance;
+      }
+      .history-card {
+        @apply bg-light-card dark:bg-dark-card rounded-xl p-5 border border-light-border dark:border-dark-border hover:shadow-lg hover:-translate-y-1 transition-all duration-300;
+      }
+      .hide-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .hide-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text min-h-screen transition-colors duration-300">
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-50 bg-white/95 dark:bg-dark-card/95 backdrop-blur-md shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4 py-4">
+      <div class="flex justify-between items-center">
+        <!-- Logo -->
+        <a href="/" class="flex items-center gap-2">
+          <i class="fa fa-wrench text-primary text-2xl transform rotate-12"></i>
+          <span class="text-xl font-bold">FreeDevTools</span>
+        </a>
+        
+        <!-- Desktop Navigation -->
+        <div class="hidden md:flex items-center gap-8">
+          <a href="/index.html#categories" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Categories</a>
+          <a href="/index.html#popular" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Popular</a>
+          <a href="/index.html#new" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">New</a>
+          <a href="/about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">About</a>
+          <a href="/my-history.html" class="text-primary dark:text-primary font-medium">My History</a>
+          
+          <!-- Theme Toggle -->
+          <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary rounded-full transition-colors" aria-label="Toggle theme">
+            <i id="theme-icon" class="fa fa-moon-o" aria-hidden="true"></i>
+          </button>
+
+          <!-- Theme Toggle Script -->
+          <script>
+            // Theme toggle functionality with single icon
+            const themeToggle = document.getElementById('theme-toggle');
+            const themeIcon = document.getElementById('theme-icon');
+            
+            // Apply saved theme or default to light mode
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+            updateThemeIcon();
+            
+            // Toggle theme function
+            function toggleTheme() {
+              document.documentElement.classList.toggle('dark');
+              const isDark = document.documentElement.classList.contains('dark');
+              localStorage.setItem('theme', isDark ? 'dark' : 'light');
+              updateThemeIcon();
+            }
+            
+            // Update icon based on theme
+            function updateThemeIcon() {
+              const isDark = document.documentElement.classList.contains('dark');
+              themeIcon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
+            }
+            
+            // Add event listener
+            themeToggle.addEventListener('click', toggleTheme);
+          </script>
+        </div>
+        
+        <!-- Mobile Menu Button -->
+        <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 dark:text-gray-300" aria-label="Open menu">
+          <i class="fa fa-bars text-xl"></i>
+        </button>
+      </div>
+      
+      <!-- Mobile Navigation -->
+      <div id="mobile-menu" class="hidden md:hidden mt-4 border-t border-light-border dark:border-dark-border pt-4">
+        <div class="flex flex-col gap-4">
+          <a href="/index.html#categories" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">Categories</a>
+          <a href="/index.html#popular" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">Popular</a>
+          <a href="/index.html#new" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">New</a>
+          <a href="/about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">About</a>
+          <a href="/my-history.html" class="text-primary dark:text-primary font-medium py-2">My History</a>
+        </div>
+      </div>
+    </nav>
+
+  <!-- Mobile Menu Script -->
+  <script>
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    
+    mobileMenuButton.addEventListener('click', () => {
+      mobileMenu.classList.toggle('hidden');
+    });
+  </script>
+
+  <!-- Hero Section -->
+  <section class="hero-gradient text-white py-16">
+    <div class="container mx-auto px-4">
+      <div class="max-w-3xl mx-auto text-center">
+        <h1 class="text-[clamp(1.75rem,4vw,3rem)] font-bold leading-tight mb-4">
+          My History
+        </h1>
+        <p class="text-[clamp(1rem,2vw,1.25rem)] text-white/90 mb-6 max-w-xl mx-auto text-balance">
+          View and manage all your bookmarked resources and recent visits in one place.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-12">
+    <!-- Bookmarks Section -->
+    <section id="bookmarks-section" class="py-12">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h2 class="text-2xl font-bold mb-2">
+            <i class="fa fa-star text-primary mr-2"></i> Bookmarks
+            <span class="bookmarks-count text-sm text-gray-500 dark:text-gray-400 ml-2">(0 items)</span>
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">Resources you've saved for later</p>
+        </div>
+        <button id="clear-bookmarks-btn" class="mt-4 md:mt-0 px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center">
+          <i class="fa fa-trash mr-1"></i> Clear All
+        </button>
+      </div>
+      
+      <!-- 视图切换控件 -->
+      <div class="flex items-center mb-6 view-switcher">
+        <span class="text-sm text-gray-500 dark:text-gray-400 mr-3">View:</span>
+        <button id="view-list" class="view-btn p-2 mr-1 rounded-md bg-primary/10 text-primary">
+          <i class="fa fa-list"></i>
+        </button>
+        <button id="view-card" class="view-btn p-2 mr-1 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-th-large"></i>
+        </button>
+        <button id="view-image" class="view-btn p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-th"></i>
+        </button>
+      </div>
+      
+      <div id="bookmarks-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Bookmark cards will be dynamically inserted here -->
+        <div id="bookmarks-empty" class="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
+          <i class="fa fa-star-o text-5xl mb-4 opacity-30"></i>
+          <p>No bookmarks yet. Save resources by clicking the bookmark button on any page.</p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Recent Visits Section -->
+    <section id="recent-visits-section" class="py-12 mt-16">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h2 class="text-2xl font-bold mb-2">
+            <i class="fa fa-history text-primary mr-2"></i> Recent Visits
+            <span class="visits-count text-sm text-gray-500 dark:text-gray-400 ml-2">(0 items)</span>
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">Resources you've recently explored</p>
+        </div>
+        <button id="clear-visits-btn" class="mt-4 md:mt-0 px-4 py-2 text-sm text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center">
+          <i class="fa fa-trash mr-1"></i> Clear All
+        </button>
+      </div>
+      
+      <!-- 视图切换控件 -->
+      <div class="flex items-center mb-6 view-switcher">
+        <span class="text-sm text-gray-500 dark:text-gray-400 mr-3">View:</span>
+        <button id="visits-view-list" class="view-btn p-2 mr-1 rounded-md bg-primary/10 text-primary">
+          <i class="fa fa-list"></i>
+        </button>
+        <button id="visits-view-card" class="view-btn p-2 mr-1 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-th-large"></i>
+        </button>
+        <button id="visits-view-image" class="view-btn p-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-th"></i>
+        </button>
+      </div>
+      
+      <div id="recent-visits-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <!-- Recent visit cards will be dynamically inserted here -->
+        <div id="visits-empty" class="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
+          <i class="fa fa-clock-o text-5xl mb-4 opacity-30"></i>
+          <p>No recent visits. Start exploring resources to see your history here.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-100 dark:bg-gray-800 py-12 mt-16 border-t border-light-border dark:border-dark-border">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-6 md:mb-0">
+          <div class="flex items-center gap-2 mb-4">
+            <i class="fa fa-wrench text-primary text-2xl transform rotate-12"></i>
+            <span class="text-xl font-bold">FreeDevTools</span>
+          </div>
+          <p class="text-gray-600 dark:text-gray-400 text-center md:text-left max-w-md">
+            Discover 1000+ free developer tools, frameworks, and resources to supercharge your development workflow.
+          </p>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-8">
+          <div>
+            <h4 class="font-semibold mb-3">Site</h4>
+            <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+              <li><a href="/" class="hover:text-primary dark:hover:text-primary transition-colors">Home</a></li>
+              <li><a href="/about.html" class="hover:text-primary dark:hover:text-primary transition-colors">About</a></li>
+              <li><a href="/my-history.html" class="text-primary dark:text-primary">My History</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 class="font-semibold mb-3">Resources</h4>
+            <ul class="space-y-2 text-gray-600 dark:text-gray-400">
+              <li><a href="/index.html#categories" class="hover:text-primary dark:hover:text-primary transition-colors">Categories</a></li>
+              <li><a href="/index.html#popular" class="hover:text-primary dark:hover:text-primary transition-colors">Popular</a></li>
+              <li><a href="/index.html#new" class="hover:text-primary dark:hover:text-primary transition-colors">New</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-light-border dark:border-dark-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <p class="text-gray-500 dark:text-gray-500 text-sm mb-4 md:mb-0">
+          © 2023 FreeDevTools. All rights reserved.
+        </p>
+        
+        <div class="flex gap-4">
+          <a href="#" class="text-gray-500 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <i class="fa fa-github text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-500 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <i class="fa fa-twitter text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-500 dark:text-gray-500 hover:text-primary dark:hover:text-primary transition-colors">
+            <i class="fa fa-linkedin text-xl"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+   
+  <!-- Main Script -->
+  <script type="module" src="./main.js"></script>
+  
+  <!-- History Page Specific Script -->
+  <script type="module">
+    // 定义存储键名
+    const BOOKMARK_KEY = 'bookmarks_v1';
+    const VISIT_HISTORY_KEY = 'recently_visited_pages';
+    
+    // 资源图标映射
+    const RESOURCE_ICONS = {
+      'react': { icon: 'fa-code', bgColor: 'bg-blue-100', textColor: 'text-blue-600', darkBgColor: 'bg-blue-900', darkTextColor: 'text-blue-300' },
+      'vue': { icon: 'fa-code', bgColor: 'bg-green-100', textColor: 'text-green-600', darkBgColor: 'bg-green-900', darkTextColor: 'text-green-300' },
+      'angular': { icon: 'fa-code', bgColor: 'bg-red-100', textColor: 'text-red-600', darkBgColor: 'bg-red-900', darkTextColor: 'text-red-300' },
+      'nodejs': { icon: 'fa-server', bgColor: 'bg-green-100', textColor: 'text-green-600', darkBgColor: 'bg-green-900', darkTextColor: 'text-green-300' },
+      'django': { icon: 'fa-server', bgColor: 'bg-blue-100', textColor: 'text-blue-600', darkBgColor: 'bg-blue-900', darkTextColor: 'text-blue-300' },
+      'docker': { icon: 'fa-cube', bgColor: 'bg-blue-100', textColor: 'text-blue-600', darkBgColor: 'bg-blue-900', darkTextColor: 'text-blue-300' },
+      'mysql': { icon: 'fa-database', bgColor: 'bg-blue-100', textColor: 'text-blue-600', darkBgColor: 'bg-blue-900', darkTextColor: 'text-blue-300' },
+      'mongodb': { icon: 'fa-database', bgColor: 'bg-green-100', textColor: 'text-green-600', darkBgColor: 'bg-green-900', darkTextColor: 'text-green-300' },
+      'vscode': { icon: 'fa-code', bgColor: 'bg-blue-100', textColor: 'text-blue-600', darkBgColor: 'bg-blue-900', darkTextColor: 'text-blue-300' },
+      'figma': { icon: 'fa-paint-brush', bgColor: 'bg-purple-100', textColor: 'text-purple-600', darkBgColor: 'bg-purple-900', darkTextColor: 'text-purple-300' },
+      'github': { icon: 'fa-github', bgColor: 'bg-gray-100', textColor: 'text-gray-600', darkBgColor: 'bg-gray-800', darkTextColor: 'text-gray-300' },
+      'spring-boot': { icon: 'fa-leaf', bgColor: 'bg-green-100', textColor: 'text-green-600', darkBgColor: 'bg-green-900', darkTextColor: 'text-green-300' },
+      'default': { icon: 'fa-wrench', bgColor: 'bg-gray-100', textColor: 'text-gray-600', darkBgColor: 'bg-gray-800', darkTextColor: 'text-gray-300' },
+      'bookmark': { icon: 'fa-star', bgColor: 'bg-yellow-100', textColor: 'text-yellow-600', darkBgColor: 'bg-yellow-900', darkTextColor: 'text-yellow-300' }
+    };
+    
+    // 工具函数
+    function storageAvailable() {
+      try {
+        localStorage.setItem('__t', 't');
+        localStorage.removeItem('__t');
+        return true;
+      } catch (e) {
+        console.error('localStorage not available:', e);
+        return false;
+      }
+    }
+    
+    function readBookmarks() {
+      try {
+        return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+    
+    function readVisits() {
+      try {
+        return JSON.parse(localStorage.getItem(VISIT_HISTORY_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+    
+    function clearBookmarks() {
+      if (confirm('Are you sure you want to clear all bookmarks? This action cannot be undone.')) {
+        localStorage.removeItem(BOOKMARK_KEY);
+        renderBookmarks();
+      }
+    }
+    
+    function clearVisits() {
+      if (confirm('Are you sure you want to clear all visit history? This action cannot be undone.')) {
+        localStorage.removeItem(VISIT_HISTORY_KEY);
+        renderVisits();
+      }
+    }
+    
+    function getIconConfigForSlug(slug) {
+      // 尝试从slug中找到匹配的图标配置
+      for (const key in RESOURCE_ICONS) {
+        if (key !== 'default' && key !== 'bookmark' && slug.toLowerCase().includes(key.toLowerCase())) {
+          return RESOURCE_ICONS[key];
+        }
+      }
+      // 如果没有找到匹配项，返回默认配置
+      return RESOURCE_ICONS.default;
+    }
+    
+    // 格式化时间戳
+    function formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      const now = new Date();
+      const diffInSeconds = Math.floor((now - date) / 1000);
+      
+      if (diffInSeconds < 60) {
+        return `${diffInSeconds} seconds ago`;
+      } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+      } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+      } else if (diffInSeconds < 604800) {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} day${days !== 1 ? 's' : ''} ago`;
+      } else {
+        // 对于超过一周的时间，显示具体日期
+        return date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric'
+        });
+      }
+    }
+    
+    // 安全获取URL的域名
+    function getSafeDomain(url) {
+      try {
+        // 确保URL有协议前缀
+        let safeUrl = url;
+        if (!safeUrl.startsWith('http://') && !safeUrl.startsWith('https://')) {
+          safeUrl = 'https://' + safeUrl;
+        }
+        return new URL(safeUrl).hostname;
+      } catch (e) {
+        console.warn('Invalid URL:', url, e);
+        // 如果解析失败，返回原始URL的一部分或默认值
+        if (typeof url === 'string') {
+          // 尝试提取域名部分
+          const domainMatch = url.match(/^(?:https?:\/\/)?(?:www\.)?([^\/]+)/);
+          return domainMatch ? domainMatch[1] : url.substring(0, 30) + (url.length > 30 ? '...' : '');
+        }
+        return 'unknown';
+      }
+    }
+    
+    // 从URL提取页面slug
+    function extractPageSlug(url) {
+      const parts = url.split('/');
+      const fileName = parts[parts.length - 1];
+      const slug = fileName.split('.')[0];
+      return slug;
+    }
+    
+    // 删除单个书签
+    function removeBookmark(bookmarkUrl) {
+      const bookmarks = readBookmarks();
+      const updatedBookmarks = bookmarks.filter(bookmark => bookmark.url !== bookmarkUrl);
+      localStorage.setItem(BOOKMARK_KEY, JSON.stringify(updatedBookmarks));
+      renderBookmarks();
+    }
+    
+    // 创建书签卡片
+    function createBookmarkCard(bookmark, viewMode) {
+      const card = document.createElement('div');
+      
+      // 获取图标配置
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const slug = extractPageSlug(bookmark.url);
+      const iconConfig = getIconConfigForSlug(slug);
+      const bgColor = isDarkMode ? iconConfig.darkBgColor : iconConfig.bgColor;
+      const textColor = isDarkMode ? iconConfig.darkTextColor : iconConfig.textColor;
+      
+      // 格式化时间
+      const formattedTime = bookmark.ts ? formatTimestamp(bookmark.ts) : '';
+      
+      // 为资源生成默认图片URL - 使用picsum.photos随机图片
+      // 确保URL格式正确
+      const imageUrl = `https://picsum.photos/400/225?random=${Math.floor(Math.random() * 1000)}`;
+      console.log('Bookmark image URL:', imageUrl);
+      
+      // 根据视图模式创建不同的卡片内容
+      if (viewMode === VIEW_MODES.IMAGE) {
+        // 图片视图 - 卡片式内嵌背景图布局
+        card.className = 'bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover relative';
+        card.innerHTML = `
+          <a href="${bookmark.url}" class="block group">
+            <img src="${imageUrl}" alt="${bookmark.title || bookmark.url}" class="w-full h-36 object-cover" />
+            <div class="p-4">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-semibold text-lg">${bookmark.title}</h3>
+                <span class="bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary text-xs px-2 py-1 rounded">Bookmark</span>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">${getSafeDomain(bookmark.url)}</p>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                ${formattedTime}
+              </div>
+            </div>
+          </a>
+          <button class="delete-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100/90 dark:bg-gray-800/90 text-gray-500 dark:text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors z-10">
+            <i class="fa fa-times text-sm"></i>
+          </button>
+        `;
+      } else {
+        // 列表和卡片视图使用相同的内容结构
+        card.className = 'history-card relative';
+        card.innerHTML = `
+          <a href="${bookmark.url}" class="flex items-start gap-4 h-full">
+            <div class="w-10 h-10 rounded-full ${bgColor} ${textColor} flex items-center justify-center flex-shrink-0">
+              <i class="fa ${iconConfig.icon}"></i>
+            </div>
+            <div class="flex-grow">
+              <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1 line-clamp-1">${bookmark.title}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
+                ${bookmark.url}
+              </p>
+              <div class="mt-auto text-xs text-gray-400 dark:text-gray-500">
+                <span>${formattedTime}</span>
+                <span class="ml-2 text-primary dark:text-primary"><i class="fa fa-star"></i></span>
+              </div>
+            </div>
+          </a>
+          <button class="delete-btn absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors z-10">
+            <i class="fa fa-times"></i>
+          </button>
+        `;
+      }
+      
+      // 添加删除按钮事件监听
+      const deleteBtn = card.querySelector('.delete-btn');
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        removeBookmark(bookmark.url);
+      });
+      
+      return card;
+    }
+    
+    // 删除单个访问记录
+    function removeVisit(visitUrl) {
+      const visits = readVisits();
+      const updatedVisits = visits.filter(visit => visit.url !== visitUrl);
+      localStorage.setItem(VISIT_HISTORY_KEY, JSON.stringify(updatedVisits));
+      renderVisits();
+    }
+    
+    // 创建访问记录卡片
+    function createVisitCard(visit, viewMode) {
+      const card = document.createElement('div');
+      
+      // 获取图标配置
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const iconConfig = getIconConfigForSlug(visit.slug);
+      const bgColor = isDarkMode ? iconConfig.darkBgColor : iconConfig.bgColor;
+      const textColor = isDarkMode ? iconConfig.darkTextColor : iconConfig.textColor;
+      
+      // 格式化时间
+      const formattedTime = formatTimestamp(visit.timestamp);
+      
+      // 为资源生成默认图片URL - 使用picsum.photos随机图片
+      // 确保URL格式正确
+      const imageUrl = `https://picsum.photos/400/225?random=${Math.floor(Math.random() * 1000)}`;
+      console.log('Visit image URL:', imageUrl);
+      
+      // 根据视图模式创建不同的卡片内容
+      if (viewMode === VIEW_MODES.IMAGE) {
+        // 图片视图 - 卡片式内嵌背景图布局
+        card.className = 'bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover relative';
+        card.innerHTML = `
+          <a href="${visit.url}" class="block group">
+            <img src="${imageUrl}" alt="${visit.title || visit.url}" class="w-full h-36 object-cover" />
+            <div class="p-4">
+              <div class="flex justify-between items-start mb-2">
+                <h3 class="font-semibold text-lg">${visit.title}</h3>
+                <span class="bg-secondary/10 text-secondary dark:bg-secondary/20 dark:text-secondary text-xs px-2 py-1 rounded">Visit</span>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2">${getSafeDomain(visit.url)}</p>
+              <div class="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                <span>${formattedTime}</span>
+                <span class="flex items-center">
+                  <i class="fa fa-eye mr-1"></i>
+                  <span>${visit.count || 1}x</span>
+                </span>
+              </div>
+            </div>
+          </a>
+          <button class="delete-btn absolute top-2 right-2 w-7 h-7 flex items-center justify-center rounded-full bg-gray-100/90 dark:bg-gray-800/90 text-gray-500 dark:text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors z-10">
+            <i class="fa fa-times text-sm"></i>
+          </button>
+        `;
+      } else {
+        // 列表和卡片视图使用相同的内容结构
+        card.className = 'history-card relative';
+        card.innerHTML = `
+          <a href="${visit.url}" class="flex items-start gap-4 h-full">
+            <div class="w-10 h-10 rounded-full ${bgColor} ${textColor} flex items-center justify-center flex-shrink-0">
+              <i class="fa ${iconConfig.icon}"></i>
+            </div>
+            <div class="flex-grow">
+              <h3 class="font-medium text-gray-900 dark:text-gray-100 mb-1 line-clamp-1">${visit.title}</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400 mb-2 line-clamp-2">
+                ${visit.url}
+              </p>
+              <div class="mt-auto text-xs text-gray-400 dark:text-gray-500 flex items-center justify-between">
+                <span>${formattedTime}</span>
+                <span class="flex items-center text-gray-500 dark:text-gray-400">
+                  <i class="fa fa-eye mr-1"></i>
+                  <span>${visit.count || 1}x</span>
+                </span>
+              </div>
+            </div>
+          </a>
+          <button class="delete-btn absolute top-3 right-3 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-red-100 hover:text-red-500 dark:hover:bg-red-900/30 dark:hover:text-red-400 transition-colors z-10">
+            <i class="fa fa-times"></i>
+          </button>
+        `;
+      }
+      
+      // 添加删除按钮事件监听
+      const deleteBtn = card.querySelector('.delete-btn');
+      deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        removeVisit(visit.url);
+      });
+      
+      return card;
+    }
+    
+    // 视图模式常量
+    const VIEW_MODES = {
+      LIST: 'list',
+      CARD: 'card',
+      IMAGE: 'image'
+    };
+    
+    // 获取书签视图模式
+    function getBookmarksViewMode() {
+      return localStorage.getItem('bookmarksViewMode') || VIEW_MODES.LIST;
+    }
+    
+    // 设置书签视图模式
+    function setBookmarksViewMode(mode) {
+      localStorage.setItem('bookmarksViewMode', mode);
+    }
+    
+    // 获取访问记录视图模式
+    function getVisitsViewMode() {
+      return localStorage.getItem('visitsViewMode') || VIEW_MODES.LIST;
+    }
+    
+    // 设置访问记录视图模式
+    function setVisitsViewMode(mode) {
+      localStorage.setItem('visitsViewMode', mode);
+    }
+    
+    // 更新书签总数显示
+    function updateBookmarksCount() {
+      const bookmarks = readBookmarks();
+      const countElement = document.querySelector('.bookmarks-count');
+      if (countElement) {
+        countElement.textContent = `(${bookmarks.length} items)`;
+      }
+    }
+    
+    // 更新访问记录总数显示
+    function updateVisitsCount() {
+      const visits = readVisits();
+      const countElement = document.querySelector('.visits-count');
+      if (countElement) {
+        countElement.textContent = `(${visits.length} items)`;
+      }
+    }
+    
+    // 设置书签视图样式
+    function setBookmarksViewStyle(mode) {
+      const container = document.getElementById('bookmarks-container');
+      if (!container) return;
+      
+      // 重置所有样式
+      container.className = '';
+      
+      // 设置相应的样式
+      switch(mode) {
+        case VIEW_MODES.LIST:
+          container.className = 'flex flex-col gap-4';
+          break;
+        case VIEW_MODES.CARD:
+          container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+          break;
+        case VIEW_MODES.IMAGE:
+          container.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4';
+          break;
+      }
+    }
+    
+    // 设置访问记录视图样式
+    function setVisitsViewStyle(mode) {
+      const container = document.getElementById('recent-visits-container');
+      if (!container) return;
+      
+      // 重置所有样式
+      container.className = '';
+      
+      // 设置相应的样式
+      switch(mode) {
+        case VIEW_MODES.LIST:
+          container.className = 'flex flex-col gap-4';
+          break;
+        case VIEW_MODES.CARD:
+          container.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6';
+          break;
+        case VIEW_MODES.IMAGE:
+          container.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4';
+          break;
+      }
+    }
+    
+    // 更新视图按钮状态
+    function updateViewButtons(section) {
+      let currentMode;
+      let buttons = [];
+      
+      if (section === 'bookmarks') {
+        currentMode = getBookmarksViewMode();
+        buttons = [
+          document.getElementById('view-list'),
+          document.getElementById('view-card'),
+          document.getElementById('view-image')
+        ];
+      } else if (section === 'visits') {
+        currentMode = getVisitsViewMode();
+        buttons = [
+          document.getElementById('visits-view-list'),
+          document.getElementById('visits-view-card'),
+          document.getElementById('visits-view-image')
+        ];
+      }
+      
+      if (!buttons || buttons.some(btn => !btn)) return;
+      
+      // 重置所有按钮样式
+      buttons.forEach(btn => {
+        btn.className = 'view-btn p-2 mr-1 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800';
+      });
+      
+      // 设置当前选中按钮样式
+      if (currentMode === VIEW_MODES.LIST) {
+        buttons[0].className = 'view-btn p-2 mr-1 rounded-md bg-primary/10 text-primary';
+      } else if (currentMode === VIEW_MODES.CARD) {
+        buttons[1].className = 'view-btn p-2 mr-1 rounded-md bg-primary/10 text-primary';
+      } else if (currentMode === VIEW_MODES.IMAGE) {
+        buttons[2].className = 'view-btn p-2 rounded-md bg-primary/10 text-primary';
+      }
+    }
+    
+    // 初始化视图切换功能
+    function initViewSwitching() {
+      // 书签视图切换
+      document.getElementById('view-list')?.addEventListener('click', () => {
+        setBookmarksViewMode(VIEW_MODES.LIST);
+        updateViewButtons('bookmarks');
+        setBookmarksViewStyle(VIEW_MODES.LIST);
+        renderBookmarks();
+      });
+      
+      document.getElementById('view-card')?.addEventListener('click', () => {
+        setBookmarksViewMode(VIEW_MODES.CARD);
+        updateViewButtons('bookmarks');
+        setBookmarksViewStyle(VIEW_MODES.CARD);
+        renderBookmarks();
+      });
+      
+      document.getElementById('view-image')?.addEventListener('click', () => {
+        setBookmarksViewMode(VIEW_MODES.IMAGE);
+        updateViewButtons('bookmarks');
+        setBookmarksViewStyle(VIEW_MODES.IMAGE);
+        renderBookmarks();
+      });
+      
+      // 访问记录视图切换
+      document.getElementById('visits-view-list')?.addEventListener('click', () => {
+        setVisitsViewMode(VIEW_MODES.LIST);
+        updateViewButtons('visits');
+        setVisitsViewStyle(VIEW_MODES.LIST);
+        renderVisits();
+      });
+      
+      document.getElementById('visits-view-card')?.addEventListener('click', () => {
+        setVisitsViewMode(VIEW_MODES.CARD);
+        updateViewButtons('visits');
+        setVisitsViewStyle(VIEW_MODES.CARD);
+        renderVisits();
+      });
+      
+      document.getElementById('visits-view-image')?.addEventListener('click', () => {
+        setVisitsViewMode(VIEW_MODES.IMAGE);
+        updateViewButtons('visits');
+        setVisitsViewStyle(VIEW_MODES.IMAGE);
+        renderVisits();
+      });
+    }
+    
+    // 渲染书签
+    function renderBookmarks() {
+      const bookmarksContainer = document.getElementById('bookmarks-container');
+      const bookmarksEmpty = document.getElementById('bookmarks-empty');
+      const bookmarks = readBookmarks();
+      const currentViewMode = getBookmarksViewMode();
+      
+      // 更新总数显示
+      updateBookmarksCount();
+      
+      // 清空容器
+      bookmarksContainer.innerHTML = '';
+      
+      if (bookmarks.length === 0) {
+        // 显示空状态
+        bookmarksContainer.appendChild(bookmarksEmpty);
+      } else {
+        // 创建并添加书签卡片
+        bookmarks.forEach(bookmark => {
+          const card = createBookmarkCard(bookmark, currentViewMode);
+          bookmarksContainer.appendChild(card);
+        });
+      }
+    }
+    
+    // 渲染最近访问记录
+    function renderVisits() {
+      const visitsContainer = document.getElementById('recent-visits-container');
+      const visitsEmpty = document.getElementById('visits-empty');
+      const visits = readVisits();
+      const currentViewMode = getVisitsViewMode();
+      
+      // 更新总数显示
+      updateVisitsCount();
+      
+      // 清空容器
+      visitsContainer.innerHTML = '';
+      
+      if (visits.length === 0) {
+        // 显示空状态
+        visitsContainer.appendChild(visitsEmpty);
+      } else {
+        // 创建并添加访问记录卡片
+        visits.forEach(visit => {
+          const card = createVisitCard(visit, currentViewMode);
+          visitsContainer.appendChild(card);
+        });
+      }
+    }
+    
+    // 初始化页面
+    function initHistoryPage() {
+      if (!storageAvailable()) {
+        document.getElementById('bookmarks-container').innerHTML = `
+          <div class="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
+            <i class="fa fa-exclamation-circle text-5xl mb-4 text-red-500"></i>
+            <p>Browser storage is not available. Please enable it to use this feature.</p>
+          </div>
+        `;
+        document.getElementById('recent-visits-container').innerHTML = `
+          <div class="col-span-full py-12 text-center text-gray-500 dark:text-gray-400">
+            <i class="fa fa-exclamation-circle text-5xl mb-4 text-red-500"></i>
+            <p>Browser storage is not available. Please enable it to use this feature.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // 初始化视图模式
+      const bookmarksViewMode = getBookmarksViewMode();
+      const visitsViewMode = getVisitsViewMode();
+      
+      setBookmarksViewStyle(bookmarksViewMode);
+      setVisitsViewStyle(visitsViewMode);
+      
+      // 初始化视图切换功能
+      initViewSwitching();
+      
+      // 更新视图按钮状态
+      updateViewButtons('bookmarks');
+      updateViewButtons('visits');
+      
+      // 渲染书签和访问记录
+      renderBookmarks();
+      renderVisits();
+      
+      // 添加清除按钮事件监听
+      document.getElementById('clear-bookmarks-btn').addEventListener('click', clearBookmarks);
+      document.getElementById('clear-visits-btn').addEventListener('click', clearVisits);
+    }
+    
+    // 页面加载完成后初始化
+    document.addEventListener('DOMContentLoaded', initHistoryPage);
+  </script>
+</body>
+</html>

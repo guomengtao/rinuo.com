@@ -141,6 +141,9 @@
           <button id="card-view-btn" class="px-3 py-1 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm transition-all duration-200">
             <i class="fa fa-th-large mr-1"></i> Card
           </button>
+          <button id="image-view-btn" class="px-3 py-1 rounded text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 text-sm transition-all duration-200">
+            <i class="fa fa-picture-o mr-1"></i> Image
+          </button>
         </div>
       </div>
       
@@ -167,6 +170,11 @@
                   Popularity
                   <i class="fa fa-sort sort-indicator"></i>
                 </th>
+                <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider sortable-header" data-sort="favorite">
+                  <i class="fa fa-heart mr-1"></i>
+                  Favorite
+                  <i class="fa fa-sort sort-indicator"></i>
+                </th>
               </tr>
             </thead>
             <tbody id="tools-table-body" class="bg-white dark:bg-dark-card divide-y divide-light-border dark:divide-dark-border">
@@ -179,6 +187,13 @@
         <div id="card-view" class="hidden p-4">
           <div id="tools-card-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
             <!-- 卡片内容将通过JS动态生成 -->
+          </div>
+        </div>
+        
+        <!-- 带图视图 -->
+        <div id="image-view" class="hidden p-4">
+          <div id="tools-image-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            <!-- 带图卡片内容将通过JS动态生成 -->
           </div>
         </div>
       </div>
@@ -219,11 +234,43 @@
     let categories = {};
     let allTags = new Set();
     let activeCategory = 'all'; // 默认选中All Tools
-    let currentView = 'table'; // 默认表格视图
+    // 从localStorage读取上次保存的视图，如果没有则使用默认表格视图
+    let currentView = localStorage.getItem('preferredView') || 'table';
     let sortConfig = {
       key: null,
       direction: 'asc' // 'asc' 或 'desc'
     };
+    // 添加带图视图模式
+    const VIEW_MODES = {
+      TABLE: 'table',
+      CARD: 'card',
+      IMAGE: 'image'
+    };
+    // 使用与项目其他部分一致的收藏键名
+    const BOOKMARK_KEY = 'bookmarks_v1';
+    // 获取收藏的工具列表
+    let favorites = JSON.parse(localStorage.getItem('favoritedTools') || '[]');
+    // 兼容项目其他部分的收藏数据格式
+    function syncFavorites() {
+      const bookmarks = readBookmarks();
+      if (bookmarks.length > 0) {
+        // 转换为当前页面使用的格式
+        favorites = bookmarks.map(b => b.url.split('/').pop());
+        localStorage.setItem('favoritedTools', JSON.stringify(favorites));
+      }
+    }
+    // 读取收藏数据（与项目其他部分保持一致）
+    function readBookmarks() {
+      try {
+        return JSON.parse(localStorage.getItem(BOOKMARK_KEY) || '[]');
+      } catch {
+        return [];
+      }
+    }
+    // 写入收藏数据（与项目其他部分保持一致）
+    function writeBookmarks(list) {
+      localStorage.setItem(BOOKMARK_KEY, JSON.stringify(list));
+    }
     
     // DOM 元素
     const categoriesNav = document.getElementById('categories-nav');
@@ -233,10 +280,13 @@
     const resultsCountEl = document.getElementById('results-count');
     const toolsTableBody = document.getElementById('tools-table-body');
     const toolsCardContainer = document.getElementById('tools-card-container');
+    const toolsImageContainer = document.getElementById('tools-image-container');
     const tableView = document.getElementById('table-view');
     const cardView = document.getElementById('card-view');
+    const imageView = document.getElementById('image-view');
     const tableViewBtn = document.getElementById('table-view-btn');
     const cardViewBtn = document.getElementById('card-view-btn');
+    const imageViewBtn = document.getElementById('image-view-btn');
     const themeToggle = document.getElementById('theme-toggle');
     const lightIcon = document.getElementById('light-icon');
     const darkIcon = document.getElementById('dark-icon');
@@ -246,6 +296,9 @@
       try {
         // Check user's preferred theme mode
         checkPreferredTheme();
+        
+        // 同步收藏数据
+        syncFavorites();
         
         // 检查URL参数是否有搜索词
         const urlParams = new URLSearchParams(window.location.search);
@@ -299,6 +352,11 @@
         
         // Theme toggle event
         themeToggle.addEventListener('click', toggleTheme);
+        
+        // 设置初始视图模式（根据localStorage中的值）
+        setTimeout(() => {
+          switchView(currentView);
+        }, 100);
         
       } catch (error) {
         categoriesNav.innerHTML = `
@@ -354,6 +412,62 @@
       } else {
         enableDarkMode();
       }
+    }
+
+    // 切换工具的收藏状态
+    function toggleFavorite(toolId) {
+      // 检查工具是否已收藏
+      const index = favorites.indexOf(toolId);
+      
+      if (index > -1) {
+        // 如果已收藏，则取消收藏
+        favorites.splice(index, 1);
+        // 同时从项目全局收藏中移除
+        const bookmarks = readBookmarks();
+        const bookmarkIndex = bookmarks.findIndex(b => b.url === `/free/detail/${toolId}`);
+        if (bookmarkIndex > -1) {
+          bookmarks.splice(bookmarkIndex, 1);
+          writeBookmarks(bookmarks);
+        }
+      } else {
+        // 如果未收藏，则添加到收藏
+        favorites.push(toolId);
+        // 同时添加到项目全局收藏
+        const tool = toolsData.find(t => t.file === toolId);
+        if (tool) {
+          const bookmarks = readBookmarks();
+          bookmarks.unshift({
+            title: tool.name,
+            url: `/free/detail/${toolId}`,
+            ts: Date.now()
+          });
+          writeBookmarks(bookmarks);
+        }
+      }
+      
+      // 保存更新后的收藏列表到localStorage
+      localStorage.setItem('favoritedTools', JSON.stringify(favorites));
+      
+      // 只更新点击的按钮状态，而不是重新渲染所有视图
+      const buttons = document.querySelectorAll(`[data-tool-id="${toolId}"]`);
+      buttons.forEach(btn => {
+        const isFav = isFavorited(toolId);
+        const icon = btn.querySelector('i');
+        if (icon) {
+          icon.className = isFav ? 'fa fa-heart text-red-500' : 'fa fa-heart-o';
+        }
+      });
+      
+      // 如果当前正在按收藏排序，重新排序
+      if (sortConfig.key === 'favorite') {
+        sortTools();
+        renderTools();
+      }
+    }
+    
+    // 检查工具是否已收藏
+    function isFavorited(toolId) {
+      return favorites.includes(toolId);
     }
 
     // 加载工具数据
@@ -546,6 +660,18 @@
             valueA = a.popularity;
             valueB = b.popularity;
             break;
+          case 'favorite':
+            // 按收藏状态排序
+            valueA = isFavorited(a.file) ? 1 : 0;
+            valueB = isFavorited(b.file) ? 1 : 0;
+            // 特殊处理：收藏的排在前面
+            if (valueA !== valueB) {
+              return sortConfig.direction === 'asc' ? valueB - valueA : valueA - valueB;
+            }
+            // 如果收藏状态相同，默认按名称排序
+            valueA = a.name.toLowerCase();
+            valueB = b.name.toLowerCase();
+            break;
           default:
             return 0;
         }
@@ -573,13 +699,99 @@
       }
     }
 
-    // 渲染工具列表（表格和卡片视图）
+    // 渲染工具列表（表格、卡片和图片视图）
     function renderTools() {
       // 渲染表格视图
       renderTableView();
       
       // 渲染卡片视图
       renderCardView();
+      
+      // 渲染带图视图
+      renderImageView();
+    }
+    
+    // Render image view with flat rectangular images
+    function renderImageView() {
+      if (filteredTools.length === 0) {
+        toolsImageContainer.innerHTML = `
+          <div class="col-span-full bg-gray-50 dark:bg-gray-800 rounded-lg p-6 text-center">
+            <i class="fa fa-search text-gray-300 dark:text-gray-600 text-2xl mb-2"></i>
+            <p class="text-gray-500 dark:text-gray-400 text-sm">No matching tools found</p>
+          </div>
+        `;
+        return;
+      }
+      toolsImageContainer.innerHTML = filteredTools.map(tool => {
+        const toolLink = `/free/detail/${tool.file}`;
+        // 为每个工具生成随机图片URL（使用picsum.photos）
+        const imageUrl = `https://picsum.photos/400/180?random=${Math.floor(Math.random() * 1000)}`;
+        
+        return `
+          <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover relative">
+            <a href="${toolLink}" class="block group">
+              <img src="${imageUrl}" alt="${tool.name}" class="w-full h-32 object-cover rounded-t-xl" />
+                <button class="favorite-btn absolute top-3 right-3 bg-black bg-opacity-30 text-white hover:text-yellow-500 p-1 rounded-full transition-colors z-10" data-tool-id="${tool.file}">
+                  <i class="fa ${isFavorited(tool.file) ? 'fa-star text-yellow-500' : 'fa-star-o'}"></i>
+                </button>
+              <div class="p-3">
+                <h3 class="font-semibold text-sm mb-1 group-hover:text-primary transition-colors">
+                  ${tool.name}
+                </h3>
+                <div class="flex items-center justify-between">
+                  <span class="category-item bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded text-xs" data-category="${tool.category}">
+                    ${tool.category}
+                  </span>
+                  <div class="flex flex-wrap gap-1">
+                    ${tool.tags.slice(0, 2).map(tag => `
+                      <span class="tag-item tag-item-primary" data-tag="${tag}">
+                        ${tag}
+                      </span>
+                    `).join('')}
+                    ${tool.tags.length > 2 ? `
+                      <span class="tag-item bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400" data-more-tags="${tool.tags.slice(2).join(',')}">
+                        +${tool.tags.length - 2}
+                      </span>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+            </a>
+          </div>
+        `;
+      }).join('');
+      
+      // Category click event in image view
+      document.querySelectorAll('#tools-image-container .category-item').forEach(catEl => {
+        catEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const category = catEl.dataset.category;
+          filterByCategory(category);
+        });
+      });
+      
+      // Tag click event in image view
+      document.querySelectorAll('#tools-image-container .tag-item').forEach(tagEl => {
+        tagEl.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (tagEl.dataset.tag) {
+            const tag = tagEl.dataset.tag;
+            filterByTag(tag);
+          }
+        });
+      });
+      
+      // Favorite button click event in image view
+      document.querySelectorAll('#tools-image-container .favorite-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const toolId = btn.dataset.toolId;
+          toggleFavorite(toolId);
+        });
+      });
     }
 
     // Render table view
@@ -587,7 +799,7 @@
       if (filteredTools.length === 0) {
         toolsTableBody.innerHTML = `
           <tr>
-            <td colspan="4" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+            <td colspan="5" class="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
               No matching tools found
             </td>
           </tr>
@@ -635,6 +847,11 @@
                 <span class="text-xs text-gray-400 ml-2">${Math.round(tool.popularity * 100)}%</span>
               </div>
             </td>
+            <td class="px-4 py-3 text-center">
+              <button class="favorite-btn text-gray-400 hover:text-yellow-500 transition-colors" data-tool-id="${tool.file}">
+                <i class="fa ${isFavorited(tool.file) ? 'fa-star text-yellow-500' : 'fa-star-o'}"></i>
+              </button>
+            </td>
           </tr>
         `;
       }).join('');
@@ -650,6 +867,16 @@
         tagEl.addEventListener('click', () => {
           const tag = tagEl.dataset.tag;
           filterByTag(tag);
+        });
+      });
+      
+      // Favorite button click event in table
+      document.querySelectorAll('#tools-table-body .favorite-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const toolId = btn.dataset.toolId;
+          toggleFavorite(toolId);
         });
       });
     }
@@ -678,7 +905,10 @@
         }
         const popWidth = Math.round(tool.popularity * 100);
         return `
-          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-light-border dark:border-dark-border shadow-sm p-3 card-hover flex flex-col h-full">
+          <div class="bg-gray-50 dark:bg-gray-800 rounded-lg border border-light-border dark:border-dark-border shadow-sm p-3 card-hover flex flex-col h-full relative">
+            <button class="favorite-btn absolute top-3 right-3 text-gray-400 hover:text-yellow-500 transition-colors z-10" data-tool-id="${tool.file}">
+              <i class="fa ${isFavorited(tool.file) ? 'fa-star text-yellow-500' : 'fa-star-o'}"></i>
+            </button>
             <h3 class="font-semibold text-base mb-2">
               <a href="${toolLink}" class="text-primary hover:underline transition-colors duration-200" target="_blank">
                 ${tool.name}
@@ -721,6 +951,16 @@
           filterByTag(tag);
         });
       });
+      
+      // Favorite button click event in cards
+      document.querySelectorAll('#tools-card-container .favorite-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const toolId = btn.dataset.toolId;
+          toggleFavorite(toolId);
+        });
+      });
     }
 
     // 按标签筛选工具
@@ -743,24 +983,52 @@
       renderTools();
     }
 
-    // 切换视图模式（表格/卡片）
+    // 切换视图模式（表格/卡片/图片）
     function switchView(viewType) {
       currentView = viewType;
       
+      // 保存当前视图选择到localStorage
+      localStorage.setItem('preferredView', viewType);
+      
       if (viewType === 'table') {
+        // 显示表格视图，隐藏其他视图
         tableView.classList.remove('hidden');
         cardView.classList.add('hidden');
+        imageView.classList.add('hidden');
+        
+        // 更新按钮样式
         tableViewBtn.classList.add('bg-primary', 'text-white');
         tableViewBtn.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
         cardViewBtn.classList.remove('bg-primary', 'text-white');
         cardViewBtn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
-      } else {
+        imageViewBtn.classList.remove('bg-primary', 'text-white');
+        imageViewBtn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+      } else if (viewType === 'card') {
+        // 显示卡片视图，隐藏其他视图
         tableView.classList.add('hidden');
         cardView.classList.remove('hidden');
+        imageView.classList.add('hidden');
+        
+        // 更新按钮样式
         cardViewBtn.classList.add('bg-primary', 'text-white');
         cardViewBtn.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
         tableViewBtn.classList.remove('bg-primary', 'text-white');
         tableViewBtn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+        imageViewBtn.classList.remove('bg-primary', 'text-white');
+        imageViewBtn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+      } else if (viewType === 'image') {
+        // 显示图片视图，隐藏其他视图
+        tableView.classList.add('hidden');
+        cardView.classList.add('hidden');
+        imageView.classList.remove('hidden');
+        
+        // 更新按钮样式
+        imageViewBtn.classList.add('bg-primary', 'text-white');
+        imageViewBtn.classList.remove('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+        tableViewBtn.classList.remove('bg-primary', 'text-white');
+        tableViewBtn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+        cardViewBtn.classList.remove('bg-primary', 'text-white');
+        cardViewBtn.classList.add('text-gray-600', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
       }
     }
 
@@ -776,6 +1044,7 @@
     clearSearchBtn.addEventListener('click', clearSearch);
     tableViewBtn.addEventListener('click', () => switchView('table'));
     cardViewBtn.addEventListener('click', () => switchView('card'));
+    imageViewBtn.addEventListener('click', () => switchView('image'));
 
     // 页面加载完成后初始化
     window.addEventListener('DOMContentLoaded', init);
