@@ -312,15 +312,15 @@ function initBookmarkBtn(selectorOrElement){
         const icon = btn.querySelector('i');
         if(icon){
             if(isBookmarkedState){
-                if(icon.classList.contains('fa-bookmark-o') || icon.classList.contains('fa-heart-o') || icon.classList.contains('fa-star-o')){
-                    icon.classList.remove('fa-bookmark-o', 'fa-heart-o', 'fa-star-o');
-                    icon.classList.add('fa-bookmark', 'fa-heart', 'fa-star');
-                }
+                // 移除所有可能的未选中状态图标
+                icon.classList.remove('fa-bookmark-o', 'fa-heart-o', 'fa-star-o');
+                // 只添加五角星选中状态图标
+                icon.classList.add('fa-star');
             } else {
-                if(icon.classList.contains('fa-bookmark') || icon.classList.contains('fa-heart') || icon.classList.contains('fa-star')){
-                    icon.classList.remove('fa-bookmark', 'fa-heart', 'fa-star');
-                    icon.classList.add('fa-bookmark-o', 'fa-heart-o', 'fa-star-o');
-                }
+                // 移除所有可能的选中状态图标
+                icon.classList.remove('fa-bookmark', 'fa-heart', 'fa-star');
+                // 只添加五角星未选中状态图标
+                icon.classList.add('fa-star-o');
             }
         }
         

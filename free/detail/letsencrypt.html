@@ -1,1783 +1,1188 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Let's Encrypt - 免费的 SSL/TLS 证书</title>
-    <!-- 引入Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入Font Awesome -->
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <title>Let's Encrypt - Free SSL/TLS Certificates</title>
     
-    <!-- 配置Tailwind自定义颜色和字体 -->
+    <!-- Google SEO Meta Tags -->
+    <meta name="description" content="Let's Encrypt provides free SSL/TLS certificates to secure websites. Learn about its technology, founders, origin, and how to use it for free." />
+    <meta name="keywords" content="Let's Encrypt, SSL, TLS, free certificates, HTTPS, web security, certificate authority" />
+    <meta name="author" content="Let's Encrypt" />
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta property="og:title" content="Let's Encrypt - Free SSL/TLS Certificates" />
+    <meta property="og:description" content="Secure your website with free SSL/TLS certificates from Let's Encrypt." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://example.com/letsencrypt" />
+    <meta property="og:image" content="https://picsum.photos/id/0/1200/630" />
+    <meta property="og:site_name" content="Let's Encrypt" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Let's Encrypt - Free SSL/TLS Certificates" />
+    <meta name="twitter:description" content="Secure your website with free SSL/TLS certificates from Let's Encrypt." />
+    <meta name="twitter:image" content="https://picsum.photos/id/0/1200/630" />
+    
+    <!-- External Resources -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#34D399', // Let's Encrypt 绿色调
-                        secondary: '#60A5FA', // 辅助蓝色
-                        accent: '#A78BFA', // 强调紫色
-                        dark: '#121212',
-                        darker: '#0A0A0A',
-                        'dark-card': '#1E1E1E',
-                        'dark-hover': '#2D2D2D'
+                        primary: '#3490dc',
+                        secondary: '#6366f1',
+                        accent: '#10b981',
+                        dark: {
+                            primary: '#1e40af',
+                            secondary: '#4338ca',
+                            accent: '#059669',
+                            background: '#111827',
+                            card: '#1f2937'
+                        }
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
                     },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.7s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
                 }
             }
         }
     </script>
     
-    <!-- 自定义工具类 -->
+    <!-- Custom Styles -->
     <style type="text/tailwindcss">
         @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
             .text-gradient {
                 background-clip: text;
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
-            .card-hover {
-                transition: transform 0.3s ease, box-shadow 0.3s ease;
+            .backdrop-blur {
+                backdrop-filter: blur(8px);
             }
-            .card-hover:hover {
-                transform: translateY(-5px);
-            }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
-            }
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-            .code-block {
-                background-color: rgba(17, 25, 40, 0.9);
-                border-radius: 0.5rem;
-                padding: 1rem;
-                overflow-x: auto;
-                font-family: 'Fira Code', monospace;
-                font-size: 0.875rem;
-                line-height: 1.5;
-            }
-        }
-    </style>
-    
-    <style>
-        /* 基础动画 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease forwards;
-        }
-        
-        /* 滚动触发动画 */
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease;
-        }
-        
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* 平滑滚动 */
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        /* 代码高亮样式 */
-        .token.comment,
-        .token.prolog,
-        .token.doctype,
-        .token.cdata {
-            color: #6b7280;
-        }
-        .token.punctuation {
-            color: #d1d5db;
-        }
-        .token.property,
-        .token.tag,
-        .token.boolean,
-        .token.number,
-        .token.constant,
-        .token.symbol,
-        .token.deleted {
-            color: #fbbf24;
-        }
-        .token.selector,
-        .token.attr-name,
-        .token.string,
-        .token.char,
-        .token.builtin,
-        .token.inserted {
-            color: #10b981;
-        }
-        .token.operator,
-        .token.entity,
-        .token.url,
-        .language-css .token.string,
-        .style .token.string {
-            color: #3b82f6;
-        }
-        .token.atrule,
-        .token.attr-value,
-        .token.keyword {
-            color: #8b5cf6;
-        }
-        .token.function,
-        .token.class-name {
-            color: #ec4899;
-        }
-        .token.regex,
-        .token.important,
-        .token.variable {
-            color: #f97316;
         }
     </style>
 </head>
+<body class="bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="fixed top-0 left-0 h-1 bg-primary dark:bg-dark-primary z-50 transition-all duration-200" style="width: 0%"></div>
 
-<body class="bg-dark text-gray-200 font-sans">
-    <!-- 导航栏 -->
-                   
-                 <header class="fixed w-full top-0 z-50 transition-all duration-300" id="navbar">
-        <nav class="bg-darker/80 backdrop-blur-md border-b border-gray-800">
-            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fa fa-lock text-primary text-2xl"></i>
-                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">Let's Encrypt</span>
-                
-            <!-- 搜索框 -->
-            <div class="hidden md:flex mx-4 items-center relative">
-                <div class="relative w-64">
-                    <input type="text" id="searchInput" placeholder="搜索开发资源..." 
-                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                    <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-search"></i>
-                    </button>
+    <!-- Navigation Bar -->
+    <header class="fixed top-0 left-0 right-0 bg-white/90 dark:bg-dark-card/90 backdrop-blur shadow-sm z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="#" class="flex items-center space-x-2">
+                <i class="fa fa-lock text-primary dark:text-dark-primary text-2xl"></i>
+                <span class="font-bold text-xl tracking-tight">Let's Encrypt</span>
+            </a>
+            
+            <!-- Search Bar -->
+            <div class="hidden md:block flex-grow max-w-md mx-8">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        autocomplete="off"
+                        placeholder="Search documentation..." 
+                        class="w-full py-2 pl-10 pr-4 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                    >
+                    <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
                 </div>
-                <!-- 搜索结果浮动容器 -->
-                <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-                    <div id="searchResults" class="max-h-80 overflow-y-auto">
-                        <!-- 搜索结果将在这里动态生成 -->
-                    </div>
-                </div>
-            </div>
-</div>
-                
-                <!-- 桌面导航 -->
-                <ul class="hidden md:flex space-x-8">
-                    <li><a href="#about" class="hover:text-primary transition-colors">关于</a></li>
-                    <li><a href="#features" class="hover:text-primary transition-colors">优缺点</a></li>
-                    <li><a href="#reviews" class="hover:text-primary transition-colors">社区评论</a></li>
-                    <li><a href="#usage" class="hover:text-primary transition-colors">使用方法</a></li>
-                    <li><a href="https://letsencrypt.org/" target="_blank" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors">官网</a></li>
-                </ul>
-                
-                <!-- 移动端菜单按钮 -->
-                                    <!-- 移动端搜索按钮 -->
-                    <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-                        <i class="fa fa-search text-xl"></i>
-                    </button>
-<button id="menu-toggle" class="md:hidden text-gray-300 hover:text-white">
-                    <i class="fa fa-bars text-xl"></i>
-                </button>
             </div>
             
-            <!-- 移动端导航菜单 -->
-            <div id="mobile-menu" class="md:hidden hidden bg-dark-card border-t border-gray-800">
-                <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
-                    <a href="#about" class="hover:text-primary transition-colors py-2">关于</a>
-                    <a href="#features" class="hover:text-primary transition-colors py-2">优缺点</a>
-                    <a href="#reviews" class="hover:text-primary transition-colors py-2">社区评论</a>
-                    <a href="#usage" class="hover:text-primary transition-colors py-2">使用方法</a>
-                    <a href="https://letsencrypt.org/" target="_blank" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-colors text-center">官网</a>
-                </div>
-            </div>
-        </nav>
-            <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." 
-                    class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
+            <!-- Navigation Links -->
+            <nav class="flex items-center space-x-6">
+                <a href="#about" class="hidden md:inline-block hover:text-primary dark:hover:text-dark-primary transition-colors">About</a>
+                <a href="#technology" class="hidden md:inline-block hover:text-primary dark:hover:text-dark-primary transition-colors">Technology</a>
+                <a href="#community" class="hidden md:inline-block hover:text-primary dark:hover:text-dark-primary transition-colors">Community</a>
+                <a href="#resources" class="hidden md:inline-block hover:text-primary dark:hover:text-dark-primary transition-colors">Resources</a>
+                
+                <!-- Theme Toggle Button -->
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i id="themeIcon" class="fa fa-moon-o text-xl"></i>
                 </button>
+                
+                <!-- Bookmark Button -->
+                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-star-o text-xl"></i>
+                </button>
+            </nav>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa fa-bars text-xl"></i>
+            </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="md:hidden hidden bg-white dark:bg-dark-card border-t dark:border-gray-700">
+            <div class="container mx-auto px-4 py-3">
+                <div class="mb-4">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="mobileSearchInput" 
+                            autocomplete="off"
+                            placeholder="Search documentation..." 
+                            class="w-full py-2 pl-10 pr-4 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                        >
+                        <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="flex flex-col space-y-3 pb-2">
+                    <a href="#about" class="hover:text-primary dark:hover:text-dark-primary transition-colors">About</a>
+                    <a href="#technology" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Technology</a>
+                    <a href="#community" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Community</a>
+                    <a href="#resources" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Resources</a>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- 英雄区域 -->
-    <section class="pt-28 pb-20 bg-gradient-to-b from-darker to-dark">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row items-center">
-                <div class="md:w-1/2 mb-10 md:mb-0 animate-fade-in" style="animation-delay: 0.1s">
-                    <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold leading-tight mb-6">
-                        让 <span class="bg-gradient-to-r from-primary to-secondary text-gradient">HTTPS</span>
-                        <br>普及到每个网站
+    <!-- Main Content -->
+    <main class="pt-16">
+        <!-- Breadcrumb Navigation -->
+        <nav class="bg-gray-100 dark:bg-gray-800/50 py-3 px-4">
+            <div class="container mx-auto">
+                <ol class="flex flex-wrap text-sm text-gray-600 dark:text-gray-400">
+                    <li><a href="/" class="hover:text-primary dark:hover:text-dark-primary">Home</a></li>
+                    <li class="mx-2">/</li>
+                    <li><a href="/free" class="hover:text-primary dark:hover:text-dark-primary">Free Resources</a></li>
+                    <li class="mx-2">/</li>
+                    <li><a href="/free/detail/" class="hover:text-primary dark:hover:text-dark-primary">Resource List</a></li>
+                    <li class="mx-2">/</li>
+                    <li class="text-primary dark:text-dark-primary">Let's Encrypt</li>
+                </ol>
+            </div>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="relative min-h-[90vh] flex items-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-dark-background overflow-hidden">
+            <div class="absolute inset-0 opacity-10 dark:opacity-5">
+                <div class="absolute top-0 left-0 w-full h-full bg-[url('https://picsum.photos/id/0/1920/1080')] bg-cover bg-center"></div>
+            </div>
+            <div class="container mx-auto px-4 py-20 relative z-10">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight mb-6 text-shadow animate-fade-in">
+                        <span class="bg-gradient-to-r from-primary to-secondary dark:from-dark-primary dark:to-dark-secondary text-gradient">Free SSL/TLS Certificates</span> for Everyone
                     </h1>
-                    <p class="text-gray-300 text-lg mb-8 max-w-lg">
-                        Let's Encrypt 提供免费、自动化、开放的 SSL/TLS 证书，让任何网站都能轻松实现 HTTPS 加密，保护用户数据安全。
+                    <p class="text-[clamp(1.1rem,2vw,1.3rem)] text-gray-700 dark:text-gray-300 mb-10 max-w-3xl mx-auto text-balance animate-slide-up">
+                        Let's Encrypt is a free, automated, and open certificate authority that provides SSL/TLS certificates to secure websites globally.
                     </p>
-                    <div class="flex flex-wrap gap-4">
-                        <a href="#usage" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg transition-all shadow-lg shadow-primary/20">
-                            开始使用 <i class="fa fa-arrow-right ml-2"></i>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4 animate-slide-up" style="animation-delay: 0.2s">
+                        <a href="#get-started" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white rounded-full font-medium shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 transition-all transform hover:-translate-y-1">
+                            Get Started
                         </a>
-                        <a href="https://letsencrypt.org/docs/" target="_blank" class="bg-dark-card hover:bg-dark-hover border border-gray-700 px-6 py-3 rounded-lg transition-all">
-                            查看文档 <i class="fa fa-book ml-2"></i>
+                        <a href="#how-it-works" class="px-8 py-3 bg-white dark:bg-dark-card hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full font-medium shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                            How It Works
                         </a>
                     </div>
-                </div>
-                <div class="md:w-1/2 animate-fade-in" style="animation-delay: 0.3s">
-                    <div class="bg-dark-card p-6 rounded-xl shadow-xl border border-gray-800">
-                        <h3 class="text-xl font-semibold mb-4 text-primary">安全的网站连接</h3>
-                        <div class="flex items-center mb-6">
-                            <div class="bg-primary/20 p-3 rounded-full mr-4">
-                                <i class="fa fa-lock text-primary text-2xl"></i>
-                            </div>
-                            <div>
-                                <div class="text-gray-400 text-sm">连接已加密</div>
-                                <div class="font-medium">https://yourdomain.com</div>
-                            </div>
+                    
+                    <!-- Key Stats -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 animate-slide-up" style="animation-delay: 0.4s">
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="text-4xl font-bold text-primary dark:text-dark-primary mb-2">260M+</div>
+                            <div class="text-gray-600 dark:text-gray-400">Active Certificates</div>
                         </div>
-                        <div class="code-block text-gray-300">
-                            <pre><code># 申请证书示例
-certbot --nginx -d yourdomain.com -d www.yourdomain.com
-
-# 证书自动续期
-certbot renew</code></pre>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="text-4xl font-bold text-primary dark:text-dark-primary mb-2">150M+</div>
+                            <div class="text-gray-600 dark:text-gray-400">Websites Secured</div>
+                        </div>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="text-4xl font-bold text-primary dark:text-dark-primary mb-2">100%</div>
+                            <div class="text-gray-600 dark:text-gray-400">Free Forever</div>
+                        </div>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="text-4xl font-bold text-primary dark:text-dark-primary mb-2">8+</div>
+                            <div class="text-gray-600 dark:text-gray-400">Years of Service</div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 关键数据 -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-20">
-                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal">
-                    <div class="text-primary text-3xl font-bold mb-2">100%</div>
-                    <div class="text-gray-400">免费使用</div>
-                </div>
-                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal" style="transition-delay: 0.1s">
-                    <div class="text-secondary text-3xl font-bold mb-2">3亿+</div>
-                    <div class="text-gray-400">活跃证书</div>
-                </div>
-                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal" style="transition-delay: 0.2s">
-                    <div class="text-accent text-3xl font-bold mb-2">90天</div>
-                    <div class="text-gray-400">证书有效期</div>
-                </div>
-                <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center card-hover reveal" style="transition-delay: 0.3s">
-                    <div class="text-green-400 text-3xl font-bold mb-2">自动续期</div>
-                    <div class="text-gray-400">无需手动操作</div>
-                </div>
-            </div>
-        </div>
-    </section>
+            <!-- Decorative Elements -->
+            <div class="absolute -bottom-16 -left-16 w-64 h-64 bg-primary/10 dark:bg-dark-primary/20 rounded-full blur-3xl"></div>
+            <div class="absolute -top-20 -right-20 w-80 h-80 bg-secondary/10 dark:bg-dark-secondary/20 rounded-full blur-3xl"></div>
+        </section>
 
-    <!-- 关于部分 -->
-    <section id="about" class="py-20 bg-dark">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">关于 Let's Encrypt</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
-                    Let's Encrypt 是一个免费、自动化、开放的证书颁发机构（CA），由互联网安全研究小组（ISRG）提供支持，致力于让 HTTPS 普及到整个互联网。
-                </p>
+        <!-- About Section -->
+        <section id="about" class="py-20 bg-white dark:bg-dark-card">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">About Let's Encrypt</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-400">
+                        Let's Encrypt is a free, automated, and open certificate authority (CA) that aims to make HTTPS the standard for all websites.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="order-2 md:order-1">
+                        <h3 class="text-2xl font-bold mb-4">Project Origin</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">
+                            Let's Encrypt was launched in April 2016 by the Internet Security Research Group (ISRG), a California public benefit corporation. The project was created to address the barrier to entry for website encryption by providing free, automated SSL/TLS certificates.
+                        </p>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">
+                            Before Let's Encrypt, obtaining and installing SSL certificates was often expensive and technically challenging, resulting in only a small percentage of websites using HTTPS.
+                        </p>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Today, thanks to Let's Encrypt, over 70% of web traffic is encrypted, making the internet a safer place for everyone.
+                        </p>
+                    </div>
+                    <div class="order-1 md:order-2">
+                        <div class="rounded-2xl overflow-hidden shadow-xl transform hover:scale-[1.02] transition-transform">
+                            <img 
+                                src="https://picsum.photos/id/180/800/600" 
+                                alt="Server room with secure connections illustration" 
+                                class="w-full h-auto object-cover lazy-load"
+                                loading="lazy"
+                            >
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Founders Section -->
+                <div class="mt-20">
+                    <h3 class="text-2xl font-bold text-center mb-12">Key Founders & Leaders</h3>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center hover:shadow-lg transition-shadow">
+                            <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-md">
+                                <img 
+                                    src="https://picsum.photos/id/1005/200/200" 
+                                    alt="Josh Aas portrait" 
+                                    class="w-full h-full object-cover lazy-load"
+                                    loading="lazy"
+                                >
+                            </div>
+                            <h4 class="text-xl font-bold mb-1">Josh Aas</h4>
+                            <p class="text-primary dark:text-dark-primary mb-3">Executive Director</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">
+                                Josh is a co-founder of Let's Encrypt and has served as its Executive Director since its inception. He's a passionate advocate for a more secure and privacy-respecting Web.
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center hover:shadow-lg transition-shadow">
+                            <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-md">
+                                <img 
+                                    src="https://picsum.photos/id/1012/200/200" 
+                                    alt="J. Alex Halderman portrait" 
+                                    class="w-full h-full object-cover lazy-load"
+                                    loading="lazy"
+                                >
+                            </div>
+                            <h4 class="text-xl font-bold mb-1">J. Alex Halderman</h4>
+                            <p class="text-primary dark:text-dark-primary mb-3">Co-founder</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">
+                                A professor at the University of Michigan, Alex is a leading expert on computer security and privacy, and played a key role in developing Let's Encrypt.
+                            </p>
+                        </div>
+                        <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl text-center hover:shadow-lg transition-shadow">
+                            <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden border-4 border-white dark:border-gray-700 shadow-md">
+                                <img 
+                                    src="https://picsum.photos/id/1025/200/200" 
+                                    alt="Eric Rescorla portrait" 
+                                    class="w-full h-full object-cover lazy-load"
+                                    loading="lazy"
+                                >
+                            </div>
+                            <h4 class="text-xl font-bold mb-1">Eric Rescorla</h4>
+                            <p class="text-primary dark:text-dark-primary mb-3">Technical Advisor</p>
+                            <p class="text-gray-600 dark:text-gray-400 text-sm">
+                                A prominent security researcher and author, Eric contributed significantly to the technical foundation of Let's Encrypt and the TLS protocol.
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="bg-dark-card rounded-2xl border border-gray-800 p-8 md:p-10 shadow-xl reveal">
-                <div class="flex flex-col md:flex-row gap-10">
-                    <div class="md:w-1/2">
-                        <h3 class="text-2xl font-bold mb-6 text-primary">免费服务内容</h3>
+        </section>
+
+        <!-- Technology Section -->
+        <section id="technology" class="py-20 bg-gray-50 dark:bg-dark-background">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">Technology Stack</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-400">
+                        Let's Encrypt leverages modern technologies to provide secure, automated certificate issuance and management.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-16 items-center mb-20">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6">Core Technologies</h3>
                         <ul class="space-y-4">
                             <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>免费的 SSL/TLS 证书，支持域名验证（DV）证书</span>
+                                <div class="mt-1 mr-4 text-primary dark:text-dark-primary"><i class="fa fa-check-circle text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-lg">ACME Protocol</h4>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        The Automated Certificate Management Environment (ACME) protocol enables automatic issuance and renewal of certificates.
+                                    </p>
+                                </div>
                             </li>
                             <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>支持单域名、多域名和通配符证书</span>
+                                <div class="mt-1 mr-4 text-primary dark:text-dark-primary"><i class="fa fa-check-circle text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-lg">TLS/SSL Cryptography</h4>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Uses industry-standard cryptographic algorithms like ECDSA and RSA to secure communications.
+                                    </p>
+                                </div>
                             </li>
                             <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>自动化证书申请和续期流程，无需人工干预</span>
+                                <div class="mt-1 mr-4 text-primary dark:text-dark-primary"><i class="fa fa-check-circle text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-lg">OpenSSL Library</h4>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Utilizes OpenSSL for robust cryptographic operations and certificate handling.
+                                    </p>
+                                </div>
                             </li>
                             <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>符合行业标准的证书，被所有主流浏览器信任</span>
+                                <div class="mt-1 mr-4 text-primary dark:text-dark-primary"><i class="fa fa-check-circle text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-lg">Python Backend</h4>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        The core certificate authority software is written in Python for flexibility and security.
+                                    </p>
+                                </div>
                             </li>
                             <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>完整的文档和 API 支持，便于集成到各种系统</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>免费的吊销服务，当证书泄露时可及时吊销</span>
-                            </li>
-                            <li class="flex items-start">
-                                <i class="fa fa-check-circle text-green-400 mt-1 mr-3"></i>
-                                <span>开放源代码的客户端工具（Certbot）</span>
+                                <div class="mt-1 mr-4 text-primary dark:text-dark-primary"><i class="fa fa-check-circle text-xl"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-lg">Distributed Systems</h4>
+                                    <p class="text-gray-600 dark:text-gray-400">
+                                        Deployed across multiple data centers for high availability and redundancy.
+                                    </p>
+                                </div>
                             </li>
                         </ul>
                     </div>
-                    <div class="md:w-1/2">
-                        <h3 class="text-2xl font-bold mb-6 text-secondary">适用场景</h3>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                <i class="fa fa-globe text-primary mb-3"></i>
-                                <h4 class="font-semibold mb-2">个人网站</h4>
-                                <p class="text-gray-400 text-sm">为个人博客、作品集等网站提供免费HTTPS保护</p>
+                    <div class="flex justify-center">
+                        <div class="w-full max-w-md bg-white dark:bg-dark-card p-6 rounded-xl shadow-xl">
+                            <h4 class="text-xl font-bold mb-4 text-center">Technology Comparison</h4>
+                            <div class="aspect-square">
+                                <canvas id="radarChart"></canvas>
                             </div>
-                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                <i class="fa fa-shopping-cart text-secondary mb-3"></i>
-                                <h4 class="font-semibold mb-2">电子商务</h4>
-                                <p class="text-gray-400 text-sm">保护在线商店的交易数据和用户隐私信息</p>
-                            </div>
-                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                <i class="fa fa-briefcase text-accent mb-3"></i>
-                                <h4 class="font-semibold mb-2">企业网站</h4>
-                                <p class="text-gray-400 text-sm">提升企业网站可信度，保护客户信息安全</p>
-                            </div>
-                            <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                <i class="fa fa-server text-green-400 mb-3"></i>
-                                <h4 class="font-semibold mb-2">API服务</h4>
-                                <p class="text-gray-400 text-sm">为API通信提供加密保护，防止数据被篡改</p>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-8">
-                            <h4 class="font-semibold mb-3">信任情况</h4>
-                            <p class="text-gray-400 mb-4">Let's Encrypt 证书被所有主流浏览器和操作系统信任：</p>
-                            <div class="flex flex-wrap gap-4">
-                                <div class="bg-darker px-3 py-1 rounded border border-gray-700 text-sm flex items-center">
-                                    <i class="fa fa-chrome text-gray-400 mr-2"></i> Chrome
-                                </div>
-                                <div class="bg-darker px-3 py-1 rounded border border-gray-700 text-sm flex items-center">
-                                    <i class="fa fa-firefox text-gray-400 mr-2"></i> Firefox
-                                </div>
-                                <div class="bg-darker px-3 py-1 rounded border border-gray-700 text-sm flex items-center">
-                                    <i class="fa fa-safari text-gray-400 mr-2"></i> Safari
-                                </div>
-                                <div class="bg-darker px-3 py-1 rounded border border-gray-700 text-sm flex items-center">
-                                    <i class="fa fa-edge text-gray-400 mr-2"></i> Edge
-                                </div>
-                                <div class="bg-darker px-3 py-1 rounded border border-gray-700 text-sm flex items-center">
-                                    <i class="fa fa-android text-gray-400 mr-2"></i> Android
-                                </div>
-                                <div class="bg-darker px-3 py-1 rounded border border-gray-700 text-sm flex items-center">
-                                    <i class="fa fa-apple text-gray-400 mr-2"></i> iOS
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 优缺点部分 -->
-    <section id="features" class="py-20 bg-gradient-to-b from-dark to-darker">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">优缺点分析</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
-                    了解 Let's Encrypt 的优势和局限性，帮助您决定是否适合您的项目需求。
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
-                <!-- 优点 -->
-                <div class="reveal">
-                    <div class="flex items-center mb-6">
-                        <div class="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mr-4">
-                            <i class="fa fa-thumbs-up text-green-400 text-xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold">主要优点</h3>
-                    </div>
-                    
-                    <div class="space-y-5">
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-green-400">完全免费</h4>
-                            <p class="text-gray-300">与商业CA提供的证书不同，Let's Encrypt证书完全免费，没有任何隐藏费用，大大降低了网站启用HTTPS的门槛。</p>
-                        </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-green-400">自动化程度高</h4>
-                            <p class="text-gray-300">提供简单易用的工具（如Certbot），可自动化完成证书申请、安装和续期的全过程，减少人工操作。</p>
-                        </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-green-400">被广泛信任</h4>
-                            <p class="text-gray-300">证书被所有主流浏览器和操作系统信任，不会向用户显示安全警告，提供与付费证书同等的信任级别。</p>
-                        </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-green-400">支持多种验证方式</h4>
-                            <p class="text-gray-300">支持HTTP-01、DNS-01和TLS-ALPN-01三种验证方式，适应不同的服务器环境和网络配置。</p>
-                        </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-green-400">开放透明</h4>
-                            <p class="text-gray-300">作为开源项目，所有代码和操作都是透明的，由非盈利组织运营，没有商业利益驱动。</p>
-                        </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-green-400">良好的文档和社区支持</h4>
-                            <p class="text-gray-300">提供详尽的官方文档、API参考和丰富的社区资源，帮助用户解决使用过程中遇到的问题。</p>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 缺点 -->
-                <div class="reveal" style="transition-delay: 0.2s">
-                    <div class="flex items-center mb-6">
-                        <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
-                            <i class="fa fa-thumbs-down text-red-400 text-xl"></i>
+                <!-- Features Section -->
+                <div>
+                    <h3 class="text-2xl font-bold text-center mb-12">Key Features</h3>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa fa-certificate text-primary dark:text-dark-primary text-xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold mb-3">Free Certificates</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                100% free SSL/TLS certificates with no hidden costs or restrictions on usage.
+                            </p>
                         </div>
-                        <h3 class="text-2xl font-bold">主要缺点</h3>
-                    </div>
-                    
-                    <div class="space-y-5">
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-red-400">有效期短</h4>
-                            <p class="text-gray-300">证书有效期仅为90天，远短于商业证书（通常1-2年），虽然支持自动续期，但增加了系统复杂度。</p>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa fa-refresh text-primary dark:text-dark-primary text-xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold mb-3">Automatic Renewal</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Certificates automatically renew every 90 days, eliminating manual updates.
+                            </p>
                         </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-red-400">仅支持域名验证（DV）</h4>
-                            <p class="text-gray-300">不提供组织验证（OV）和扩展验证（EV）证书，对于需要展示企业身份的网站可能不够。</p>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa fa-code text-primary dark:text-dark-primary text-xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold mb-3">API-Driven</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Fully automated through APIs, integrating seamlessly with deployment workflows.
+                            </p>
                         </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-red-400">技术门槛</h4>
-                            <p class="text-gray-300">虽然提供了自动化工具，但对于非技术人员来说，安装和配置过程仍然有一定的技术门槛。</p>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa fa-shield text-primary dark:text-dark-primary text-xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold mb-3">High Security</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Follows industry best practices for security and cryptographic standards.
+                            </p>
                         </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-red-400">通配符证书限制</h4>
-                            <p class="text-gray-300">通配符证书只能通过DNS验证方式获取，对于某些不便于修改DNS的环境来说不够灵活。</p>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa fa-globe text-primary dark:text-dark-primary text-xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold mb-3">Global Availability</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Distributed infrastructure ensures reliable service worldwide.
+                            </p>
                         </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-red-400">缺乏商业支持</h4>
-                            <p class="text-gray-300">作为非盈利项目，不提供商业级别的技术支持服务，企业用户可能需要依赖社区或第三方支持。</p>
-                        </div>
-                        
-                        <div class="bg-dark-card p-5 rounded-xl border border-gray-800 card-hover">
-                            <h4 class="font-bold text-lg mb-2 text-red-400">吊销流程复杂</h4>
-                            <p class="text-gray-300">当证书密钥泄露需要吊销时，流程相对复杂，不如商业CA提供的界面操作直观。</p>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4">
+                                <i class="fa fa-github text-primary dark:text-dark-primary text-xl"></i>
+                            </div>
+                            <h4 class="text-xl font-bold mb-3">Open Source</h4>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                Openly developed software with community contributions and peer review.
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 社区评论部分 -->
-    <section id="reviews" class="py-20 bg-darker">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">社区评论</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
-                    来自全球开发者和网站管理员的真实评价，了解他们使用 Let's Encrypt 的实际体验。
-                </p>
-            </div>
-            
-            <!-- 评论筛选 -->
-            <div class="flex flex-wrap justify-center gap-4 mb-10 reveal">
-                <button class="review-filter active px-4 py-2 rounded-full bg-primary text-white" data-filter="all">全部评论</button>
-                <button class="review-filter px-4 py-2 rounded-full bg-dark-card hover:bg-dark-hover transition-colors" data-filter="positive">正面评价</button>
-                <button class="review-filter px-4 py-2 rounded-full bg-dark-card hover:bg-dark-hover transition-colors" data-filter="negative">负面评价</button>
-                <button class="review-filter px-4 py-2 rounded-full bg-dark-card hover:bg-dark-hover transition-colors" data-filter="neutral">中立评价</button>
-            </div>
-            
-            <!-- 评论列表 -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
-                <!-- 评论将通过JavaScript动态生成 -->
-            </div>
-            
-            <!-- 加载更多按钮 -->
-            <div class="text-center mt-12 reveal">
-                <button id="load-more" class="bg-dark-card hover:bg-dark-hover border border-gray-700 px-6 py-3 rounded-lg transition-all flex items-center mx-auto">
-                    <i class="fa fa-refresh mr-2"></i> 加载更多评论
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- 使用方法部分 -->
-    <section id="usage" class="py-20 bg-gradient-to-b from-darker to-dark">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16 reveal">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">使用方法</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto text-lg">
-                    只需几个简单步骤，即可为您的网站获取并安装免费的 SSL/TLS 证书，启用 HTTPS 加密。
-                </p>
-            </div>
-            
-            <div class="bg-dark-card rounded-2xl border border-gray-800 overflow-hidden shadow-xl reveal">
-                <!-- 步骤导航 -->
-                <div class="flex flex-wrap border-b border-gray-800">
-                    <button class="usage-tab active px-6 py-4 font-medium" data-tab="certbot">Certbot 工具</button>
-                    <button class="usage-tab px-6 py-4 font-medium" data-tab="web-servers">Web服务器配置</button>
-                    <button class="usage-tab px-6 py-4 font-medium" data-tab="renewal">自动续期</button>
-                    <button class="usage-tab px-6 py-4 font-medium" data-tab="wildcard">通配符证书</button>
+        <!-- Pros and Cons Section -->
+        <section class="py-20 bg-white dark:bg-dark-card">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">Advantages & Limitations</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-400">
+                        Understanding the strengths and limitations of Let's Encrypt helps in making informed decisions.
+                    </p>
                 </div>
                 
-                <!-- 步骤内容 -->
-                <div class="p-8">
-                    <!-- Certbot 工具 -->
-                    <div class="usage-content active" id="certbot">
-                        <h3 class="text-2xl font-bold mb-6">使用 Certbot 获取证书</h3>
-                        
-                        <p class="mb-6">Certbot 是 Let's Encrypt 官方推荐的客户端工具，可自动化完成证书的申请、安装和续期过程。</p>
-                        
-                        <div class="space-y-8">
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-primary">安装 Certbot</h4>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-secondary">Ubuntu / Debian</h5>
-                                        <div class="code-block text-sm">
-<pre><code># 更新软件包列表
-sudo apt update
-
-# 安装 Certbot
-sudo apt install certbot python3-certbot-nginx
-
-# 对于Apache服务器
-# sudo apt install certbot python3-certbot-apache</code></pre>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-secondary">CentOS / RHEL</h5>
-                                        <div class="code-block text-sm">
-<pre><code># 启用EPEL仓库
-sudo yum install epel-release
-
-# 安装 Certbot
-sudo yum install certbot python3-certbot-nginx
-
-# 对于Apache服务器
-# sudo yum install certbot python3-certbot-apache</code></pre>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-secondary">Fedora</h5>
-                                        <div class="code-block text-sm">
-<pre><code># 安装 Certbot
-sudo dnf install certbot python3-certbot-nginx
-
-# 对于Apache服务器
-# sudo dnf install certbot python3-certbot-apache</code></pre>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-secondary">macOS</h5>
-                                        <div class="code-block text-sm">
-<pre><code># 使用Homebrew安装
-brew install certbot
-
-# 安装相应的插件
-# brew install certbot-nginx
-# brew install certbot-apache</code></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-primary">获取并安装证书</h4>
-                                
-                                <p class="mb-4">Certbot 可以自动获取证书并配置您的Web服务器：</p>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-secondary">Nginx 服务器</h5>
-                                        <div class="code-block text-sm">
-<pre><code># 为域名获取证书并自动配置Nginx
-sudo certbot --nginx -d example.com -d www.example.com
-
-# 如果您希望手动配置
-sudo certbot certonly --nginx -d example.com -d www.example.com</code></pre>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-secondary">Apache 服务器</h5>
-                                        <div class="code-block text-sm">
-<pre><code># 为域名获取证书并自动配置Apache
-sudo certbot --apache -d example.com -d www.example.com
-
-# 如果您希望手动配置
-sudo certbot certonly --apache -d example.com -d www.example.com</code></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <p class="mt-6 mb-4">对于其他Web服务器或无法自动配置的情况，可以使用独立模式：</p>
-                                <div class="code-block">
-<pre><code># 独立模式（需要暂时关闭Web服务器）
-sudo certbot certonly --standalone -d example.com -d www.example.com
-
-# Webroot模式（不需要关闭Web服务器）
-sudo certbot certonly --webroot -w /var/www/example -d example.com -d www.example.com</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-primary">验证证书安装</h4>
-                                <p class="mb-4">证书安装完成后，可以通过以下方式验证：</p>
-                                <div class="code-block mb-4">
-<pre><code># 检查证书信息
-sudo certbot certificates
-
-# 使用openssl验证
-openssl s_client -connect example.com:443</code></pre>
-                                </div>
-                                <p class="text-green-400"><i class="fa fa-info-circle mr-1"></i> 您也可以在浏览器中访问 <code>https://example.com</code>，查看地址栏是否显示锁图标。</p>
-                            </div>
-                        </div>
+                <div class="grid md:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 flex items-center">
+                            <span class="w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-plus text-green-600 dark:text-green-400"></i>
+                            </span>
+                            Advantages
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-green-500"><i class="fa fa-check"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Completely free with no usage restrictions
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-green-500"><i class="fa fa-check"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Fully automated issuance and renewal process
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-green-500"><i class="fa fa-check"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Trusted by all major browsers and operating systems
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-green-500"><i class="fa fa-check"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Supports wildcard certificates for subdomains
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-green-500"><i class="fa fa-check"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Excellent documentation and community support
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-green-500"><i class="fa fa-check"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Regular security updates and improvements
+                                </p>
+                            </li>
+                        </ul>
                     </div>
-                    
-                    <!-- Web服务器配置 -->
-                    <div class="usage-content hidden" id="web-servers">
-                        <h3 class="text-2xl font-bold mb-6">Web服务器手动配置</h3>
-                        
-                        <p class="mb-6">如果您选择了手动模式获取证书，需要手动配置Web服务器以使用SSL/TLS证书。</p>
-                        
-                        <div class="space-y-8">
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-secondary">Nginx 配置</h4>
-                                
-                                <p class="mb-4">编辑Nginx配置文件（通常位于 <code>/etc/nginx/sites-available/</code> 目录）：</p>
-                                <div class="code-block mb-6">
-<pre><code>server {
-    listen 80;
-    server_name example.com www.example.com;
-    
-    # 重定向HTTP到HTTPS
-    return 301 https://$host$request_uri;
-}
-
-server {
-    listen 443 ssl;
-    server_name example.com www.example.com;
-    
-    # 证书路径
-    ssl_certificate /etc/letsencrypt/live/example.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/example.com/privkey.pem;
-    
-    # SSL配置
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_prefer_server_ciphers on;
-    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-    ssl_session_cache shared:SSL:10m;
-    ssl_session_timeout 10m;
-    
-    # 网站根目录
-    root /var/www/example.com;
-    index /;
-    
-    # 其他配置...
-    location / {
-        try_files $uri $uri/ =404;
-    }
-}</code></pre>
-                                </div>
-                                
-                                <p class="mb-4">检查配置并重新加载Nginx：</p>
-                                <div class="code-block">
-<pre><code># 检查配置是否有错误
-sudo nginx -t
-
-# 重新加载Nginx
-sudo systemctl reload nginx</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-secondary">Apache 配置</h4>
-                                
-                                <p class="mb-4">编辑Apache配置文件（通常位于 <code>/etc/apache2/sites-available/</code> 目录）：</p>
-                                <div class="code-block mb-6">
-<pre><code>&lt;VirtualHost *:80&gt;
-    ServerName example.com
-    ServerAlias www.example.com
-    
-    # 重定向HTTP到HTTPS
-    Redirect permanent / https://example.com/
-&lt;/VirtualHost&gt;
-
-&lt;VirtualHost *:443&gt;
-    ServerName example.com
-    ServerAlias www.example.com
-    
-    # 证书路径
-    SSLEngine on
-    SSLCertificateFile /etc/letsencrypt/live/example.com/fullchain.pem
-    SSLCertificateKeyFile /etc/letsencrypt/live/example.com/privkey.pem
-    
-    # SSL配置
-    SSLProtocol all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
-    SSLCipherSuite ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
-    SSLHonorCipherOrder on
-    
-    # 网站根目录
-    DocumentRoot /var/www/example.com
-    
-    # 其他配置...
-&lt;/VirtualHost&gt;</code></pre>
-                                </div>
-                                
-                                <p class="mb-4">启用SSL模块并重新加载Apache：</p>
-                                <div class="code-block">
-<pre><code># 启用SSL模块
-sudo a2enmod ssl
-
-# 启用站点配置
-sudo a2ensite example.com.conf
-
-# 重新加载Apache
-sudo systemctl reload apache2</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-secondary">其他服务器配置</h4>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-primary">Lighttpd</h5>
-                                        <div class="code-block text-sm">
-<pre><code>$SERVER["socket"] == ":80" {
-    $HTTP["host"] =~ "(^|www\.)example\.com$" {
-        url.redirect = (".*" => "https://example.com$0")
-    }
-}
-
-$SERVER["socket"] == ":443" {
-    $HTTP["host"] == "example.com" {
-        ssl.engine = "enable"
-        ssl.pemfile = "/etc/letsencrypt/live/example.com/combined.pem"
-        ssl.ca-file = "/etc/letsencrypt/live/example.com/fullchain.pem"
-        
-        # 网站根目录
-        server.document-root = "/var/www/example.com"
-    }
-}</code></pre>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-primary">IIS (Windows Server)</h5>
-                                        <ol class="list-decimal ml-5 space-y-2 text-gray-300 mb-4">
-                                            <li>打开"Internet Information Services (IIS) 管理器"</li>
-                                            <li>选择您的服务器，双击"服务器证书"</li>
-                                            <li>点击右侧"导入"，选择从Let's Encrypt获取的PFX格式证书</li>
-                                            <li>选择您的网站，点击"绑定"</li>
-                                            <li>添加HTTPS绑定，选择导入的证书</li>
-                                            <li>配置HTTP到HTTPS的重定向</li>
-                                        </ol>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6 flex items-center">
+                            <span class="w-10 h-10 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-3">
+                                <i class="fa fa-minus text-red-600 dark:text-red-400"></i>
+                            </span>
+                            Limitations
+                        </h3>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-red-500"><i class="fa fa-times"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Short 90-day certificate lifetime (though mitigated by auto-renewal)
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-red-500"><i class="fa fa-times"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Limited to domain-validated certificates only
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-red-500"><i class="fa fa-times"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Requires technical knowledge for initial setup
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-red-500"><i class="fa fa-times"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Wildcard certificates require DNS validation
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-red-500"><i class="fa fa-times"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    No extended validation (EV) certificates
+                                </p>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="mt-1 mr-4 text-red-500"><i class="fa fa-times"></i></div>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Rate limits on certificate issuance
+                                </p>
+                            </li>
+                        </ul>
                     </div>
-                    
-                    <!-- 自动续期 -->
-                    <div class="usage-content hidden" id="renewal">
-                        <h3 class="text-2xl font-bold mb-6">证书自动续期</h3>
-                        
-                        <p class="mb-6">Let's Encrypt 证书有效期为90天，建议设置自动续期以避免证书过期。</p>
-                        
-                        <div class="space-y-8">
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-accent">使用 Certbot 自动续期</h4>
-                                
-                                <p class="mb-4">Certbot 通常会自动配置续期任务。您可以通过以下方式验证：</p>
-                                <div class="code-block mb-6">
-<pre><code># 检查crontab或systemd定时器
-sudo systemctl list-timers | grep certbot
+                </div>
+            </div>
+        </section>
 
-# 或
-cat /etc/cron.d/certbot</code></pre>
-                                </div>
-                                
-                                <p class="mb-4">如果没有自动配置，可以手动设置：</p>
-                                <div class="code-block mb-6">
-<pre><code># 编辑crontab
-sudo crontab -e
-
-# 添加以下行（每天凌晨2点运行）
-0 2 * * * /usr/bin/certbot renew --quiet --renew-hook "/bin/systemctl reload nginx"</code></pre>
-                                </div>
-                                
-                                <p class="mb-4">对于systemd系统，可以创建定时器：</p>
-                                <div class="code-block">
-<pre><code># 创建服务文件
-sudo nano /etc/systemd/system/certbot-renew.service
-
-# 内容
-[Unit]
-Description=Certbot Renewal
-
-[Service]
-ExecStart=/usr/bin/certbot renew --quiet --renew-hook "/bin/systemctl reload nginx"
-
-# 创建定时器文件
-sudo nano /etc/systemd/system/certbot-renew.timer
-
-# 内容
-[Unit]
-Description=Timer for Certbot Renewal
-
-[Timer]
-OnCalendar=daily
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-
-# 启用并启动定时器
-sudo systemctl enable certbot-renew.timer
-sudo systemctl start certbot-renew.timer</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-accent">测试续期过程</h4>
-                                
-                                <p class="mb-4">可以使用测试模式验证续期是否正常工作：</p>
-                                <div class="code-block mb-6">
-<pre><code># 测试续期（不会实际续期证书）
-sudo certbot renew --dry-run
-
-# 对于特定证书
-sudo certbot renew --cert-name example.com --dry-run</code></pre>
-                                </div>
-                                
-                                <p class="text-yellow-400"><i class="fa fa-exclamation-triangle mr-1"></i> 重要提示：定期检查续期日志，确保续期过程正常工作：</p>
-                                <div class="code-block">
-<pre><code># 查看续期日志
-sudo tail -f /var/log/letsencrypt/letsencrypt.log
-
-# 检查证书状态
-sudo certbot certificates</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-accent">证书过期预警</h4>
-                                
-                                <p class="mb-4">可以设置证书过期预警，在证书即将过期时收到通知：</p>
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-primary">使用脚本检查并发送邮件</h5>
-                                        <div class="code-block text-sm">
-<pre><code>#!/bin/bash
-# 保存为 /usr/local/bin/cert-check.sh
-
-EXPIRY_DATE=$(openssl x509 -in /etc/letsencrypt/live/example.com/cert.pem -noout -dates | grep notAfter | cut -d= -f2)
-EXPIRY_SECONDS=$(date -d "$EXPIRY_DATE" +%s)
-CURRENT_SECONDS=$(date +%s)
-DAYS_LEFT=$(( (EXPIRY_SECONDS - CURRENT_SECONDS) / 86400 ))
-
-if [ $DAYS_LEFT -lt 15 ]; then
-    echo "证书将在 $DAYS_LEFT 天后过期" | mail -s "SSL证书即将过期警告" admin@example.com
-fi</code></pre>
-                                        </div>
-                                        <p class="text-sm text-gray-400 mt-3">添加到crontab，每天运行一次</p>
-                                    </div>
-                                    
-                                    <div class="bg-darker p-5 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-3 text-primary">使用第三方服务</h5>
-                                        <ul class="space-y-2 text-gray-300">
-                                            <li class="flex items-start">
-                                                <i class="fa fa-check text-green-400 mt-1 mr-2"></i>
-                                                <span><a href="https://sslmate.com/monitor/" target="_blank" class="text-primary hover:underline">SSLmate Monitor</a> - 免费监控5个证书</span>
-                                            </li>
-                                            <li class="flex items-start">
-                                                <i class="fa fa-check text-green-400 mt-1 mr-2"></i>
-                                                <span><a href="https://www.sslshopper.com/ssl-certificate-expiration-warning.html" target="_blank" class="text-primary hover:underline">SSL Shopper</a> - 免费证书监控</span>
-                                            </li>
-                                            <li class="flex items-start">
-                                                <i class="fa fa-check text-green-400 mt-1 mr-2"></i>
-                                                <span><a href="https://uptimerobot.com/" target="_blank" class="text-primary hover:underline">Uptime Robot</a> - 可监控证书过期</span>
-                                            </li>
-                                            <li class="flex items-start">
-                                                <i class="fa fa-check text-green-400 mt-1 mr-2"></i>
-                                                <span><a href="https://letsmonitor.org/" target="_blank" class="text-primary hover:underline">Let's Monitor</a> - 专为Let's Encrypt设计</span>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <!-- Community Section -->
+        <section id="community" class="py-20 bg-gray-50 dark:bg-dark-background">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">Community & Ecosystem</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-400">
+                        Let's Encrypt has built a thriving community of users, developers, and supporters.
+                    </p>
+                </div>
+                
+                <!-- GitHub Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-gray-800 dark:text-white mb-2" id="githubStars">42.5k</div>
+                        <div class="text-gray-600 dark:text-gray-400">GitHub Stars</div>
                     </div>
-                    
-                    <!-- 通配符证书 -->
-                    <div class="usage-content hidden" id="wildcard">
-                        <h3 class="text-2xl font-bold mb-6">获取通配符证书</h3>
-                        
-                        <p class="mb-6">Let's Encrypt 支持通配符证书（如 *.example.com），可保护一个域名下的所有子域名。通配符证书只能通过DNS验证方式获取。</p>
-                        
-                        <div class="space-y-8">
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-green-400">使用 Certbot 获取通配符证书</h4>
-                                
-                                <p class="mb-4">获取通配符证书需要使用DNS验证方式：</p>
-                                <div class="code-block mb-6">
-<pre><code># 获取通配符证书（包括主域名）
-sudo certbot certonly --manual --preferred-challenges dns -d example.com -d *.example.com
-
-# 对于支持自动DNS验证的服务商
-# Cloudflare示例
-sudo certbot certonly --dns-cloudflare --dns-cloudflare-credentials /etc/letsencrypt/cloudflare.ini -d example.com -d *.example.com</code></pre>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-gray-800 dark:text-white mb-2" id="githubForks">2.8k</div>
+                        <div class="text-gray-600 dark:text-gray-400">GitHub Forks</div>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-gray-800 dark:text-white mb-2" id="openIssues">56</div>
+                        <div class="text-gray-600 dark:text-gray-400">Open Issues</div>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md text-center">
+                        <div class="text-4xl font-bold text-gray-800 dark:text-white mb-2" id="contributors">300+</div>
+                        <div class="text-gray-600 dark:text-gray-400">Contributors</div>
+                    </div>
+                </div>
+                
+                <!-- Community Comments -->
+                <div>
+                    <h3 class="text-2xl font-bold text-center mb-12">Community Feedback</h3>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                                    <img 
+                                        src="https://picsum.photos/id/1027/100/100" 
+                                        alt="Sarah Johnson profile" 
+                                        class="w-full h-full object-cover lazy-load"
+                                        loading="lazy"
+                                    >
                                 </div>
-                                
-                                <p class="mb-4">手动DNS验证步骤：</p>
-                                <ol class="list-decimal ml-5 space-y-2 text-gray-300 mb-6">
-                                    <li>运行上述命令后，Certbot会显示一条DNS TXT记录</li>
-                                    <li>登录您的DNS服务商管理界面</li>
-                                    <li>为域名添加一条TXT记录，主机名为<code>_acme-challenge</code>，值为Certbot显示的字符串</li>
-                                    <li>等待DNS记录生效（可能需要几分钟到几小时）</li>
-                                    <li>按回车继续，Certbot会验证DNS记录</li>
-                                    <li>验证成功后，证书将被安装到默认目录</li>
-                                </ol>
-                                
-                                <p class="text-yellow-400"><i class="fa fa-info-circle mr-1"></i> 提示：可以使用 <code>dig</code> 命令检查DNS记录是否生效：</p>
-                                <div class="code-block">
-<pre><code>dig TXT _acme-challenge.example.com</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-green-400">支持自动DNS验证的服务商</h4>
-                                
-                                <p class="mb-4">Certbot 支持多种DNS服务商的自动验证插件，无需手动添加TXT记录：</p>
-                                
-                                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                                    <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-2 text-primary">Cloudflare</h5>
-                                        <div class="code-block text-xs">
-<pre><code>sudo apt install python3-certbot-dns-cloudflare</code></pre>
-                                        </div>
+                                <div>
+                                    <h4 class="font-bold">Sarah Johnson</h4>
+                                    <div class="flex text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
                                     </div>
-                                    <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-2 text-primary">AWS Route 53</h5>
-                                        <div class="code-block text-xs">
-<pre><code>sudo apt install python3-certbot-dns-route53</code></pre>
-                                        </div>
-                                    </div>
-                                    <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-2 text-primary">Google Cloud DNS</h5>
-                                        <div class="code-block text-xs">
-<pre><code>sudo apt install python3-certbot-dns-google</code></pre>
-                                        </div>
-                                    </div>
-                                    <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-2 text-primary">DigitalOcean</h5>
-                                        <div class="code-block text-xs">
-<pre><code>sudo apt install python3-certbot-dns-digitalocean</code></pre>
-                                        </div>
-                                    </div>
-                                    <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-2 text-primary">Namecheap</h5>
-                                        <div class="code-block text-xs">
-<pre><code>pip install certbot-dns-namecheap</code></pre>
-                                        </div>
-                                    </div>
-                                    <div class="bg-darker p-4 rounded-lg border border-gray-700">
-                                        <h5 class="font-semibold mb-2 text-primary">GoDaddy</h5>
-                                        <div class="code-block text-xs">
-<pre><code>pip install certbot-dns-godaddy</code></pre>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <p class="mt-6 mb-4">使用自动DNS验证插件时，需要创建包含API密钥的配置文件：</p>
-                                <div class="code-block">
-<pre><code># Cloudflare 配置示例
-sudo nano /etc/letsencrypt/cloudflare.ini
-
-# 添加以下内容
-dns_cloudflare_email = your-email@example.com
-dns_cloudflare_api_key = your-api-key
-
-# 设置权限
-sudo chmod 600 /etc/letsencrypt/cloudflare.ini</code></pre>
                                 </div>
                             </div>
-                            
-                            <div>
-                                <h4 class="text-xl font-semibold mb-4 text-green-400">通配符证书的自动续期</h4>
-                                
-                                <p class="mb-4">使用手动DNS验证的通配符证书无法完全自动续期，需要手动更新DNS记录。建议：</p>
-                                
-                                <ul class="space-y-3 text-gray-300 mb-6">
-                                    <li class="flex items-start">
-                                        <i class="fa fa-arrow-right text-primary mt-1 mr-2"></i>
-                                        <span>使用支持自动DNS验证的服务商和插件</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <i class="fa fa-arrow-right text-primary mt-1 mr-2"></i>
-                                        <span>编写脚本自动更新DNS记录（需要DNS服务商提供API）</span>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <i class="fa fa-arrow-right text-primary mt-1 mr-2"></i>
-                                        <span>设置日历提醒，在证书过期前手动续期</span>
-                                    </li>
-                                </ul>
-                                
-                                <p class="mb-4">使用自动DNS验证的续期命令：</p>
-                                <div class="code-block">
-<pre><code># 自动续期所有证书
-sudo certbot renew
-
-# 针对特定证书
-sudo certbot renew --cert-name example.com</code></pre>
+                            <p class="text-gray-600 dark:text-gray-400 italic">
+                                "Let's Encrypt revolutionized how we secure our websites. As a small business owner, the free certificates and easy setup saved us hundreds of dollars annually."
+                            </p>
+                        </div>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                                    <img 
+                                        src="https://picsum.photos/id/1074/100/100" 
+                                        alt="Michael Chen profile" 
+                                        class="w-full h-full object-cover lazy-load"
+                                        loading="lazy"
+                                    >
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Michael Chen</h4>
+                                    <div class="flex text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-half-o"></i>
+                                    </div>
                                 </div>
                             </div>
+                            <p class="text-gray-600 dark:text-gray-400 italic">
+                                "The ACME protocol integration with our deployment pipeline made HTTPS adoption seamless. We manage hundreds of domains effortlessly thanks to Let's Encrypt."
+                            </p>
+                        </div>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                            <div class="flex items-center mb-4">
+                                <div class="w-12 h-12 rounded-full overflow-hidden mr-4">
+                                    <img 
+                                        src="https://picsum.photos/id/1062/100/100" 
+                                        alt="Elena Rodriguez profile" 
+                                        class="w-full h-full object-cover lazy-load"
+                                        loading="lazy"
+                                    >
+                                </div>
+                                <div>
+                                    <h4 class="font-bold">Elena Rodriguez</h4>
+                                    <div class="flex text-yellow-400 text-sm">
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star"></i>
+                                        <i class="fa fa-star-o"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="text-gray-600 dark:text-gray-400 italic">
+                                "As an educator, I appreciate how Let's Encrypt has lowered the barrier to entry for teaching web security. My students can implement HTTPS without any financial burden."
+                            </p>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- 更多资源 -->
-            <div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 reveal">
-                <a href="https://letsencrypt.org/docs/" target="_blank" class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover flex flex-col h-full">
-                    <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-                        <i class="fa fa-book text-primary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">官方文档</h3>
-                    <p class="text-gray-400 flex-grow">详细的使用指南和API文档，帮助您解决使用过程中的各种问题。</p>
-                    <div class="mt-4 text-primary flex items-center">
-                        查看文档 <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-                
-                <a href="https://certbot.eff.org/" target="_blank" class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover flex flex-col h-full">
-                    <div class="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center mb-4">
-                        <i class="fa fa-terminal text-secondary text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">Certbot 官网</h3>
-                    <p class="text-gray-400 flex-grow">Let's Encrypt 官方推荐的客户端工具，提供详细的安装和使用指南。</p>
-                    <div class="mt-4 text-secondary flex items-center">
-                        访问官网 <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-                
-                <a href="https://community.letsencrypt.org/" target="_blank" class="bg-dark-card p-6 rounded-xl border border-gray-800 card-hover flex flex-col h-full">
-                    <div class="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mb-4">
-                        <i class="fa fa-comments text-accent text-xl"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-2">社区论坛</h3>
-                    <p class="text-gray-400 flex-grow">活跃的用户社区，可提问、分享经验和解决方案，获取技术支持。</p>
-                    <div class="mt-4 text-accent flex items-center">
-                        访问论坛 <i class="fa fa-arrow-right ml-2"></i>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 页脚 -->
-    <footer class="bg-darker border-t border-gray-800 py-12">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center mb-10">
-                <div class="flex items-center mb-6 md:mb-0">
-                    <i class="fa fa-lock text-primary text-2xl mr-2"></i>
-                    <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">Let's Encrypt</span>
+        <!-- Resources Section -->
+        <section id="resources" class="py-20 bg-white dark:bg-dark-card">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">Get Started with Let's Encrypt</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-400">
+                        Everything you need to secure your website with free SSL/TLS certificates.
+                    </p>
                 </div>
-                <div class="flex space-x-6">
-                    <a href="https://github.com/letsencrypt" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-github text-xl"></i>
-                    </a>
-                    <a href="https://twitter.com/letsencrypt" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-twitter text-xl"></i>
-                    </a>
-                    <a href="https://community.letsencrypt.org/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-comments text-xl"></i>
+                
+                <!-- Getting Started Steps -->
+                <div id="get-started" class="max-w-4xl mx-auto mb-20">
+                    <h3 class="text-2xl font-bold mb-10 text-center">Simple Setup Process</h3>
+                    <div class="space-y-12">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-primary dark:bg-dark-primary text-white rounded-full flex items-center justify-center text-xl font-bold">1</div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">Choose a Client</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Select an ACME client that works with your web server. Popular options include Certbot, Caddy, and Lego.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-primary dark:bg-dark-primary text-white rounded-full flex items-center justify-center text-xl font-bold">2</div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">Install the Client</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Follow the installation instructions for your chosen client on your server operating system.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-primary dark:bg-dark-primary text-white rounded-full flex items-center justify-center text-xl font-bold">3</div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">Obtain and Install Certificate</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Run the client to automatically obtain and install your certificate. Most clients handle configuration automatically.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="flex-shrink-0 w-12 h-12 bg-primary dark:bg-dark-primary text-white rounded-full flex items-center justify-center text-xl font-bold">4</div>
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">Set Up Auto-Renewal</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Configure automatic renewal to ensure your certificate stays valid. Most clients include this by default.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Useful Resources -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-10 text-center">Useful Resources</h3>
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <a href="https://letsencrypt.org/docs/" target="_blank" class="block group">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl h-full hover:shadow-lg transition-all transform group-hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                                    <i class="fa fa-book text-primary dark:text-dark-primary text-xl"></i>
+                                </div>
+                                <h4 class="text-xl font-bold mb-3 group-hover:text-primary dark:group-hover:text-dark-primary transition-colors">Documentation</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Comprehensive guides and references to help you get started and troubleshoot issues.
+                                </p>
+                            </div>
+                        </a>
+                        <a href="https://community.letsencrypt.org/" target="_blank" class="block group">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl h-full hover:shadow-lg transition-all transform group-hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                                    <i class="fa fa-comments text-primary dark:text-dark-primary text-xl"></i>
+                                </div>
+                                <h4 class="text-xl font-bold mb-3 group-hover:text-primary dark:group-hover:text-dark-primary transition-colors">Community Forum</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Get help from other users and contribute to discussions about Let's Encrypt.
+                                </p>
+                            </div>
+                        </a>
+                        <a href="https://letsencrypt.org/2023/09/07/acme-client-feature-comparison.html" target="_blank" class="block group">
+                            <div class="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-xl h-full hover:shadow-lg transition-all transform group-hover:-translate-y-1">
+                                <div class="w-12 h-12 bg-primary/10 dark:bg-dark-primary/20 rounded-full flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                                    <i class="fa fa-list-ul text-primary dark:text-dark-primary text-xl"></i>
+                                </div>
+                                <h4 class="text-xl font-bold mb-3 group-hover:text-primary dark:group-hover:text-dark-primary transition-colors">Client Comparison</h4>
+                                <p class="text-gray-600 dark:text-gray-400">
+                                    Compare features of different ACME clients to find the best one for your needs.
+                                </p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter & CTA -->
+        <section class="py-20 bg-gradient-to-br from-primary to-secondary dark:from-dark-primary dark:to-dark-secondary text-white">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">Stay Updated</h2>
+                    <p class="text-lg text-white/90 mb-10 max-w-2xl mx-auto">
+                        Subscribe to our newsletter to receive the latest news, updates, and security best practices.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto mb-12">
+                        <input 
+                            type="email" 
+                            id="subscribeEmail" 
+                            placeholder="Your email address" 
+                            class="flex-grow px-4 py-3 rounded-full text-gray-800 focus:outline-none focus:ring-2 focus:ring-white"
+                        >
+                        <button id="subscribeBtn" class="px-6 py-3 bg-white text-primary hover:bg-gray-100 rounded-full font-medium transition-colors">
+                            Subscribe
+                        </button>
+                    </div>
+                    
+                    <div class="flex justify-center space-x-6 mb-10">
+                        <a href="https://twitter.com/letsencrypt" target="_blank" class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://github.com/letsencrypt" target="_blank" class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/lets-encrypt" target="_blank" class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </a>
+                        <a href="https://www.youtube.com/channel/UCsXiO5n5Zp77O4Y-3XJ5MtA" target="_blank" class="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors">
+                            <i class="fa fa-youtube-play text-xl"></i>
+                        </a>
+                    </div>
+                    
+                    <a href="https://letsencrypt.org/getting-started/" target="_blank" class="inline-block px-8 py-3 bg-white text-primary hover:bg-gray-100 rounded-full font-medium shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        Get Started Now
                     </a>
                 </div>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">资源</h4>
-                    <ul class="space-y-2">
-                        <li><a href="https://letsencrypt.org/docs/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">文档</a></li>
-                        <li><a href="https://letsencrypt.org/getting-started/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">入门指南</a></li>
-                        <li><a href="https://letsencrypt.org/docs/client-options/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">客户端工具</a></li>
-                        <li><a href="https://letsencrypt.org/stats/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">统计数据</a></li>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <i class="fa fa-lock text-primary text-2xl"></i>
+                        <span class="font-bold text-xl text-white">Let's Encrypt</span>
+                    </div>
+                    <p class="mb-6">
+                        A free, automated, and open certificate authority brought to you by the Internet Security Research Group (ISRG).
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="https://twitter.com/letsencrypt" target="_blank" class="hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
+                        </a>
+                        <a href="https://github.com/letsencrypt" target="_blank" class="hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/lets-encrypt" target="_blank" class="hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                        <a href="https://www.youtube.com/channel/UCsXiO5n5Zp77O4Y-3XJ5MtA" target="_blank" class="hover:text-primary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-bold text-white text-lg mb-6">Resources</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://letsencrypt.org/docs/" class="hover:text-primary transition-colors">Documentation</a></li>
+                        <li><a href="https://community.letsencrypt.org/" class="hover:text-primary transition-colors">Community</a></li>
+                        <li><a href="https://letsencrypt.org/2023/09/07/acme-client-feature-comparison.html" class="hover:text-primary transition-colors">Client Options</a></li>
+                        <li><a href="https://letsencrypt.org/faq/" class="hover:text-primary transition-colors">FAQ</a></li>
+                        <li><a href="/sitemap" class="hover:text-primary transition-colors">Sitemap</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">关于</h4>
-                    <ul class="space-y-2">
-                        <li><a href="https://letsencrypt.org/about/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">关于我们</a></li>
-                        <li><a href="https://letsencrypt.org/sponsors/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">赞助商</a></li>
-                        <li><a href="https://letsencrypt.org/partners/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">合作伙伴</a></li>
-                        <li><a href="https://letsencrypt.org/news/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">新闻动态</a></li>
+                    <h4 class="font-bold text-white text-lg mb-6">About</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://letsencrypt.org/about/" class="hover:text-primary transition-colors">Our Mission</a></li>
+                        <li><a href="https://letsencrypt.org/sponsors/" class="hover:text-primary transition-colors">Sponsors</a></li>
+                        <li><a href="https://letsencrypt.org/team/" class="hover:text-primary transition-colors">Team</a></li>
+                        <li><a href="https://letsencrypt.org/press/" class="hover:text-primary transition-colors">Press</a></li>
+                        <li><a href="https://letsencrypt.org/posts/" class="hover:text-primary transition-colors">Blog</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">技术</h4>
-                    <ul class="space-y-2">
-                        <li><a href="https://letsencrypt.org/docs/acme-protocol-updates/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">ACME协议</a></li>
-                        <li><a href="https://letsencrypt.org/certificates/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">证书信息</a></li>
-                        <li><a href="https://letsencrypt.org/2023/07/10/cross-sign-expiration.html" target="_blank" class="text-gray-400 hover:text-primary transition-colors">交叉签名</a></li>
-                        <li><a href="https://letsencrypt.org/security/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">安全信息</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h4 class="text-lg font-semibold mb-4">帮助</h4>
-                    <ul class="space-y-2">
-                        <li><a href="https://community.letsencrypt.org/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">社区支持</a></li>
-                        <li><a href="https://letsencrypt.org/contact/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
-                        <li><a href="https://letsencrypt.org/docs/faq/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">常见问题</a></li>
-                        <li><a href="https://letsencrypt.org/report-abuse/" target="_blank" class="text-gray-400 hover:text-primary transition-colors">举报滥用</a></li>
+                    <h4 class="font-bold text-white text-lg mb-6">Legal</h4>
+                    <ul class="space-y-3">
+                        <li><a href="https://letsencrypt.org/repository/" class="hover:text-primary transition-colors">Certificate Repository</a></li>
+                        <li><a href="https://letsencrypt.org/terms-of-service/" class="hover:text-primary transition-colors">Terms of Service</a></li>
+                        <li><a href="https://letsencrypt.org/privacy-policy/" class="hover:text-primary transition-colors">Privacy Policy</a></li>
+                        <li><a href="https://letsencrypt.org/security-policy/" class="hover:text-primary transition-colors">Security Policy</a></li>
                     </ul>
                 </div>
             </div>
-            
-            <div class="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-                <p>© 2023 Let's Encrypt. 本网站仅作介绍用途，Let's Encrypt 是 Internet Security Research Group (ISRG) 的商标。</p>
-                <p class="mt-2">内容基于 <a href="https://letsencrypt.org/" target="_blank" class="hover:text-primary transition-colors">Let's Encrypt 官方网站</a> 信息整理。</p>
+            <div class="border-t border-gray-800 pt-8 text-sm">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p>© 2023 Let's Encrypt. All rights reserved.</p>
+                    <p class="mt-4 md:mt-0">ISRG is a 501(c)(3) nonprofit organization.</p>
+                </div>
             </div>
         </div>
     </footer>
 
+    <!-- Share Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white dark:bg-dark-card rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold">Share This Page</h3>
+                <button id="closeShareModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fexample.com%2Fletsencrypt&text=Check%20out%20Let%27s%20Encrypt%20-%20Free%20SSL%2FTLS%20Certificates%20for%20Everyone" target="_blank" class="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                    <i class="fa fa-twitter text-blue-500 text-2xl mb-2"></i>
+                    <span class="text-sm">Twitter</span>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.com%2Fletsencrypt" target="_blank" class="flex flex-col items-center justify-center p-4 bg-blue-600/10 dark:bg-blue-600/20 rounded-lg hover:bg-blue-600/20 dark:hover:bg-blue-600/30 transition-colors">
+                    <i class="fa fa-facebook text-blue-600 text-2xl mb-2"></i>
+                    <span class="text-sm">Facebook</span>
+                </a>
+                <a href="https://www.linkedin.com/shareArticle?mini=true&url=https%3A%2F%2Fexample.com%2Fletsencrypt&title=Let%27s%20Encrypt%20-%20Free%20SSL%2FTLS%20Certificates&summary=Let%27s%20Encrypt%20provides%20free%2C%20automated%2C%20and%20open%20SSL%2FTLS%20certificates%20for%20everyone.&source=Example.com" target="_blank" class="flex flex-col items-center justify-center p-4 bg-blue-700/10 dark:bg-blue-700/20 rounded-lg hover:bg-blue-700/20 dark:hover:bg-blue-700/30 transition-colors">
+                    <i class="fa fa-linkedin text-blue-700 text-2xl mb-2"></i>
+                    <span class="text-sm">LinkedIn</span>
+                </a>
+                <a href="mailto:?subject=Check%20out%20Let%27s%20Encrypt&body=I%20thought%20you%20might%20be%20interested%20in%20Let%27s%20Encrypt%2C%20which%20provides%20free%20SSL%2FTLS%20certificates%3A%20https%3A%2F%2Fexample.com%2Fletsencrypt" class="flex flex-col items-center justify-center p-4 bg-gray-100 dark:bg-gray-800 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fa fa-envelope text-gray-700 dark:text-gray-300 text-2xl mb-2"></i>
+                    <span class="text-sm">Email</span>
+                </a>
+            </div>
+            <div class="relative">
+                <input 
+                    type="text" 
+                    id="shareLink" 
+                    value="https://example.com/letsencrypt" 
+                    readonly 
+                    class="w-full py-3 px-4 bg-gray-100 dark:bg-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary"
+                >
+                <button id="copyLinkBtn" class="absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded transition-colors">
+                    Copy
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Button -->
+    <button id="shareBtn" class="fixed bottom-6 right-6 w-12 h-12 bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white rounded-full shadow-lg flex items-center justify-center z-30 transition-all transform hover:scale-110">
+        <i class="fa fa-share-alt text-xl"></i>
+    </button>
+
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" class="fixed bottom-6 left-6 w-12 h-12 bg-white dark:bg-dark-card text-primary dark:text-dark-primary rounded-full shadow-lg flex items-center justify-center z-30 transition-all transform hover:scale-110 opacity-0 invisible">
+        <i class="fa fa-arrow-up text-xl"></i>
+    </button>
+
     <!-- JavaScript -->
     <script>
-        // 导航栏滚动效果
-        window.addEventListener('scroll', function() {
-            const navbar = document.getElementById('navbar');
-            if (window.scrollY > 50) {
-                navbar.classList.add('bg-darker/95');
-                navbar.classList.remove('bg-transparent');
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const shareModal = document.getElementById('shareModal');
+        const closeShareModal = document.getElementById('closeShareModal');
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        const shareLink = document.getElementById('shareLink');
+
+        // Initialize Theme
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+
+        // Theme Toggle Functionality
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
             } else {
-                navbar.classList.remove('bg-darker/95');
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
             }
         });
-        
-        // 移动端菜单切换
-        document.getElementById('menu-toggle').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
+
+        // Bookmark Functionality
+        bookmarkBtn.addEventListener('click', () => {
+            const icon = bookmarkBtn.querySelector('i');
+            if (icon.classList.contains('fa-star-o')) {
+                icon.classList.remove('fa-star-o');
+                icon.classList.add('fa-star', 'text-yellow-400');
+            } else {
+                icon.classList.remove('fa-star', 'text-yellow-400');
+                icon.classList.add('fa-star-o');
+            }
+        });
+
+        // Mobile Menu Toggle
+        mobileMenuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
-        
-        // 滚动动画
-        function revealElements() {
-            const reveals = document.querySelectorAll('.reveal');
-            const windowHeight = window.innerHeight;
-            
-            reveals.forEach(reveal => {
-                const revealTop = reveal.getBoundingClientRect().top;
-                const revealPoint = 150;
-                
-                if (revealTop < windowHeight - revealPoint) {
-                    reveal.classList.add('active');
-                }
-            });
-        }
-        
-        window.addEventListener('scroll', revealElements);
-        window.addEventListener('load', revealElements);
-        
-        // 社区评论数据
-        const reviews = [
-            {
-                name: '张伟',
-                avatar: 'https://picsum.photos/id/11/100/100',
-                role: '网站管理员',
-                content: 'Let\'s Encrypt 彻底改变了我的工作方式！以前每年要花几百元购买SSL证书，现在完全免费，而且通过Certbot自动续期，几乎不用操心。',
-                rating: 5,
-                date: '2023-09-15',
-                type: 'positive'
-            },
-            {
-                name: '李娜',
-                avatar: 'https://picsum.photos/id/12/100/100',
-                role: '小企业主',
-                content: '作为一个小型电商网站，我们一直想启用HTTPS但苦于证书费用。Let\'s Encrypt帮我们实现了这一点，客户反馈网站看起来更专业可信了。',
-                rating: 5,
-                date: '2023-08-22',
-                type: 'positive'
-            },
-            {
-                name: '王建国',
-                avatar: 'https://picsum.photos/id/13/100/100',
-                role: '系统管理员',
-                content: '证书有效期90天确实有点短，但自动续期功能很可靠。一年多来，我们的服务器从未因为证书过期出过问题。唯一的小麻烦是通配符证书需要DNS验证。',
-                rating: 4,
-                date: '2023-07-30',
-                type: 'neutral'
-            },
-            {
-                name: '刘芳',
-                avatar: 'https://picsum.photos/id/14/100/100',
-                role: '个人博客作者',
-                rating: 5,
-                content: '对于我的个人博客来说，Let\'s Encrypt简直是完美的解决方案。安装简单，完全免费，还能提升网站在搜索引擎中的排名。强烈推荐给所有博主！',
-                date: '2023-09-05',
-                type: 'positive'
-            },
-            {
-                name: '赵天明',
-                avatar: 'https://picsum.photos/id/15/100/100',
-                role: '网络安全工程师',
-                content: '从安全角度来看，Let\'s Encrypt证书的安全性与付费证书相当。不过企业用户可能还是需要OV或EV证书来增强客户信任。',
-                rating: 4,
-                date: '2023-08-18',
-                type: 'neutral'
-            },
-            {
-                name: '陈静',
-                avatar: 'https://picsum.photos/id/16/100/100',
-                role: '前端开发者',
-                content: '刚开始使用时遇到了不少麻烦，尤其是在Windows服务器上配置自动续期。官方文档虽然详细，但对新手不够友好，希望能有更多入门教程。',
-                rating: 3,
-                date: '2023-07-12',
-                type: 'neutral'
-            },
-            {
-                name: '吴志强',
-                avatar: 'https://picsum.photos/id/17/100/100',
-                role: '服务器管理员',
-                content: '管理着几十台服务器，Let\'s Encrypt帮我们节省了大量证书费用。Certbot的命令行工具非常强大，可以轻松集成到自动化脚本中。',
-                rating: 5,
-                date: '2023-09-10',
-                type: 'positive'
-            },
-            {
-                name: '郑小华',
-                avatar: 'https://picsum.photos/id/18/100/100',
-                role: 'WordPress用户',
-                content: '通过WP Encrypt插件在WordPress上使用Let\'s Encrypt，设置过程比想象中简单。不过上次自动续期失败了，不知道是什么原因。',
-                rating: 3,
-                date: '2023-08-05',
-                type: 'neutral'
-            },
-            {
-                name: '孙丽',
-                avatar: 'https://picsum.photos/id/19/100/100',
-                role: '电商网站运营',
-                content: '切换到Let\'s Encrypt后，网站的安全评分提高了，客户投诉也减少了。唯一的问题是需要定期检查续期是否成功，有点担心某天突然过期。',
-                rating: 4,
-                date: '2023-07-25',
-                type: 'neutral'
-            },
-            {
-                name: '周健',
-                avatar: 'https://picsum.photos/id/20/100/100',
-                role: '云服务架构师',
-                content: '在我们的云环境中大规模部署了Let\'s Encrypt，配合自动化工具效果很好。通配符证书特别实用，大大简化了多子域名的证书管理。',
-                rating: 5,
-                date: '2023-09-02',
-                type: 'positive'
-            },
-            {
-                name: '林小红',
-                avatar: 'https://picsum.photos/id/21/100/100',
-                role: '个人站长',
-                content: '作为一个技术小白，花了整整一天才弄明白怎么安装和配置。希望能有更简单的图形化工具，让非技术人员也能轻松使用。',
-                rating: 3,
-                date: '2023-08-15',
-                type: 'neutral'
-            },
-            {
-                name: '黄志强',
-                avatar: 'https://picsum.photos/id/22/100/100',
-                role: '网络工程师',
-                content: '证书吊销流程太复杂了！上次服务器被黑，需要吊销证书，结果花了好几个小时才搞定。希望官方能简化这个过程。',
-                rating: 2,
-                date: '2023-07-10',
-                type: 'negative'
-            },
-            {
-                name: '欧阳明',
-                avatar: 'https://picsum.photos/id/23/100/100',
-                role: 'Linux系统管理员',
-                content: '在各种Linux发行版上都测试过Let\'s Encrypt，兼容性很好。Certbot的Nginx和Apache插件非常好用，几乎是一键配置。',
-                rating: 5,
-                date: '2023-09-18',
-                type: 'positive'
-            },
-            {
-                name: '司马燕',
-                avatar: 'https://picsum.photos/id/24/100/100',
-                role: '互联网创业者',
-                content: '创业公司资金紧张，Let\'s Encrypt帮我们节省了一笔不小的开支。客户并不在意我们用的是免费证书还是付费证书，只关心网站是否安全。',
-                rating: 5,
-                date: '2023-08-30',
-                type: 'positive'
-            },
-            {
-                name: '诸葛辉',
-                avatar: 'https://picsum.photos/id/25/100/100',
-                role: 'DevOps工程师',
-                content: '集成到CI/CD流程中非常顺畅，每次部署都能自动更新证书。不过文档中关于API使用的部分不够详细，需要自己摸索。',
-                rating: 4,
-                date: '2023-07-20',
-                type: 'neutral'
-            },
-            {
-                name: '东方雪',
-                avatar: 'https://picsum.photos/id/26/100/100',
-                role: '教育机构IT管理员',
-                content: '为学校的多个网站部署了Let\'s Encrypt证书，效果很好。学生和家长对网站的安全性更有信心了，而且完全没有增加预算。',
-                rating: 5,
-                date: '2023-09-08',
-                type: 'positive'
-            },
-            {
-                name: '西门庆',
-                avatar: 'https://picsum.photos/id/27/100/100',
-                role: '小型企业IT支持',
-                content: '在Windows Server上配置自动续期真的很麻烦，尝试了好几种方法才勉强搞定。希望官方能提供更好的Windows支持。',
-                rating: 2,
-                date: '2023-08-12',
-                type: 'negative'
-            },
-            {
-                name: '慕容风',
-                avatar: 'https://picsum.photos/id/28/100/100',
-                role: '安全研究员',
-                content: '从技术角度看，Let\'s Encrypt的实现非常专业，符合所有安全标准。证书透明度日志也做得很好，增强了整个生态系统的安全性。',
-                rating: 5,
-                date: '2023-07-05',
-                type: 'positive'
-            },
-            {
-                name: '上官云',
-                avatar: 'https://picsum.photos/id/29/100/100',
-                role: '网络托管服务商',
-                content: '我们为所有客户提供免费的Let\'s Encrypt证书，大大提升了客户满意度。自动部署和续期系统非常稳定，几乎不需要人工干预。',
-                rating: 5,
-                date: '2023-09-12',
-                type: 'positive'
-            },
-            {
-                name: '尉迟琳',
-                avatar: 'https://picsum.photos/id/30/100/100',
-                role: '非营利组织网站管理员',
-                content: '对于资金有限的非营利组织来说，Let\'s Encrypt是天赐之物。我们可以把节省下来的资金用在更重要的项目上，同时保证网站安全。',
-                rating: 5,
-                date: '2023-08-25',
-                type: 'positive'
-            },
-            {
-                name: '呼延军',
-                avatar: 'https://picsum.photos/id/31/100/100',
-                role: '移动应用开发者',
-                content: '为我们的API服务使用Let\'s Encrypt证书，效果很好。不过证书更新时偶尔会导致短暂的连接中断，需要优化更新流程。',
-                rating: 4,
-                date: '2023-07-18',
-                type: 'neutral'
-            },
-            {
-                name: '公孙丽',
-                avatar: 'https://picsum.photos/id/32/100/100',
-                role: '自由职业者',
-                content: '帮客户配置过很多次Let\'s Encrypt，大部分情况都很顺利，但偶尔会遇到一些奇怪的问题，尤其是在共享主机上。',
-                rating: 4,
-                date: '2023-09-03',
-                type: 'neutral'
-            },
-            {
-                name: '拓跋宏',
-                avatar: 'https://picsum.photos/id/33/100/100',
-                role: '大型企业IT经理',
-                content: '在测试环境中使用Let\'s Encrypt效果很好，但生产环境还是选择了商业证书，主要是因为需要企业级支持和更长的有效期。',
-                rating: 3,
-                date: '2023-08-10',
-                type: 'neutral'
-            },
-            {
-                name: '轩辕明',
-                avatar: 'https://picsum.photos/id/34/100/100',
-                role: 'DNS服务商技术支持',
-                content: '很多客户因为不熟悉DNS验证流程而遇到困难。建议普通用户尽量使用HTTP验证，或者选择支持自动DNS验证的服务商。',
-                rating: 4,
-                date: '2023-07-08',
-                type: 'neutral'
-            },
-            {
-                name: '令狐冲',
-                avatar: 'https://picsum.photos/id/35/100/100',
-                role: '网络安全顾问',
-                content: 'Let\'s Encrypt极大地提高了整个互联网的安全性，让HTTPS从奢侈品变成了必需品。不过用户也需要注意证书的正确配置和管理。',
-                rating: 5,
-                date: '2023-09-16',
-                type: 'positive'
-            },
-            {
-                name: '杨过',
-                avatar: 'https://picsum.photos/id/36/100/100',
-                role: '个人网站开发者',
-                content: '证书突然过期了一次，发现自动续期脚本因为权限问题没有运行。建议大家定期检查续期日志，不要完全依赖自动化。',
-                rating: 4,
-                date: '2023-08-28',
-                type: 'neutral'
-            },
-            {
-                name: '小龙女',
-                avatar: 'https://picsum.photos/id/37/100/100',
-                role: '内容创作者',
-                content: '技术小白一个，跟着网上的教程一步步操作，居然也成功安装了证书。网站地址栏的小锁图标让我的读者感觉更安全。',
-                rating: 5,
-                date: '2023-07-22',
-                type: 'positive'
-            },
-            {
-                name: '张无忌',
-                avatar: 'https://picsum.photos/id/38/100/100',
-                role: '多平台博主',
-                content: '在所有的个人网站和博客上都使用了Let\'s Encrypt，从未出现过问题。最喜欢通配符证书，可以一次保护所有子域名。',
-                rating: 5,
-                date: '2023-09-07',
-                type: 'positive'
-            },
-            {
-                name: '赵敏',
-                avatar: 'https://picsum.photos/id/39/100/100',
-                role: '网络安全分析师',
-                content: 'Let\'s Encrypt证书本身很安全，但很多用户配置不当导致安全漏洞。建议配合SSL Labs测试工具检查配置是否安全。',
-                rating: 4,
-                date: '2023-08-16',
-                type: 'neutral'
-            },
-            {
-                name: '周芷若',
-                avatar: 'https://picsum.photos/id/40/100/100',
-                role: '电商平台开发者',
-                content: '最初担心免费证书会影响客户信任，但实际使用后发现完全没有问题。客户更关注网站的功能和体验，而不是证书类型。',
-                rating: 5,
-                date: '2023-07-15',
-                type: 'positive'
-            },
-            {
-                name: '乔峰',
-                avatar: 'https://picsum.photos/id/41/100/100',
-                role: '系统架构师',
-                content: '在大规模部署中，Let\'s Encrypt的API非常有用。不过文档中的一些细节不够清晰，需要参考社区讨论才能解决某些问题。',
-                rating: 4,
-                date: '2023-09-14',
-                type: 'neutral'
-            },
-            {
-                name: '段誉',
-                avatar: 'https://picsum.photos/id/42/100/100',
-                role: '初创公司CTO',
-                content: '从公司成立就一直使用Let\'s Encrypt，节省了大量成本。随着公司成长，我们可能会考虑商业证书，但目前完全满足需求。',
-                rating: 5,
-                date: '2023-08-20',
-                type: 'positive'
-            },
-            {
-                name: '虚竹',
-                avatar: 'https://picsum.photos/id/43/100/100',
-                role: '佛教网站管理员',
-                content: '为寺庙的官方网站配置了Let\'s Encrypt证书，访客反馈很好。作为非营利组织，我们非常感谢有这样的免费服务。',
-                rating: 5,
-                date: '2023-07-05',
-                type: 'positive'
-            },
-            {
-                name: '阿紫',
-                avatar: 'https://picsum.photos/id/44/100/100',
-                role: '游戏开发者',
-                content: '为我们的游戏服务器API使用了Let\'s Encrypt证书，配置简单且稳定。玩家数据的传输安全得到了保障。',
-                rating: 5,
-                date: '2023-09-01',
-                type: 'positive'
-            },
-            {
-                name: '慕容复',
-                avatar: 'https://picsum.photos/id/45/100/100',
-                role: '企业IT主管',
-                content: '尝试在企业内部网站使用Let\'s Encrypt，但因为内部域名无法通过公开验证而失败。希望未来能支持私有CA功能。',
-                rating: 2,
-                date: '2023-08-14',
-                type: 'negative'
-            },
-            {
-                name: '鸠摩智',
-                avatar: 'https://picsum.photos/id/46/100/100',
-                role: '网络安全专家',
-                content: '从安全角度看，90天的有效期其实是个优点，可以减少密钥泄露的风险。自动续期功能让这一点变得可以接受。',
-                rating: 5,
-                date: '2023-07-28',
-                type: 'positive'
-            },
-            {
-                name: '韦小宝',
-                avatar: 'https://picsum.photos/id/47/100/100',
-                role: '多网站所有者',
-                content: '管理着十几个网站，Let\'s Encrypt帮我省了不少钱和时间。Certbot的批量操作功能非常实用，推荐给多网站管理者。',
-                rating: 5,
-                date: '2023-09-11',
-                type: 'positive'
-            },
-            {
-                name: '康熙',
-                avatar: 'https://picsum.photos/id/48/100/100',
-                role: '政府机构IT负责人',
-                content: '在非敏感的政府公开信息网站上使用了Let\'s Encrypt，效果很好。既保证了信息传输安全，又没有增加财政负担。',
-                rating: 4,
-                date: '2023-08-08',
-                type: 'positive'
-            },
-            {
-                name: '鳌拜',
-                avatar: 'https://picsum.photos/id/49/100/100',
-                role: '网络管理员',
-                content: '对新手不够友好，文档过于技术化。花了好几天才弄明白怎么在IIS上配置，希望能有更详细的分步指南。',
-                rating: 2,
-                date: '2023-07-13',
-                type: 'negative'
-            },
-            {
-                name: '吴三桂',
-                avatar: 'https://picsum.photos/id/50/100/100',
-                role: '云计算工程师',
-                content: '在Kubernetes集群中使用Let\'s Encrypt配合cert-manager，自动化程度非常高，几乎零维护成本。强烈推荐给云原生环境使用。',
-                rating: 5,
-                date: '2023-09-06',
-                type: 'positive'
-            },
-            {
-                name: '陈圆圆',
-                avatar: 'https://picsum.photos/id/51/100/100',
-                role: '时尚博主',
-                content: '网站切换到HTTPS后，Google Analytics显示访客停留时间增加了，可能是因为用户感觉更安全。安装过程比想象中简单。',
-                rating: 5,
-                date: '2023-08-26',
-                type: 'positive'
-            },
-            {
-                name: '李自成',
-                avatar: 'https://picsum.photos/id/52/100/100',
-                role: '软件开发公司CEO',
-                content: '我们所有的客户网站都使用Let\'s Encrypt证书，从未收到过任何投诉。节省下来的资金可以投入到更好的客户服务中。',
-                rating: 5,
-                date: '2023-07-21',
-                type: 'positive'
-            },
-            {
-                name: '张献忠',
-                avatar: 'https://picsum.photos/id/53/100/100',
-                role: '网络安全顾问',
-                content: 'Let\'s Encrypt的普及极大地提高了整个互联网的安全水平，是网络安全领域的一项重要公益事业。希望能得到更多支持和发展。',
-                rating: 5,
-                date: '2023-09-17',
-                type: 'positive'
-            },
-            {
-                name: '多尔衮',
-                avatar: 'https://picsum.photos/id/54/100/100',
-                role: '跨国企业IT总监',
-                content: '在部分地区的子公司网站使用了Let\'s Encrypt，效果不错。但总部网站仍使用EV证书，主要是为了在地址栏显示公司名称。',
-                rating: 4,
-                date: '2023-08-19',
-                type: 'neutral'
-            },
-            {
-                name: '孝庄',
-                avatar: 'https://picsum.photos/id/55/100/100',
-                role: '教育网站管理员',
-                content: '为学校的在线教育平台配置了Let\'s Encrypt证书，保护学生和教师的数据传输安全。家长们对此非常满意。',
-                rating: 5,
-                date: '2023-07-09',
-                type: 'positive'
-            },
-            {
-                name: '顺治',
-                avatar: 'https://picsum.photos/id/56/100/100',
-                role: '宗教网站管理员',
-                content: '作为一个宗教组织的网站，我们预算有限，Let\'s Encrypt帮助我们在不增加开支的情况下实现了HTTPS，保护访客的隐私。',
-                rating: 5,
-                date: '2023-09-04',
-                type: 'positive'
-            },
-            {
-                name: '乾隆',
-                avatar: 'https://picsum.photos/id/57/100/100',
-                role: '旅游网站运营',
-                content: '游客上传的照片和个人信息通过HTTPS传输更安全，Let\'s Encrypt让我们能够实现这一点而不增加运营成本。',
-                rating: 5,
-                date: '2023-08-11',
-                type: 'positive'
-            },
-            {
-                name: '雍正',
-                avatar: 'https://picsum.photos/id/58/100/100',
-                role: '金融科技创业者',
-                content: '虽然Let\'s Encrypt证书在技术上是安全的，但金融行业的用户可能更信任付费的EV证书。我们最终选择了混合使用策略。',
-                rating: 3,
-                date: '2023-07-16',
-                type: 'neutral'
-            },
-            {
-                name: '嘉庆',
-                avatar: 'https://picsum.photos/id/59/100/100',
-                role: '新闻网站技术主管',
-                content: '新闻网站需要快速发布内容，Let\'s Encrypt的自动化证书管理让我们能够专注于内容发布，而不用担心证书问题。',
-                rating: 5,
-                date: '2023-09-09',
-                type: 'positive'
-            },
-            {
-                name: '道光',
-                avatar: 'https://picsum.photos/id/60/100/100',
-                role: '医疗健康网站管理员',
-                content: '医疗信息的安全性至关重要，Let\'s Encrypt帮助我们实现了HTTPS加密，保护患者的隐私信息，同时没有增加预算压力。',
-                rating: 5,
-                date: '2023-08-23',
-                type: 'positive'
+
+        // Scroll Progress Indicator
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.width = scrolled + '%';
+
+            // Back to Top Button Visibility
+            if (winScroll > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
             }
+        });
+
+        // Back to Top Functionality
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // Share Modal Functionality
+        shareBtn.addEventListener('click', () => {
+            shareModal.classList.remove('hidden');
+            shareModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        });
+
+        closeShareModal.addEventListener('click', () => {
+            shareModal.classList.remove('flex');
+            shareModal.classList.add('hidden');
+            document.body.style.overflow = '';
+        });
+
+        // Close modal when clicking outside
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) {
+                shareModal.classList.remove('flex');
+                shareModal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        });
+
+        // Copy Link Functionality
+        copyLinkBtn.addEventListener('click', () => {
+            shareLink.select();
+            shareLink.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(shareLink.value);
+            
+            const originalText = copyLinkBtn.textContent;
+            copyLinkBtn.textContent = 'Copied!';
+            copyLinkBtn.classList.remove('bg-primary', 'hover:bg-primary/90');
+            copyLinkBtn.classList.add('bg-green-500', 'hover:bg-green-600');
+            
+            setTimeout(() => {
+                copyLinkBtn.textContent = originalText;
+                copyLinkBtn.classList.remove('bg-green-500', 'hover:bg-green-600');
+                copyLinkBtn.classList.add('bg-primary', 'hover:bg-primary/90');
+            }, 2000);
+        });
+
+        // Search Functionality (basic implementation)
+        const searchInputs = [
+            document.getElementById('searchInput'),
+            document.getElementById('mobileSearchInput')
         ];
         
-        // 渲染评论
-        function renderReviews(filter = 'all', count = 12) {
-            const container = document.getElementById('reviews-container');
-            container.innerHTML = '';
-            
-            let filteredReviews = reviews;
-            if (filter !== 'all') {
-                filteredReviews = reviews.filter(review => review.type === filter);
+        searchInputs.forEach(input => {
+            if (input) {
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        const searchTerm = input.value.trim();
+                        if (searchTerm) {
+                            // In a real implementation, this would perform a search
+                            // For now, we'll just log it to the console
+                            console.log('Searching for:', searchTerm);
+                            // Optionally, clear the input
+                            input.value = '';
+                        }
+                    }
+                });
             }
-            
-            // 限制显示数量
-            const reviewsToShow = filteredReviews.slice(0, count);
-            
-            reviewsToShow.forEach((review, index) => {
-                // 创建星级评分HTML
-                let ratingHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= review.rating) {
-                        ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
-                    } else {
-                        ratingHtml += '<i class="fa fa-star-o text-gray-600"></i>';
+        });
+
+        // Radar Chart Initialization
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Cost', 'Ease of Use', 'Automation', 'Security', 'Browser Support', 'Validity Period'],
+                datasets: [
+                    {
+                        label: 'Let\'s Encrypt',
+                        data: [10, 8, 10, 9, 10, 6],
+                        backgroundColor: 'rgba(52, 144, 220, 0.2)',
+                        borderColor: 'rgba(52, 144, 220, 1)',
+                        pointBackgroundColor: 'rgba(52, 144, 220, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(52, 144, 220, 1)'
+                    },
+                    {
+                        label: 'Commercial CAs',
+                        data: [3, 6, 5, 10, 10, 9],
+                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        borderColor: 'rgba(99, 102, 241, 1)',
+                        pointBackgroundColor: 'rgba(99, 102, 241, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(99, 102, 241, 1)'
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        borderWidth: 3
                     }
                 }
-                
-                const reviewElement = document.createElement('div');
-                reviewElement.className = `bg-dark-card rounded-xl border border-gray-800 p-6 card-hover reveal`;
-                reviewElement.style.transitionDelay = `${(index % 6) * 0.1}s`;
-                reviewElement.dataset.type = review.type;
-                
-                reviewElement.innerHTML = `
-                    <div class="flex items-start mb-4">
-                        <img src="${review.avatar}" alt="${review.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4">
-                        <div>
-                            <h4 class="font-bold">${review.name}</h4>
-                            <p class="text-gray-400 text-sm">${review.role}</p>
-                            <div class="flex mt-1">
-                                ${ratingHtml}
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-300 mb-4">${review.content}</p>
-                    <div class="text-gray-500 text-sm">${review.date}</div>
-                `;
-                
-                container.appendChild(reviewElement);
-            });
-            
-            // 触发动画
-            setTimeout(() => {
-                document.querySelectorAll('#reviews-container .reveal').forEach(el => {
-                    el.classList.add('active');
-                });
-            }, 100);
-        }
-        
-        // 初始渲染评论
-        window.addEventListener('load', () => {
-            renderReviews();
-        });
-        
-        // 评论筛选
-        document.querySelectorAll('.review-filter').forEach(button => {
-            button.addEventListener('click', function() {
-                // 更新按钮状态
-                document.querySelectorAll('.review-filter').forEach(btn => {
-                    btn.classList.remove('active', 'bg-primary', 'text-white');
-                    btn.classList.add('bg-dark-card', 'hover:bg-dark-hover');
-                });
-                this.classList.add('active', 'bg-primary', 'text-white');
-                this.classList.remove('bg-dark-card', 'hover:bg-dark-hover');
-                
-                // 渲染筛选后的评论
-                renderReviews(this.dataset.filter);
-            });
-        });
-        
-        // 加载更多评论
-        let currentReviewCount = 12;
-        document.getElementById('load-more').addEventListener('click', function() {
-            currentReviewCount += 12;
-            const activeFilter = document.querySelector('.review-filter.active').dataset.filter;
-            renderReviews(activeFilter, currentReviewCount);
-            
-            // 如果已经加载所有评论，隐藏按钮
-            const filteredReviews = activeFilter === 'all' 
-                ? reviews 
-                : reviews.filter(review => review.type === activeFilter);
-                
-            if (currentReviewCount >= filteredReviews.length) {
-                this.style.display = 'none';
             }
         });
-        
-        // 使用方法标签切换
-        document.querySelectorAll('.usage-tab').forEach(tab => {
-            tab.addEventListener('click', function() {
-                // 更新标签状态
-                document.querySelectorAll('.usage-tab').forEach(t => {
-                    t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
-                });
-                this.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
-                
-                // 显示对应内容
-                const tabId = this.dataset.tab;
-                document.querySelectorAll('.usage-content').forEach(content => {
-                    content.classList.add('hidden');
-                    content.classList.remove('active');
-                });
-                document.getElementById(tabId).classList.remove('hidden');
-                document.getElementById(tabId).classList.add('active');
-            });
+
+        // Update chart colors when theme changes
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const tickColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+            
+            radarChart.options.scales.r.angleLines.color = gridColor;
+            radarChart.options.scales.r.grid.color = gridColor;
+            radarChart.options.scales.r.pointLabels.color = textColor;
+            radarChart.options.scales.r.ticks.color = tickColor;
+            radarChart.options.plugins.legend.labels.color = textColor;
+            
+            radarChart.update();
         });
-        
-        // 简单的代码高亮模拟
-        document.addEventListener('DOMContentLoaded', function() {
-            const codeBlocks = document.querySelectorAll('code');
-            codeBlocks.forEach(block => {
-                let html = block.innerHTML;
-                // 简单处理命令和参数
-                html = html.replace(/(# .+)/g, '<span class="token comment">$1</span>');
-                html = html.replace(/(sudo|apt|yum|dnf|certbot|nginx|apache|openssl|dig)\b/g, '<span class="token function">$1</span>');
-                html = html.replace(/(--\w+)/g, '<span class="token keyword">$1</span>');
-                html = html.replace(/(\/[\w\/.]+)/g, '<span class="token string">$1</span>');
-                html = html.replace(/(\.com|\.org|\.net)\b/g, '<span class="token constant">$1</span>');
-                block.innerHTML = html;
-            });
+
+        // Lazy loading images animation
+        document.addEventListener('DOMContentLoaded', () => {
+            const lazyImages = document.querySelectorAll('img.lazy-load');
+            
+            if ('IntersectionObserver' in window) {
+                const imageObserver = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const image = entry.target;
+                            image.classList.add('animate-fade-in');
+                            imageObserver.unobserve(image);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(image => {
+                    imageObserver.observe(image);
+                });
+            }
         });
     </script>
-<script type="module" src="/main.js"></script>
+    
+    <!-- Module import for main.js -->
+    <script type="module" src="/main.js"></script>
 </body>
 </html>
-    

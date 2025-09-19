@@ -230,31 +230,20 @@
     
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-12">
-        <!-- Stats Overview with Chart -->
-        <section class="mb-16">
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-                <div class="animate-slideInLeft">
-                    <h2 class="text-3xl font-bold mb-6">Backend Frameworks Overview</h2>
-                    <p class="text-gray-600 dark:text-gray-400 mb-6">
-                        Compare the most popular backend frameworks based on features, performance, and community support. 
-                        Our comprehensive analysis helps you choose the right tool for your project.
-                    </p>
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                            <div class="text-2xl font-bold text-purple-600 dark:text-purple-400">15+</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Free Frameworks</div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md">
-                            <div class="text-2xl font-bold text-green-600 dark:text-green-400">100%</div>
-                            <div class="text-sm text-gray-600 dark:text-gray-400">Free Tier Available</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg">
-                    <canvas id="backendChart" width="400" height="400"></canvas>
-                </div>
+        <!-- View Controls -->
+        <div class="flex justify-center mb-8">
+            <div class="bg-white dark:bg-gray-800 rounded-full shadow-md p-1 flex">
+                <button id="tableViewBtn" class="px-6 py-3 rounded-full bg-purple-600 text-white">
+                    <i class="fas fa-table mr-2"></i>Table View
+                </button>
+                <button id="cardViewWithImageBtn" class="px-6 py-3 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-th-large mr-2"></i>Card View with Image
+                </button>
+                <button id="cardViewNoImageBtn" class="px-6 py-3 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-th mr-2"></i>Card View
+                </button>
             </div>
-        </section>
+        </div>
         
         <!-- Resources Grid -->
         <section class="mb-16">
@@ -345,7 +334,7 @@
         </button>
         
         <!-- Bookmark Button -->
-        <button id="bookmarkBtn" class="w-12 h-12 bg-yellow-500 hover:bg-yellow-600 text-white rounded-full shadow-lg transform hover:scale-110 transition-all duration-300">
+        <button id="bookmarkBtn" class="w-12 h-12 bg-gray-500 hover:bg-gray-600 text-white rounded-full shadow-lg transform hover:scale-110 transition-all duration-300">
             <i class="fas fa-star"></i>
         </button>
         
@@ -409,8 +398,8 @@
         bookmarkBtn.addEventListener('click', () => {
             isBookmarked = !isBookmarked;
             if (isBookmarked) {
-                bookmarkBtn.classList.remove('bg-yellow-500', 'hover:bg-yellow-600');
-                bookmarkBtn.classList.add('bg-yellow-600', 'hover:bg-yellow-700');
+                bookmarkBtn.classList.remove('bg-gray-500', 'hover:bg-gray-600');
+                bookmarkBtn.classList.add('bg-gray-600', 'hover:bg-gray-700');
                 // Save to localStorage
                 const bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
                 bookmarks.push({
@@ -475,17 +464,262 @@
                 const response = await fetch('/assets/data/data.json');
                 const data = await response.json();
                 allResources = data.filter(item => item.category === 'Backend');
-                renderResources(allResources);
-                createChart(allResources);
+                renderResourcesByView(allResources);
             } catch (error) {
                 console.error('Error loading data:', error);
             }
         }
         
-        // Render resources
-        function renderResources(resources) {
-            const grid = document.getElementById('resourcesGrid');
-            grid.innerHTML = '';
+        // View management
+        let currentView = localStorage.getItem('backendView') || 'table';
+        
+        // Reference to view containers
+        const tableViewContainer = document.getElementById('tableViewContainer') || document.createElement('div');
+        const cardViewWithImageContainer = document.getElementById('resourcesGrid');
+        const cardViewNoImageContainer = document.getElementById('cardViewNoImageContainer') || document.createElement('div');
+        
+        // Create containers if they don't exist
+        if (!tableViewContainer.id) {
+            tableViewContainer.id = 'tableViewContainer';
+            cardViewWithImageContainer.parentNode.insertBefore(tableViewContainer, cardViewWithImageContainer);
+        }
+        
+        if (!cardViewNoImageContainer.id) {
+            cardViewNoImageContainer.id = 'cardViewNoImageContainer';
+            cardViewWithImageContainer.parentNode.insertBefore(cardViewNoImageContainer, cardViewWithImageContainer);
+        }
+        
+        // View buttons
+        const tableViewBtn = document.getElementById('tableViewBtn');
+        const cardViewWithImageBtn = document.getElementById('cardViewWithImageBtn');
+        const cardViewNoImageBtn = document.getElementById('cardViewNoImageBtn');
+        
+        // Set initial state
+        updateViewButtons();
+        updateViewContainers();
+        
+        // View button event listeners
+        tableViewBtn.addEventListener('click', () => {
+            currentView = 'table';
+            localStorage.setItem('backendView', currentView);
+            updateViewButtons();
+            updateViewContainers();
+            renderResourcesByView(allResources);
+        });
+        
+        cardViewWithImageBtn.addEventListener('click', () => {
+            currentView = 'cardWithImage';
+            localStorage.setItem('backendView', currentView);
+            updateViewButtons();
+            updateViewContainers();
+            renderResourcesByView(allResources);
+        });
+        
+        cardViewNoImageBtn.addEventListener('click', () => {
+            currentView = 'cardNoImage';
+            localStorage.setItem('backendView', currentView);
+            updateViewButtons();
+            updateViewContainers();
+            renderResourcesByView(allResources);
+        });
+        
+        // Update view buttons
+        function updateViewButtons() {
+            // Reset all buttons
+            [tableViewBtn, cardViewWithImageBtn, cardViewNoImageBtn].forEach(btn => {
+                btn.classList.remove('bg-purple-600', 'text-white');
+                btn.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+            });
+            
+            // Set active button
+            if (currentView === 'table') {
+                tableViewBtn.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                tableViewBtn.classList.add('bg-purple-600', 'text-white');
+            } else if (currentView === 'cardWithImage') {
+                cardViewWithImageBtn.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                cardViewWithImageBtn.classList.add('bg-purple-600', 'text-white');
+            } else if (currentView === 'cardNoImage') {
+                cardViewNoImageBtn.classList.remove('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
+                cardViewNoImageBtn.classList.add('bg-purple-600', 'text-white');
+            }
+        }
+        
+        // Update view containers display
+        function updateViewContainers() {
+            tableViewContainer.style.display = currentView === 'table' ? 'block' : 'none';
+            cardViewWithImageContainer.style.display = currentView === 'cardWithImage' ? 'grid' : 'none';
+            cardViewNoImageContainer.style.display = currentView === 'cardNoImage' ? 'grid' : 'none';
+        }
+        
+        // Sort functionality
+        let sortField = 'name';
+        let sortDirection = 'asc';
+        
+        // Sort resources
+        function sortResources(resources) {
+            return [...resources].sort((a, b) => {
+                let valueA, valueB;
+                
+                if (sortField === 'name') {
+                    valueA = a.name.toLowerCase();
+                    valueB = b.name.toLowerCase();
+                } else if (sortField === 'category') {
+                    valueA = a.category.toLowerCase();
+                    valueB = b.category.toLowerCase();
+                } else if (sortField === 'popularity') {
+                    valueA = a.popularity;
+                    valueB = b.popularity;
+                }
+                
+                if (valueA < valueB) return sortDirection === 'asc' ? -1 : 1;
+                if (valueA > valueB) return sortDirection === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        
+        // Render resources based on current view
+        function renderResourcesByView(resources) {
+            const sortedResources = sortResources(resources);
+            
+            if (currentView === 'table') {
+                renderTableView(sortedResources);
+            } else if (currentView === 'cardWithImage') {
+                renderCardViewWithImage(sortedResources);
+            } else if (currentView === 'cardNoImage') {
+                renderCardViewNoImage(sortedResources);
+            }
+        }
+        
+        // Render table view
+        function renderTableView(resources) {
+            const container = document.getElementById('tableViewContainer');
+            
+            if (resources.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+                        <p class="text-gray-600 dark:text-gray-400">No resources found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = `
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="bg-gray-100 dark:bg-gray-700">
+                                <th id="nameHeader" class="px-6 py-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    Name <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th id="categoryHeader" class="px-6 py-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    Category <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th id="popularityHeader" class="px-6 py-4 text-left text-sm font-medium text-gray-600 dark:text-gray-300 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600">
+                                    Popularity <i class="fas fa-sort ml-1"></i>
+                                </th>
+                                <th class="px-6 py-4 text-right text-sm font-medium text-gray-600 dark:text-gray-300">
+                                    Action
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+            `;
+            
+            resources.forEach(resource => {
+                html += `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="font-medium text-gray-900 dark:text-white">${resource.name}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm">${resource.category}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2.5">
+                                    <div class="bg-purple-600 h-2.5 rounded-full" style="width: ${Math.round(resource.popularity * 100)}%"></div>
+                                </div>
+                                <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">${Math.round(resource.popularity * 100)}%</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="/free/detail/${resource.file || resource.name.toLowerCase().replace(/\s+/g, '-')}" class="text-purple-600 dark:text-purple-400 hover:underline">Learn More</a>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            container.innerHTML = html;
+            
+            // Add event listeners to sort headers
+            document.getElementById('nameHeader').addEventListener('click', () => {
+                if (sortField === 'name') {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortField = 'name';
+                    sortDirection = 'asc';
+                }
+                updateSortIcons();
+                renderResourcesByView(allResources);
+            });
+            
+            document.getElementById('categoryHeader').addEventListener('click', () => {
+                if (sortField === 'category') {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortField = 'category';
+                    sortDirection = 'asc';
+                }
+                updateSortIcons();
+                renderResourcesByView(allResources);
+            });
+            
+            document.getElementById('popularityHeader').addEventListener('click', () => {
+                if (sortField === 'popularity') {
+                    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+                } else {
+                    sortField = 'popularity';
+                    sortDirection = 'asc';
+                }
+                updateSortIcons();
+                renderResourcesByView(allResources);
+            });
+            
+            // Update sort icons
+            function updateSortIcons() {
+                // Reset all icons
+                ['nameHeader', 'categoryHeader', 'popularityHeader'].forEach(id => {
+                    document.getElementById(id).querySelector('i').className = 'fas fa-sort ml-1';
+                });
+                
+                // Set active icon
+                const activeHeader = document.getElementById(sortField + 'Header');
+                if (activeHeader) {
+                    activeHeader.querySelector('i').className = sortDirection === 'asc' ? 'fas fa-sort-up ml-1' : 'fas fa-sort-down ml-1';
+                }
+            }
+        }
+        
+        // Render card view with image
+        function renderCardViewWithImage(resources) {
+            const container = document.getElementById('resourcesGrid');
+            container.innerHTML = '';
+            container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+            
+            if (resources.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+                        <p class="text-gray-600 dark:text-gray-400">No resources found</p>
+                    </div>
+                `;
+                return;
+            }
             
             resources.forEach((resource, index) => {
                 const card = document.createElement('div');
@@ -508,24 +742,18 @@
                     </div>
                     <div class="p-6">
                         <h3 class="text-xl font-bold mb-2">${resource.name}</h3>
-                        <p class="text-gray-600 dark:text-gray-400 mb-4">${resource.tags.join(', ')}</p>
                         <div class="flex flex-wrap gap-2 mb-4">
                             ${resource.tags.map(tag => `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm">${tag}</span>`).join('')}
                         </div>
                         <div class="flex justify-between items-center">
-                            <a href="/free/detail/${resource.file}.html" class="text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                            <a href="/free/detail/${resource.file || resource.name.toLowerCase().replace(/\s+/g, '-')}" class="text-purple-600 dark:text-purple-400 hover:underline font-medium">
                                 Learn More <i class="fas fa-arrow-right ml-1"></i>
                             </a>
-                            <div class="flex space-x-2">
-                                <button class="p-2 text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                                    <i class="fas fa-external-link-alt"></i>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 `;
                 
-                grid.appendChild(card);
+                container.appendChild(card);
             });
             
             // Lazy load images
@@ -543,6 +771,49 @@
             lazyImages.forEach(img => imageObserver.observe(img));
         }
         
+        // Render card view without image
+        function renderCardViewNoImage(resources) {
+            const container = document.getElementById('cardViewNoImageContainer');
+            container.innerHTML = '';
+            container.className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6';
+            
+            if (resources.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 text-center">
+                        <p class="text-gray-600 dark:text-gray-400">No resources found</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resources.forEach(resource => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow';
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <h3 class="text-xl font-bold">${resource.name}</h3>
+                        <div class="bg-purple-600 text-white px-3 py-1 rounded-full text-sm">
+                            ${Math.round(resource.popularity * 100)}%
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        ${resource.tags.map(tag => `<span class="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm">${tag}</span>`).join('')}
+                    </div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Category: <span class="font-medium">${resource.category}</span>
+                    </div>
+                    <div class="flex justify-end">
+                        <a href="/free/detail/${resource.file || resource.name.toLowerCase().replace(/\s+/g, '-')}" class="text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                            Learn More <i class="fas fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+        
         // Search functionality
         searchInput.addEventListener('input', (e) => {
             const searchTerm = e.target.value.toLowerCase();
@@ -550,90 +821,12 @@
                 resource.name.toLowerCase().includes(searchTerm) ||
                 resource.tags.some(tag => tag.toLowerCase().includes(searchTerm))
             );
-            renderResources(filtered);
+            renderResourcesByView(filtered);
         });
-        
-        // Create Chart.js Radar Chart
-        function createChart(resources) {
-            const ctx = document.getElementById('backendChart').getContext('2d');
-            
-            // Select top 5 frameworks for comparison
-            const topFrameworks = resources
-                .filter(r => r.tags.includes('Framework'))
-                .sort((a, b) => b.popularity - a.popularity)
-                .slice(0, 5);
-            
-            const chart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: ['Performance', 'Ease of Use', 'Community', 'Documentation', 'Scalability'],
-                    datasets: topFrameworks.map((framework, index) => ({
-                        label: framework.name,
-                        data: [
-                            Math.random() * 100,
-                            Math.random() * 100,
-                            framework.popularity * 100,
-                            Math.random() * 100,
-                            Math.random() * 100
-                        ],
-                        backgroundColor: `hsla(${index * 72}, 70%, 50%, 0.2)`,
-                        borderColor: `hsla(${index * 72}, 70%, 50%, 1)`,
-                        pointBackgroundColor: `hsla(${index * 72}, 70%, 50%, 1)`,
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: `hsla(${index * 72}, 70%, 50%, 1)`
-                    }))
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
-                            }
-                        },
-                        title: {
-                            display: true,
-                            text: 'Backend Frameworks Comparison',
-                            color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
-                        }
-                    },
-                    scales: {
-                        r: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
-                            },
-                            grid: {
-                                color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                            },
-                            pointLabels: {
-                                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
-                            }
-                        }
-                    }
-                }
-            });
-            
-            // Update chart colors when theme changes
-            themeToggle.addEventListener('click', () => {
-                setTimeout(() => {
-                    const isDark = document.documentElement.classList.contains('dark');
-                    chart.options.plugins.legend.labels.color = isDark ? '#fff' : '#000';
-                    chart.options.plugins.title.color = isDark ? '#fff' : '#000';
-                    chart.options.scales.r.ticks.color = isDark ? '#fff' : '#000';
-                    chart.options.scales.r.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-                    chart.options.scales.r.pointLabels.color = isDark ? '#fff' : '#000';
-                    chart.update();
-                }, 100);
-            });
-        }
         
         // Initialize
         loadData();
     </script>
+    <script type="module" src="/main.js"></script>
 </body>
 </html>
