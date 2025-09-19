@@ -1,282 +1,324 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>免费资源目录 - 开发者与设计师的实用工具</title>
+    <title>Free Developer Resources - Top Tools for Developers</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom Tailwind Configuration -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366F1', // 主色调：靛蓝色，代表专业和信任
-                        secondary: '#10B981', // 辅助色：绿色，代表免费和价值
-                        dark: '#121212',
-                        darker: '#0A0A0A',
-                        'dark-card': '#1E1E1E',
-                        'dark-hover': '#2D2D2D'
+                        primary: '#4F46E5', // Indigo for a professional look
+                        secondary: '#10B981', // Emerald for success states
+                        dark: '#1E293B', // Slate dark
+                        'dark-card': '#334155', // Slightly lighter card background
+                        'dark-hover': '#475569', // Hover state
+                        darker: '#0F172A' // Almost black
                     },
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        inter: ['Inter', 'sans-serif']
                     },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.4s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
+                        }
+                    }
                 }
             }
         }
     </script>
+    <!-- Custom Utilities -->
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .content-auto {
+                content-visibility: auto;
             }
             .card-shadow {
-                box-shadow: 0 4px 20px rgba(99, 102, 241, 0.05);
+                box-shadow: 0 4px 25px -5px rgba(0, 0, 0, 0.15);
             }
-            .category-indicator {
-                width: 4px;
-                height: 100%;
-                position: absolute;
-                left: 0;
-                top: 0;
-                border-radius: 2px 0 0 2px;
+            .text-balance {
+                text-wrap: balance;
             }
-            .scrollbar-thin {
-                scrollbar-width: thin;
+            .backdrop-blur {
+                backdrop-filter: blur(8px);
             }
-            .scrollbar-thin::-webkit-scrollbar {
-                width: 4px;
+            .scrollbar-hidden::-webkit-scrollbar {
+                display: none;
             }
-            .scrollbar-thin::-webkit-scrollbar-thumb {
-                background-color: rgba(99, 102, 241, 0.5);
-                border-radius: 2px;
+            .scrollbar-hidden {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
             }
         }
     </style>
+    <style>
+        /* Smooth scroll behavior */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom scrollbar for modal */
+        .modal-scrollbar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .modal-scrollbar::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .modal-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+        }
+    </style>
 </head>
-<body class="bg-dark text-gray-200 min-h-screen flex flex-col">
-    <!-- 导航栏 -->
-    <header class="sticky top-0 z-50 bg-darker/90 backdrop-blur-md border-b border-gray-800 transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-2">
-                <i class="fa fa-gift text-primary text-2xl"></i>
-                <h1 class="text-xl font-bold">免费资源目录</h1>
-            </div>
-            
-            <div class="hidden md:flex items-center space-x-4">
-                <div class="relative">
-                    <input type="text" id="searchInput" placeholder="搜索资源..." class="bg-dark-card border border-gray-700 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-64">
-                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+<body class="bg-dark text-white font-inter min-h-screen flex flex-col">
+    <!-- Navigation Bar -->
+    <header class="bg-darker/90 backdrop-blur sticky top-0 z-30 transition-all duration-300 py-3">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <i class="fa fa-gift text-primary text-2xl animate-pulse-slow"></i>
+                    <a href="/" class="text-xl font-bold">FreeDevTools</a>
                 </div>
-                <button id="categoryToggle" class="flex items-center space-x-1 bg-dark-card border border-gray-700 rounded-lg px-4 py-2 text-sm hover:bg-dark-hover transition-colors">
-                    <i class="fa fa-th-large"></i>
-                    <span>分类</span>
+                
+                <!-- Navigation Links - Desktop -->
+                <nav class="hidden md:flex items-center space-x-6">
+                    <a href="/" class="text-gray-300 hover:text-primary transition-colors">Home</a>
+                    <a href="/categories" class="text-gray-300 hover:text-primary transition-colors">Browse Categories</a>
+                    <a href="/about" class="text-gray-300 hover:text-primary transition-colors">About Us</a>
+                    <a href="/submit" class="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-primary/20">
+                        Submit Resource
+                    </a>
+                </nav>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuToggle" class="md:hidden text-white focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
                 </button>
             </div>
             
-            <button class="md:hidden text-xl" id="mobileMenuToggle">
-                <i class="fa fa-bars"></i>
-            </button>
-        </div>
-        
-        <!-- 移动端菜单 -->
-        <div id="mobileMenu" class="hidden md:hidden bg-dark-card border-b border-gray-800">
-            <div class="container mx-auto px-4 py-3">
-                <div class="relative mb-3">
-                    <input type="text" id="mobileSearchInput" placeholder="搜索资源..." class="bg-darker border border-gray-700 rounded-lg px-4 py-2 pl-10 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 w-full">
-                    <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"></i>
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 py-4 border-t border-gray-800 animate-fade-in">
+                <div class="flex flex-col space-y-4">
+                    <a href="/" class="text-gray-300 hover:text-primary transition-colors">Home</a>
+                    <a href="/categories" class="text-gray-300 hover:text-primary transition-colors">Browse Categories</a>
+                    <a href="/about" class="text-gray-300 hover:text-primary transition-colors">About Us</a>
+                    <a href="/submit" class="bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg transition-colors text-center">
+                        Submit Resource
+                    </a>
                 </div>
-                <button id="mobileCategoryToggle" class="flex items-center space-x-1 bg-darker border border-gray-700 rounded-lg px-4 py-2 text-sm hover:bg-dark-hover transition-colors w-full justify-center">
-                    <i class="fa fa-th-large"></i>
-                    <span>分类</span>
-                </button>
             </div>
         </div>
     </header>
 
-    <!-- 分类筛选面板 -->
-    <div id="categoryPanel" class="fixed top-16 right-0 w-64 h-[calc(100vh-4rem)] bg-dark-card border-l border-gray-800 transform translate-x-full transition-transform duration-300 z-40 overflow-y-auto scrollbar-thin">
-        <div class="p-4 border-b border-gray-800">
-            <h3 class="font-semibold text-lg">资源分类</h3>
-        </div>
-        <div class="p-4">
-            <ul class="space-y-2">
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors active" data-category="all">
-                        <i class="fa fa-th-large mr-2 text-primary"></i>
-                        <span>全部资源</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="frontend">
-                        <i class="fa fa-code mr-2 text-blue-400"></i>
-                        <span>前端框架</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="backend">
-                        <i class="fa fa-server mr-2 text-green-400"></i>
-                        <span>后端工具</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="database">
-                        <i class="fa fa-database mr-2 text-yellow-400"></i>
-                        <span>数据库</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="devops">
-                        <i class="fa fa-cogs mr-2 text-purple-400"></i>
-                        <span>DevOps</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="design">
-                        <i class="fa fa-paint-brush mr-2 text-red-400"></i>
-                        <span>设计工具</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="ai">
-                        <i class="fa fa-lightbulb-o mr-2 text-indigo-400"></i>
-                        <span>AI工具</span>
-                    </button>
-                </li>
-                <li>
-                    <button class="category-filter w-full text-left px-3 py-2 rounded-lg hover:bg-dark-hover transition-colors" data-category="other">
-                        <i class="fa fa-ellipsis-h mr-2 text-gray-400"></i>
-                        <span>其他工具</span>
-                    </button>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- 遮罩层 -->
-    <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity duration-300"></div>
-
+    <!-- Main Content -->
     <main class="flex-grow">
-        <!-- 英雄区域 -->
-        <section class="relative py-16 overflow-hidden bg-gradient-to-br from-darker to-dark">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(99,102,241,0.15),transparent_40%),radial-gradient(circle_at_70%_60%,rgba(16,185,129,0.1),transparent_40%)]"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="max-w-3xl mx-auto text-center">
-                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-secondary text-gradient">
-                        精选免费资源目录
-                    </h1>
-                    <p class="text-lg text-gray-300 mb-8">
-                        为开发者和设计师收集的高质量免费资源，包含详细的申请指南和使用方法
-                    </p>
-                    <div class="flex flex-wrap justify-center gap-4">
-                        <div class="bg-dark-card/50 backdrop-blur-sm border border-gray-800 rounded-lg px-4 py-2 flex items-center">
-                            <i class="fa fa-list-ul text-primary mr-2"></i>
-                            <span><span id="resourceCount" class="font-semibold text-primary">35</span> 个免费资源</span>
+        <!-- Hero Section -->
+        <section class="bg-gradient-to-b from-darker via-dark to-dark-card py-16 md:py-24">
+            <div class="container mx-auto px-4 text-center">
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 text-balance animate-slide-up">
+                    Free Developer <span class="text-primary">Resources</span>
+                </h1>
+                <p class="text-xl text-gray-300 max-w-3xl mx-auto mb-10 text-balance animate-slide-up" style="animation-delay: 0.1s">
+                    Discover high-quality free tools and resources to reduce development costs and boost productivity.
+                </p>
+                
+                <!-- Search Box -->
+                <div class="max-w-xl mx-auto mb-8 animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="Search resources, tools or frameworks..."
+                            class="w-full py-3 px-5 pr-12 rounded-xl bg-dark-card border border-gray-700 focus:border-primary focus:ring-2 focus:ring-primary/30 focus:outline-none transition-all duration-300"
+                        >
+                        <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-search text-lg"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Resource Count -->
+                <p class="text-gray-400 animate-slide-up" style="animation-delay: 0.3s">
+                    Currently featuring <span id="resourceCount" class="text-primary font-semibold">0</span> premium free resources
+                </p>
+            </div>
+        </section>
+
+        <!-- Resources Display Section -->
+        <section class="py-12 bg-dark-card">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row gap-8">
+                    <!-- Category Filter Sidebar -->
+                    <div class="md:w-64 lg:w-72">
+                        <!-- Mobile Category Toggle Button -->
+                        <div class="flex md:hidden justify-between items-center mb-6">
+                            <h2 class="text-xl font-bold">Categories</h2>
+                            <button id="mobileCategoryToggle" class="text-gray-400 hover:text-white p-2 rounded-full hover:bg-dark-hover transition-colors">
+                                <i class="fa fa-sliders"></i>
+                            </button>
                         </div>
-                        <div class="bg-dark-card/50 backdrop-blur-sm border border-gray-800 rounded-lg px-4 py-2 flex items-center">
-                            <i class="fa fa-th mr-2"></i>
-                            <span><span id="categoryCount" class="font-semibold text-primary">7</span> 个分类</span>
+                        
+                        <!-- Category Panel -->
+                        <div id="categoryPanel" class="hidden md:block bg-dark rounded-xl p-6 border border-gray-800 space-y-4 shadow-lg">
+                            <h2 class="text-xl font-bold mb-4">Resource Categories</h2>
+                            <div class="space-y-2">
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover active bg-primary/10 transition-colors" data-category="all">
+                                    All Resources
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="frontend">
+                                    Frontend
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="backend">
+                                    Backend
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="database">
+                                    Database
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="devops">
+                                    DevOps
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="design">
+                                    Design Tools
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="ai">
+                                    AI Tools
+                                </button>
+                                <button class="category-filter w-full text-left px-4 py-2 rounded-lg text-gray-200 hover:bg-dark-hover transition-colors" data-category="other">
+                                    Other Tools
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Mobile Search -->
+                        <div class="md:hidden mb-6">
+                            <div class="relative">
+                                <input 
+                                    type="text" 
+                                    id="mobileSearchInput" 
+                                    placeholder="Search resources..."
+                                    class="w-full py-3 px-5 pr-12 rounded-xl bg-dark border border-gray-700 focus:border-primary focus:outline-none transition-colors"
+                                >
+                                <button class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fa fa-search text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Main Content Area -->
+                    <div class="flex-grow">
+                        <!-- Category Chips (Mobile) -->
+                        <div class="overflow-x-auto pb-4 mb-6 scrollbar-hidden md:flex md:flex-wrap md:gap-2 md:overflow-visible">
+                            <button class="category-chip bg-primary text-white px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="all">
+                                All
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="frontend">
+                                Frontend
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="backend">
+                                Backend
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="database">
+                                Database
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="devops">
+                                DevOps
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="design">
+                                Design
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="ai">
+                                AI Tools
+                            </button>
+                            <button class="category-chip bg-dark hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap mr-2 mb-2" data-category="other">
+                                Other
+                            </button>
+                        </div>
+                        
+                        <!-- Resources Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resourcesGrid">
+                            <!-- Resources will be dynamically generated by JavaScript -->
+                            <div class="flex items-center justify-center h-60 text-gray-400 col-span-full">
+                                <i class="fa fa-spinner fa-spin text-3xl mr-2"></i>
+                                <span>Loading resources...</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Empty State -->
+                        <div id="emptyState" class="hidden py-20 text-center">
+                            <div class="text-gray-500 text-6xl mb-4">
+                                <i class="fa fa-search"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-2">No matching resources found</h3>
+                            <p class="text-gray-400">Try using different search terms or browse other categories</p>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-  
-
-        <!-- 资源展示区 -->
-        <section class="py-12 bg-dark">
+        <!-- Resource Application Guide -->
+        <section class="py-16 bg-dark">
             <div class="container mx-auto px-4">
-                <!-- 分类标签 -->
-                <div class="flex flex-wrap gap-2 mb-8 overflow-x-auto pb-2 scrollbar-thin">
-                    <button class="category-chip bg-primary text-white px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="all">
-                        全部
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="frontend">
-                        前端框架
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="backend">
-                        后端工具
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="database">
-                        数据库
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="devops">
-                        DevOps
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="design">
-                        设计工具
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="ai">
-                        AI工具
-                    </button>
-                    <button class="category-chip bg-dark-card hover:bg-dark-hover px-4 py-2 rounded-full text-sm whitespace-nowrap" data-category="other">
-                        其他工具
-                    </button>
-                </div>
-                
-                <!-- 资源网格 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="resourcesGrid">
-                    <!-- 资源卡片将通过JavaScript动态生成 -->
-                </div>
-                
-                <!-- 空状态 -->
-                <div id="emptyState" class="hidden py-20 text-center">
-                    <div class="text-gray-500 text-6xl mb-4">
-                        <i class="fa fa-search"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold mb-2">未找到匹配的资源</h3>
-                    <p class="text-gray-400">尝试使用不同的搜索词或浏览其他分类</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- 资源申请指南 -->
-        <section class="py-16 bg-darker">
-            <div class="container mx-auto px-4">
-                <h2 class="text-3xl font-bold mb-4 text-center">如何申请免费资源</h2>
+                <h2 class="text-3xl font-bold mb-4 text-center">How to Claim Free Resources</h2>
                 <p class="text-gray-400 text-center max-w-2xl mx-auto mb-12">
-                    大多数免费资源都提供针对个人开发者、学生和小型团队的免费计划，以下是申请的一般步骤
+                    Most free resources offer free plans for individual developers, students, and small teams. Here's how to get started
                 </p>
                 
                 <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 relative overflow-hidden card-shadow">
-                        <div class="category-indicator bg-primary"></div>
+                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 relative overflow-hidden card-shadow hover:transform hover:scale-105 transition-all duration-300">
+                        <div class="category-indicator bg-primary absolute top-0 left-0 w-1 h-full"></div>
                         <div class="relative pl-4">
-                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-                                <i class="fa fa-user-plus text-primary"></i>
+                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+                                <i class="fa fa-user-plus text-primary text-xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold mb-3">创建账号</h3>
+                            <h3 class="text-xl font-bold mb-3">Create Account</h3>
                             <p class="text-gray-400 text-sm">
-                                访问资源官方网站，注册一个账号。大多数平台支持使用GitHub、Google等账号快速注册。
+                                Visit the official website and register an account. Most platforms support quick registration with GitHub or Google.
                             </p>
                         </div>
                     </div>
                     
-                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 relative overflow-hidden card-shadow">
-                        <div class="category-indicator bg-primary"></div>
+                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 relative overflow-hidden card-shadow hover:transform hover:scale-105 transition-all duration-300" style="transition-delay: 0.1s">
+                        <div class="category-indicator bg-primary absolute top-0 left-0 w-1 h-full"></div>
                         <div class="relative pl-4">
-                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-                                <i class="fa fa-pencil text-primary"></i>
+                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+                                <i class="fa fa-pencil text-primary text-xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold mb-3">选择免费计划</h3>
+                            <h3 class="text-xl font-bold mb-3">Select Free Plan</h3>
                             <p class="text-gray-400 text-sm">
-                                注册后，在账户设置或定价页面选择免费计划。部分资源需要验证身份或资格。
+                                After registration, select the free plan from the account settings or pricing page. Some resources may require identity verification.
                             </p>
                         </div>
                     </div>
                     
-                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 relative overflow-hidden card-shadow">
-                        <div class="category-indicator bg-primary"></div>
+                    <div class="bg-dark-card rounded-xl p-6 border border-gray-800 relative overflow-hidden card-shadow hover:transform hover:scale-105 transition-all duration-300" style="transition-delay: 0.2s">
+                        <div class="category-indicator bg-primary absolute top-0 left-0 w-1 h-full"></div>
                         <div class="relative pl-4">
-                            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mb-4">
-                                <i class="fa fa-check-circle text-primary"></i>
+                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mb-4">
+                                <i class="fa fa-check-circle text-primary text-xl"></i>
                             </div>
-                            <h3 class="text-xl font-bold mb-3">完成验证</h3>
+                            <h3 class="text-xl font-bold mb-3">Complete Verification</h3>
                             <p class="text-gray-400 text-sm">
-                                部分资源（如学生计划）需要提供证明文件。验证通过后，即可使用免费资源。
+                                Some resources (like student plans) require proof documentation. Once verified, you can start using the free resources.
                             </p>
                         </div>
                     </div>
@@ -288,23 +330,23 @@
                             <i class="fa fa-info text-primary"></i>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold mb-2">注意事项</h3>
+                            <h3 class="text-lg font-semibold mb-2">Important Notes</h3>
                             <ul class="space-y-2 text-gray-300">
                                 <li class="flex items-start">
                                     <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
-                                    <span>免费计划通常有资源使用限制，如存储容量、请求次数等</span>
+                                    <span>Free plans usually have resource limits like storage capacity and request quotas</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
-                                    <span>商业用途可能需要升级到付费计划，请仔细阅读服务条款</span>
+                                    <span>Commercial use may require upgrading to a paid plan, please read the terms of service carefully</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
-                                    <span>学生和教育机构通常可以获得更多免费资源，记得查看教育计划</span>
+                                    <span>Students and educational institutions can often get additional free resources, check for education plans</span>
                                 </li>
                                 <li class="flex items-start">
                                     <i class="fa fa-circle text-xs text-primary mt-1.5 mr-2"></i>
-                                    <span>大多数平台提供详细的文档和教程，帮助你快速上手</span>
+                                    <span>Most platforms provide detailed documentation and tutorials to help you get started quickly</span>
                                 </li>
                             </ul>
                         </div>
@@ -314,17 +356,17 @@
         </section>
     </main>
 
-    <!-- 页脚 -->
+    <!-- Footer -->
     <footer class="bg-darker border-t border-gray-800 py-10">
         <div class="container mx-auto px-4">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <div>
                     <div class="flex items-center space-x-2 mb-4">
                         <i class="fa fa-gift text-primary text-2xl"></i>
-                        <h3 class="text-xl font-bold">免费资源目录</h3>
+                        <h3 class="text-xl font-bold">FreeDevTools</h3>
                     </div>
                     <p class="text-gray-400 mb-4">
-                        收集整理各类高质量免费资源，帮助开发者和设计师降低学习和开发成本，提高工作效率。
+                        Curating high-quality free resources to help developers and designers reduce learning and development costs while increasing productivity.
                     </p>
                     <div class="flex space-x-4">
                         <a href="#" class="text-gray-400 hover:text-primary transition-colors">
@@ -340,456 +382,250 @@
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-semibold mb-4">快速链接</h4>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
                     <div class="grid grid-cols-2 gap-2">
-                        <a href="/about#about" class="text-gray-400 hover:text-primary transition-colors">关于我们</a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">资源提交</a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">使用帮助</a>
-                        <a href="/about#contact" class="text-gray-400 hover:text-primary transition-colors">联系我们</a>
-                        <a href="/about#privacy" class="text-gray-400 hover:text-primary transition-colors">隐私政策</a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">免责声明</a>
+                        <a href="/about" class="text-gray-400 hover:text-primary transition-colors">About Us</a>
+                        <a href="/submit" class="text-gray-400 hover:text-primary transition-colors">Submit Resource</a>
+                        <a href="/help" class="text-gray-400 hover:text-primary transition-colors">Help Center</a>
+                        <a href="/contact" class="text-gray-400 hover:text-primary transition-colors">Contact Us</a>
+                        <a href="/privacy" class="text-gray-400 hover:text-primary transition-colors">Privacy Policy</a>
+                        <a href="/terms" class="text-gray-400 hover:text-primary transition-colors">Terms of Service</a>
                     </div>
                 </div>
             </div>
             
             <div class="border-t border-gray-800 pt-6 text-center text-gray-500 text-sm">
-                <p>© 2023 免费资源目录. 所有资源的商标和版权归各自所有者所有。</p>
+                <p>© 2023 FreeDevTools. All trademarks and copyrights of the resources belong to their respective owners.</p>
             </div>
         </div>
     </footer>
 
-    <!-- 资源详情模态框 -->
+    <!-- Resource Details Modal -->
     <div id="resourceModal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
-        <!-- Modal Overlay: z-40, pointer-events-none so content is clickable -->
+        <!-- Modal Overlay -->
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm z-40 pointer-events-none" id="modalOverlay"></div>
-        <!-- Modal Content: z-50, pointer-events-auto, overflow-y-auto -->
-        <div class="relative bg-dark-card border border-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 scale-95 opacity-0 z-50 pointer-events-auto overflow-y-auto" id="modalContent">
+        <!-- Modal Content -->
+        <div class="relative bg-dark-card border border-gray-800 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300 scale-95 opacity-0 z-50 pointer-events-auto" id="modalContent">
             <div class="p-4 border-b border-gray-800 flex justify-between items-center">
                 <h3 class="text-xl font-bold" id="modalTitle"></h3>
                 <button id="closeModal" class="text-gray-400 hover:text-white transition-colors">
                     <i class="fa fa-times text-xl"></i>
                 </button>
             </div>
-            <div class="p-6 overflow-y-auto scrollbar-thin flex-grow" id="modalBody">
-                <!-- 模态框内容将通过JavaScript动态生成 -->
+            <div class="p-6 overflow-y-auto modal-scrollbar flex-grow" id="modalBody">
+                <!-- Modal content will be dynamically generated by JavaScript -->
             </div>
             <div class="p-4 border-t border-gray-800 flex justify-end gap-3">
-                <a id="modalLink"  href="#" target="_blank" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                <a id="modalLink" href="#" target="_blank" class="bg-primary hover:bg-primary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center transform hover:scale-105">
                     <i class="fa fa-external-link mr-2"></i>
-                    访问官网
+                    Visit Website
                 </a>
-                <a href="#" target="_blank" class="bg-dark-hover hover:bg-gray-700 text-gray-200 font-medium py-2 px-6 rounded-lg transition-all flex items-center">
+                <a id="modalGuideLink" href="/" target="_blank" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center transform hover:scale-105">
                     <i class="fa fa-book mr-2"></i>
-                    申请指南
-                </a>
-                <a id="modalLink" href="#" target="_blank" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
-                    <i class="fa fa-flask mr-2"></i>
-                    访问官网
-                </a>
-                                <a id="modalGuideLink" href="/" target="_blank" class="bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg transition-all flex items-center">
-                    <i class="fa fa-flask mr-2"></i>
-                    申请指南
+                    Application Guide
                 </a>
             </div>
         </div>
     </div>
 
-    <script>
-        // 资源数据 - 已修复guideUrl路径，移除重复的"free/detail/"
-        const resources = [
-            {
-                id: "apache",
-                name: "Apache",
-                description: "Apache软件基金会提供的一系列开源软件，包括Web服务器、数据库等。",
-                category: "backend",
-                icon: "fa-server",
-                color: "text-amber-500",
-                url: "https://www.apache.org/",
-                guideUrl: "free/detail/apache.html",  // 修复路径
-                tags: ["服务器", "开源", "Web"]
-            },
-            {
-                id: "bootstrap",
-                name: "Bootstrap",
-                description: "最受欢迎的前端框架，用于构建响应式、移动优先的网站。",
-                category: "frontend",
-                icon: "fa-css3",
-                color: "text-purple-500",
-                url: "https://getbootstrap.com/",
-                guideUrl: "free/detail/bootstrap.html",  // 修复路径
-                tags: ["CSS", "框架", "响应式"]
-            },
-            {
-                id: "canva",
-                name: "Canva",
-                description: "简单易用的在线设计工具，提供免费计划和丰富的模板资源。",
-                category: "design",
-                icon: "fa-paint-brush",
-                color: "text-blue-500",
-                url: "https://www.canva.com/",
-                guideUrl: "free/detail/canva.html",  // 修复路径
-                tags: ["设计", "图形", "模板"]
-            },
-            {
-                id: "chart",
-                name: "Chart.js",
-                description: "简单灵活的JavaScript图表库，用于在网页上创建各种交互式图表。",
-                category: "frontend",
-                icon: "fa-bar-chart",
-                color: "text-green-500",
-                url: "https://www.chartjs.org/",
-                guideUrl: "free/detail/chart.html",  // 修复路径
-                tags: ["图表", "数据可视化", "JavaScript"]
-            },
-            {
-                id: "cloudflare",
-                name: "Cloudflare",
-                description: "提供CDN、DDoS保护和域名服务的云平台，有慷慨的免费计划。",
-                category: "devops",
-                icon: "fa-cloud",
-                color: "text-orange-500",
-                url: "https://www.cloudflare.com/",
-                guideUrl: "free/detail/cloudflare.html",  // 修复路径
-                tags: ["CDN", "安全", "域名"]
-            },
-            {
-                id: "coplilot",
-                name: "GitHub Copilot",
-                description: "由OpenAI提供支持的AI代码助手，可在编辑器中提供实时代码建议。",
-                category: "ai",
-                icon: "fa-code",
-                color: "text-purple-500",
-                url: "https://github.com/features/copilot/",
-                guideUrl: "free/detail/coplilot.html",  // 修复路径
-                tags: ["AI", "代码助手", "开发工具"]
-            },
-            {
-                id: "cursor",
-                name: "Cursor",
-                description: "集成AI功能的代码编辑器，支持自然语言编程和代码生成。",
-                category: "ai",
-                icon: "fa-edit",
-                color: "text-blue-500",
-                url: "https://www.cursor.so/",
-                guideUrl: "free/detail/cursor.html",  // 修复路径
-                tags: ["编辑器", "AI", "编程"]
-            },
-            {
-                id: "d3",
-                name: "D3.js",
-                description: "用于创建动态、交互式数据可视化的JavaScript库。",
-                category: "frontend",
-                icon: "fa-line-chart",
-                color: "text-red-500",
-                url: "https://d3js.org/",
-                guideUrl: "free/detail/d3.html",  // 修复路径 - 关键修复点
-                tags: ["数据可视化", "JavaScript", "图表"]
-            },
-            {
-                id: "dbeaver",
-                name: "DBeaver",
-                description: "通用数据库管理工具，支持多种数据库系统，提供免费社区版。",
-                category: "database",
-                icon: "fa-database",
-                color: "text-blue-500",
-                url: "https://dbeaver.io/",
-                guideUrl: "free/detail/dbeaver.html",  // 修复路径
-                tags: ["数据库工具", "管理", "多平台"]
-            },
-            {
-                id: "deepseek",
-                name: "DeepSeek",
-                description: "深度求索提供的AI模型和工具，支持代码生成、问答等功能。",
-                category: "ai",
-                icon: "fa-lightbulb-o",
-                color: "text-indigo-500",
-                url: "https://www.deepseek.com/",
-                guideUrl: "free/detail/deepseek.html",  // 修复路径
-                tags: ["AI", "大模型", "代码生成"]
-            },
-            {
-                id: "docker",
-                name: "Docker",
-                description: "容器化平台，简化应用程序的部署和运行，提供免费社区版。",
-                category: "devops",
-                icon: "fa-cubes",
-                color: "text-blue-500",
-                url: "https://www.docker.com/",
-                guideUrl: "free/detail/docker.html",  // 修复路径
-                tags: ["容器", "虚拟化", "部署"]
-            },
-            {
-                id: "doubao",
-                name: "豆包",
-                description: "字节跳动推出的AI助手，支持多种任务，包括代码辅助和内容创作。",
-                category: "ai",
-                icon: "fa-comments",
-                color: "text-green-500",
-                url: "https://www.doubao.com/",
-                guideUrl: "free/detail/doubao.html",  // 修复路径
-                tags: ["AI", "助手", "中文支持"]
-            },
-            {
-                id: "firebase",
-                name: "Firebase",
-                description: "Google提供的移动和Web应用开发平台，提供免费的托管、数据库等服务。",
-                category: "backend",
-                icon: "fa-fire",
-                color: "text-orange-500",
-                url: "https://firebase.google.com/",
-                guideUrl: "free/detail/firebase.html",  // 修复路径
-                tags: ["BaaS", "云服务", "实时数据库"]
-            },
-            {
-                id: "github",
-                name: "GitHub",
-                description: "基于Git的代码托管平台，提供免费的公共和私有仓库，以及GitHub Pages。",
-                category: "devops",
-                icon: "fa-github",
-                color: "text-gray-400",
-                url: "https://github.com/",
-                guideUrl: "free/detail/github.html",  // 修复路径
-                tags: ["代码托管", "版本控制", "协作"]
-            },
-            {
-                id: "gmail",
-                name: "Gmail",
-                description: "Google提供的电子邮件服务，提供免费存储空间和强大的垃圾邮件过滤。",
-                category: "other",
-                icon: "fa-envelope",
-                color: "text-red-500",
-                url: "https://mail.google.com/",
-                guideUrl: "free/detail/gmail.html",  // 修复路径
-                tags: ["邮件", "通讯", "云存储"]
-            },
-            {
-                id: "jquery",
-                name: "jQuery",
-                description: "快速、简洁的JavaScript库，简化HTML文档遍历、事件处理等操作。",
-                category: "frontend",
-                icon: "fa-code",
-                color: "text-blue-500",
-                url: "https://jquery.com/",
-                guideUrl: "free/detail/jquery.html",  // 修复路径
-                tags: ["JavaScript", "库", "DOM操作"]
-            },
-            {
-                id: "laravel",
-                name: "Laravel",
-                description: "优雅的PHP Web开发框架，提供丰富的功能和简洁的语法。",
-                category: "backend",
-                icon: "fa-server",
-                color: "text-red-500",
-                url: "https://laravel.com/",
-                guideUrl: "free/detail/laravel.html",  // 修复路径
-                tags: ["PHP", "框架", "Web开发"]
-            },
-            {
-                id: "letsencrypt",
-                name: "Let's Encrypt",
-                description: "提供免费SSL/TLS证书的非营利性证书颁发机构，简化HTTPS配置。",
-                category: "devops",
-                icon: "fa-lock",
-                color: "text-green-500",
-                url: "https://letsencrypt.org/",
-                guideUrl: "free/detail/letsencrypt.html",  // 修复路径
-                tags: ["SSL", "HTTPS", "安全"]
-            },
-            {
-                id: "mongodb",
-                name: "MongoDB",
-                description: "流行的文档型NoSQL数据库，提供免费的社区版和云服务免费计划。",
-                category: "database",
-                icon: "fa-database",
-                color: "text-green-500",
-                url: "https://www.mongodb.com/",
-                guideUrl: "free/detail/mongodb.html",  // 修复路径
-                tags: ["NoSQL", "文档数据库", "云服务"]
-            },
-            {
-                id: "mysql",
-                name: "MySQL",
-                description: "广泛使用的开源关系型数据库管理系统，由Oracle维护。",
-                category: "database",
-                icon: "fa-database",
-                color: "text-blue-500",
-                url: "https://www.mysql.com/",
-                guideUrl: "free/detail/mysql.html",  // 修复路径
-                tags: ["关系型数据库", "开源", "SQL"]
-            },
-            {
-                id: "netlify",
-                name: "Netlify",
-                description: "现代Web项目的静态网站托管和服务器less后端平台，提供免费计划。",
-                category: "devops",
-                icon: "fa-globe",
-                color: "text-purple-500",
-                url: "https://www.netlify.com/",
-                guideUrl: "free/detail/netlify.html",  // 修复路径
-                tags: ["托管", "CI/CD", "静态网站"]
-            },
-            {
-                id: "nginx",
-                name: "Nginx",
-                description: "高性能的HTTP和反向代理服务器，也可用作邮件代理服务器。",
-                category: "backend",
-                icon: "fa-server",
-                color: "text-green-500",
-                url: "https://nginx.org/",
-                guideUrl: "free/detail/nginx.html",  // 修复路径
-                tags: ["服务器", "反向代理", "高性能"]
-            },
-            {
-                id: "openai",
-                name: "OpenAI",
-                description: "开发先进AI模型的研究公司，提供API访问其模型如GPT系列。",
-                category: "ai",
-                icon: "fa-lightbulb-o",
-                color: "text-blue-500",
-                url: "https://openai.com/",
-                guideUrl: "free/detail/openai.html",  // 修复路径
-                tags: ["AI", "GPT", "API"]
-            },
-            {
-                id: "postgresql",
-                name: "PostgreSQL",
-                description: "强大的开源对象关系型数据库系统，具有高级功能和扩展性。",
-                category: "database",
-                icon: "fa-database",
-                color: "text-blue-500",
-                url: "https://www.postgresql.org/",
-                guideUrl: "free/detail/postgresql.html",  // 修复路径
-                tags: ["关系型数据库", "开源", "高级功能"]
-            },
-            {
-                id: "postman",
-                name: "Postman",
-                description: "API开发环境，用于构建、测试和文档化API，提供免费版本。",
-                category: "backend",
-                icon: "fa-paper-plane",
-                color: "text-orange-500",
-                url: "https://www.postman.com/",
-                guideUrl: "free/detail/postman.html",  // 修复路径
-                tags: ["API", "测试", "开发工具"]
-            },
-            {
-                id: "react",
-                name: "React",
-                description: "Facebook开发的用于构建用户界面的JavaScript库，特别适合单页应用。",
-                category: "frontend",
-                icon: "fa-react",
-                color: "text-blue-500",
-                url: "https://reactjs.org/",
-                guideUrl: "free/detail/react.html",  // 修复路径
-                tags: ["JavaScript", "UI库", "组件化"]
-            },
-            {
-                id: "redis",
-                name: "Redis",
-                description: "开源的内存数据结构存储，可用作数据库、缓存和消息代理。",
-                category: "database",
-                icon: "fa-database",
-                color: "text-red-500",
-                url: "https://redis.io/",
-                guideUrl: "free/detail/redis.html",  // 修复路径
-                tags: ["缓存", "内存数据库", "高性能"]
-            },
-            {
-                id: "sqlite",
-                name: "SQLite",
-                description: "嵌入式关系型数据库，零配置，无需服务器进程，适合小型应用。",
-                category: "database",
-                icon: "fa-database",
-                color: "text-gray-400",
-                url: "https://www.sqlite.org/",
-                guideUrl: "free/detail/sqlite.html",  // 修复路径
-                tags: ["嵌入式", "轻量级", "关系型数据库"]
-            },
-            {
-                id: "supabase",
-                name: "Supabase",
-                description: "开源的Firebase替代品，提供PostgreSQL数据库、认证等后端服务。",
-                category: "backend",
-                icon: "fa-database",
-                color: "text-green-500",
-                url: "https://supabase.com/",
-                guideUrl: "free/detail/supabase.html",  // 修复路径
-                tags: ["BaaS", "开源", "PostgreSQL"]
-            },
-            {
-                id: "swagger",
-                name: "Swagger",
-                description: "API开发工具集，用于设计、构建、文档化和使用RESTful API。",
-                category: "backend",
-                icon: "fa-file-text",
-                color: "text-orange-500",
-                url: "https://swagger.io/",
-                guideUrl: "free/detail/swagger.html",  // 修复路径
-                tags: ["API", "文档", "开发工具"]
-            },
-            {
-                id: "symfony",
-                name: "Symfony",
-                description: "PHP Web应用框架，提供一组可重用的PHP组件和开发者工具。",
-                category: "backend",
-                icon: "fa-code",
-                color: "text-purple-500",
-                url: "https://symfony.com/",
-                guideUrl: "free/detail/symfony.html",  // 修复路径
-                tags: ["PHP", "框架", "组件"]
-            },
-            {
-                id: "tailwind",
-                name: "Tailwind CSS",
-                description: "实用优先的CSS框架，通过预定义类快速构建自定义界面。",
-                category: "frontend",
-                icon: "fa-css3",
-                color: "text-blue-500",
-                url: "https://tailwindcss.com/",
-                guideUrl: "free/detail/tailwind.html",  // 修复路径
-                tags: ["CSS", "框架", "实用优先"]
-            },
-            {
-                id: "vercel",
-                name: "Vercel",
-                description: "前端云平台，专注于Next.js等框架的部署，提供全球CDN和免费计划。",
-                category: "devops",
-                icon: "fa-rocket",
-                color: "text-blue-500",
-                url: "https://vercel.com/",
-                guideUrl: "free/detail/vercel.html",  // 修复路径
-                tags: ["部署", "Next.js", "CDN"]
-            },
-            {
-                id: "vue",
-                name: "Vue.js",
-                description: "渐进式JavaScript框架，用于构建用户界面，易于集成到现有项目。",
-                category: "frontend",
-                icon: "fa-code",
-                color: "text-green-500",
-                url: "https://vuejs.org/",
-                guideUrl: "free/detail/vue.html",  // 修复路径
-                tags: ["JavaScript", "框架", "渐进式"]
-            },
-            {
-                id: "wordpress",
-                name: "WordPress",
-                description: "流行的内容管理系统，用于构建网站和博客，提供免费开源版本。",
-                category: "other",
-                icon: "fa-wordpress",
-                color: "text-blue-500",
-                url: "https://wordpress.org/",
-                guideUrl: "free/detail/wordpress.html",  // 修复路径
-                tags: ["CMS", "博客", "开源"]
-            }
-        ];
+    <!-- Mobile Sidebar Overlay -->
+    <div id="overlay" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 hidden md:hidden"></div>
 
-        // DOM元素
+    <script>
+        // Declare global resources variable
+        let resources = [];
+        
+        // Load resources data from JSON file
+        async function loadResources() {
+            try {
+                const response = await fetch('/assets/data/data.json');
+                const jsonData = await response.json();
+                
+                // Transform data format, supplement missing fields
+                resources = jsonData.map(item => ({
+                    id: item.file,
+                    name: item.name,
+                    description: generateDescription(item),
+                    category: mapCategory(item.category),
+                    icon: getIconForCategory(mapCategory(item.category), item.file),
+                    color: getColorForCategory(mapCategory(item.category)),
+                    url: `https://${item.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}.com`,
+                    guideUrl: `free/detail/${item.file}`,
+                    tags: item.tags.slice(0, 3), // Show up to 3 tags
+                    popularity: item.popularity
+                }));
+                
+                // Sort by popularity and name to ensure consistent display order
+                resources.sort((a, b) => {
+                    if (b.popularity !== a.popularity) {
+                        return b.popularity - a.popularity;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+                
+                // Initialize page
+                init();
+            } catch (error) {
+                console.error('Failed to load resources data:', error);
+                
+                // Use fallback data
+                resources = [
+                    {
+                        id: "react",
+                        name: "React",
+                        description: "A JavaScript library for building user interfaces, developed by Facebook, perfect for single-page applications.",
+                        category: "frontend",
+                        icon: "fa-react",
+                        color: "text-blue-500",
+                        url: "https://reactjs.org/",
+                        guideUrl: "free/detail/react",
+                        tags: ["JavaScript", "UI Library", "Component-based"],
+                        popularity: 1
+                    },
+                    {
+                        id: "vue",
+                        name: "Vue.js",
+                        description: "A progressive JavaScript framework for building user interfaces that's easy to integrate into existing projects.",
+                        category: "frontend",
+                        icon: "fa-code",
+                        color: "text-green-500",
+                        url: "https://vuejs.org/",
+                        guideUrl: "free/detail/vue",
+                        tags: ["JavaScript", "Framework", "Progressive"],
+                        popularity: 1
+                    },
+                    {
+                        id: "github",
+                        name: "GitHub",
+                        description: "A Git-based code hosting platform offering free public and private repositories, and GitHub Pages.",
+                        category: "devops",
+                        icon: "fa-github",
+                        color: "text-gray-400",
+                        url: "https://github.com/",
+                        guideUrl: "free/detail/github",
+                        tags: ["Code Hosting", "Version Control", "Collaboration"],
+                        popularity: 1
+                    }
+                ];
+                
+                // Initialize page
+                init();
+            }
+        }
+        
+        // Generate resource description
+        function generateDescription(item) {
+            const categoryDescriptions = {
+                "Frontend": `A popular frontend framework or library for building user interfaces and web applications.`,
+                "Backend": `A powerful backend tool or framework for building server-side applications.`,
+                "Database": `A reliable database system for storing and managing application data.`,
+                "DevOps": `An efficient DevOps tool for automating deployment and operational processes.`,
+                "Testing": `A professional testing tool to ensure code quality and application stability.`,
+                "Tools": `A practical development tool to improve development efficiency and code quality.`,
+                "AI Tools": `An advanced AI tool or framework for building intelligent applications.`,
+                "Design": `A professional design tool for creating user interfaces and visual content.`,
+                "Monitoring": `A comprehensive monitoring tool for tracking application performance and status.`,
+                "Charts": `A powerful charting library for data visualization and presentation.`,
+                "Collaboration": `An efficient collaboration tool for team communication and project management.`,
+                "Learning": `High-quality learning resources to help developers enhance their skills.`,
+                "Multimedia": `Professional multimedia tools for creating and editing audio and video content.`,
+                "Networking": `Professional networking tools for network configuration and management.`,
+                "Security": `Reliable security tools to protect applications and data security.`,
+                "Dev Tools": `Practical development tools to improve development efficiency and code quality.`,
+                "Online Dev": `Convenient online development environments to write and test code anywhere.`,
+                "Analytics": `Comprehensive analytics tools for tracking and analyzing user behavior.`
+            };
+            
+            return `${item.name} - ${categoryDescriptions[item.category] || 'An excellent development tool or resource.'}`;
+        }
+        
+        // Map categories to frontend format
+        function mapCategory(category) {
+            const categoryMap = {
+                "Frontend": "frontend",
+                "Backend": "backend",
+                "Database": "database",
+                "DevOps": "devops",
+                "Testing": "devops", // Testing tools are categorized under DevOps
+                "Tools": "other",
+                "AI Tools": "ai",
+                "Design": "design",
+                "Monitoring": "devops", // Monitoring tools are categorized under DevOps
+                "Charts": "frontend", // Chart libraries are categorized under Frontend
+                "Collaboration": "other",
+                "Learning": "other",
+                "Multimedia": "other",
+                "Networking": "devops",
+                "Security": "devops",
+                "Dev Tools": "other",
+                "Online Dev": "other",
+                "Analytics": "other"
+            };
+            
+            return categoryMap[category] || "other";
+        }
+        
+        // Get icon based on category and specific resource
+        function getIconForCategory(category, resourceId) {
+            const iconMap = {
+                "frontend": "fa-code",
+                "backend": "fa-server",
+                "database": "fa-database",
+                "devops": "fa-cogs",
+                "design": "fa-paint-brush",
+                "ai": "fa-lightbulb-o",
+                "other": "fa-ellipsis-h"
+            };
+            
+            // Use more precise icons for specific resources
+            const specificIcons = {
+                "github": "fa-github",
+                "gitlab": "fa-gitlab",
+                "bitbucket": "fa-bitbucket",
+                "react": "fa-react",
+                "vue": "fa-code",
+                "angular": "fa-code",
+                "docker": "fa-cube",
+                "kubernetes": "fa-cubes",
+                "nginx": "fa-server",
+                "apache": "fa-server",
+                "mysql": "fa-database",
+                "postgresql": "fa-database",
+                "mongodb": "fa-database",
+                "redis": "fa-database",
+                "sqlite": "fa-database",
+                "figma": "fa-paint-brush",
+                "canva": "fa-paint-brush",
+                "vscode": "fa-code",
+                "npm": "fa-cube",
+                "yarn": "fa-cube",
+                "pnpm": "fa-cube",
+                "nodejs": "fa-code"
+            };
+            
+            return specificIcons[resourceId] || iconMap[category] || "fa-ellipsis-h";
+        }
+        
+        // Get color based on category
+        function getColorForCategory(category) {
+            const colorMap = {
+                "frontend": "text-blue-500",
+                "backend": "text-green-400",
+                "database": "text-yellow-400",
+                "devops": "text-purple-400",
+                "design": "text-red-400",
+                "ai": "text-indigo-400",
+                "other": "text-gray-400"
+            };
+            
+            return colorMap[category] || "text-gray-400";
+        }
+        
+        // DOM elements
         const resourcesGrid = document.getElementById('resourcesGrid');
         const emptyState = document.getElementById('emptyState');
         const categoryPanel = document.getElementById('categoryPanel');
         const overlay = document.getElementById('overlay');
-        const categoryToggle = document.getElementById('categoryToggle');
         const mobileCategoryToggle = document.getElementById('mobileCategoryToggle');
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
         const mobileMenu = document.getElementById('mobileMenu');
@@ -800,7 +636,118 @@
         const searchInput = document.getElementById('searchInput');
         const mobileSearchInput = document.getElementById('mobileSearchInput');
 
-        // 渲染资源卡片
+        // Initialize page
+        function init() {
+            // Initial render of all resources
+            renderResources();
+            
+            // Update resource count
+            document.getElementById('resourceCount').textContent = resources.length;
+            
+            // Category filter events (sidebar)
+            document.querySelectorAll('.category-filter').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Update button styles
+                    document.querySelectorAll('.category-filter').forEach(b => {
+                        b.classList.remove('active', 'bg-primary/10');
+                    });
+                    this.classList.add('active', 'bg-primary/10');
+                    
+                    // Update chip styles
+                    const category = this.getAttribute('data-category');
+                    document.querySelectorAll('.category-chip').forEach(chip => {
+                        chip.classList.remove('bg-primary', 'text-white');
+                        chip.classList.add('bg-dark', 'hover:bg-dark-hover');
+                        
+                        if (chip.getAttribute('data-category') === category) {
+                            chip.classList.remove('bg-dark', 'hover:bg-dark-hover');
+                            chip.classList.add('bg-primary', 'text-white');
+                        }
+                    });
+                    
+                    // Filter resources
+                    filterResources(category, searchInput.value);
+                    
+                    // Close category panel on mobile devices
+                    if (window.innerWidth < 768) {
+                        toggleCategoryPanel();
+                    }
+                });
+            });
+            
+            // Category filter events (chips)
+            document.querySelectorAll('.category-chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    // Update chip styles
+                    document.querySelectorAll('.category-chip').forEach(c => {
+                        c.classList.remove('bg-primary', 'text-white');
+                        c.classList.add('bg-dark', 'hover:bg-dark-hover');
+                    });
+                    this.classList.remove('bg-dark', 'hover:bg-dark-hover');
+                    this.classList.add('bg-primary', 'text-white');
+                    
+                    // Update sidebar styles
+                    const category = this.getAttribute('data-category');
+                    document.querySelectorAll('.category-filter').forEach(btn => {
+                        btn.classList.remove('active', 'bg-primary/10');
+                        
+                        if (btn.getAttribute('data-category') === category) {
+                            btn.classList.add('active', 'bg-primary/10');
+                        }
+                    });
+                    
+                    // Filter resources
+                    filterResources(category, searchInput.value);
+                });
+            });
+            
+            // Search functionality
+            searchInput.addEventListener('input', function() {
+                const activeCategory = document.querySelector('.category-filter.active').getAttribute('data-category');
+                filterResources(activeCategory, this.value);
+            });
+            
+            mobileSearchInput.addEventListener('input', function() {
+                const activeCategory = document.querySelector('.category-filter.active').getAttribute('data-category');
+                filterResources(activeCategory, this.value);
+                // Sync with main search box
+                searchInput.value = this.value;
+            });
+            
+            // Modal events
+            closeModal.addEventListener('click', closeResourceModal);
+            modalOverlay.addEventListener('click', closeResourceModal);
+            
+            // Category panel events
+            mobileCategoryToggle.addEventListener('click', toggleCategoryPanel);
+            overlay.addEventListener('click', toggleCategoryPanel);
+            
+            // Mobile menu events
+            mobileMenuToggle.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Close modal when clicking outside or pressing ESC
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && !resourceModal.classList.contains('hidden')) {
+                    closeResourceModal();
+                }
+            });
+            
+            // Navbar effect on scroll
+            window.addEventListener('scroll', function() {
+                const header = document.querySelector('header');
+                if (window.scrollY > 50) {
+                    header.classList.add('py-2', 'shadow-lg', 'shadow-black/20');
+                    header.classList.remove('py-3');
+                } else {
+                    header.classList.add('py-3');
+                    header.classList.remove('py-2', 'shadow-lg', 'shadow-black/20');
+                }
+            });
+        }
+
+        // Render resource cards
         function renderResources(filteredResources = resources) {
             resourcesGrid.innerHTML = '';
             
@@ -813,10 +760,10 @@
             
             filteredResources.forEach(resource => {
                 const resourceCard = document.createElement('div');
-                resourceCard.className = 'bg-dark-card rounded-xl overflow-hidden border border-gray-800 transition-all hover:border-primary/50 hover:translate-y-[-4px] card-shadow group cursor-pointer';
+                resourceCard.className = 'bg-dark rounded-xl overflow-hidden border border-gray-800 transition-all duration-300 hover:border-primary/50 hover:-translate-y-1 card-shadow group cursor-pointer animate-fade-in';
                 resourceCard.setAttribute('data-id', resource.id);
                 
-                // 生成标签HTML
+                // Generate tags HTML
                 const tagsHtml = resource.tags.map(tag => 
                     `<span class="bg-dark-hover text-xs px-2 py-1 rounded-full">${tag}</span>`
                 ).join('');
@@ -839,7 +786,7 @@
                                 ${getCategoryName(resource.category)}
                             </span>
                             <button class="text-primary hover:text-primary/80 transition-colors text-sm flex items-center">
-                                了解更多
+                                Learn More
                                 <i class="fa fa-arrow-right ml-1 transition-transform group-hover:translate-x-1"></i>
                             </button>
                         </div>
@@ -848,45 +795,45 @@
                 
                 resourcesGrid.appendChild(resourceCard);
                 
-                // 添加点击事件
+                // Add click event
                 resourceCard.addEventListener('click', () => {
                     openResourceModal(resource);
                 });
             });
         }
         
-        // 获取分类名称
+        // Get category name
         function getCategoryName(category) {
             const categories = {
-                'frontend': '前端框架',
-                'backend': '后端工具',
-                'database': '数据库',
+                'frontend': 'Frontend',
+                'backend': 'Backend',
+                'database': 'Database',
                 'devops': 'DevOps',
-                'design': '设计工具',
-                'ai': 'AI工具',
-                'other': '其他工具'
+                'design': 'Design',
+                'ai': 'AI Tools',
+                'other': 'Other'
             };
             return categories[category] || category;
         }
         
-        // 打开资源详情模态框
+        // Open resource details modal
         function openResourceModal(resource) {
             document.getElementById('modalTitle').textContent = resource.name;
             document.getElementById('modalLink').href = resource.url;
             
             const guideBtn = document.getElementById('modalGuideLink');
-guideBtn.href = '/' + resource.guideUrl; // 使用修复后的路径
-guideBtn.classList.remove('pointer-events-none'); // 激活点击
-            // 构建模态框内容
+            guideBtn.href = '/' + resource.guideUrl;
+            guideBtn.classList.remove('pointer-events-none');
+            // Build modal content
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = `
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold mb-2">资源描述</h4>
+                    <h4 class="text-lg font-semibold mb-2">Resource Description</h4>
                     <p class="text-gray-300">${resource.description}</p>
                 </div>
                 
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold mb-2">分类与标签</h4>
+                    <h4 class="text-lg font-semibold mb-2">Categories & Tags</h4>
                     <div class="flex flex-wrap gap-2 mb-3">
                         <span class="bg-dark-hover px-3 py-1 rounded-full text-sm">
                             <i class="fa fa-folder-o mr-1"></i>
@@ -899,32 +846,32 @@ guideBtn.classList.remove('pointer-events-none'); // 激活点击
                 </div>
                 
                 <div class="mb-6">
-                    <h4 class="text-lg font-semibold mb-2">免费计划包含</h4>
+                    <h4 class="text-lg font-semibold mb-2">Free Plan Includes</h4>
                     <ul class="space-y-2 text-gray-300">
                         <li class="flex items-start">
                             <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
-                            <span>完整的核心功能访问权限</span>
+                            <span>Full access to core functionality</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
-                            <span>社区支持和文档访问</span>
+                            <span>Community support and documentation access</span>
                         </li>
                         <li class="flex items-start">
                             <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
-                            <span>个人和非商业项目使用</span>
+                            <span>Personal and non-commercial project usage</span>
                         </li>
                     </ul>
                 </div>
                 
                 <div class="bg-dark/50 border border-gray-800 rounded-lg p-4">
-                    <h4 class="text-lg font-semibold mb-2">申请提示</h4>
+                    <h4 class="text-lg font-semibold mb-2">Application Tips</h4>
                     <p class="text-gray-300 text-sm">
-                        点击"申请指南"查看详细的免费计划申请步骤和注意事项。大多数免费计划需要注册账号并遵守服务条款。
+                        Click "Application Guide" to view detailed steps and important notes for claiming the free plan. Most free plans require account registration and adherence to terms of service.
                     </p>
                 </div>
             `;
             
-            // 显示模态框
+            // Show modal
             resourceModal.classList.remove('hidden');
             setTimeout(() => {
                 modalContent.classList.remove('scale-95', 'opacity-0');
@@ -934,45 +881,45 @@ guideBtn.classList.remove('pointer-events-none'); // 激活点击
                 modalContent.classList.add('pointer-events-auto');
             }, 10);
             
-            // 阻止背景滚动
+            // Prevent background scrolling
             document.body.style.overflow = 'hidden';
         }
         
-        // 关闭资源详情模态框
+        // Close resource details modal
         function closeResourceModal() {
             modalContent.classList.remove('scale-100', 'opacity-100');
             modalContent.classList.add('scale-95', 'opacity-0');
             
             setTimeout(() => {
                 resourceModal.classList.add('hidden');
-                // 恢复背景滚动
+                // Restore background scrolling
                 document.body.style.overflow = '';
             }, 300);
         }
         
-        // 切换分类面板
+        // Toggle category panel
         function toggleCategoryPanel() {
-            categoryPanel.classList.toggle('translate-x-full');
-            overlay.classList.toggle('hidden');
-            
-            // 切换背景滚动
-            if (!categoryPanel.classList.contains('translate-x-full')) {
+            if (categoryPanel.classList.contains('hidden')) {
+                categoryPanel.classList.remove('hidden');
+                overlay.classList.remove('hidden');
                 document.body.style.overflow = 'hidden';
             } else {
+                categoryPanel.classList.add('hidden');
+                overlay.classList.add('hidden');
                 document.body.style.overflow = '';
             }
         }
         
-        // 筛选资源
+        // Filter resources
         function filterResources(category = 'all', searchTerm = '') {
             let filtered = resources;
             
-            // 按分类筛选
+            // Filter by category
             if (category !== 'all') {
                 filtered = filtered.filter(resource => resource.category === category);
             }
             
-            // 按搜索词筛选
+            // Filter by search term
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
                 filtered = filtered.filter(resource => 
@@ -985,122 +932,8 @@ guideBtn.classList.remove('pointer-events-none'); // 激活点击
             renderResources(filtered);
         }
         
-        // 初始化页面
-        function init() {
-            // 初始渲染所有资源
-            renderResources();
-            
-            // 更新资源计数
-            document.getElementById('resourceCount').textContent = resources.length;
-            
-            // 分类筛选事件（侧边栏）
-            document.querySelectorAll('.category-filter').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // 更新按钮样式
-                    document.querySelectorAll('.category-filter').forEach(b => {
-                        b.classList.remove('active', 'bg-primary/10');
-                    });
-                    this.classList.add('active', 'bg-primary/10');
-                    
-                    // 更新芯片样式
-                    const category = this.getAttribute('data-category');
-                    document.querySelectorAll('.category-chip').forEach(chip => {
-                        chip.classList.remove('bg-primary', 'text-white');
-                        chip.classList.add('bg-dark-card', 'hover:bg-dark-hover');
-                        
-                        if (chip.getAttribute('data-category') === category) {
-                            chip.classList.remove('bg-dark-card', 'hover:bg-dark-hover');
-                            chip.classList.add('bg-primary', 'text-white');
-                        }
-                    });
-                    
-                    // 筛选资源
-                    filterResources(category, searchInput.value);
-                    
-                    // 在移动设备上关闭分类面板
-                    if (window.innerWidth < 768) {
-                        toggleCategoryPanel();
-                    }
-                });
-            });
-            
-            // 分类筛选事件（芯片）
-            document.querySelectorAll('.category-chip').forEach(chip => {
-                chip.addEventListener('click', function() {
-                    // 更新芯片样式
-                    document.querySelectorAll('.category-chip').forEach(c => {
-                        c.classList.remove('bg-primary', 'text-white');
-                        c.classList.add('bg-dark-card', 'hover:bg-dark-hover');
-                    });
-                    this.classList.remove('bg-dark-card', 'hover:bg-dark-hover');
-                    this.classList.add('bg-primary', 'text-white');
-                    
-                    // 更新侧边栏样式
-                    const category = this.getAttribute('data-category');
-                    document.querySelectorAll('.category-filter').forEach(btn => {
-                        btn.classList.remove('active', 'bg-primary/10');
-                        
-                        if (btn.getAttribute('data-category') === category) {
-                            btn.classList.add('active', 'bg-primary/10');
-                        }
-                    });
-                    
-                    // 筛选资源
-                    filterResources(category, searchInput.value);
-                });
-            });
-            
-            // 搜索功能
-            searchInput.addEventListener('input', function() {
-                const activeCategory = document.querySelector('.category-filter.active').getAttribute('data-category');
-                filterResources(activeCategory, this.value);
-            });
-            
-            mobileSearchInput.addEventListener('input', function() {
-                const activeCategory = document.querySelector('.category-filter.active').getAttribute('data-category');
-                filterResources(activeCategory, this.value);
-                // 同步到主搜索框
-                searchInput.value = this.value;
-            });
-            
-            // 模态框事件
-            closeModal.addEventListener('click', closeResourceModal);
-            modalOverlay.addEventListener('click', closeResourceModal);
-            // 移除测试按钮关闭模态框事件（不再需要）
-            
-            // 分类面板事件
-            categoryToggle.addEventListener('click', toggleCategoryPanel);
-            mobileCategoryToggle.addEventListener('click', toggleCategoryPanel);
-            overlay.addEventListener('click', toggleCategoryPanel);
-            
-            // 移动端菜单事件
-            mobileMenuToggle.addEventListener('click', function() {
-                mobileMenu.classList.toggle('hidden');
-            });
-            
-            // 点击资源卡片外部关闭模态框（按ESC键）
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && !resourceModal.classList.contains('hidden')) {
-                    closeResourceModal();
-                }
-            });
-            
-            // 页面滚动时导航栏效果
-            window.addEventListener('scroll', function() {
-                const header = document.querySelector('header');
-                if (window.scrollY > 50) {
-                    header.classList.add('py-2', 'shadow-lg', 'shadow-black/20');
-                    header.classList.remove('py-3');
-                } else {
-                    header.classList.add('py-3');
-                    header.classList.remove('py-2', 'shadow-lg', 'shadow-black/20');
-                }
-            });
-        }
-        
-        // 初始化页面
-        init();
+        // Start data loading when page loads
+        document.addEventListener('DOMContentLoaded', loadResources);
     </script>
-<script type="module" src="/main.js"></script>
 </body>
 </html>
