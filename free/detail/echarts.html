@@ -1,1407 +1,906 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ECharts 介绍 - 强大的数据可视化库</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#36BFFA',
-            secondary: '#722ED1',
-            dark: '#0F172A',
-            darker: '#0A0F1C',
-            'dark-card': '#1E293B',
-            'dark-hover': '#2A3A54',
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .text-gradient {
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-      }
-      .animate-float {
-        animation: float 6s ease-in-out infinite;
-      }
-      .scrollbar-hide::-webkit-scrollbar {
-        display: none;
-      }
-      .scrollbar-hide {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-      }
-      .card-shadow {
-        box-shadow: 0 10px 25px -5px rgba(54, 191, 250, 0.1), 0 8px 10px -6px rgba(54, 191, 250, 0.1);
-      }
-    }
-
-    @keyframes float {
-      0% { transform: translateY(0px); }
-      50% { transform: translateY(-20px); }
-      100% { transform: translateY(0px); }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECharts - Powerful Powerful Data Visualization Library</title>
+    <meta name="description" content="Discover ECharts, a powerful open-source data visualization library. Learn about its features, technical stack, origin, and how to use it for your projects.">
+    <meta name="keywords" content="ECharts, data visualization, JavaScript, chart library, open source">
+    <meta name="author" content="ECharts Community">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/free/detail/echarts">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#10b981',
+                        dark: {
+                            bg: '#111827',
+                            card: '#1f2937',
+                            text: '#f3f4f6'
+                        },
+                        light: {
+                            bg: '#f9fafb',
+                            card: '#ffffff',
+                            text: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    </style>
+    
+    <style>
+        /* Progress bar animation */
+        #scrollProgress {
+            transition: width 0.2s ease;
+        }
+        
+        /* Fade-in animation for elements */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Smooth        Bookmark button animation
+        */
+        #bookmarkBtn {
+            transition: all 0.3s ease;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
-<body class="bg-gradient-to-b from-darker to-dark text-gray-100 min-h-screen">
-  <!-- 导航栏 -->
-  <header id="navbar" class="fixed w-full z-50 transition-all duration-300">
-    <nav class="container mx-auto px-4 py-4 flex justify-between items-center backdrop-blur-md bg-dark/80">
-      <div class="flex items-center space-x-2">
-        <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-          <i class="fa fa-bar-chart text-white text-xl"></i>
-        </div>
-        <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">ECharts</span>
-      </div>
-      
-      <!-- 桌面导航 -->
-      <ul class="hidden md:flex space-x-8">
-        <li><a href="#intro" class="hover:text-primary transition-colors">介绍</a></li>
-        <li><a href="#free" class="hover:text-primary transition-colors">免费服务</a></li>
-        <li><a href="#pros-cons" class="hover:text-primary transition-colors">优缺点</a></li>
-        <li><a href="#reviews" class="hover:text-primary transition-colors">社区评论</a></li>
-        <li><a href="#usage" class="hover:text-primary transition-colors">使用方法</a></li>
-      </ul>
-      
-      <!-- 移动端菜单按钮 -->
-                          <!-- 移动端搜索按钮 -->
-                    <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-                        <i class="fa fa-search text-xl"></i>
-                    </button>
-<button id="menu-toggle" class="md:hidden text-2xl">
-        <i class="fa fa-bars"></i>
-      </button>
-                    <!-- 搜索框 - 居中位置 -->
-                <div class="hidden md:block relative max-w-xs mx-4">
-                    <input type="text" id="searchInput" placeholder="搜索开发资源..." 
-                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm">
-                    <button id="searchButton" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-search"></i>
-                    </button>
-                    <button id="clearSearchBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 bg-white/80 dark:bg-dark-card/80 text-gray-600 dark:text-gray-300 w-6 h-6 rounded-full flex items-center justify-center hover:bg-white dark:hover:bg-dark-card transition-all duration-300 hidden">
-                        <i class="fa fa-times text-xs"></i>
-                    </button>
-                    
-                    <!-- 浮动结果容器 -->
-                    <div id="floating-results" class="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-dark-card rounded-xl shadow-xl z-50 hidden max-h-[70vh] overflow-y-auto border border-light-border dark:border-dark-border animate-fade-in-down">
-                        <div id="floating-results-content" class="p-2">
-                            <!-- 浮动结果将在这里动态生成 -->
-                        </div>
-                        <div class="px-4 py-3 border-t border-light-border dark:border-dark-border text-center">
-                            <button id="view-all-results" class="text-primary hover:underline font-medium transition-colors duration-300">查看全部结果</button>
-                        </div>
+<body class="bg-light-light-bg text-light-light-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="fixed top-0 left-0 h-1 bg-primary z-50 w-0"></div>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 bg-white/90 dark:bg-dark-card/90 backdrop-blur-md shadow-sm z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <nav class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <i class="fa fa-bar-chart text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold">ECharts</span>
+                </div>
+                
+                <!-- Search Box -->
+                <div class="hidden md:block flex-1 max-w-md mx-8">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            autocomplete="off" 
+                            placeholder="Search ECharts documentation..." 
+                            class="w-full py-2 px-4 pr-10 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                        >
+                        <i class="fa fa-search absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </div>
-                </nav>
-    
-    <!-- 移动端导航菜单 -->
-    <div id="mobile-menu" class="md:hidden hidden bg-dark-card/95 backdrop-blur-md">
-      <ul class="container mx-auto px-4 py-4 flex flex-col space-y-4">
-        <li><a href="#intro" class="block py-2 hover:text-primary transition-colors">介绍</a></li>
-        <li><a href="#free" class="block py-2 hover:text-primary transition-colors">免费服务</a></li>
-        <li><a href="#pros-cons" class="block py-2 hover:text-primary transition-colors">优缺点</a></li>
-        <li><a href="#reviews" class="block py-2 hover:text-primary transition-colors">社区评论</a></li>
-        <li><a href="#usage" class="block py-2 hover:text-primary transition-colors">使用方法</a></li>
-      </ul>
-    </div>
-          <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." 
-                    class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
-            </div>
+                
+                <!-- Navigation Links -->
+                <div class="flex items-center space-x-6">
+                    <a href="#" class="hidden-sm:hidden">
+                        <i class="fa fa-search text-xl"></i>
+                    </a>
+                    <a href="#" class="hidden md:block hover:text-primary-primary transition-colors">Docs</a>
+                    <a href="#" class="hidden-sm:hidden md:block hover:text-primary transition-colors">Examples</a>
+                    <a href="#" class="hover:text-primary transition-colors">GitHub</a>
+                    
+                    <!-- Theme Toggle Toggle -->
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i id="themeIcon" class="fa fa-moon-o text-xl"></i>
+                    </button>
+                </div>
+            </nav>
         </div>
     </header>
 
-  <!-- 英雄区域 -->
-  <section class="pt-32 pb-20 md:pt-40 md:pb-32 px-4 relative overflow-hidden">
-    <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20">
-      <div class="absolute top-1/4 left-1/4 w-64 h-64 bg-primary/30 rounded-full filter blur-3xl"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-80 h-80 bg-secondary/30 rounded-full filter blur-3xl"></div>
+    <!-- Breadreadcrumb Navigation -->
+    <div class="container mx-auto px-4 py-4 text-sm text-gray-500 dark:text-gray-400">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/" class="hover:text-primary transition-colors">
+                        <i class="fa fa-home mr-1"></i> Home
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-xs mx-1"></i>
+                        <a href="/free" class="hover:text-primary transition-colors">Free Resources</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-xs mx-1"></i>
+                        <a href="/free/detail/" class="hover:text-primary transition-colors">Resource List</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-xs mx-1"></i>
+                        <span class="text-primary">ECharts</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
     </div>
-    
-    <div class="container mx-auto relative z-10">
-      <div class="flex flex-col md:flex-row items-center gap-12">
-        <div class="md:w-1/2 space-y-6">
-          <h1 class="text-4xl md:text-6xl font-bold leading-tight">
-            强大的数据可视化<br>
-            <span class="bg-gradient-to-r from-primary to-secondary text-gradient">ECharts 库</span>
-          </h1>
-          <p class="text-xl text-gray-300 max-w-lg">
-            一款开源、功能丰富、高性能的数据可视化库，帮助你轻松创建各种交互式图表。
-          </p>
-          <div class="flex flex-wrap gap-4 pt-4">
-            <a href="#usage" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary rounded-lg font-medium hover:shadow-lg hover:shadow-primary/20 transition-all transform hover:-translate-y-1">
-              开始使用
-            </a>
-            <a href="#reviews" class="px-8 py-3 bg-dark-card border border-gray-700 rounded-lg font-medium hover:bg-dark-hover transition-all transform hover:-translate-y-1">
-              查看评论
-            </a>
-          </div>
-          <div class="flex items-center gap-4 pt-6">
-            <div class="flex -space-x-2">
-              <img src="https://picsum.photos/id/1/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-dark">
-              <img src="https://picsum.photos/id/2/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-dark">
-              <img src="https://picsum.photos/id/3/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-dark">
-              <img src="https://picsum.photos/id/4/40/40" alt="用户头像" class="w-10 h-10 rounded-full border-2 border-dark">
-              <div class="w-10 h-10 rounded-full bg-dark-hover border-2 border-dark flex items-center justify-center text-xs font-medium">
-                10k+
-              </div>
-            </div>
-            <p class="text-gray-400 text-sm">全球超过10,000名开发者在使用</p>
-          </div>
-        </div>
-        
-        <div class="md:w-1/2 animate-float">
-          <div class="bg-dark-card rounded-2xl p-6 card-shadow border border-gray-800">
-            <canvas id="heroChart" width="400" height="300"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
-  <!-- 介绍部分 -->
-  <section id="intro" class="py-20 px-4 scroll-mt-20">
-    <div class="container mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">什么是 ECharts？</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto">ECharts 是一款由百度开发的开源数据可视化库，提供了丰富的图表类型和交互功能</p>
-      </div>
-      
-      <div class="grid md:grid-cols-2 gap-12 items-center">
-        <div class="space-y-6">
-          <p class="text-lg text-gray-300">
-            ECharts（Enterprise Charts）是一个使用 JavaScript 实现的开源可视化库，最初由百度团队开发并维护，现在由 Apache 软件基金会孵化。
-          </p>
-          <p class="text-lg text-gray-300">
-            它提供了直观、交互丰富、可高度定制的数据可视化图表，支持折线图、柱状图、散点图、饼图、K线图等多种图表类型，满足各种数据展示需求。
-          </p>
-          <p class="text-lg text-gray-300">
-            ECharts 具有良好的兼容性，能够在 PC 端和移动设备上流畅运行，并且支持多种数据格式和动态数据更新。
-          </p>
-          
-          <div class="pt-4">
-            <h3 class="text-xl font-semibold mb-3">核心特性</h3>
-            <ul class="space-y-2">
-              <li class="flex items-start gap-2">
-                <i class="fa fa-check text-primary mt-1"></i>
-                <span>丰富的图表类型和交互方式</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i class="fa fa-check text-primary mt-1"></i>
-                <span>高性能的大数据可视化能力</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i class="fa fa-check text-primary mt-1"></i>
-                <span>完善的文档和活跃的社区支持</span>
-              </li>
-              <li class="flex items-start gap-2">
-                <i class="fa fa-check text-primary mt-1"></i>
-                <span>高度可定制的图表样式和主题</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="grid grid-cols-2 gap-4">
-          <div class="bg-dark-card p-4 rounded-xl border border-gray-800 hover:border-primary/50 transition-all transform hover:-translate-y-1">
-            <i class="fa fa-line-chart text-primary text-3xl mb-3"></i>
-            <h4 class="font-semibold mb-2">基础图表</h4>
-            <p class="text-gray-400 text-sm">折线图、柱状图、饼图等常用图表</p>
-          </div>
-          <div class="bg-dark-card p-4 rounded-xl border border-gray-800 hover:border-primary/50 transition-all transform hover:-translate-y-1">
-            <i class="fa fa-map-marker text-primary text-3xl mb-3"></i>
-            <h4 class="font-semibold mb-2">地理可视化</h4>
-            <p class="text-gray-400 text-sm">地图、热力图、轨迹图等地理相关图表</p>
-          </div>
-          <div class="bg-dark-card p-4 rounded-xl border border-gray-800 hover:border-primary/50 transition-all transform hover:-translate-y-1">
-            <i class="fa fa-cubes text-primary text-3xl mb-3"></i>
-            <h4 class="font-semibold mb-2">3D 可视化</h4>
-            <p class="text-gray-400 text-sm">3D 柱状图、散点图等立体图表</p>
-          </div>
-          <div class="bg-dark-card p-4 rounded-xl border border-gray-800 hover:border-primary/50 transition-all transform hover:-translate-y-1">
-            <i class="fa fa-sliders text-primary text-3xl mb-3"></i>
-            <h4 class="font-semibold mb-2">交互组件</h4>
-            <p class="text-gray-400 text-sm">数据筛选、缩放、拖拽等交互功能</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
+    <main class="container mx-auto px-4 py-8">
+        <!-- Heroero Section -->
+        <section class="mb-16 fade-in">
+            <div class="flex flex-col md:flex-row items-center gap-12">
+                <div class="md:w-1/2 space-y-6">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                        Visualize Your Data with <span class="text-primary">ECharts</span>
+                    </h1>
+                    <p class="text-lg text-gray-600 dark:text-gray-300 text-balance">
+                        A powerful, interactive charting and visualization library for browser-based applications, offering intuitive, interactive, and highly customizable data visualization solutions.
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="#features" class="px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Explore Features
+                        </a>
+                        <a href="#installation" class="px-6 py-3 bg-gray-200 dark:bg-gray-700 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-all duration-300">
+                            Get Started
+                        </a>
+                    </div>
+                    
+                    <!-- GitHub Stats -->
+                    <div class="flex items-center gap-6 pt-4">
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-star text-yellow-400"></i>
+                            <span>56.8k+ Stars</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-exclamation-circle text-orange-500"></i>
+                            <span>342 Open Issues</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-code-fork text-green-500"></i>
+                            <span>10.2k Forks</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:w-1/2">
+                    <div class="rounded-xl overflow-hidden shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                        <img 
+                            src="https://picsum.photos/800/600?random=1" 
+                            alt="ECharts Data Visualization Example" 
+                            class="w-full h-auto lazy-load"
+                            loading="lazy"
+                        >
+                    </div>
+                </div>
+            </div>
+        </section>
 
-  <!-- 免费服务部分 -->
-  <section id="free" class="py-20 px-4 bg-darker scroll-mt-20">
-    <div class="container mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">免费服务与许可</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto">ECharts 提供完全免费的使用权限，同时提供丰富的官方资源支持</p>
-      </div>
-      
-      <div class="bg-dark-card rounded-2xl p-8 md:p-12 border border-gray-800 card-shadow">
-        <div class="grid md:grid-cols-3 gap-8">
-          <div class="space-y-4">
-            <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
-              <i class="fa fa-github text-primary text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold">开源免费</h3>
-            <p class="text-gray-400">
-              ECharts 基于 Apache License 2.0 开源协议发布，个人和商业用途均完全免费，无需支付任何许可费用。
-            </p>
-          </div>
-          
-          <div class="space-y-4">
-            <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
-              <i class="fa fa-book text-primary text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold">免费文档</h3>
-            <p class="text-gray-400">
-              提供详尽的官方文档，包括快速入门、配置项手册、API 参考等，所有内容完全免费开放。
-            </p>
-          </div>
-          
-          <div class="space-y-4">
-            <div class="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
-              <i class="fa fa-code-fork text-primary text-2xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold">自由修改</h3>
-            <p class="text-gray-400">
-              允许根据自身需求修改源代码，定制专属功能，只需在修改后保留原作者信息和协议声明。
-            </p>
-          </div>
-        </div>
-        
-        <div class="mt-12 pt-8 border-t border-gray-800">
-          <h3 class="text-xl font-semibold mb-6">商业使用说明</h3>
-          <p class="text-gray-300 mb-4">
-            ECharts 可完全免费用于商业项目，无需支付任何授权费用。但在使用时需要遵守以下条款：
-          </p>
-          <ul class="space-y-3 text-gray-400 pl-6">
-            <li class="flex items-start gap-2">
-              <i class="fa fa-angle-right text-primary mt-1"></i>
-              <span>保留软件中的版权声明和许可信息</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i class="fa fa-angle-right text-primary mt-1"></i>
-              <span>修改后的代码仍需遵循 Apache License 2.0 协议</span>
-            </li>
-            <li class="flex items-start gap-2">
-              <i class="fa fa-angle-right text-primary mt-1"></i>
-              <span>不得使用原作者的名义为修改后的软件提供担保</span>
-            </li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 优缺点部分 -->
-  <section id="pros-cons" class="py-20 px-4 scroll-mt-20">
-    <div class="container mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">优点与缺点</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto">全面了解 ECharts 的优势和局限性，帮助你做出更合适的技术选择</p>
-      </div>
-      
-      <div class="grid md:grid-cols-2 gap-12">
-        <!-- 优点 -->
-        <div>
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 bg-green-500/20 rounded-full flex items-center justify-center">
-              <i class="fa fa-thumbs-up text-green-500"></i>
-            </div>
-            <h3 class="text-2xl font-semibold">主要优点</h3>
-          </div>
-          
-          <div class="space-y-6">
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-green-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-check-circle text-green-500"></i>
-                丰富的图表类型
-              </h4>
-              <p class="text-gray-400">
-                提供超过 30 种图表类型，涵盖基本图表、统计图表、地理图表、3D 图表等，满足各种数据可视化需求。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-green-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-check-circle text-green-500"></i>
-                强大的交互能力
-              </h4>
-              <p class="text-gray-400">
-                支持拖拽、缩放、平移、数据筛选、提示框等丰富的交互功能，提升用户体验和数据分析效率。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-green-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-check-circle text-green-500"></i>
-                优秀的性能表现
-              </h4>
-              <p class="text-gray-400">
-                针对大数据量进行了优化，能够高效渲染十万级甚至百万级数据，保持流畅的交互体验。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-green-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-check-circle text-green-500"></i>
-                良好的兼容性
-              </h4>
-              <p class="text-gray-400">
-                兼容主流浏览器，包括 Chrome、Firefox、Safari、Edge 等，同时支持移动设备的触摸操作。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-green-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-check-circle text-green-500"></i>
-                丰富的社区资源
-              </h4>
-              <p class="text-gray-400">
-                拥有庞大的用户社区和丰富的第三方插件、主题和示例，问题解决资源丰富。
-              </p>
-            </div>
-          </div>
-        </div>
-        
-        <!-- 缺点 -->
-        <div>
-          <div class="flex items-center gap-3 mb-8">
-            <div class="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
-              <i class="fa fa-thumbs-down text-red-500"></i>
-            </div>
-            <h3 class="text-2xl font-semibold">主要缺点</h3>
-          </div>
-          
-          <div class="space-y-6">
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-red-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-times-circle text-red-500"></i>
-                学习曲线较陡
-              </h4>
-              <p class="text-gray-400">
-                配置项繁多，API 较为复杂，对于新手来说需要一定的学习成本才能熟练掌握。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-red-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-times-circle text-red-500"></i>
-                文件体积较大
-              </h4>
-              <p class="text-gray-400">
-                完整版本的 ECharts 体积较大（约 300KB+），可能会影响页面加载速度，需要按需引入模块。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-red-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-times-circle text-red-500"></i>
-                对 React 等框架支持有限
-              </h4>
-              <p class="text-gray-400">
-                虽然有第三方封装库（如 react-echarts），但官方对 React、Vue 等现代前端框架的原生支持不够完善。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-red-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-times-circle text-red-500"></i>
-                高级功能需要定制
-              </h4>
-              <p class="text-gray-400">
-                某些特殊的可视化需求和高级交互效果需要通过自定义扩展来实现，不够开箱即用。
-              </p>
-            </div>
-            
-            <div class="bg-dark-card p-6 rounded-xl border border-gray-800 hover:border-red-500/30 transition-all">
-              <h4 class="font-semibold text-lg mb-2 flex items-center gap-2">
-                <i class="fa fa-times-circle text-red-500"></i>
-                英文文档不够完善
-              </h4>
-              <p class="text-gray-400">
-                虽然有英文版本的文档，但相比中文文档，内容更新较慢，部分高级功能的英文说明不够详细。
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 社区评论部分 -->
-  <section id="reviews" class="py-20 px-4 bg-darker scroll-mt-20">
-    <div class="container mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">社区用户评论</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto">来自全球开发者的真实使用体验和评价</p>
-      </div>
-      
-      <!-- 评论统计 -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
-        <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center">
-          <div class="text-4xl font-bold text-primary mb-2">4.8</div>
-          <div class="flex justify-center text-yellow-400 mb-2">
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star"></i>
-            <i class="fa fa-star-half-o"></i>
-          </div>
-          <div class="text-gray-400 text-sm">平均评分</div>
-        </div>
-        
-        <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center">
-          <div class="text-4xl font-bold text-primary mb-2">5.2k</div>
-          <div class="text-gray-400 text-sm">活跃用户</div>
-        </div>
-        
-        <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center">
-          <div class="text-4xl font-bold text-primary mb-2">96%</div>
-          <div class="text-gray-400 text-sm">推荐率</div>
-        </div>
-        
-        <div class="bg-dark-card p-6 rounded-xl border border-gray-800 text-center">
-          <div class="text-4xl font-bold text-primary mb-2">12k+</div>
-          <div class="text-gray-400 text-sm">下载次数</div>
-        </div>
-      </div>
-      
-      <!-- 评论筛选 -->
-      <div class="flex flex-wrap justify-between items-center mb-8 gap-4">
-        <div class="flex gap-2">
-          <button class="review-filter px-4 py-2 bg-primary text-white rounded-lg" data-filter="all">全部评论</button>
-          <button class="review-filter px-4 py-2 bg-dark-card border border-gray-700 rounded-lg hover:bg-dark-hover transition-colors" data-filter="positive">好评</button>
-          <button class="review-filter px-4 py-2 bg-dark-card border border-gray-700 rounded-lg hover:bg-dark-hover transition-colors" data-filter="negative">差评</button>
-        </div>
-        
-        <div class="relative">
-          <input type="text" id="review-search" placeholder="搜索评论..." class="bg-dark-card border border-gray-700 rounded-lg px-4 py-2 pl-10 focus:outline-none focus:border-primary w-full md:w-64">
-          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-        </div>
-      </div>
-      
-      <!-- 评论列表 -->
-      <div id="reviews-container" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- 评论将通过JS动态生成 -->
-      </div>
-      
-      <!-- 加载更多按钮 -->
-      <div class="mt-12 text-center">
-        <button id="load-more" class="px-8 py-3 bg-dark-card border border-gray-700 rounded-lg font-medium hover:bg-dark-hover transition-all">
-          加载更多评论
-        </button>
-      </div>
-    </div>
-  </section>
-
-  <!-- 使用方法部分 -->
-  <section id="usage" class="py-20 px-4 scroll-mt-20">
-    <div class="container mx-auto">
-      <div class="text-center mb-16">
-        <h2 class="text-3xl md:text-4xl font-bold mb-4">使用方法</h2>
-        <p class="text-gray-400 max-w-2xl mx-auto">快速入门 ECharts，创建你的第一个可视化图表</p>
-      </div>
-      
-      <div class="grid md:grid-cols-12 gap-8">
-        <!-- 步骤导航 -->
-        <div class="md:col-span-3">
-          <div class="sticky top-24 bg-dark-card rounded-xl border border-gray-800 overflow-hidden">
-            <div class="p-6 border-b border-gray-800">
-              <h3 class="text-xl font-semibold">入门步骤</h3>
-            </div>
-            <ul class="divide-y divide-gray-800">
-              <li>
-                <a href="#step-1" class="usage-step-link block p-6 hover:bg-dark-hover transition-colors">
-                  <span class="inline-block w-8 h-8 rounded-full bg-primary/20 text-primary text-center leading-8 mr-3">1</span>
-                  引入 ECharts
-                </a>
-              </li>
-              <li>
-                <a href="#step-2" class="usage-step-link block p-6 hover:bg-dark-hover transition-colors">
-                  <span class="inline-block w-8 h-8 rounded-full bg-primary/20 text-primary text-center leading-8 mr-3">2</span>
-                  准备 DOM 容器
-                </a>
-              </li>
-              <li>
-                <a href="#step-3" class="usage-step-link block p-6 hover:bg-dark-hover transition-colors">
-                  <span class="inline-block w-8 h-8 rounded-full bg-primary/20 text-primary text-center leading-8 mr-3">3</span>
-                  初始化实例
-                </a>
-              </li>
-              <li>
-                <a href="#step-4" class="usage-step-link block p-6 hover:bg-dark-hover transition-colors">
-                  <span class="inline-block w-8 h-8 rounded-full bg-primary/20 text-primary text-center leading-8 mr-3">4</span>
-                  配置图表选项
-                </a>
-              </li>
-              <li>
-                <a href="#step-5" class="usage-step-link block p-6 hover:bg-dark-hover transition-colors">
-                  <span class="inline-block w-8 h-8 rounded-full bg-primary/20 text-primary text-center leading-8 mr-3">5</span>
-                  渲染图表
-                </a>
-              </li>
-              <li>
-                <a href="#step-6" class="usage-step-link block p-6 hover:bg-dark-hover transition-colors">
-                  <span class="inline-block w-8 h-8 rounded-full bg-primary/20 text-primary text-center leading-8 mr-3">6</span>
-                  高级配置
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <!-- 步骤内容 -->
-        <div class="md:col-span-9 space-y-16">
-          <!-- 步骤1 -->
-          <div id="step-1" class="usage-step">
-            <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">1</span>
-              引入 ECharts
-            </h3>
-            
-            <div class="bg-dark-card rounded-xl border border-gray-800 p-6">
-              <p class="mb-4 text-gray-300">
-                你可以通过 CDN 引入 ECharts，也可以下载到本地后引入。推荐使用 CDN 方式，简单快捷：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 mb-4 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>&lt;!-- 引入 ECharts --&gt;
-&lt;script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"&gt;&lt;/script&gt;</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
-              
-              <p class="text-gray-400 text-sm">
-                或者使用 npm 安装：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 mb-4 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>npm install echarts --save</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <!-- 步骤2 -->
-          <div id="step-2" class="usage-step">
-            <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">2</span>
-              准备 DOM 容器
-            </h3>
-            
-            <div class="bg-dark-card rounded-xl border border-gray-800 p-6">
-              <p class="mb-4 text-gray-300">
-                在 HTML 中创建一个具有宽高的 DOM 元素，作为图表的容器：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 mb-6 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>&lt;!-- 为 ECharts 准备一个具备大小的 DOM --&gt;
-&lt;div id="main" style="width: 600px; height: 400px;"&gt;&lt;/div&gt;</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
-              
-              <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
-                <p class="text-gray-300 text-sm flex items-start gap-2">
-                  <i class="fa fa-info-circle text-primary mt-1"></i>
-                  <span>容器必须设置宽度和高度，否则图表将无法显示。建议使用 CSS 而非 inline style 来设置样式。</span>
+        <!-- About ECharts -->
+        <section id="about" class="mb-16 fade-in">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">About ECharts</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    ECharts is an open-source visualization library that offers a wide range of interactive charts and maps for data visualization.
                 </p>
-              </div>
             </div>
-          </div>
-          
-          <!-- 步骤3 -->
-          <div id="step-3" class="usage-step">
-            <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">3</span>
-              初始化实例
-            </h3>
             
-            <div class="bg-dark-card rounded-xl border border-gray-800 p-6">
-              <p class="mb-4 text-gray-300">
-                通过 echarts.init 方法初始化一个 ECharts 实例：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 mb-4 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>// 基于准备好的dom，初始化echarts实例
-var myChart = echarts.init(document.getElementById('main'));</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
-              
-              <p class="text-gray-400 text-sm">
-                如果使用模块化引入（如 ES6 import）：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>import * as echarts from 'echarts';
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-code text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Project Origin</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        ECharts was initiated by Baidu in 2013 as an internal data visualization tool. It was later open-sourced to benefit the wider developer community.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-users text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Founding Team</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        The core development team was led by Xie Dongnan at Baidu. Today, it's maintained by the Apache Software Foundation after graduating from the Incubator in 2021.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa fa-line-chart text-primary text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Technical Stack</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Built with JavaScript, ECharts works seamlessly with TypeScript. It integrates well with frameworks like React, Vue, and Angular through official wrappers.
+                    </p>
+                </div>
+            </div>
+        </section>
 
-// 基于准备好的dom，初始化echarts实例
-const myChart = echarts.init(document.getElementById('main'));</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
+        <!-- Features Radar Chart -->
+        <section id="features" class="mb-16 fade-in">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">ECharts Capabilities</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    A visual comparison of ECharts features against industry standards
+                </p>
             </div>
-          </div>
-          
-          <!-- 步骤4 -->
-          <div id="step-4" class="usage-step">
-            <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">4</span>
-              配置图表选项
-            </h3>
             
-            <div class="bg-dark-card rounded-xl border border-gray-800 p-6">
-              <p class="mb-4 text-gray-300">
-                配置图表的选项，包括数据、样式、交互等：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 mb-6 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>// 指定图表的配置项和数据
-var option = {
-  title: {
-    text: 'ECharts 入门示例'
-  },
-  tooltip: {},
-  legend: {
-    data: ['销量']
-  },
+            <div class="flex justify-center">
+                <div class="w-full max-w-2xl bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md">
+                    <canvas id="radarChart" width="400" height="400"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons -->
+        <section class="mb-16 fade-in">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Advantages & Limitations</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    A balanced look at what makes ECharts stand out and where it could improve
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-semibold mb-6 flex items-center text-green-500">
+                        <i class="fa fa-plus-circle mr-2"></i> Advantages
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Extensive chart types and highly customizable</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Excellent performance with large datasets</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Rich interactive features and animations</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Strong community support and regular updates</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span>Comprehensive documentation and examples</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-semibold mb-6 flex items-center text-red-500">
+                        <i class="fa fa-minus-circle mr-2"></i> Limitations
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Steeper learning curve for beginners</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Larger file size compared to minimal libraries</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Some advanced features require deeper configuration</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Documentation primarily in Chinese for some advanced topics</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                            <span>Overhead for simple visualization needs</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started -->
+        <section id="installation" class="mb-16 fade-in">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Getting Started with ECharts</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    How to install and start using ECharts in your projects
+                </p>
+            </div>
+            
+            <div class="bg-light-card dark:bg-dark-card p-8 rounded-xl shadow-md max-w-3xl mx-auto">
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">Installation via CDN</h3>
+                        <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <code>&lt;script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"&gt;&lt;/script&gt;</code>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">Installation via npm</h3>
+                        <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto">
+                            <code>npm install echarts --save</code>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3">Basic Usage Example</h3>
+                        <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                            <pre>// Import ECharts
+import * as echarts from 'echarts';
+
+// Initialize the chart instance
+const chartDom = document.getElementById('main');
+const myChart = echarts.init(chartDom);
+
+// Define the chart configuration
+const option = {
   xAxis: {
-    data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子']
+    type: 'category',
+    data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
   },
-  yAxis: {},
+  yAxis: {
+    type: 'value'
+  },
   series: [
     {
-      name: '销量',
-      type: 'bar',
-      data: [5, 20, 36, 10, 10, 20]
+      data: [120, 200, 150, 80, 70, 110, 130],
+      type: 'bar'
     }
   ]
-};</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
-              
-              <p class="text-gray-300 mb-4">
-                这是一个简单的柱状图配置，包含以下几个主要部分：
-              </p>
-              
-              <ul class="space-y-2 text-gray-400 pl-6">
-                <li class="flex items-start gap-2">
-                  <i class="fa fa-angle-right text-primary mt-1"></i>
-                  <span><code class="bg-darker px-1 rounded">title</code>：图表标题</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i class="fa fa-angle-right text-primary mt-1"></i>
-                  <span><code class="bg-darker px-1 rounded">tooltip</code>：提示框组件</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i class="fa fa-angle-right text-primary mt-1"></i>
-                  <span><code class="bg-darker px-1 rounded">legend</code>：图例组件</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i class="fa fa-angle-right text-primary mt-1"></i>
-                  <span><code class="bg-darker px-1 rounded">xAxis</code>：x 轴配置</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i class="fa fa-angle-right text-primary mt-1"></i>
-                  <span><code class="bg-darker px-1 rounded">yAxis</code>：y 轴配置</span>
-                </li>
-                <li class="flex items-start gap-2">
-                  <i class="fa fa-angle-right text-primary mt-1"></i>
-                  <span><code class="bg-darker px-1 rounded">series</code>：系列数据，<code class="bg-darker px-1 rounded">type: 'bar'</code> 表示柱状图</span>
-                </li>
-              </ul>
+};
+
+// Set the configuration and render
+myChart.setOption(option);</pre>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-          
-          <!-- 步骤5 -->
-          <div id="step-5" class="usage-step">
-            <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">5</span>
-              渲染图表
-            </h3>
-            
-            <div class="bg-dark-card rounded-xl border border-gray-800 p-6">
-              <p class="mb-4 text-gray-300">
-                使用 setOption 方法将配置项设置到图表实例中，完成图表渲染：
-              </p>
-              
-              <div class="bg-darker rounded-lg p-4 mb-6 relative group">
-                <pre class="text-gray-300 text-sm overflow-x-auto"><code>// 使用刚指定的配置项和数据显示图表。
-myChart.setOption(option);</code></pre>
-                <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                  <i class="fa fa-copy"></i>
-                </button>
-              </div>
-              
-              <div class="mb-6">
-                <h4 class="font-semibold mb-3">效果展示：</h4>
-                <div id="example-chart" class="w-full h-80 bg-darker rounded-lg"></div>
-              </div>
-              
-              <div class="bg-primary/10 border border-primary/30 rounded-lg p-4">
-                <p class="text-gray-300 text-sm flex items-start gap-2">
-                  <i class="fa fa-lightbulb-o text-primary mt-1"></i>
-                  <span>当数据或配置发生变化时，可以再次调用 <code class="bg-darker px-1 rounded">setOption</code> 方法，ECharts 会自动更新图表。</span>
+        </section>
+
+        <!-- Community Comments -->
+        <section class="mb-16 fade-in">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Community Feedback</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    What developers are saying about ECharts
                 </p>
-              </div>
             </div>
-          </div>
-          
-          <!-- 步骤6 -->
-          <div id="step-6" class="usage-step">
-            <h3 class="text-2xl font-semibold mb-6 flex items-center gap-3">
-              <span class="w-10 h-10 rounded-full bg-primary/20 text-primary flex items-center justify-center">6</span>
-              高级配置
-            </h3>
             
-            <div class="bg-dark-card rounded-xl border border-gray-800 p-6">
-              <p class="mb-6 text-gray-300">
-                ECharts 提供了丰富的高级配置选项，以下是一些常用的功能：
-              </p>
-              
-              <div class="space-y-6">
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="flex items-center mb-4">
+                        <img 
+                            src="https://picsum.photos/100/100?random=10" 
+                            alt="User Avatar" 
+                            class="w-12 h-12 rounded-full object-cover mr-4"
+                            loading="lazy"
+                        >
+                        <div>
+                            <h4 class="font-semibold">Sarah Johnson</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "ECharts transformed how we visualize complex data. The customization options are incredible, and performance with large datasets is impressive."
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="flex items-center mb-4">
+                        <img 
+                            src="https://picsum.photos/100/100?random=11" 
+                            alt="User Avatar" 
+                            class="w-12 h-12 rounded-full object-cover mr-4"
+                            loading="lazy"
+                        >
+                        <div>
+                            <h4 class="font-semibold">Michael Chen</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "As a data scientist, I appreciate the wide range of chart types. The documentation could be better for beginners, but once you get the hang of it, it's powerful."
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow">
+                    <div class="flex items-center mb-4">
+                        <img 
+                            src="https://picsum.photos/100/100?random=12" 
+                            alt="User Avatar" 
+                            class="w-12 h-12 rounded-full object-cover mr-4"
+                            loading="lazy"
+                        >
+                        <div>
+                            <h4 class="font-semibold">Alex Rodriguez</h4>
+                            <div class="flex text-yellow-400 text-sm">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        "Integrating ECharts with our React application was straightforward. The interactive features make our dashboards come alive. Highly recommended!"
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest News -->
+        <section class="mb-16 fade-in">
+            <div class="max-w-3xl mx-auto text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Latest Updates</h2>
+                <p class="text-gray-600 dark:text-gray-300">
+                    Recent developments in the ECharts ecosystem
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <img 
+                        src="https://picsum.photos/600/400?random=20" 
+                        alt="ECharts 5.4 Release" 
+                        class="w-full h-48 object-cover"
+                        loading="lazy"
+                    >
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">June 15, 2023</div>
+                        <h3 class="text-xl font-semibold mb-3">ECharts 5.4 Released</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            New features include enhanced 3D visualization, improved accessibility, and better TypeScript support.
+                        </p>
+                        <a href="#" class="text-primary hover:underline inline-flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
+                    <img 
+                        src="https://picsum.photos/600/400?random=21" 
+                        alt="ECharts Workshop Series" 
+                        class="w-full h-48 object-cover"
+                        loading="lazy"
+                    >
+                    <div class="p-6">
+                        <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">May 2, 2023</div>
+                        <h3 class="text-xl font-semibold mb-3">ECharts Workshop Series Launched</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Monthly online workshops covering advanced techniques and best practices for data visualization with ECharts.
+                        </p>
+                        <a href="#" class="text-primary hover:underline inline-flex items-center">
+                            Read more <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA and Share -->
+        <section class="mb-16 fade-in">
+            <div class="bg-gradient-to-r from-primary to-blue-700 text-white p-8 md:p-12 rounded-2xl shadow-xl">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h2 class="text-3xl font-bold mb-4">Ready to Visualize Your Data?</h2>
+                    <p class="mb-8 text-blue-100">
+                        Join thousands of developers using ECharts to create stunning data visualizations.
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mb-8">
+                        <button id="bookmarkBtn" class="px-6 py-3 bg-white text-primary rounded-lg hover:bg-blue-50 transition-all duration-300 flex items-center">
+                            <i class="fa fa-bookmark-o mr-2"></i> Save for Later
+                        </button>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="whitespace-nowrap">Share:</span>
+                            <div class="flex gap-2">
+                                <a href="#" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors" aria-label="Share on Twitter">
+                                    <i class="fa fa-twitter"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors" aria-label="Share on Facebook">
+                                    <i class="fa fa-facebook"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors" aria-label="Share on LinkedIn">
+                                    <i class="fa fa-linkedin"></i>
+                                </a>
+                                <a href="#" class="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors" aria-label="Share on GitHub">
+                                    <i class="fa fa-github"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="https://github.com/apache/echarts" target="_blank" class="inline-flex items-center px-6 py-3 bg-white text-primary rounded-lg hover:bg-blue-50 transition-all duration-300 font-medium">
+                        <i class="fa fa-github mr-2"></i> Star on GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light-card dark:bg-dark-card py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <div>
-                  <h4 class="font-semibold mb-3">响应式调整</h4>
-                  <div class="bg-darker rounded-lg p-4 mb-3 relative group">
-                    <pre class="text-gray-300 text-sm overflow-x-auto"><code>// 监听窗口大小变化，调整图表尺寸
-window.addEventListener('resize', function() {
-  myChart.resize();
-});</code></pre>
-                    <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                      <i class="fa fa-copy"></i>
-                    </button>
-                  </div>
+                    <div class="flex items-center space-x-2 mb-4">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fa fa-bar-chart text-white text-xl"></i>
+                        </div>
+                        <span class="text-xl font-bold">ECharts</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        A powerful, interactive charting and visualization library for browser-based applications.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors" aria-label="Twitter">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors" aria-label="GitHub">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors" aria-label="Stack Overflow">
+                            <i class="fa fa-stack-overflow text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-500 hover:text-primary transition-colors" aria-label="YouTube">
+                            <i class="fa fa-youtube-play text-xl"></i>
+                        </a>
+                    </div>
                 </div>
                 
                 <div>
-                  <h4 class="font-semibold mb-3">事件监听</h4>
-                  <div class="bg-darker rounded-lg p-4 mb-3 relative group">
-                    <pre class="text-gray-300 text-sm overflow-x-auto"><code>// 监听点击事件
-myChart.on('click', function(params) {
-  console.log('点击了图表元素：', params);
-});</code></pre>
-                    <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                      <i class="fa fa-copy"></i>
-                    </button>
-                  </div>
+                    <h3 class="text-lg font-semibold mb-4">Resources</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Documentation</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Examples</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Tutorials</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">API Reference</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Sitemap</a></li>
+                    </ul>
                 </div>
                 
                 <div>
-                  <h4 class="font-semibold mb-3">主题切换</h4>
-                  <div class="bg-darker rounded-lg p-4 mb-3 relative group">
-                    <pre class="text-gray-300 text-sm overflow-x-auto"><code>// 使用深色主题初始化图表
-var myChart = echarts.init(document.getElementById('main'), 'dark');
-
-// 动态切换主题
-myChart.setOption({
-  backgroundColor: '#141414',
-  textStyle: { color: '#fff' }
-  // 其他主题相关配置...
-});</code></pre>
-                    <button class="copy-code absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity text-gray-400 hover:text-primary">
-                      <i class="fa fa-copy"></i>
-                    </button>
-                  </div>
+                    <h3 class="text-lg font-semibold mb-4">Community</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">GitHub</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Issues</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Discussions</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Contribute</a></li>
+                        <li><a href="#" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Events</a></li>
+                    </ul>
                 </div>
-              </div>
-              
-              <div class="mt-8 pt-6 border-t border-gray-800">
-                <h4 class="font-semibold mb-4">学习资源推荐</h4>
-                <ul class="space-y-3">
-                  <li class="flex items-start gap-3">
-                    <i class="fa fa-external-link text-primary mt-1"></i>
-                    <a href="https://echarts.apache.org/zh//" target="_blank" class="text-primary hover:underline">ECharts 官方网站</a>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <i class="fa fa-external-link text-primary mt-1"></i>
-                    <a href="https://echarts.apache.org/zh/tutorial.html" target="_blank" class="text-primary hover:underline">官方教程</a>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <i class="fa fa-external-link text-primary mt-1"></i>
-                    <a href="https://echarts.apache.org/examples/zh//" target="_blank" class="text-primary hover:underline">示例库</a>
-                  </li>
-                  <li class="flex items-start gap-3">
-                    <i class="fa fa-external-link text-primary mt-1"></i>
-                    <a href="https://github.com/apache/echarts" target="_blank" class="text-primary hover:underline">GitHub 仓库</a>
-                  </li>
-                </ul>
-              </div>
+                
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Stay Updated</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Subscribe to our newsletter for the latest updates and news.
+                    </p>
+                    <form class="flex">
+                        <input 
+                            type="email" 
+                            id="subscribeEmail" 
+                            placeholder="Your email address" 
+                            class="flex-1 px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary bg-gray-100 dark:bg-gray-800"
+                            required
+                        >
+                        <button id="subscribeBtn" type="submit" class="px-4 py-2 bg-primary text-white rounded-r-lg hover:bg-primary/90 transition-colors">
+                                <i class="fa fa-paper-plane"></i>
+                            </button>
+                    </form>
+                </div>
             </div>
-          </div>
+            
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-500 dark:text-gray-400 text-sm mb-4 md:mb-0">
+                    &copy; 2023 Apache ECharts. Licensed under Apache 2.0.
+                </p>
+                <div class="flex space-x-6 text-sm">
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">Privacy Policy</a>
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">Terms of Service</a>
+                    <a href="#" class="text-gray-500 dark:text-gray-400 hover:text-primary transition-colors">License</a>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </footer>
 
-  <!-- 页脚 -->
-  <footer class="bg-darker py-12 px-4 border-t border-gray-800">
-    <div class="container mx-auto">
-      <div class="grid md:grid-cols-4 gap-8 mb-8">
-        <div>
-          <div class="flex items-center space-x-2 mb-4">
-            <div class="w-10 h-10 bg-gradient-to-r from-primary to-secondary rounded-lg flex items-center justify-center">
-              <i class="fa fa-bar-chart text-white text-xl"></i>
-            </div>
-            <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">ECharts</span>
-          </div>
-          <p class="text-gray-400 mb-4">
-            一款开源、功能丰富、高性能的数据可视化库，帮助你轻松创建各种交互式图表。
-          </p>
-          <div class="flex space-x-4">
-            <a href="#" class="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
-              <i class="fa fa-github"></i>
-            </a>
-            <a href="#" class="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
-              <i class="fa fa-twitter"></i>
-            </a>
-            <a href="#" class="w-10 h-10 rounded-full bg-dark-card flex items-center justify-center hover:bg-primary/20 hover:text-primary transition-colors">
-              <i class="fa fa-globe"></i>
-            </a>
-          </div>
-        </div>
-        
-        <div>
-          <h4 class="text-lg font-semibold mb-4">快速链接</h4>
-          <ul class="space-y-2">
-            <li><a href="#intro" class="text-gray-400 hover:text-primary transition-colors">关于 ECharts</a></li>
-            <li><a href="#free" class="text-gray-400 hover:text-primary transition-colors">免费服务</a></li>
-            <li><a href="#pros-cons" class="text-gray-400 hover:text-primary transition-colors">优缺点</a></li>
-            <li><a href="#reviews" class="text-gray-400 hover:text-primary transition-colors">社区评论</a></li>
-            <li><a href="#usage" class="text-gray-400 hover:text-primary transition-colors">使用方法</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="text-lg font-semibold mb-4">资源</h4>
-          <ul class="space-y-2">
-            <li><a href="https://echarts.apache.org/zh//" target="_blank" class="text-gray-400 hover:text-primary transition-colors">官方网站</a></li>
-            <li><a href="https://echarts.apache.org/zh/tutorial.html" target="_blank" class="text-gray-400 hover:text-primary transition-colors">教程文档</a></li>
-            <li><a href="https://echarts.apache.org/examples/zh//" target="_blank" class="text-gray-400 hover:text-primary transition-colors">示例库</a></li>
-            <li><a href="https://github.com/apache/echarts" target="_blank" class="text-gray-400 hover:text-primary transition-colors">GitHub</a></li>
-            <li><a href="https://stackoverflow.com/questions/tagged/echarts" target="_blank" class="text-gray-400 hover:text-primary transition-colors">Stack Overflow</a></li>
-          </ul>
-        </div>
-        
-        <div>
-          <h4 class="text-lg font-semibold mb-4">订阅更新</h4>
-          <p class="text-gray-400 mb-4">获取 ECharts 最新动态和教程</p>
-          <form class="flex">
-            <input type="email" placeholder="你的邮箱地址" class="bg-dark-card border border-gray-700 rounded-l-lg px-4 py-2 focus:outline-none focus:border-primary w-full">
-            <button type="submit" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
-              <i class="fa fa-paper-plane"></i>
-            </button>
-          </form>
-        </div>
-      </div>
-      
-      <div class="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center">
-        <p class="text-gray-500 text-sm mb-4 md:mb-0">
-          &copy; 2023 ECharts 介绍网站. 本网站仅作介绍用途，ECharts 是 Apache 软件基金会的商标。
-        </p>
-        <div class="flex space-x-6">
-          <a href="/about#privacy" class="text-gray-500 hover:text-primary text-sm transition-colors">隐私政策</a>
-          <a href="/about#terms" class="text-gray-500 hover:text-primary text-sm transition-colors">使用条款</a>
-          <a href="/about#contact" class="text-gray-500 hover:text-primary text-sm transition-colors">联系我们</a>
-        </div>
-      </div>
-    </div>
-  </footer>
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="fixed bottom-6 right-6 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90">
+        <i class="fa fa-arrow-up"></i>
+    </button>
 
-  <!-- 返回顶部按钮 -->
-  <button id="back-to-top" class="fixed bottom-8 right-8 w-12 h-12 rounded-full bg-primary text-white flex items-center justify-center opacity-0 invisible transition-all z-50">
-    <i class="fa fa-arrow-up"></i>
-  </button>
-
-  <!-- JavaScript -->
-  <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
-  <script>
-    // 导航栏滚动效果
-    const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 50) {
-        navbar.classList.add('bg-dark/95', 'shadow-lg');
-        navbar.classList.remove('bg-transparent');
-      } else {
-        navbar.classList.remove('bg-dark/95', 'shadow-lg');
-      }
-    });
-    
-    // 移动端菜单切换
-    const menuToggle = document.getElementById('menu-toggle');
-    const mobileMenu = document.getElementById('mobile-menu');
-    
-    menuToggle.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-      if (mobileMenu.classList.contains('hidden')) {
-        menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
-      } else {
-        menuToggle.innerHTML = '<i class="fa fa-times"></i>';
-      }
-    });
-    
-    // 平滑滚动
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        e.preventDefault();
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlElement = document.documentElement;
         
-        // 关闭移动菜单（如果打开）
-        if (!mobileMenu.classList.contains('hidden')) {
-          mobileMenu.classList.add('hidden');
-          menuToggle.innerHTML = '<i class="fa fa-bars"></i>';
-        }
-        
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-        
-        if (targetElement) {
-          window.scrollTo({
-            top: targetElement.offsetTop - 80,
-            behavior: 'smooth'
-          });
-        }
-      });
-    });
-    
-    // 返回顶部按钮
-    const backToTopButton = document.getElementById('back-to-top');
-    
-    window.addEventListener('scroll', () => {
-      if (window.scrollY > 300) {
-        backToTopButton.classList.remove('opacity-0', 'invisible');
-        backToTopButton.classList.add('opacity-100', 'visible');
-      } else {
-        backToTopButton.classList.add('opacity-0', 'invisible');
-        backToTopButton.classList.remove('opacity-100', 'visible');
-      }
-    });
-    
-    backToTopButton.addEventListener('click', () => {
-      window.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    });
-    
-    // 英雄区域图表
-    const heroChart = echarts.init(document.getElementById('heroChart'), 'dark');
-    
-    const heroOption = {
-      title: {
-        text: 'ECharts 图表示例',
-        left: 'center',
-        textStyle: {
-          color: '#e2e8f0'
-        }
-      },
-      tooltip: {
-        trigger: 'item'
-      },
-      legend: {
-        orient: 'vertical',
-        left: 'left',
-        textStyle: {
-          color: '#94a3b8'
-        }
-      },
-      series: [
-        {
-          name: '图表类型分布',
-          type: 'pie',
-          radius: '70%',
-          data: [
-            { value: 35, name: '柱状图' },
-            { value: 25, name: '折线图' },
-            { value: 15, name: '饼图' },
-            { value: 10, name: '散点图' },
-            { value: 15, name: '其他类型' }
-          ],
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 10,
-              shadowOffsetX: 0,
-              shadowColor: 'rgba(54, 191, 250, 0.5)'
-            }
-          }
-        }
-      ]
-    };
-    
-    heroChart.setOption(heroOption);
-    
-    // 示例图表
-    const exampleChart = echarts.init(document.getElementById('example-chart'), 'dark');
-    
-    const exampleOption = {
-      title: {
-        text: 'ECharts 入门示例',
-        textStyle: {
-          color: '#e2e8f0'
-        }
-      },
-      tooltip: {},
-      legend: {
-        data: ['销量'],
-        textStyle: {
-          color: '#94a3b8'
-        }
-      },
-      xAxis: {
-        data: ['衬衫', '羊毛衫', '雪纺衫', '裤子', '高跟鞋', '袜子'],
-        axisLine: {
-          lineStyle: {
-            color: '#334155'
-          }
-        },
-        axisLabel: {
-          color: '#94a3b8'
-        }
-      },
-      yAxis: {
-        axisLine: {
-          lineStyle: {
-            color: '#334155'
-          }
-        },
-        axisLabel: {
-          color: '#94a3b8'
-        },
-        splitLine: {
-          lineStyle: {
-            color: '#1e293b'
-          }
-        }
-      },
-      series: [
-        {
-          name: '销量',
-          type: 'bar',
-          data: [5, 20, 36, 10, 10, 20],
-          itemStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#36BFFA' },
-              { offset: 1, color: '#722ED1' }
-            ])
-          }
-        }
-      ]
-    };
-    
-    exampleChart.setOption(exampleOption);
-    
-    // 窗口大小变化时重绘图表
-    window.addEventListener('resize', () => {
-      heroChart.resize();
-      exampleChart.resize();
-    });
-    
-    // 评论数据生成
-    const reviewData = [
-      {
-        name: '张明',
-        avatar: 'https://picsum.photos/id/10/40/40',
-        rating: 5,
-        date: '2023-05-12',
-        content: 'ECharts 真的太强大了！我用它为公司的数据分析平台创建了各种可视化图表，交互体验非常好，客户反馈很棒。文档也很详细，推荐给所有需要数据可视化的开发者。',
-        type: 'positive'
-      },
-      {
-        name: '李华',
-        avatar: 'https://picsum.photos/id/11/40/40',
-        rating: 4,
-        date: '2023-06-03',
-        content: '作为一个前端开发者，我非常喜欢 ECharts 的灵活性。图表类型丰富，定制化程度高，基本上能满足我所有的需求。唯一的小缺点是有些配置项比较复杂，需要花时间研究。',
-        type: 'positive'
-      },
-      {
-        name: '王芳',
-        avatar: 'https://picsum.photos/id/12/40/40',
-        rating: 5,
-        date: '2023-04-28',
-        content: '在尝试过多种可视化库之后，我最终选择了 ECharts。它的性能非常好，即使处理大量数据也不会卡顿。社区也很活跃，遇到问题很容易找到解决方案。',
-        type: 'positive'
-      },
-      {
-        name: '赵伟',
-        avatar: 'https://picsum.photos/id/13/40/40',
-        rating: 3,
-        date: '2023-05-20',
-        content: 'ECharts 功能确实强大，但学习曲线有点陡峭。刚开始使用时，经常会被复杂的配置项搞得晕头转向。不过熟悉之后会发现它的强大之处，总体来说还是值得推荐的。',
-        type: 'positive'
-      },
-      {
-        name: '陈静',
-        avatar: 'https://picsum.photos/id/14/40/40',
-        rating: 5,
-        date: '2023-06-15',
-        content: '作为数据分析师，ECharts 帮了我大忙。它能将复杂的数据以直观的方式呈现出来，让非技术人员也能轻松理解数据含义。而且完全免费，对于小型团队来说非常友好。',
-        type: 'positive'
-      },
-      {
-        name: '刘强',
-        avatar: 'https://picsum.photos/id/15/40/40',
-        rating: 2,
-        date: '2023-04-10',
-        content: '我在 React 项目中使用 ECharts 遇到了不少麻烦，官方对 React 的支持不够好，需要使用第三方封装库，有时候会出现一些兼容性问题。希望官方能加强对现代前端框架的支持。',
-        type: 'negative'
-      },
-      {
-        name: '孙颖',
-        avatar: 'https://picsum.photos/id/16/40/40',
-        rating: 5,
-        date: '2023-05-05',
-        content: 'ECharts 的文档非常全面，示例也很丰富，基本上跟着示例改改就能满足大部分需求。我特别喜欢它的交互功能，放大、缩小、筛选都很流畅，用户体验很棒。',
-        type: 'positive'
-      },
-      {
-        name: '周杰',
-        avatar: 'https://picsum.photos/id/17/40/40',
-        rating: 4,
-        date: '2023-06-22',
-        content: '用 ECharts 做了几个数据大屏项目，效果非常惊艳。客户都很满意，特别是 3D 图表和地理可视化功能，让数据展示变得生动有趣。唯一的不足是文件体积有点大，需要按需引入。',
-        type: 'positive'
-      },
-      {
-        name: '吴敏',
-        avatar: 'https://picsum.photos/id/18/40/40',
-        rating: 3,
-        date: '2023-05-30',
-        content: 'ECharts 整体来说不错，但有些高级功能的英文文档不够完善，对于英文用户不太友好。希望官方能同步更新中英文文档，方便更多开发者使用。',
-        type: 'positive'
-      },
-      {
-        name: '郑亮',
-        avatar: 'https://picsum.photos/id/19/40/40',
-        rating: 1,
-        date: '2023-04-18',
-        content: '对新手不太友好，配置项太复杂了，简单的一个图表也要写一大堆代码。我后来转向了 Chart.js，虽然功能少一些，但使用起来简单很多。可能我还是更喜欢简洁的解决方案吧。',
-        type: 'negative'
-      },
-      {
-        name: '钱琳',
-        avatar: 'https://picsum.photos/id/20/40/40',
-        rating: 5,
-        date: '2023-06-08',
-        content: 'ECharts 的自定义主题功能非常棒，我可以轻松地让图表风格和公司品牌保持一致。社区里也有很多现成的主题可以直接使用，节省了不少时间。',
-        type: 'positive'
-      },
-      {
-        name: '冯军',
-        avatar: 'https://picsum.photos/id/21/40/40',
-        rating: 4,
-        date: '2023-05-15',
-        content: '作为后端开发者，我觉得 ECharts 很容易上手，不需要太多前端知识就能做出像样的图表。API 设计得很合理，文档也很清晰，值得推荐。',
-        type: 'positive'
-      }
-    ];
-    
-    // 生成更多评论数据
-    const moreReviews = [
-      { name: '蔡文', avatar: 'https://picsum.photos/id/22/40/40', rating: 5, date: '2023-06-30', content: 'ECharts 是我用过的最好的数据可视化库之一，功能强大且灵活，几乎能实现所有我能想到的图表效果。', type: 'positive' },
-      { name: '蒋丽', avatar: 'https://picsum.photos/id/23/40/40', rating: 4, date: '2023-05-25', content: '用 ECharts 开发了一个实时数据监控系统，性能表现超出预期，即使数据频繁更新也能保持流畅。', type: 'positive' },
-      { name: '沈浩', avatar: 'https://picsum.photos/id/24/40/40', rating: 3, date: '2023-04-22', content: '总体不错，但有些错误提示不够友好，调试起来有点麻烦，希望未来版本能改进。', type: 'positive' },
-      { name: '韩梅', avatar: 'https://picsum.photos/id/25/40/40', rating: 5, date: '2023-06-18', content: 'ECharts 的社区非常活跃，遇到问题总能在论坛或 GitHub 上找到答案，这对开发者来说太重要了。', type: 'positive' },
-      { name: '杨明', avatar: 'https://picsum.photos/id/26/40/40', rating: 2, date: '2023-05-08', content: '对于简单的图表需求来说，ECharts 显得有点重量级，引入后会增加页面加载时间，希望能有更轻量的版本。', type: 'negative' },
-      { name: '朱琳', avatar: 'https://picsum.photos/id/27/40/40', rating: 5, date: '2023-06-05', content: 'ECharts 的动画效果非常出色，让数据展示更加生动有趣，客户反馈很好，会一直使用下去。', type: 'positive' },
-      { name: '胡军', avatar: 'https://picsum.photos/id/28/40/40', rating: 4, date: '2023-04-30', content: '在 Vue 项目中使用 ECharts 很顺利，虽然需要一些额外的配置，但整体体验不错，文档也很详细。', type: 'positive' },
-      { name: '林芳', avatar: 'https://picsum.photos/id/29/40/40', rating: 5, date: '2023-05-22', content: 'ECharts 的地理可视化功能太强大了，帮我快速实现了全国销售数据的地图展示，领导非常满意。', type: 'positive' },
-      { name: '郭强', avatar: 'https://picsum.photos/id/30/40/40', rating: 3, date: '2023-06-12', content: '功能很全，但有些高级功能的学习成本比较高，需要花不少时间研究文档和示例。', type: 'positive' },
-      { name: '何敏', avatar: 'https://picsum.photos/id/31/40/40', rating: 1, date: '2023-04-15', content: '升级到最新版本后，之前的一些图表出现了兼容性问题，花了很多时间才解决，希望官方能更注重版本兼容性。', type: 'negative' },
-      { name: '高杰', avatar: 'https://picsum.photos/id/32/40/40', rating: 5, date: '2023-05-18', content: 'ECharts 的按需引入功能很好，可以大大减小文件体积，对于注重性能的项目来说非常实用。', type: 'positive' },
-      { name: '罗颖', avatar: 'https://picsum.photos/id/33/40/40', rating: 4, date: '2023-06-25', content: '用 ECharts 做了一个数据仪表盘，各种图表之间的联动非常方便，用户体验很棒。', type: 'positive' },
-      { name: '梁军', avatar: 'https://picsum.photos/id/34/40/40', rating: 5, date: '2023-05-02', content: '作为教育工作者，我用 ECharts 制作了很多教学用的数据可视化案例，学生们很容易理解，效果很好。', type: 'positive' },
-      { name: '宋丽', avatar: 'https://picsum.photos/id/35/40/40', rating: 3, date: '2023-04-25', content: 'ECharts 很好，但希望能有更多的模板可以直接使用，对于快速开发会更有帮助。', type: 'positive' },
-      { name: '唐亮', avatar: 'https://picsum.photos/id/36/40/40', rating: 5, date: '2023-06-10', content: 'ECharts 的文档是我见过的最全面的开源项目文档之一，即使是新手也能很快上手。', type: 'positive' },
-      { name: '许敏', avatar: 'https://picsum.photos/id/37/40/40', rating: 4, date: '2023-05-28', content: '在移动设备上的表现也很好，响应式设计做得不错，图表能自动适应不同屏幕尺寸。', type: 'positive' },
-      { name: '邓军', avatar: 'https://picsum.photos/id/38/40/40', rating: 2, date: '2023-04-20', content: '对于复杂的图表，配置项太多了，很容易出错，希望能有更简洁的 API 设计。', type: 'negative' },
-      { name: '马琳', avatar: 'https://picsum.photos/id/39/40/40', rating: 5, date: '2023-06-02', content: 'ECharts 的自定义组件功能非常强大，我可以根据项目需求开发专用的图表组件，太方便了。', type: 'positive' },
-      { name: '赵文', avatar: 'https://picsum.photos/id/40/40/40', rating: 4, date: '2023-05-15', content: '用 ECharts 做了一个实时监控系统，数据更新非常流畅，没有出现卡顿现象，性能很棒。', type: 'positive' },
-      { name: '吴丽', avatar: 'https://picsum.photos/id/41/40/40', rating: 5, date: '2023-06-18', content: 'ECharts 的主题功能让我的所有图表保持了一致的风格，大大提升了整个系统的专业感。', type: 'positive' },
-      { name: '郑浩', avatar: 'https://picsum.photos/id/42/40/40', rating: 3, date: '2023-04-12', content: '总体来说很好用，但有些功能的命名不够直观，需要经常查阅文档才能记住。', type: 'positive' },
-      { name: '钱明', avatar: 'https://picsum.photos/id/43/40/40', rating: 5, date: '2023-05-30', content: 'ECharts 的导出功能很实用，可以将图表保存为图片或 PDF，方便在报告中使用。', type: 'positive' },
-      { name: '冯敏', avatar: 'https://picsum.photos/id/44/40/40', rating: 4, date: '2023-06-22', content: '在 React 项目中使用 react-echarts 封装库，体验还不错，虽然不如原生支持那么完美，但基本能满足需求。', type: 'positive' },
-      { name: '蔡军', avatar: 'https://picsum.photos/id/45/40/40', rating: 2, date: '2023-05-05', content: '学习曲线有点陡峭，花了不少时间才掌握基本用法，希望能有更多的入门教程。', type: 'negative' },
-      { name: '蒋颖', avatar: 'https://picsum.photos/id/46/40/40', rating: 5, date: '2023-04-28', content: 'ECharts 的社区贡献者很多，有很多第三方三方插件可以使用，大大扩展了其功能。', type: 'positive' },
-      { name: '沈丽', avatar: 'https://picsum.photos/id/47/40/40', rating: 4, date: '2023-06-08', content: '用 ECharts 制作的数据可视化报告得到了客户的高度评价，交互性强，数据展示清晰。', type: 'positive' },
-      { name: '韩明', avatar: 'https://picsum.photos/id/48/40/40', rating: 5, date: '2023-05-22', content: 'ECharts 的更新很及时，新功能不断推出，同时也很注重性能优化，值得称赞。', type: 'positive' },
-      { name: '杨芳', avatar: 'https://picsum.photos/id/49/40/40', rating: 3, date: '2023-04-18', content: '对于大数据量的处理能力很强，但配置起来比较复杂，需要一定的经验才能做好优化。', type: 'positive' },
-      { name: '朱强', avatar: 'https://picsum.photos/id/50/40/40', rating: 5, date: '2023-06-15', content: 'ECharts 是我做数据可视化项目的首选工具，功能全面，文档完善，社区活跃，无可挑剔。', type: 'positive' }
-    ];
-    
-    // 合并评论数据
-    const allReviews = [...reviewData, ...moreReviews];
-    
-    // 当前显示的评论数量
-    let displayedReviews = 12;
-    
-    // 渲染评论
-    function renderReviews(reviewsToRender) {
-      const container = document.getElementById('reviews-container');
-      container.innerHTML = '';
-      
-      reviewsToRender.forEach(review => {
-        const reviewEl = document.createElement('div');
-        reviewEl.className = 'bg-dark-card rounded-xl border border-gray-800 p-6 hover:border-primary/30 transition-all';
-        reviewEl.setAttribute('data-type', review.type);
-        
-        // 生成星级评分HTML
-        let ratingHtml = '';
-        for (let i = 1; i <= 5; i++) {
-          if (i <= review.rating) {
-            ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
-          } else {
-            ratingHtml += '<i class="fa fa-star-o text-gray-600"></i>';
-          }
-        }
-        
-        reviewEl.innerHTML = `
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-3">
-              <img src="${review.avatar}" alt="${review.name}" class="w-12 h-12 rounded-full">
-              <div>
-                <h4 class="font-semibold">${review.name}</h4>
-                <p class="text-gray-500 text-sm">${review.date}</p>
-              </div>
-            </div>
-            <div class="flex">
-              ${ratingHtml}
-            </div>
-          </div>
-          <p class="text-gray-300">${review.content}</p>
-        `;
-        
-        container.appendChild(reviewEl);
-      });
-    }
-    
-    // 初始渲染评论
-    renderReviews(allReviews.slice(0, displayedReviews));
-    
-    // 加载更多评论
-    document.getElementById('load-more').addEventListener('click', () => {
-      displayedReviews += 12;
-      const reviewsToShow = allReviews.slice(0, displayedReviews);
-      renderReviews(reviewsToShow);
-      
-      // 如果已经显示所有评论，隐藏加载更多按钮
-      if (displayedReviews >= allReviews.length) {
-        document.getElementById('load-more').style.display = 'none';
-      }
-    });
-    
-    // 评论筛选
-    document.querySelectorAll('.review-filter').forEach(button => {
-      button.addEventListener('click', () => {
-        // 更新按钮样式
-        document.querySelectorAll('.review-filter').forEach(btn => {
-          btn.classList.remove('bg-primary', 'text-white');
-          btn.classList.add('bg-dark-card', 'border', 'border-gray-700', 'hover:bg-dark-hover');
-        });
-        
-        button.classList.remove('bg-dark-card', 'border', 'border-gray-700', 'hover:bg-dark-hover');
-        button.classList.add('bg-primary', 'text-white');
-        
-        const filter = button.getAttribute('data-filter');
-        let filteredReviews;
-        
-        if (filter === 'all') {
-          filteredReviews = allReviews.slice(0, displayedReviews);
+        // Check for saved theme preference or use system preference
+        if (localStorage.getItem('theme') === 'dark' || 
+            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            htmlElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
         } else {
-          filteredReviews = allReviews.filter(review => review.type === filter).slice(0, displayedReviews);
+            htmlElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
         }
         
-        renderReviews(filteredReviews);
-      });
-    });
-    
-    // 评论搜索
-    document.getElementById('review-search').addEventListener('input', (e) => {
-      const searchTerm = e.target.value.toLowerCase();
-      let filteredReviews;
-      
-      if (searchTerm.trim() === '') {
-        filteredReviews = allReviews.slice(0, displayedReviews);
-      } else {
-        filteredReviews = allReviews.filter(review => 
-          review.content.toLowerCase().includes(searchTerm) || 
-          review.name.toLowerCase().includes(searchTerm)
-        ).slice(0, displayedReviews);
-      }
-      
-      renderReviews(filteredReviews);
-    });
-    
-    // 代码复制功能
-    document.querySelectorAll('.copy-code').forEach(button => {
-      button.addEventListener('click', () => {
-        const codeBlock = button.parentElement.querySelector('code');
-        const textToCopy = codeBlock.textContent;
-        
-        navigator.clipboard.writeText(textToCopy).then(() => {
-          const originalIcon = button.innerHTML;
-          button.innerHTML = '<i class="fa fa-check"></i>';
-          button.classList.add('text-green-500');
-          
-          setTimeout(() => {
-            button.innerHTML = originalIcon;
-            button.classList.remove('text-green-500');
-          }, 2000);
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            if (htmlElement.classList.contains('dark')) {
+                htmlElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                htmlElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
+            
+            // Update radar chart colors when theme changes
+            updateRadarChartTheme();
         });
-      });
-    });
-    
-    // 使用步骤高亮
-    const usageStepLinks = document.querySelectorAll('.usage-step-link');
-    const usageSteps = document.querySelectorAll('.usage-step');
-    
-    // 监听滚动，高亮当前步骤
-    window.addEventListener('scroll', () => {
-      let currentStepId = '';
-      
-      usageSteps.forEach(step => {
-        const stepTop = step.offsetTop - 100;
-        const stepHeight = step.offsetHeight;
         
-        if (window.scrollY >= stepTop && window.scrollY < stepTop + stepHeight) {
-          currentStepId = step.getAttribute('id');
-        }
-      });
-      
-      usageStepLinks.forEach(link => {
-        link.classList.remove('bg-dark-hover', 'text-primary');
+        // Scroll Progress Indicator
+        const scrollProgress = document.getElementById('scrollProgress');
         
-        if (link.getAttribute('href') === `#${currentStepId}`) {
-          link.classList.add('bg-dark-hover', 'text-primary');
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.width = scrolled + '%';
+            
+            // Show/hide back to top button based on scroll position
+            const backToTop = document.getElementById('backToTop');
+            if (winScroll > 300) {
+                backToTop.classList.remove('opacity-0', 'invisible');
+                backToTop.classList.add('opacity-100', 'visible');
+            } else {
+                backToTop.classList.remove('opacity-100', 'visible');
+                backToTop.classList.add('opacity-0', 'invisible');
+            }
+            
+            // Animate elements on scroll
+            animateOnScroll();
+        });
+        
+        // Back to Top functionality
+        document.getElementById('backToTop').addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Bookmark button functionality
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        let isBookmarked = false;
+        
+        bookmarkBtn.addEventListener('click', () => {
+            isBookmarked = !isBookmarked;
+            
+            if (isBookmarked) {
+                bookmarkBtn.innerHTML = '<i class="fa fa-bookmark mr-2"></i> Saved';
+                bookmarkBtn.classList.add('bg-green-500');
+                bookmarkBtn.classList.remove('bg-white', 'text-primary');
+                bookmarkBtn.classList.add('text-white');
+                
+                // Show a brief notification (could be enhanced with a toast library)
+                alert('ECharts has been saved to your bookmarks!');
+            } else {
+                bookmarkBtn.innerHTML = '<i class="fa fa-bookmark-o mr-2"></i> Save for Later';
+                bookmarkBtn.classList.remove('bg-green-500', 'text-white');
+                bookmarkBtn.classList.add('bg-white', 'text-primary');
+            }
+        });
+        
+        // Radar Chart Initialization
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        let radarChart;
+        
+        function getChartColors() {
+            return htmlElement.classList.contains('dark') 
+                ? { 
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    pointBackgroundColor: '#3b82f6',
+                    gridColor: 'rgba(255, 255, 255, 0.1)',
+                    textColor: '#f3f4f6'
+                  } 
+                : { 
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    pointBackgroundColor: '#3b82f6',
+                    gridColor: 'rgba(0, 0, 0, 0.1)',
+                    textColor: '#111827'
+                  };
         }
-      });
-    });
-  </script>
-<script type="module" src="/main.js"></script>
+        
+        function initRadarChart() {
+            const colors = getChartColors();
+            
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Chart Variety',
+                        'Customization',
+                        'Performance',
+                        'Interactivity',
+                        'Documentation',
+                        'Community Support'
+                    ],
+                    datasets: [{
+                        label: 'ECharts',
+                        data: [95, 90, 85, 92, 80, 88],
+                        borderColor: colors.borderColor,
+                        backgroundColor: colors.backgroundColor,
+                        pointBackgroundColor: colors.pointBackgroundColor,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: colors.borderColor
+                    }, {
+                        label: 'Industry Average',
+                        data: [70, 65, 75, 60, 70, 65],
+                        borderColor: '#6b7280',
+                        backgroundColor: 'rgba(107, 114, 128, 0.2)',
+                        pointBackgroundColor: '#6b7280',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#6b7280'
+                    }]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: colors.gridColor
+                            },
+                            grid: {
+                                color: colors.gridColor
+                            },
+                            pointLabels: {
+                                color: colors.textColor
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: colors.textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: colors.textColor
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateRadarChartTheme() {
+            if (radarChart) {
+                radarChart.destroy();
+            }
+            initRadarChart();
+        }
+        
+        // Initialize chart on page load
+        initRadarChart();
+        
+        // Animate elements on scroll
+        function animateOnScroll() {
+            const fadeElements = document.querySelectorAll('.fade-in');
+            
+            fadeElements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 150;
+                
+                if (elementTop < window.innerHeight - elementVisible) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+        
+        // Initialize animations on page load
+        window.addEventListener('load', () => {
+            animateOnScroll();
+        });
+        
+        // Search functionality (basic implementation)
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const searchTerm = e.target.value.trim();
+                if (searchTerm) {
+                    alert(`Searching for: ${searchTerm}\nIn a real implementation, this would trigger a search through ECharts documentation.`);
+                }
+            }
+        });
+        
+        // Share functionality (basic implementation)
+        document.querySelectorAll('.fa-twitter, .fa-facebook, .fa-linkedin, .fa-github').forEach(icon => {
+            icon.parentElement.addEventListener('click', (e) => {
+                e.preventDefault();
+                const platform = icon.classList.contains('fa-twitter') ? 'Twitter' :
+                                icon.classList.contains('fa-facebook') ? 'Facebook' :
+                                icon.classList.contains('fa-linkedin') ? 'LinkedIn' : 'GitHub';
+                
+                alert(`Sharing ECharts on ${platform}\nIn a real implementation, this would open a share dialog for ${platform}.`);
+            });
+        });
+        
+        // Newsletter subscription is handled by email-subscription.js imported in main.js
+        // The custom handler has been removed to allow the global subscription functionality to work properly
+    </script>
+    
+    <!-- Module script import -->
+    <script type="module" src="/main.js"></script>
 </body>
 </html>

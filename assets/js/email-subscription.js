@@ -1,157 +1,145 @@
 /**
- * 无样式侵入的邮件订阅功能
- * 使用方法：
- * 1. 在页面中添加2个元素（ID固定）：
- *    - 输入框：<input type="email" id="subscribeEmail">
- *    - 按钮：<button id="subscribeBtn">订阅</button>
- * 2. 导入此脚本即可自动绑定功能
+ * Non-invasive Email Subscription Feature
+ * How to use:
+ * 1. Add these 2 elements to your page (fixed IDs):
+ *    - Input field: <input type="email" id="subscribeEmail">
+ *    - Button: <button id="subscribeBtn">Subscribe</button>
+ * 2. Import this script to auto-bind functionality
  * 
  * @author Rinuo.com
- * @version 2.2.0（消息显示在按钮后版本）
+ * @version 2.3.0 (Message shows inside button - American English version)
  */
 
 class EmailSubscription {
     constructor() {
-        // 固定元素ID（用户页面中必须存在这两个ID）
+        // Fixed element IDs (these must exist on your page)
         this.ids = {
             input: 'subscribeEmail',
             button: 'subscribeBtn'
         };
         
-        // Supabase配置（使用完整密钥）
+        // Supabase configuration (using full API key)
         this.config = {
             url: "https://ibwhykivdlzuumcgcssl.supabase.co",
             key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlid2h5a2l2ZGx6dXVtY2djc3NsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQxMzEyOTMsImV4cCI6MjA2OTcwNzI5M30.o7zwqToKgbXnFUEIBxjQYydJkP9peP_Hul-F8xhsE20",
             functionName: "email-send-4"
         };
         
-        // 提示文本（可通过全局变量自定义）
+        // Message texts (American English colloquial version)
         this.messages = {
-            loading: '正在订阅中...',
-            error: '订阅失败，请稍后重试',
-            empty: '请输入邮箱地址',
-            invalid: '请输入有效的邮箱地址',
-            ...window.subscriptionMessages // 允许用户通过全局变量覆盖文本
+            loading: "Hang tight...",
+            error: "Oops, something went wrong!",
+            empty: "Don't forget your email!",
+            invalid: "Please enter a valid email",
+            subscribe: "Subscribe",
+            ...window.subscriptionMessages // Allow overriding texts via global variable
         };
 
-        // 调试前缀
-        this.debugPrefix = '[邮件订阅调试]';
+        // Debug prefix
+        this.debugPrefix = '[Email Subscription Debug]';
         
         this.init();
     }
     
-    // 初始化：检测元素并绑定事件
+    // Initialize: detect elements and bind events
     init() {
-        console.log(`${this.debugPrefix} 开始初始化组件`);
+        console.log(`${this.debugPrefix} Starting component initialization`);
         
-        // 获取页面中的元素
+        // Get elements from the page
         this.elements = {
             input: document.getElementById(this.ids.input),
             button: document.getElementById(this.ids.button)
         };
         
-        // 详细日志：输出获取到的元素状态
-        console.log(`${this.debugPrefix} 元素检测结果:`, {
-            input: this.elements.input ? '找到' : '未找到',
-            button: this.elements.button ? '找到' : '未找到'
+        // Detailed log: output element detection status
+        console.log(`${this.debugPrefix} Element detection results:`, {
+            input: this.elements.input ? 'Found' : 'Not found',
+            button: this.elements.button ? 'Found' : 'Not found'
         });
         
-        // 检测元素是否齐全
+        // Check if all required elements are present
         const missing = Object.entries(this.elements)
             .filter(([_, el]) => !el)
             .map(([key]) => `#${this.ids[key]}`);
         
         if (missing.length > 0) {
-            console.error(`${this.debugPrefix} 初始化失败：缺少必要元素 ${missing.join(', ')}`);
+            console.error(`${this.debugPrefix} Initialization failed: Missing required elements ${missing.join(', ')}`);
             return;
         }
         
-        // 创建消息容器（将在按钮后显示）
+        // Create message container (will show inside button now)
         this.createMessageContainer();
         
-        // 绑定按钮点击事件
+        // Bind button click event
         this.elements.button.addEventListener('click', (e) => {
             e.preventDefault();
-            console.log(`${this.debugPrefix} 订阅按钮被点击`);
+            console.log(`${this.debugPrefix} Subscribe button clicked`);
             this.handleSubmit();
         });
         
-        // 支持按回车提交
+        // Support submitting with Enter key
         this.elements.input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                console.log(`${this.debugPrefix} 回车键被按下，触发订阅`);
+                console.log(`${this.debugPrefix} Enter key pressed, triggering subscription`);
                 this.handleSubmit();
             }
         });
         
-        console.log(`${this.debugPrefix} 组件初始化完成，功能已就绪`);
+        console.log(`${this.debugPrefix} Component initialization complete, functionality ready`);
     }
     
-    // 创建消息容器并插入到按钮后面
+    // Create message container - now using button itself as container
     createMessageContainer() {
-        // 检查是否已存在消息容器
-        this.elements.message = document.querySelector('.subscription-message');
+        // Save the button's original HTML content (like icons)
+        this.buttonOriginalContent = this.elements.button.innerHTML;
         
-        if (!this.elements.message) {
-            // 创建新的消息容器
-            this.elements.message = document.createElement('div');
-            this.elements.message.className = 'subscription-message';
-            this.elements.message.style.marginLeft = '8px'; // 简单的间距样式
-            this.elements.message.style.whiteSpace = 'nowrap'; // 防止换行
-            
-            // 插入到按钮后面
-            this.elements.button.parentNode.insertBefore(
-                this.elements.message,
-                this.elements.button.nextSibling
-            );
-            
-            console.log(`${this.debugPrefix} 已创建消息容器并插入到按钮后面`);
-        } else {
-            console.log(`${this.debugPrefix} 消息容器已存在`);
-        }
+        // Use button itself as message container
+        this.elements.message = this.elements.button;
+        
+        console.log(`${this.debugPrefix} Set button as message container`);
     }
     
-    // 核心提交逻辑
+    // Core submission logic
     async handleSubmit() {
         const { input, button, message } = this.elements;
         const email = input.value.trim();
-        const name = input.dataset.name || ''; // 支持从input的data属性获取姓名
+        const name = input.dataset.name || ''; // Support getting name from input's data attribute
         
-        console.log(`${this.debugPrefix} 开始处理订阅，邮箱地址: ${email}，姓名: ${name}`);
+        console.log(`${this.debugPrefix} Starting subscription process, email: ${email}, name: ${name}`);
         
-        // 邮箱验证
+        // Email validation
         if (!email) {
-            console.log(`${this.debugPrefix} 验证失败：邮箱为空`);
+            console.log(`${this.debugPrefix} Validation failed: Email is empty`);
             this.showMessage(message, this.messages.empty, 'error');
             return;
         }
         
         if (!this.validateEmail(email)) {
-            console.log(`${this.debugPrefix} 验证失败：邮箱格式无效 (${email})`);
+            console.log(`${this.debugPrefix} Validation failed: Invalid email format (${email})`);
             this.showMessage(message, this.messages.invalid, 'error');
             return;
         }
         
-        console.log(`${this.debugPrefix} 邮箱验证通过 (${email})`);
+        console.log(`${this.debugPrefix} Email validation passed (${email})`);
         
-        // 防止重复提交
+        // Prevent duplicate submissions
         button.disabled = true;
-        this.showMessage(message, this.messages.loading, 'info');
+        this.showMessage(message, this.messages.loading, 'info'); // Show loading message
         
         try {
-            // 本地开发环境判断
+            // Check if in local development environment
             const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            console.log(`${this.debugPrefix} 环境检测：${isDev ? '本地开发环境' : '生产环境'}`);
+            console.log(`${this.debugPrefix} Environment check: ${isDev ? 'Local development' : 'Production'}`);
             
-            // 构造请求URL
+            // Construct request URL
             const requestUrl = `${this.config.url}/functions/v1/${this.config.functionName}`;
-            console.log(`${this.debugPrefix} 准备发送请求到: ${requestUrl}`);
+            console.log(`${this.debugPrefix} Preparing to send request to: ${requestUrl}`);
             
-            // 调试：输出密钥前10位和后10位（确认密钥完整）
-            console.log(`${this.debugPrefix} 密钥验证：${this.config.key.substring(0, 10)}...${this.config.key.substring(this.config.key.length - 10)}`);
+            // Debug: show first 10 and last 10 chars of API key (to confirm it's complete)
+            console.log(`${this.debugPrefix} API key validation: ${this.config.key.substring(0, 10)}...${this.config.key.substring(this.config.key.length - 10)}`);
             
-            // 调用Supabase云函数（使用完整密钥）
+            // Call Supabase Cloud Function (using full API key)
             const response = await fetch(
                 requestUrl,
                 {
@@ -160,53 +148,53 @@ class EmailSubscription {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.config.key}`
                     },
-                    body: JSON.stringify({ email, name }) // 同时发送邮箱和姓名
+                    body: JSON.stringify({ email, name }) // Send both email and name
                 }
             );
             
-            // 输出响应状态信息
-            console.log(`${this.debugPrefix} 收到响应：状态码=${response.status}，状态文本=${response.statusText}`);
+            // Output response status info
+            console.log(`${this.debugPrefix} Received response: status=${response.status}, statusText=${response.statusText}`);
             
-            // 解析响应内容
+            // Parse response content
             let result;
             try {
                 result = await response.json();
-                console.log(`${this.debugPrefix} 响应内容解析成功:`, result);
+                console.log(`${this.debugPrefix} Response content parsed successfully:`, result);
             } catch (jsonError) {
-                console.error(`${this.debugPrefix} 响应内容解析失败（非JSON格式）:`, jsonError);
-                console.log(`${this.debugPrefix} 原始响应内容:`, await response.text());
-                throw new Error('服务器返回格式错误');
+                console.error(`${this.debugPrefix} Failed to parse response content (not JSON format):`, jsonError);
+                console.log(`${this.debugPrefix} Raw response content:`, await response.text());
+                throw new Error('Server returned invalid format');
             }
             
-            // 检查响应状态
+            // Check response status
             if (!response.ok) {
-                const errorMsg = result.error || `HTTP错误: ${response.status}`;
-                console.error(`${this.debugPrefix} 请求失败: ${errorMsg}`);
+                const errorMsg = result.error || `HTTP error: ${response.status}`;
+                console.error(`${this.debugPrefix} Request failed: ${errorMsg}`);
                 throw new Error(errorMsg);
             }
             
-            // 订阅成功 - 使用接口返回的信息显示提示
-            console.log(`${this.debugPrefix} 订阅成功，邮箱: ${email}`);
+            // Subscription successful - show message using API response info
+            console.log(`${this.debugPrefix} Subscription successful, email: ${email}`);
             
-            // 根据接口返回的不同状态显示不同提示
+            // Show different messages based on API response status
             if (result.isVerified) {
-                // 已验证用户 - 显示管理链接
+                // Verified user - show management links
                 let messageHtml = `${result.message}<br>`;
                 if (result.actions?.manageSubscription) {
-                    messageHtml += `<a href="${result.actions.manageSubscription}" class="subscription-link">管理我的订阅</a> | `;
+                    messageHtml += `<a href="${result.actions.manageSubscription}" class="subscription-link">Manage my subscription</a> | `;
                 }
                 if (result.actions?.unsubscribe) {
-                    messageHtml += `<a href="${result.actions.unsubscribe}" class="subscription-link">取消订阅</a>`;
+                    messageHtml += `<a href="${result.actions.unsubscribe}" class="subscription-link">Unsubscribe</a>`;
                 }
                 this.showMessage(message, messageHtml, 'success', true);
             } else {
-                // 新用户/未验证用户 - 显示查收邮件提示
+                // New/unverified user - show email check message
                 let messageHtml = `${result.message}<br>`;
                 if (result.actions?.resend) {
-                    messageHtml += `<a href="${result.actions.resend}" class="subscription-link">未收到邮件？点击重发</a>`;
+                    messageHtml += `<a href="${result.actions.resend}" class="subscription-link">Didn't get the email? Click to resend</a>`;
                 }
                 if (result.actions?.checkSpam) {
-                    messageHtml += `<br>请检查垃圾邮件文件夹`;
+                    messageHtml += `<br>Please check your spam folder too`;
                 }
                 this.showMessage(message, messageHtml, 'success', true);
             }
@@ -214,67 +202,103 @@ class EmailSubscription {
             input.value = '';
             
         } catch (err) {
-            console.error(`${this.debugPrefix} 订阅流程出错:`, err);
-            // 错误信息优先使用接口返回的内容
+            console.error(`${this.debugPrefix} Subscription process error:`, err);
+            // Use API error message if available
             const errorMsg = err.message || this.messages.error;
             this.showMessage(message, errorMsg, 'error');
         } finally {
-            // 恢复按钮状态
+            // Restore button state
             button.disabled = false;
-            console.log(`${this.debugPrefix} 订阅流程结束，按钮状态已恢复`);
+            // Note: Button content will be auto-restored in showMessage's setTimeout
+            console.log(`${this.debugPrefix} Subscription process ended, button state restored`);
         }
     }
     
-    // 显示提示信息（支持HTML内容）
+    // Show message (supports HTML content - now displays inside button)
     showMessage(element, content, type, isHtml = false) {
-        console.log(`${this.debugPrefix} 显示提示信息: [${type}] ${content}`);
+        console.log(`${this.debugPrefix} Showing message: [${type}] ${content}`);
         
-        // 根据是否为HTML内容选择设置方式
-        if (isHtml) {
-            element.innerHTML = content;
-        } else {
-            element.textContent = content;
-        }
+        // Check if element is button container
+        const isButtonContainer = element === this.elements.button;
         
-        // 移除所有状态类
-        element.classList.remove('subscription-success', 'subscription-error', 'subscription-info');
-        // 添加当前状态类
+        // Remove all state classes
+        element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
+        // Add current state class
         element.classList.add(`subscription-${type}`);
         
-        // 5秒后自动隐藏成功提示
+        // Special handling for button container
+        if (isButtonContainer) {
+            // Save original button text for restoration
+            if (!this.buttonText) {
+                this.buttonText = this.buttonOriginalContent || this.messages.subscribe;
+            }
+            
+            // If error or loading state, show text directly on button
+            if (type === 'error' || type === 'info') {
+                element.innerHTML = content;
+            } else if (type === 'success' && isHtml) {
+                // For success state with HTML content, need special handling
+                // Create temp container to parse HTML content
+                const tempContainer = document.createElement('div');
+                tempContainer.innerHTML = content;
+                
+                // Get plain text content (remove links and HTML elements)
+                const textContent = tempContainer.textContent || 'Subscription successful';
+                element.innerHTML = textContent;
+            } else {
+                element.innerHTML = content;
+            }
+        } else {
+            // Original behavior: for non-button containers
+            if (isHtml) {
+                element.innerHTML = content;
+            } else {
+                element.textContent = content;
+            }
+        }
+        
+        // Auto-restore button state after 3 seconds (for success messages only)
         if (type === 'success') {
             clearTimeout(this.hideTimeout);
             this.hideTimeout = setTimeout(() => {
-                console.log(`${this.debugPrefix} 自动隐藏成功提示`);
-                element.innerHTML = '';
-                element.classList.remove('subscription-success', 'subscription-error', 'subscription-info');
-            }, 5000);
+                console.log(`${this.debugPrefix} Auto-restoring button state`);
+                
+                if (isButtonContainer) {
+                    // Restore button's original content
+                    element.innerHTML = this.buttonOriginalContent || this.messages.subscribe;
+                } else {
+                    // For traditional containers, clear content
+                    element.innerHTML = '';
+                }
+                
+                // Remove all state classes
+                element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
+            }, 3000); // Adjusted to 3 seconds for better UX
         }
     }
     
-    // 邮箱格式验证
+    // Email format validation
     validateEmail(email) {
         const isValid = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
-        console.log(`${this.debugPrefix} 邮箱格式验证: ${email} => ${isValid ? '有效' : '无效'}`);
+        console.log(`${this.debugPrefix} Email format validation: ${email} => ${isValid ? 'Valid' : 'Invalid'}`);
         return isValid;
     }
 }
 
-// 自动初始化（仅在浏览器环境）
+// Auto-initialize (browser environment only)
 if (typeof window !== 'undefined') {
-    console.log('[邮件订阅调试] 检测到浏览器环境，准备初始化');
-    // 等待DOM加载完成（确保元素已存在）
+    console.log('[Email Subscription Debug] Browser environment detected, preparing initialization');
+    // Wait for DOM to be fully loaded (to ensure elements exist)
     const initWhenReady = () => {
-        console.log('[邮件订阅调试] DOM已就绪，开始创建组件实例');
+        console.log('[Email Subscription Debug] DOM is ready, starting component instance creation');
         new EmailSubscription();
     };
     
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        console.log('[邮件订阅调试] DOM已完成加载，立即初始化');
+        console.log('[Email Subscription Debug] DOM already loaded, initializing immediately');
         initWhenReady();
     } else {
-        console.log('[邮件订阅调试] 等待DOM加载完成后初始化');
+        console.log('[Email Subscription Debug] Waiting for DOM to load before initializing');
         document.addEventListener('DOMContentLoaded', initWhenReady);
     }
 }
-    
