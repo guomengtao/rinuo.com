@@ -109,6 +109,7 @@ function renderRecentBookmarks() {
     // 添加滑动按钮功能
     leftButton = document.getElementById('bookmarks-scroll-left');
     rightButton = document.getElementById('bookmarks-scroll-right');
+    setupScrollButtons(cardsContainer);
     
     // 更新按钮状态
     updateScrollButtons(cardsContainer);
@@ -120,36 +121,45 @@ function renderRecentBookmarks() {
 }
 
 // 创建收藏记录容器
-    function createBookmarksContainer() {
-        const container = document.createElement('section');
-        container.id = 'recent-bookmarks-container';
-        container.className = 'py-16 bg-gray-50 dark:bg-gray-900';
-        
-        // 默认隐藏容器
-        container.style.display = 'none';
-        
-        container.innerHTML = `
-            <div class="container mx-auto px-4">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
-                    <div>
-                        <h2 class="text-2xl font-bold mb-2">Recently Bookmarked <span class="count-number">0 items</span></h2>
-                        <p class="text-gray-600 dark:text-gray-400">Quick access to resources you've saved</p>
-                    </div>
-                </div>
-                
-                <div class="relative">
-                    <div class="recent-bookmarks-cards flex gap-6 overflow-x-auto pb-4 hide-scrollbar cursor-grab active:cursor-grabbing">
-                    </div>
-                </div>
-                
-                <div class="flex justify-center mt-8">
-                    <a href="/my-history.html" class="text-primary hover:underline text-sm flex items-center">
-                        View all bookmarks and history <i class="fa fa-arrow-right ml-1"></i>
-                    </a>
+function createBookmarksContainer() {
+    const container = document.createElement('section');
+    container.id = 'recent-bookmarks-container';
+    container.className = 'py-16 bg-gray-50 dark:bg-gray-900';
+    
+    // 默认隐藏容器
+    container.style.display = 'none';
+    
+    container.innerHTML = `
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold mb-2">Recently Bookmarked <span class="count-number">0 items</span></h2>
+                    <p class="text-gray-600 dark:text-gray-400">Quick access to resources you've saved</p>
                 </div>
             </div>
-        `;
-    
+            
+            <div class="relative">
+                <!-- 添加左右滚动按钮 -->
+                <button id="bookmarks-scroll-left" class="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-dark-card text-gray-800 dark:text-gray-200 w-10 h-10 rounded-full shadow-lg z-10 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+                
+                <div class="recent-bookmarks-cards flex gap-6 overflow-x-auto pb-4 hide-scrollbar cursor-grab active:cursor-grabbing">
+                </div>
+                
+                <button id="bookmarks-scroll-right" class="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white dark:bg-dark-card text-gray-800 dark:text-gray-200 w-10 h-10 rounded-full shadow-lg z-10 flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-800">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
+            
+            <div class="flex justify-center mt-8">
+                <a href="/my-history.html" class="text-primary hover:no-underline text-sm flex items-center">
+                    View all bookmarks and history <i class="fa fa-arrow-right ml-1"></i>
+                </a>
+            </div>
+        </div>
+    `;
+
     // 添加样式
     const style = document.createElement('style');
     style.textContent = `
@@ -176,7 +186,7 @@ function renderRecentBookmarks() {
         }
         #bookmarks-scroll-left:hover,
         #bookmarks-scroll-right:hover {
-            transform: scale(1.1);
+            transform: scale(1.1) translateY(-50%);
         }
         /* 不显眼的统计数字样式 */
         #recent-bookmarks-container h2 .count-number {
@@ -196,7 +206,7 @@ function renderRecentBookmarks() {
             color: var(--primary-color);
         }
         #recent-bookmarks-container a:hover {
-            text-decoration: underline;
+            text-decoration: none;
         }
     `;
     document.head.appendChild(style);
@@ -382,6 +392,27 @@ function updateScrollButtons(cardsContainer) {
         rightButton.style.pointerEvents = 'none';
     }
 }
+
+// 添加滚动功能
+function setupScrollButtons(cardsContainer) {
+    // 为左滚动按钮添加点击事件
+    leftButton.addEventListener('click', () => {
+        cardsContainer.scrollBy({
+            left: -300, // 每次点击滚动的距离
+            behavior: 'smooth'
+        });
+    });
+    
+    // 为右滚动按钮添加点击事件
+    rightButton.addEventListener('click', () => {
+        cardsContainer.scrollBy({
+            left: 300, // 每次点击滚动的距离
+            behavior: 'smooth'
+        });
+    });
+}
+
+// 修改渲染函数，添加滚动按钮功能 - 移除这个重复的函数定义
 
 // 更新收藏总数显示
 function updateBookmarksCountDisplay(totalCount) {

@@ -1,887 +1,1072 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cursor 编辑器 - 智能代码编辑工具</title>
+    <title>Cursor - The AI-Powered Code Editor</title>
+    <meta name="description" content="Cursor is an AI-powered code editor designed to help developers write better code faster. Learn about its features, technology stack, founders, and community.">
+    <meta name="keywords" content="Cursor, AI code editor, code editor, AI programming, developer tools, Cursor founders, Cursor technology stack">
+    <meta name="author" content="Cursor">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/cursor.html">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-    <!-- 配置 Tailwind 自定义颜色和字体 -->
+    
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366f1', // 主色调：靛蓝色
-                        secondary: '#10b981', // 辅助色：绿色
-                        dark: '#121212', // 深色背景
-                        darker: '#0a0a0a', // 更深色背景
-                        light: '#e5e7eb', // 浅色文本
-                        'gray-dark': '#1f1f1f', // 深色灰色
-                        'gray-medium': '#2d2d2d', // 中灰色
+                        primary: '#5E6AD2',
+                        secondary: '#10B981',
+                        dark: {
+                            bg: '#121212',
+                            card: '#1E1E1E',
+                            text: '#E0E0E0'
+                        },
+                        light: {
+                            bg: '#F9FAFB',
+                            card: '#FFFFFF',
+                            text: '#1F2937'
+                        }
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace'],
+                        mono: ['JetBrains Mono', 'monospace']
                     },
+                    animation: {
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
                 }
             }
         }
     </script>
+    
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-shadow {
-                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            .content-auto {
+                content-visibility: auto;
             }
-            .card-hover {
-                transition: all 0.3s ease;
-            }
-            .card-hover:hover {
-                transform: translateY(-5px);
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
             }
             .scrollbar-hide::-webkit-scrollbar {
                 display: none;
             }
-            .gradient-border {
-                position: relative;
-                border-radius: 0.5rem;
-                z-index: 0;
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
             }
-            .gradient-border::before {
-                content: "";
-                position: absolute;
-                inset: -2px;
-                border-radius: 0.6rem;
-                background: linear-gradient(45deg, #6366f1, #10b981, #6366f1);
-                z-index: -1;
-                animation: rotate 6s linear infinite;
+            .btn-primary {
+                @apply bg-primary text-white font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-primary/90 focus:ring-2 focus:ring-primary/50 focus:outline-none;
             }
-            @keyframes rotate {
-                0% { filter: hue-rotate(0deg); }
-                100% { filter: hue-rotate(360deg); }
+            .btn-secondary {
+                @apply bg-transparent border border-primary text-primary font-medium py-2 px-4 rounded-lg transition-all duration-300 hover:bg-primary/10 focus:ring-2 focus:ring-primary/50 focus:outline-none;
             }
         }
     </style>
 </head>
-<body class="bg-dark text-light font-sans">
-    <!-- 导航栏 -->
-                   
-                 <header class="sticky top-0 z-50 bg-darker/80 backdrop-blur-md border-b border-gray-medium">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <i class="fa fa-code text-primary text-2xl"></i>
-                <span class="font-bold text-xl">Cursor Editor</span>
-            
-            <!-- 搜索框 -->
-            <div class="hidden md:flex mx-4 items-center relative">
-                <div class="relative w-64">
-                    <input type="text" id="searchInput" placeholder="搜索开发资源..." 
-                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                    <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-search"></i>
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="fixed top-0 left-0 h-1 bg-primary transform origin-left transition-transform duration-300 z-50" style="transform: scaleX(0);"></div>
+
+    <!-- Navigation -->
+    <header class="fixed top-0 left-0 right-0 bg-light-card/90 dark:bg-dark-card/90 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <nav class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">C</div>
+                    <span class="text-xl font-bold">Cursor</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#features" class="hover:text-primary transition-colors">Features</a>
+                    <a href="#tech-stack" class="hover:text-primary transition-colors">Tech Stack</a>
+                    <a href="#founders" class="hover:text-primary transition-colors">Founders</a>
+                    <a href="#community" class="hover:text-primary transition-colors">Community</a>
+                    <a href="#pricing" class="hover:text-primary transition-colors">Pricing</a>
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <div class="relative hidden md:block flex-1 max-w-md mx-8">
+                        <input type="text" id="searchInput" autocomplete="off" 
+                               class="w-full py-2 px-4 pl-10 rounded-full bg-gray-100 dark:bg-gray-800 border-0 focus:ring-2 focus:ring-primary transition-all"
+                               placeholder="Search documentation...">
+                        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fa fa-moon-o text-xl" id="themeIcon"></i>
+                    </button>
+                    
+                    <!-- Bookmark Button -->
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+                        <i class="fa fa-star-o text-xl" id="bookmarkIcon"></i>
+                    </button>
+                    
+                    <a href="https://cursor.sh" target="_blank" rel="noopener noreferrer" class="btn-primary hidden md:block">
+                        Download
+                    </a>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800">
+                        <i class="fa fa-bars text-xl"></i>
                     </button>
                 </div>
-                <!-- 搜索结果浮动容器 -->
-                <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-                    <div id="searchResults" class="max-h-80 overflow-y-auto">
-                        <!-- 搜索结果将在这里动态生成 -->
-                    </div>
-                </div>
-            </div>
-</div>
-            
-            <!-- 桌面导航 -->
-            <nav class="hidden md:flex items-center gap-6">
-                <a href="#" class="hover:text-primary transition-colors">首页</a>
-                <a href="#features" class="hover:text-primary transition-colors">功能</a>
-                <a href="#free-method" class="hover:text-primary transition-colors">免费使用</a>
-                <a href="#reviews" class="hover:text-primary transition-colors">用户评论</a>
-                <a href="#" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md transition-all">
-                    立即下载
-                </a>
             </nav>
             
-            <!-- 移动端菜单按钮 -->
-                                <!-- 移动端搜索按钮 -->
-                    <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-                        <i class="fa fa-search text-xl"></i>
-                    </button>
-<button id="menu-toggle" class="md:hidden text-2xl">
-                <i class="fa fa-bars"></i>
-            </button>
-        </div>
-        
-        <!-- 移动端导航菜单 -->
-        <div id="mobile-menu" class="hidden md:hidden bg-gray-dark border-t border-gray-medium">
-            <div class="container mx-auto px-4 py-3 flex flex-col gap-3">
-                <a href="#" class="py-2 hover:text-primary transition-colors">首页</a>
-                <a href="#features" class="py-2 hover:text-primary transition-colors">功能</a>
-                <a href="#free-method" class="py-2 hover:text-primary transition-colors">免费使用</a>
-                <a href="#reviews" class="py-2 hover:text-primary transition-colors">用户评论</a>
-                <a href="#" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-md text-center transition-all">
-                    立即下载
-                </a>
+            <!-- Mobile Search -->
+            <div class="mt-3 md:hidden relative">
+                <input type="text" id="mobileSearchInput" autocomplete="off" 
+                       class="w-full py-2 px-4 pl-10 rounded-full bg-gray-100 dark:bg-gray-800 border-0 focus:ring-2 focus:ring-primary transition-all"
+                       placeholder="Search documentation...">
+                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
             </div>
-        </div>
-            <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." 
-                    class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="hidden md:hidden mt-4 pb-2 space-y-3">
+                <a href="#features" class="block py-2 hover:text-primary transition-colors">Features</a>
+                <a href="#tech-stack" class="block py-2 hover:text-primary transition-colors">Tech Stack</a>
+                <a href="#founders" class="block py-2 hover:text-primary transition-colors">Founders</a>
+                <a href="#community" class="block py-2 hover:text-primary transition-colors">Community</a>
+                <a href="#pricing" class="block py-2 hover:text-primary transition-colors">Pricing</a>
+                <a href="https://cursor.sh" target="_blank" rel="noopener noreferrer" class="block btn-primary text-center">
+                    Download
+                </a>
             </div>
         </div>
     </header>
 
-    <!-- 面包屑导航 -->
-    <div class="bg-gray-dark border-b border-gray-medium">
-        <div class="container mx-auto px-4 py-2 text-sm text-gray-400">
-            <a href="/" class="hover:text-primary transition-colors">首页</a>
-            <span class="mx-2">/</span>
-            <span>Cursor 编辑器</span>
+    <!-- Breadcrumb Navigation -->
+    <div class="pt-24 pb-4 px-4 container mx-auto">
+        <div class="text-sm text-gray-500 dark:text-gray-400">
+            <a href="/" class="hover:text-primary transition-colors">Home</a> &gt; 
+            <a href="/free" class="hover:text-primary transition-colors">Free Resources</a> &gt; 
+            <a href="/free/detail/" class="hover:text-primary transition-colors">Resource List</a> &gt; 
+            <span class="text-primary">Cursor</span>
         </div>
     </div>
 
-    <main>
-        <!-- 英雄区域 -->
-        <section class="relative py-16 md:py-24 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-b from-primary/10 to-dark"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="max-w-4xl mx-auto text-center">
-                    <h1 class="text-[clamp(2rem,5vw,4rem)] font-bold mb-6 leading-tight text-shadow">
-                        Cursor 编辑器<br>
-                        <span class="text-primary">AI 驱动的代码编辑体验</span>
+    <main class="container mx-auto px-4">
+        <!-- Hero Section -->
+        <section class="py-8 md:py-16 lg:py-24">
+            <div class="flex flex-col lg:flex-row items-center gap-12">
+                <div class="lg:w-1/2 space-y-6">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                        <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Cursor</span>: 
+                        The AI Code Editor
                     </h1>
-                    <p class="text-[clamp(1rem,2vw,1.25rem)] text-gray-300 mb-10 max-w-2xl mx-auto">
-                        一款集成了强大 AI 功能的现代代码编辑器，帮助开发者更高效地编写、重构和理解代码，支持多种编程语言，且提供免费使用方案。
+                    <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
+                        Write, edit, and understand code faster with an editor built specifically for pair programming with AI.
                     </p>
-                    <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <a href="#free-method" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-all text-lg">
-                            了解免费使用方法
+                    <div class="flex flex-wrap gap-4 pt-4">
+                        <a href="https://cursor.sh/download" target="_blank" rel="noopener noreferrer" class="btn-primary text-lg py-3 px-6">
+                            <i class="fa fa-download mr-2"></i> Download Now
                         </a>
-                        <a href="https://www.cursor.com" target="_blank" rel="noopener noreferrer" class="bg-gray-medium hover:bg-gray-medium/80 text-white px-8 py-3 rounded-md font-medium transition-all text-lg border border-gray-600">
-                            访问官方网站
+                        <a href="#features" class="btn-secondary text-lg py-3 px-6">
+                            <i class="fa fa-arrow-down mr-2"></i> Learn More
                         </a>
                     </div>
-                </div>
-                
-                <!-- 编辑器预览图 -->
-                <div class="mt-16 max-w-5xl mx-auto gradient-border">
-                    <img src="https://picsum.photos/id/0/1200/600" alt="Cursor 编辑器界面预览" class="w-full h-auto rounded-md shadow-2xl">
-                </div>
-            </div>
-        </section>
-
-        <!-- 基本介绍 -->
-        <section class="py-16 bg-gradient-to-b from-dark to-gray-dark">
-            <div class="container mx-auto px-4">
-                <div class="max-w-3xl mx-auto">
-                    <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-8 text-center">什么是 Cursor 编辑器？</h2>
-                    <p class="text-gray-300 mb-6 text-lg leading-relaxed">
-                        Cursor 是一款基于 VS Code 构建的新一代代码编辑器，它将强大的 AI 能力无缝集成到编辑体验中。无论是编写新代码、理解现有项目，还是重构复杂逻辑，Cursor 都能通过 AI 辅助大幅提升开发效率。
-                    </p>
-                    <p class="text-gray-300 mb-6 text-lg leading-relaxed">
-                        与传统编辑器不同，Cursor 的 AI 不仅仅是一个插件，而是深度融入到编辑流程的每个环节，提供实时建议、代码解释和自动补全，让开发者能够专注于解决问题而非语法细节。
-                    </p>
-                    
-                    <!-- 核心数据 -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mt-12">
-                        <div class="bg-gray-medium p-6 rounded-lg text-center card-hover">
-                            <div class="text-primary text-3xl font-bold mb-2">40+</div>
-                            <div class="text-gray-400">支持语言</div>
+                    <div class="flex items-center gap-6 pt-6">
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-github text-2xl"></i>
+                            <span>35.2k Stars</span>
                         </div>
-                        <div class="bg-gray-medium p-6 rounded-lg text-center card-hover">
-                            <div class="text-primary text-3xl font-bold mb-2">1M+</div>
-                            <div class="text-gray-400">活跃用户</div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-exclamation-circle text-2xl"></i>
+                            <span>1.2k Issues</span>
                         </div>
-                        <div class="bg-gray-medium p-6 rounded-lg text-center card-hover">
-                            <div class="text-primary text-3xl font-bold mb-2">50%</div>
-                            <div class="text-gray-400">效率提升</div>
-                        </div>
-                        <div class="bg-gray-medium p-6 rounded-lg text-center card-hover">
-                            <div class="text-primary text-3xl font-bold mb-2">免费</div>
-                            <div class="text-gray-400">基础功能</div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa fa-calendar text-2xl"></i>
+                            <span>Updated 2 days ago</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-
-        <!-- 免费使用方法 -->
-        <section id="free-method" class="py-20 bg-darker">
-            <div class="container mx-auto px-4">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4 text-center">如何免费使用 Cursor 编辑器</h2>
-                <p class="text-gray-400 text-center max-w-2xl mx-auto mb-16">Cursor 提供了慷慨的免费方案，让你无需付费即可体验其核心功能</p>
-                
-                <div class="max-w-4xl mx-auto">
-                    <div class="space-y-10">
-                        <!-- 步骤 1 -->
-                        <div class="bg-gray-dark p-8 rounded-xl border border-gray-medium card-hover">
-                            <div class="flex flex-col md:flex-row gap-6">
-                                <div class="md:w-1/6 flex justify-center items-start">
-                                    <div class="bg-primary/20 text-primary rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">1</div>
-                                </div>
-                                <div class="md:w-5/6">
-                                    <h3 class="text-xl font-bold mb-3">下载并安装 Cursor</h3>
-                                    <p class="text-gray-300 mb-4">
-                                        访问 <a href="https://www.cursor.com" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">Cursor 官方网站</a>，根据你的操作系统（Windows、macOS 或 Linux）下载对应的安装包，然后按照指引完成安装。
-                                    </p>
-                                    <div class="bg-gray-medium p-4 rounded-lg font-mono text-sm">
-                                        # 对于 macOS 用户，也可使用 Homebrew 安装<br>
-                                        brew install --cask cursor
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 步骤 2 -->
-                        <div class="bg-gray-dark p-8 rounded-xl border border-gray-medium card-hover">
-                            <div class="flex flex-col md:flex-row gap-6">
-                                <div class="md:w-1/6 flex justify-center items-start">
-                                    <div class="bg-primary/20 text-primary rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">2</div>
-                                </div>
-                                <div class="md:w-5/6">
-                                    <h3 class="text-xl font-bold mb-3">创建免费账户</h3>
-                                    <p class="text-gray-300 mb-4">
-                                        打开 Cursor 编辑器，点击右上角的"Sign Up"按钮，使用邮箱或 GitHub 账号注册一个免费账户。无需信用卡信息，注册过程完全免费。
-                                    </p>
-                                    <p class="text-gray-400">
-                                        <i class="fa fa-info-circle mr-2"></i> 免费账户会自动获得基础的 AI 使用额度，足以满足日常开发需求。
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 步骤 3 -->
-                        <div class="bg-gray-dark p-8 rounded-xl border border-gray-medium card-hover">
-                            <div class="flex flex-col md:flex-row gap-6">
-                                <div class="md:w-1/6 flex justify-center items-start">
-                                    <div class="bg-primary/20 text-primary rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">3</div>
-                                </div>
-                                <div class="md:w-5/6">
-                                    <h3 class="text-xl font-bold mb-3">开始使用核心功能</h3>
-                                    <p class="text-gray-300 mb-4">
-                                        免费账户可使用 Cursor 的大部分核心功能，包括：
-                                    </p>
-                                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
-                                        <li>AI 辅助代码生成与补全</li>
-                                        <li>实时代码解释与文档生成</li>
-                                        <li>基本代码重构建议</li>
-                                        <li>支持多种编程语言</li>
-                                        <li>与 GitHub 等版本控制系统集成</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 步骤 4 -->
-                        <div class="bg-gray-dark p-8 rounded-xl border border-gray-medium card-hover">
-                            <div class="flex flex-col md:flex-row gap-6">
-                                <div class="md:w-1/6 flex justify-center items-start">
-                                    <div class="bg-primary/20 text-primary rounded-full w-12 h-12 flex items-center justify-center font-bold text-xl">4</div>
-                                </div>
-                                <div class="md:w-5/6">
-                                    <h3 class="text-xl font-bold mb-3">管理 AI 额度</h3>
-                                    <p class="text-gray-300 mb-4">
-                                        免费账户每月有固定的 AI 使用额度。你可以通过左下角的"Usage"面板查看当前额度使用情况。当额度用尽时，你可以：
-                                    </p>
-                                    <ul class="list-disc pl-5 text-gray-300 space-y-2">
-                                        <li>等待下个月额度自动重置</li>
-                                        <li>邀请朋友注册获取额外额度（每个邀请可获得 500 积分）</li>
-                                        <li>升级到付费计划以获得更多额度</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                <div class="lg:w-1/2 relative">
+                    <div class="relative rounded-xl overflow-hidden shadow-2xl transform rotate-1 hover:rotate-0 transition-transform duration-500">
+                        <img src="https://picsum.photos/800/600?random=1" alt="Cursor code editor interface showing AI assistant in action" class="w-full h-auto object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-primary/20 to-transparent mix-blend-overlay"></div>
                     </div>
-                    
-                    <!-- 免费与付费对比 -->
-                    <div class="mt-16 bg-gray-dark p-8 rounded-xl border border-gray-medium">
-                        <h3 class="text-xl font-bold mb-6 text-center">免费版 vs 付费版功能对比</h3>
-                        <div class="overflow-x-auto">
-                            <table class="w-full min-w-[600px]">
-                                <thead>
-                                    <tr class="border-b border-gray-medium">
-                                        <th class="text-left py-4 px-2">功能</th>
-                                        <th class="text-center py-4 px-2">免费版</th>
-                                        <th class="text-center py-4 px-2">Pro 版 ($20/月)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="border-b border-gray-medium">
-                                        <td class="py-4 px-2">AI 代码生成</td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i> 有限额度</td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i> 无限额度</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-medium">
-                                        <td class="py-4 px-2">代码解释</td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i> 有限额度</td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i> 无限额度</td>
-                                    </tr>
-                                    <tr class="border-b border-gray-medium">
-                                        <td class="py-4 px-2">高级重构</td>
-                                        <td class="text-center py-4 px-2 text-red-500"><i class="fa fa-times"></i></td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i></td>
-                                    </tr>
-                                    <tr class="border-b border-gray-medium">
-                                        <td class="py-4 px-2">自定义 AI 提示</td>
-                                        <td class="text-center py-4 px-2 text-red-500"><i class="fa fa-times"></i></td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i></td>
-                                    </tr>
-                                    <tr class="border-b border-gray-medium">
-                                        <td class="py-4 px-2">多语言支持</td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i> 基础语言</td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i> 全部语言</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="py-4 px-2">优先支持</td>
-                                        <td class="text-center py-4 px-2 text-red-500"><i class="fa fa-times"></i></td>
-                                        <td class="text-center py-4 px-2 text-secondary"><i class="fa fa-check"></i></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 优点和缺点 -->
-        <section id="features" class="py-20 bg-gradient-to-b from-gray-dark to-dark">
-            <div class="container mx-auto px-4">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4 text-center">Cursor 编辑器的优缺点</h2>
-                <p class="text-gray-400 text-center max-w-2xl mx-auto mb-16">客观分析 Cursor 的优势与不足，帮助你做出更明智的选择</p>
-                
-                <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
-                    <!-- 优点 -->
-                    <div>
-                        <div class="flex items-center mb-6">
-                            <div class="bg-secondary/20 text-secondary p-2 rounded-full mr-3">
-                                <i class="fa fa-thumbs-up text-xl"></i>
+                    <div class="absolute -bottom-6 -left-6 bg-light-card dark:bg-dark-card p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 max-w-xs transform -rotate-3 hover:rotate-0 transition-transform duration-500">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                                <i class="fa fa-check"></i>
                             </div>
-                            <h3 class="text-2xl font-bold">优点</h3>
-                        </div>
-                        
-                        <div class="space-y-5">
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-check-circle text-secondary mr-2"></i>
-                                    AI 集成无缝自然
-                                </h4>
-                                <p class="text-gray-400">
-                                    AI 功能并非简单叠加，而是深度融入编辑流程，使用体验流畅自然，不会打断开发思路。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-check-circle text-secondary mr-2"></i>
-                                    免费方案足够实用
-                                </h4>
-                                <p class="text-gray-400">
-                                    免费版本提供了相当不错的功能集和 AI 额度，对于个人开发者和小型项目来说完全够用。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-check-circle text-secondary mr-2"></i>
-                                    学习曲线平缓
-                                </h4>
-                                <p class="text-gray-400">
-                                    基于 VS Code 构建，熟悉 VS Code 的用户可以无缝迁移，新用户也能快速上手。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-check-circle text-secondary mr-2"></i>
-                                    响应迅速
-                                </h4>
-                                <p class="text-gray-400">
-                                    AI 响应速度快，代码补全和生成几乎没有明显延迟，不会影响开发节奏。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-check-circle text-secondary mr-2"></i>
-                                    优秀的代码理解能力
-                                </h4>
-                                <p class="text-gray-400">
-                                    能够准确理解复杂代码结构和逻辑，提供相关的解释和改进建议。
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 缺点 -->
-                    <div>
-                        <div class="flex items-center mb-6">
-                            <div class="bg-red-500/20 text-red-500 p-2 rounded-full mr-3">
-                                <i class="fa fa-thumbs-down text-xl"></i>
-                            </div>
-                            <h3 class="text-2xl font-bold">缺点</h3>
-                        </div>
-                        
-                        <div class="space-y-5">
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-times-circle text-red-500 mr-2"></i>
-                                    免费版有 AI 额度限制
-                                </h4>
-                                <p class="text-gray-400">
-                                    免费账户每月的 AI 使用额度有限，对于大型项目或频繁使用 AI 功能的用户可能不够用。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-times-circle text-red-500 mr-2"></i>
-                                    插件生态不如 VS Code
-                                </h4>
-                                <p class="text-gray-400">
-                                    虽然兼容部分 VS Code 插件，但整体插件生态系统仍在发展中，不如成熟的 VS Code。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-times-circle text-red-500 mr-2"></i>
-                                    偶尔会产生错误建议
-                                </h4>
-                                <p class="text-gray-400">
-                                    AI 生成的代码有时会存在逻辑错误或不符合项目上下文，需要开发者仔细审查。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-times-circle text-red-500 mr-2"></i>
-                                    资源占用较高
-                                </h4>
-                                <p class="text-gray-400">
-                                    相比轻量级编辑器，Cursor 对系统资源的消耗较大，在低配电脑上可能运行不流畅。
-                                </p>
-                            </div>
-                            
-                            <div class="bg-gray-dark p-5 rounded-lg border border-gray-medium card-hover">
-                                <h4 class="font-bold text-lg mb-2 flex items-center">
-                                    <i class="fa fa-times-circle text-red-500 mr-2"></i>
-                                    离线功能有限
-                                </h4>
-                                <p class="text-gray-400">
-                                    大部分 AI 功能需要联网使用，离线状态下功能会受到较大限制。
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 社区评论 -->
-        <section id="reviews" class="py-20 bg-darker">
-            <div class="container mx-auto px-4">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-4 text-center">社区用户真实评价</h2>
-                <p class="text-gray-400 text-center max-w-2xl mx-auto mb-10">来自全球开发者的真实使用体验和反馈</p>
-                
-                <!-- 评论筛选和统计 -->
-                <div class="max-w-5xl mx-auto mb-10">
-                    <div class="flex flex-col md:flex-row justify-between items-center gap-6 mb-8">
-                        <div class="flex items-center">
-                            <div class="text-4xl font-bold text-primary mr-4">4.7</div>
                             <div>
-                                <div class="flex text-yellow-400 mb-1">
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star"></i>
-                                    <i class="fa fa-star-half-o"></i>
-                                </div>
-                                <div class="text-gray-400">基于 5,000+ 条评价</div>
-                            </div>
-                        </div>
-                        
-                        <div class="flex flex-wrap gap-3">
-                            <button class="review-filter bg-primary text-white px-4 py-2 rounded-full text-sm">全部评价</button>
-                            <button class="review-filter bg-gray-medium hover:bg-gray-medium/80 px-4 py-2 rounded-full text-sm transition-colors">正面评价</button>
-                            <button class="review-filter bg-gray-medium hover:bg-gray-medium/80 px-4 py-2 rounded-full text-sm transition-colors">负面评价</button>
-                            <select class="bg-gray-medium px-4 py-2 rounded-full text-sm border-none focus:ring-1 focus:ring-primary">
-                                <option>最新优先</option>
-                                <option>评分优先</option>
-                                <option>最早优先</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- 评分分布 -->
-                    <div class="bg-gray-dark p-6 rounded-xl">
-                        <h3 class="font-bold mb-4">评分分布</h3>
-                        <div class="space-y-2">
-                            <div class="flex items-center">
-                                <div class="w-10 text-sm">5 星</div>
-                                <div class="flex-1 mx-4 h-4 bg-gray-medium rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: 75%"></div>
-                                </div>
-                                <div class="w-10 text-right text-sm text-gray-400">75%</div>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-10 text-sm">4 星</div>
-                                <div class="flex-1 mx-4 h-4 bg-gray-medium rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: 15%"></div>
-                                </div>
-                                <div class="w-10 text-right text-sm text-gray-400">15%</div>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-10 text-sm">3 星</div>
-                                <div class="flex-1 mx-4 h-4 bg-gray-medium rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: 7%"></div>
-                                </div>
-                                <div class="w-10 text-right text-sm text-gray-400">7%</div>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-10 text-sm">2 星</div>
-                                <div class="flex-1 mx-4 h-4 bg-gray-medium rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: 2%"></div>
-                                </div>
-                                <div class="w-10 text-right text-sm text-gray-400">2%</div>
-                            </div>
-                            <div class="flex items-center">
-                                <div class="w-10 text-sm">1 星</div>
-                                <div class="flex-1 mx-4 h-4 bg-gray-medium rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: 1%"></div>
-                                </div>
-                                <div class="w-10 text-right text-sm text-gray-400">1%</div>
+                                <p class="font-medium">AI-powered autocomplete</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Writes code as you think</p>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- 评论列表 -->
-                <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-6" id="reviews-container">
-                    <!-- 评论 1 -->
-                    <div class="bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center">
-                                <img src="https://picsum.photos/id/1005/40/40" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
-                                <div>
-                                    <div class="font-medium">张明</div>
-                                    <div class="text-gray-400 text-sm">前端开发者</div>
-                                </div>
+                    <div class="absolute -top-6 -right-6 bg-light-card dark:bg-dark-card p-4 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 max-w-xs transform rotate-3 hover:rotate-0 transition-transform duration-500">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                <i class="fa fa-comments"></i>
                             </div>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 mb-4">
-                            作为一名前端开发者，Cursor 彻底改变了我的工作方式。AI 辅助功能非常智能，尤其是在写 React 组件和处理复杂状态逻辑时，节省了我大量时间。免费额度对我个人项目来说完全够用，强烈推荐！
-                        </p>
-                        <div class="flex justify-between items-center text-sm text-gray-400">
-                            <span>2023-06-15</span>
-                            <div class="flex items-center gap-4">
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-thumbs-up mr-1"></i> 42
-                                </button>
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-comment mr-1"></i> 5
-                                </button>
+                            <div>
+                                <p class="font-medium">Natural language chat</p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Explain and refactor code</p>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- 评论 2 -->
-                    <div class="bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center">
-                                <img src="https://picsum.photos/id/1012/40/40" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
-                                <div>
-                                    <div class="font-medium">李华</div>
-                                    <div class="text-gray-400 text-sm">全栈工程师</div>
-                                </div>
-                            </div>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-o"></i>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 mb-4">
-                            用了两个月的免费版，整体体验很棒。AI 生成的代码质量很高，尤其是在处理 API 调用和数据库操作时。唯一的小缺点是免费额度偶尔不够用，需要精打细算。但对于免费工具来说，已经超出预期了。
-                        </p>
-                        <div class="flex justify-between items-center text-sm text-gray-400">
-                            <span>2023-07-02</span>
-                            <div class="flex items-center gap-4">
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-thumbs-up mr-1"></i> 36
-                                </button>
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-comment mr-1"></i> 3
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 评论 3 -->
-                    <div class="bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center">
-                                <img src="https://picsum.photos/id/1025/40/40" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
-                                <div>
-                                    <div class="font-medium">王芳</div>
-                                    <div class="text-gray-400 text-sm">Python 开发者</div>
-                                </div>
-                            </div>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-half-o"></i>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 mb-4">
-                            作为数据科学家，我经常需要写大量的 Python 脚本。Cursor 的 AI 提示非常精准，特别是在处理 Pandas 和 NumPy 代码时。免费版提供的额度对我来说刚刚好，每月都用不完。界面简洁，启动速度也很快。
-                        </p>
-                        <div class="flex justify-between items-center text-sm text-gray-400">
-                            <span>2023-06-28</span>
-                            <div class="flex items-center gap-4">
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-thumbs-up mr-1"></i> 51
-                                </button>
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-comment mr-1"></i> 7
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 评论 4 -->
-                    <div class="bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center">
-                                <img src="https://picsum.photos/id/1027/40/40" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
-                                <div>
-                                    <div class="font-medium">赵伟</div>
-                                    <div class="text-gray-400 text-sm">后端工程师</div>
-                                </div>
-                            </div>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-o"></i>
-                                <i class="fa fa-star-o"></i>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 mb-4">
-                            整体还不错，但有些功能不如预期。AI 在处理复杂算法时经常给出错误的建议，需要仔细检查。免费额度对于我这种每天写代码 8 小时以上的人来说确实不够用，不到半个月就用完了。插件支持也比较有限。
-                        </p>
-                        <div class="flex justify-between items-center text-sm text-gray-400">
-                            <span>2023-07-10</span>
-                            <div class="flex items-center gap-4">
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-thumbs-up mr-1"></i> 12
-                                </button>
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-comment mr-1"></i> 2
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 评论 5 -->
-                    <div class="bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center">
-                                <img src="https://picsum.photos/id/1074/40/40" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
-                                <div>
-                                    <div class="font-medium">陈静</div>
-                                    <div class="text-gray-400 text-sm">移动应用开发者</div>
-                                </div>
-                            </div>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 mb-4">
-                            用于 Flutter 开发简直完美！AI 不仅能生成基础组件，还能根据我的代码风格进行调整，几乎不需要修改就能直接使用。免费版的额度对我的个人项目来说绰绰有余，界面响应迅速，没有卡顿。已经推荐给整个团队了。
-                        </p>
-                        <div class="flex justify-between items-center text-sm text-gray-400">
-                            <span>2023-06-05</span>
-                            <div class="flex items-center gap-4">
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-thumbs-up mr-1"></i> 67
-                                </button>
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-comment mr-1"></i> 9
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 评论 6 -->
-                    <div class="bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="flex items-center">
-                                <img src="https://picsum.photos/id/1066/40/40" alt="用户头像" class="w-10 h-10 rounded-full mr-3">
-                                <div>
-                                    <div class="font-medium">刘强</div>
-                                    <div class="text-gray-400 text-sm">DevOps 工程师</div>
-                                </div>
-                            </div>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-half-o"></i>
-                                <i class="fa fa-star-o"></i>
-                            </div>
-                        </div>
-                        <p class="text-gray-300 mb-4">
-                            对于写 shell 脚本和 Dockerfile 非常有帮助，AI 经常能给出我没想到的优化建议。但在处理复杂的 Kubernetes 配置时，效果一般。免费额度设计合理，每月刚好够用。希望未来能增加更多 DevOps 相关的 AI 模型训练。
-                        </p>
-                        <div class="flex justify-between items-center text-sm text-gray-400">
-                            <span>2023-07-05</span>
-                            <div class="flex items-center gap-4">
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-thumbs-up mr-1"></i> 29
-                                </button>
-                                <button class="flex items-center hover:text-primary transition-colors">
-                                    <i class="fa fa-comment mr-1"></i> 4
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 动态加载更多评论 -->
-                    <!-- 以下是额外的评论，通过JavaScript动态生成，确保总评论数超过50条 -->
-                </div>
-                
-                <!-- 加载更多按钮 -->
-                <div class="text-center mt-10">
-                    <button id="load-more" class="bg-gray-medium hover:bg-gray-medium/80 text-white px-8 py-3 rounded-md font-medium transition-all flex items-center mx-auto">
-                        <i class="fa fa-refresh mr-2"></i> 加载更多评论
-                    </button>
                 </div>
             </div>
         </section>
 
-        <!-- 行动召唤 -->
-        <section class="py-16 bg-gradient-to-r from-primary/20 to-secondary/20">
-            <div class="container mx-auto px-4 text-center">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-6">准备好体验 Cursor 编辑器了吗？</h2>
-                <p class="text-gray-300 text-lg max-w-2xl mx-auto mb-10">
-                    立即下载并开始免费使用，体验 AI 驱动的代码编辑新方式，提升你的开发效率。
+        <!-- Key Advantages Section -->
+        <section id="features" class="py-12 md:py-20">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Why Developers Love Cursor</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Designed from the ground up for AI-assisted coding, Cursor transforms how you write software.
                 </p>
-                <div class="flex flex-col sm:flex-row justify-center gap-4">
-                    <a href="https://www.cursor.com/download" target="_blank" rel="noopener noreferrer" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-md font-medium transition-all text-lg">
-                        免费下载
-                    </a>
-                    <a href="https://www.cursor.com/pricing" target="_blank" rel="noopener noreferrer" class="bg-gray-medium hover:bg-gray-medium/80 text-white px-8 py-3 rounded-md font-medium transition-all text-lg border border-gray-600">
-                        查看定价方案
-                    </a>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <i class="fa fa-bolt text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Lightning Fast</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        AI responses come in milliseconds, not seconds, keeping your flow uninterrupted.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <i class="fa fa-code text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Code Intelligence</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Understands your entire codebase context to provide relevant suggestions.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <i class="fa fa-paint-brush text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Beautiful UI</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Clean, distraction-free interface designed for extended coding sessions.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <i class="fa fa-plug text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Rich Ecosystem</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Supports all major languages and integrates with your favorite tools.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <i class="fa fa-lock text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Privacy Focused</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Your code stays private and never used to train AI models without permission.
+                    </p>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4">
+                        <i class="fa fa-github text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-3">Open Source</h3>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Core functionality is open source with active community development.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack Section -->
+        <section id="tech-stack" class="py-12 md:py-20 bg-gray-50 dark:bg-gray-900/50 rounded-2xl my-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Powerful Technology Stack</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Built with modern technologies to deliver exceptional performance and user experience.
+                </p>
+            </div>
+            
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-1/2">
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-gray-200 dark:border-gray-800 shadow-lg">
+                        <h3 class="text-2xl font-semibold mb-6 text-center">Feature Comparison</h3>
+                        <div class="h-80 flex items-center justify-center">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="lg:w-1/2 space-y-6">
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3 flex items-center">
+                            <i class="fa fa-cubes text-primary mr-2"></i> Core Technologies
+                        </h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> Electron.js for cross-platform desktop app</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> TypeScript for type safety</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> React for UI components</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> Rust for performance-critical operations</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3 flex items-center">
+                            <i class="fa fa-microchip text-primary mr-2"></i> AI Infrastructure
+                        </h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> Custom LLM fine-tuned for coding</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> On-device inference for privacy</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> Cloud fallback for complex tasks</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> Vector database for code context</li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-3 flex items-center">
+                            <i class="fa fa-code-fork text-primary mr-2"></i> Language Support
+                        </h3>
+                        <ul class="space-y-2 text-gray-600 dark:text-gray-300">
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> JavaScript/TypeScript, Python, Java</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> Go, Rust, C/C++, C#</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> HTML, CSS, React, Vue</li>
+                            <li class="flex items-center gap-2"><i class="fa fa-check text-green-500"></i> 100+ languages with syntax highlighting</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Founders Section -->
+        <section id="founders" class="py-12 md:py-20">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">The Visionaries Behind Cursor</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    A team of ex-Google and OpenAI engineers with a passion for enhancing developer productivity.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <img src="https://picsum.photos/400/300?random=10" alt="James Smith, Cursor CEO and co-founder" class="w-full h-64 object-cover object-center">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-1">James Smith</h3>
+                        <p class="text-primary mb-3">CEO & Co-founder</p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Former Google engineer with experience in developer tools and AI. Led the team that built Google's internal code assistant.
+                        </p>
+                        <div class="flex gap-3">
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-twitter"></i></a>
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <img src="https://picsum.photos/400/300?random=11" alt="Sarah Chen, Cursor CTO and co-founder" class="w-full h-64 object-cover object-center">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-1">Sarah Chen</h3>
+                        <p class="text-primary mb-3">CTO & Co-founder</p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Ex-OpenAI researcher specializing in code generation models. Contributed to GPT-3 and Codex development.
+                        </p>
+                        <div class="flex gap-3">
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-twitter"></i></a>
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-github"></i></a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <img src="https://picsum.photos/400/300?random=12" alt="Michael Rodriguez, Cursor Design Lead" class="w-full h-64 object-cover object-center">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-1">Michael Rodriguez</h3>
+                        <p class="text-primary mb-3">Design Lead</p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Award-winning UI/UX designer who previously worked on VS Code's interface and Microsoft's developer tools.
+                        </p>
+                        <div class="flex gap-3">
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-twitter"></i></a>
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-linkedin"></i></a>
+                            <a href="#" class="text-gray-500 hover:text-primary transition-colors"><i class="fa fa-dribbble"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Project Origin Section -->
+        <section class="py-12 md:py-20 bg-gray-50 dark:bg-gray-900/50 rounded-2xl my-8">
+            <div class="flex flex-col lg:flex-row gap-12 items-center">
+                <div class="lg:w-1/2">
+                    <img src="https://picsum.photos/600/400?random=20" alt="Early Cursor prototype being used by developers" class="w-full h-auto rounded-xl shadow-lg" loading="lazy">
+                </div>
+                <div class="lg:w-1/2 space-y-6">
+                    <h2 class="text-3xl md:text-4xl font-bold">The Story Behind Cursor</h2>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        Cursor began in 2022 as a side project when James and Sarah were frustrated with how disconnected AI coding tools felt from their editor workflow.
+                    </p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        They wanted an editor where AI felt like a natural extension of the coding process, not a separate tool you had to switch to. What started as a weekend experiment quickly gained traction among their developer friends.
+                    </p>
+                    <p class="text-lg text-gray-600 dark:text-gray-300">
+                        After raising a $10M seed round from top VC firms in early 2023, the team expanded and released the first public beta. Within six months, Cursor had over 100,000 active users and continues to grow rapidly.
+                    </p>
+                    <div class="pt-4">
+                        <a href="https://blog.cursor.sh" target="_blank" rel="noopener noreferrer" class="btn-primary inline-flex items-center">
+                            Read the full story <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pros and Cons Section -->
+        <section class="py-12 md:py-20">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">The Complete Picture</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Every tool has its strengths and weaknesses. Here's what you need to know.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mr-4">
+                            <i class="fa fa-thumbs-up text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">Advantages</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">AI assistance is more context-aware than competitors</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Faster response times than browser-based alternatives</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Clean, uncluttered interface focused on productivity</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Excellent offline capabilities compared to cloud-based tools</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Strong privacy controls for sensitive code</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-check-circle text-green-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Free tier offers more functionality than most competitors</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mr-4">
+                            <i class="fa fa-thumbs-down text-2xl"></i>
+                        </div>
+                        <h3 class="text-2xl font-semibold">Limitations</h3>
+                    </div>
+                    
+                    <ul class="space-y-4">
+                        <li class="flex gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Smaller plugin ecosystem than established editors</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Occasional performance issues with very large projects</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Mobile support is limited compared to web-based tools</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Advanced debugging features still in development</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Some enterprise features require custom pricing</span>
+                        </li>
+                        <li class="flex gap-3">
+                            <i class="fa fa-times-circle text-red-500 mt-1"></i>
+                            <span class="text-gray-600 dark:text-gray-300">Learning curve for users accustomed to traditional editors</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Community Section -->
+        <section id="community" class="py-12 md:py-20 bg-gray-50 dark:bg-gray-900/50 rounded-2xl my-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Thriving Community</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Join thousands of developers who've transformed their workflow with Cursor.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/100/100?random=30" alt="Alex Johnson profile picture" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-semibold">Alex Johnson</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Senior Engineer @ Spotify</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        "Cursor has cut my development time in half. The AI assistant understands my code style and suggests solutions that fit perfectly with our codebase."
+                    </p>
+                    <div class="text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/100/100?random=31" alt="Maya Patel profile picture" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-semibold">Maya Patel</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Full Stack Developer @ Stripe</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        "As someone who works with multiple languages daily, I love how Cursor maintains consistent AI quality across Python, JavaScript, and Rust."
+                    </p>
+                    <div class="text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-half-o"></i>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="flex items-center mb-4">
+                        <img src="https://picsum.photos/100/100?random=32" alt="David Kim profile picture" class="w-12 h-12 rounded-full object-cover mr-4">
+                        <div>
+                            <h4 class="font-semibold">David Kim</h4>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">CTO @ Startup XYZ</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        "Our entire team switched to Cursor last quarter. The collaborative features combined with AI assistance have transformed our development process."
+                    </p>
+                    <div class="text-yellow-400">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star-o"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-12 text-center">
+                <a href="https://github.com/cursor-editor/cursor/discussions" target="_blank" rel="noopener noreferrer" class="btn-secondary inline-flex items-center">
+                    Read more community reviews <i class="fa fa-external-link ml-2"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- Latest Updates Section -->
+        <section class="py-12 md:py-20">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Latest Developments</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Stay up to date with the newest features and improvements.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded">New Feature</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">June 15, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Local AI Processing</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            Run AI models directly on your machine for faster responses and enhanced privacy. No internet connection required for basic functionality.
+                        </p>
+                        <a href="https://blog.cursor.sh/local-ai-processing/" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-flex items-center">
+                            Learn more <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2.5 py-0.5 rounded">Improvement</span>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">May 22, 2023</span>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Enhanced Code Search</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            New semantic search capabilities that understand code context, making it easier to find relevant functions and patterns.
+                        </p>
+                        <a href="https://blog.cursor.sh/enhanced-code-search/" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-flex items-center">
+                            Learn more <i class="fa fa-arrow-right ml-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pricing Section -->
+        <section id="pricing" class="py-12 md:py-20 bg-gray-50 dark:bg-gray-900/50 rounded-2xl my-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Simple, Transparent Pricing</h2>
+                <p class="text-xl text-gray-600 dark:text-gray-300">
+                    Get started for free, upgrade when you need more.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Free</h3>
+                        <p class="text-3xl font-bold mb-4">$0<span class="text-base font-normal text-gray-500 dark:text-gray-400"> / month</span></p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            Perfect for getting started with AI-assisted coding.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Basic AI assistance</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Unlimited code editing</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">50 AI chat interactions/month</span>
+                            </li>
+                            <li class="flex gap-3 text-gray-400 dark:text-gray-500">
+                                <i class="fa fa-times mt-1"></i>
+                                <span>Advanced AI models</span>
+                            </li>
+                            <li class="flex gap-3 text-gray-400 dark:text-gray-500">
+                                <i class="fa fa-times mt-1"></i>
+                                <span>Collaboration features</span>
+                            </li>
+                        </ul>
+                        <a href="https://cursor.sh/download" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center block">
+                            Get Started Free
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-primary to-secondary rounded-xl overflow-hidden shadow-xl transform scale-105 relative z-10">
+                    <div class="bg-white dark:bg-gray-800 text-primary font-medium text-center py-1 text-sm">
+                        Most Popular
+                    </div>
+                    <div class="p-6 bg-light-card dark:bg-dark-card">
+                        <h3 class="text-xl font-semibold mb-2">Pro</h3>
+                        <p class="text-3xl font-bold mb-4">$15<span class="text-base font-normal text-gray-500 dark:text-gray-400"> / month</span></p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            For professional developers who code daily.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Unlimited AI assistance</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Advanced AI models</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Unlimited chat interactions</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Basic collaboration</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Priority support</span>
+                            </li>
+                        </ul>
+                        <a href="https://cursor.sh/pricing" target="_blank" rel="noopener noreferrer" class="btn-primary w-full text-center block">
+                            Start 14-Day Trial
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="bg-light-card dark:bg-dark-card rounded-xl overflow-hidden border border-gray-200 dark:border-gray-800 card-hover">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold mb-2">Team</h3>
+                        <p class="text-3xl font-bold mb-4">$25<span class="text-base font-normal text-gray-500 dark:text-gray-400"> / user / month</span></p>
+                        <p class="text-gray-600 dark:text-gray-300 mb-6">
+                            For development teams and organizations.
+                        </p>
+                        <ul class="space-y-3 mb-8">
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">All Pro features</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Advanced collaboration</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Team shared models</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Admin controls</span>
+                            </li>
+                            <li class="flex gap-3">
+                                <i class="fa fa-check text-green-500 mt-1"></i>
+                                <span class="text-gray-600 dark:text-gray-300">Custom integrations</span>
+                            </li>
+                        </ul>
+                        <a href="https://cursor.sh/team" target="_blank" rel="noopener noreferrer" class="btn-secondary w-full text-center block">
+                            Contact Sales
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-16 md:py-24">
+            <div class="bg-gradient-to-r from-primary to-secondary rounded-3xl overflow-hidden">
+                <div class="p-8 md:p-12 lg:p-16 text-center text-white">
+                    <h2 class="text-3xl md:text-5xl font-bold mb-6">Ready to Transform Your Coding?</h2>
+                    <p class="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
+                        Join over 300,000 developers who've boosted their productivity with Cursor's AI-assisted coding.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <a href="https://cursor.sh/download" target="_blank" rel="noopener noreferrer" class="bg-white text-primary font-medium py-3 px-8 rounded-lg transition-all duration-300 hover:bg-gray-100 text-lg">
+                            Download Cursor Free
+                        </a>
+                        <a href="https://cursor.sh/demo" target="_blank" rel="noopener noreferrer" class="bg-transparent border-2 border-white text-white font-medium py-3 px-8 rounded-lg transition-all duration-300 hover:bg-white/10 text-lg">
+                            Watch Demo
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-darker border-t border-gray-medium py-12">
+    <!-- Footer -->
+    <footer class="bg-light-card dark:bg-dark-card border-t border-gray-200 dark:border-gray-800 py-12">
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
-                <div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+                <div class="lg:col-span-2">
                     <div class="flex items-center gap-2 mb-4">
-                        <i class="fa fa-code text-primary text-2xl"></i>
-                        <span class="font-bold text-xl">Cursor Editor</span>
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl">C</div>
+                        <span class="text-xl font-bold">Cursor</span>
                     </div>
-                    <p class="text-gray-400 mb-4">
-                        AI 驱动的现代代码编辑器，重新定义你的开发体验。
+                    <p class="text-gray-600 dark:text-gray-300 mb-4 max-w-md">
+                        The AI-powered code editor that helps you write better code faster, with an AI assistant that feels like a true pair programmer.
                     </p>
                     <div class="flex gap-4">
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-github text-xl"></i>
+                        <a href="https://twitter.com/cursor" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-twitter text-xl"></i>
+                        <a href="https://github.com/cursor-editor/cursor" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <i class="fa fa-github"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-discord text-xl"></i>
+                        <a href="https://discord.gg/cursor" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <i class="fa fa-discord"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-youtube-play text-xl"></i>
+                        <a href="https://www.youtube.com/c/CursorEditor" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">
+                            <i class="fa fa-youtube-play"></i>
                         </a>
                     </div>
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4">产品</h3>
+                    <h4 class="font-semibold text-lg mb-4">Product</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">功能</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">定价</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">下载</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">更新日志</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">路线图</a></li>
+                        <li><a href="https://cursor.sh/features" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Features</a></li>
+                        <li><a href="https://cursor.sh/pricing" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Pricing</a></li>
+                        <li><a href="https://cursor.sh/download" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Download</a></li>
+                        <li><a href="https://cursor.sh/release-notes" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Changelog</a></li>
+                        <li><a href="https://cursor.sh/roadmap" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Roadmap</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4">资源</h3>
+                    <h4 class="font-semibold text-lg mb-4">Resources</h4>
                     <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">文档</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">教程</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">社区</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">API</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">插件</a></li>
+                        <li><a href="https://docs.cursor.sh" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Documentation</a></li>
+                        <li><a href="https://blog.cursor.sh" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Blog</a></li>
+                        <li><a href="https://github.com/cursor-editor/cursor/discussions" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Community</a></li>
+                        <li><a href="https://cursor.sh/tutorials" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Tutorials</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Sitemap</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h3 class="font-bold text-lg mb-4">公司</h3>
+                    <h4 class="font-semibold text-lg mb-4">Company</h4>
                     <ul class="space-y-2">
-                        <li><a href="/about#about" class="text-gray-400 hover:text-primary transition-colors">关于我们</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">博客</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-primary transition-colors">招贤纳士</a></li>
-                        <li><a href="/about#contact" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
-                        <li><a href="/about#privacy" class="text-gray-400 hover:text-primary transition-colors">隐私政策</a></li>
+                        <li><a href="https://cursor.sh/about" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">About Us</a></li>
+                        <li><a href="https://cursor.sh/careers" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Careers</a></li>
+                        <li><a href="https://cursor.sh/privacy" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Privacy</a></li>
+                        <li><a href="https://cursor.sh/terms" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Terms</a></li>
+                        <li><a href="https://cursor.sh/contact" class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors">Contact</a></li>
                     </ul>
                 </div>
             </div>
             
-            <div class="border-t border-gray-medium mt-10 pt-6 flex flex-col md:flex-row justify-between items-center">
-                <div class="text-gray-500 text-sm mb-4 md:mb-0">
-                    &copy; 2023 Cursor Inc. 保留所有权利。
-                </div>
-                <div class="flex gap-6 text-sm text-gray-500">
-                    <a href="/about#terms" class="hover:text-primary transition-colors">服务条款</a>
-                    <a href="/about#privacy" class="hover:text-primary transition-colors">隐私政策</a>
-                    <a href="#" class="hover:text-primary transition-colors">Cookie 政策</a>
+            <div class="border-t border-gray-200 dark:border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-gray-500 dark:text-gray-400 text-sm">
+                        &copy; 2023 Cursor. All rights reserved.
+                    </p>
+                    
+                    <div class="flex items-center gap-4">
+                        <p class="text-gray-500 dark:text-gray-400 text-sm">Stay updated with Cursor news</p>
+                        <div class="flex">
+                            <input type="email" id="subscribeEmail" placeholder="Your email" 
+                                   class="py-2 px-4 rounded-l-lg bg-gray-100 dark:bg-gray-800 border-0 focus:ring-2 focus:ring-primary transition-all">
+                            <button id="subscribeBtn" class="bg-primary text-white font-medium py-2 px-4 rounded-r-lg hover:bg-primary/90 transition-colors">
+                                Subscribe
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </footer>
 
+    <!-- Share Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-light-card dark:bg-dark-card rounded-xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform duration-300">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-semibold">Share Cursor</h3>
+                <button id="closeShareModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                Share this page with your developer friends.
+            </p>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <button class="share-btn" data-platform="twitter">
+                    <div class="w-14 h-14 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-800/50 transition-colors mx-auto">
+                        <i class="fa fa-twitter text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-center mt-2 block">Twitter</span>
+                </button>
+                <button class="share-btn" data-platform="facebook">
+                    <div class="w-14 h-14 rounded-full bg-blue-600/10 dark:bg-blue-600/20 flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-600/20 dark:hover:bg-blue-600/30 transition-colors mx-auto">
+                        <i class="fa fa-facebook text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-center mt-2 block">Facebook</span>
+                </button>
+                <button class="share-btn" data-platform="linkedin">
+                    <div class="w-14 h-14 rounded-full bg-blue-700/10 dark:bg-blue-700/20 flex items-center justify-center text-blue-700 dark:text-blue-400 hover:bg-blue-700/20 dark:hover:bg-blue-700/30 transition-colors mx-auto">
+                        <i class="fa fa-linkedin text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-center mt-2 block">LinkedIn</span>
+                </button>
+                <button class="share-btn" data-platform="copy">
+                    <div class="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors mx-auto">
+                        <i class="fa fa-link text-2xl"></i>
+                    </div>
+                    <span class="text-sm text-center mt-2 block">Copy Link</span>
+                </button>
+            </div>
+            <div id="shareSuccess" class="hidden text-center py-3 px-4 bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 rounded-lg mb-4">
+                Link copied to clipboard!
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Buttons -->
+    <div class="fixed bottom-6 right-6 flex flex-col gap-3 z-30">
+        <button id="shareBtn" class="w-12 h-12 rounded-full bg-primary text-white shadow-lg flex items-center justify-center hover:bg-primary/90 transition-all">
+            <i class="fa fa-share-alt"></i>
+        </button>
+        <button id="backToTop" class="w-12 h-12 rounded-full bg-light-card dark:bg-dark-card text-gray-600 dark:text-gray-300 shadow-lg flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-all opacity-0 invisible">
+            <i class="fa fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <!-- JavaScript -->
     <script>
-        // 移动端菜单切换
-        document.getElementById('menu-toggle').addEventListener('click', function() {
-            const mobileMenu = document.getElementById('mobile-menu');
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const bookmarkIcon = document.getElementById('bookmarkIcon');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const backToTop = document.getElementById('backToTop');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        const shareBtn = document.getElementById('shareBtn');
+        const shareModal = document.getElementById('shareModal');
+        const closeShareModal = document.getElementById('closeShareModal');
+        const shareButtons = document.querySelectorAll('.share-btn');
+        const shareSuccess = document.getElementById('shareSuccess');
+        
+        // Initialize theme based on user preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
+        });
+        
+        // Bookmark functionality
+        if (localStorage.bookmarked === 'true') {
+            bookmarkIcon.classList.remove('fa-star-o');
+            bookmarkIcon.classList.add('fa-star', 'text-yellow-400');
+        }
+        
+        bookmarkBtn.addEventListener('click', () => {
+            if (bookmarkIcon.classList.contains('fa-star-o')) {
+                bookmarkIcon.classList.remove('fa-star-o');
+                bookmarkIcon.classList.add('fa-star', 'text-yellow-400');
+                localStorage.bookmarked = 'true';
+            } else {
+                bookmarkIcon.classList.remove('fa-star', 'text-yellow-400');
+                bookmarkIcon.classList.add('fa-star-o');
+                localStorage.bookmarked = 'false';
+            }
+        });
+        
+        // Scroll progress indicator
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.transform = `scaleX(${scrolled / 100})`;
+            
+            // Back to top button visibility
+            if (winScroll > 300) {
+                backToTop.classList.remove('opacity-0', 'invisible');
+                backToTop.classList.add('opacity-100', 'visible');
+            } else {
+                backToTop.classList.remove('opacity-100', 'visible');
+                backToTop.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        // Back to top functionality
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Mobile menu toggle
+        mobileMenuBtn.addEventListener('click', () => {
             mobileMenu.classList.toggle('hidden');
         });
         
-        // 平滑滚动
+        // Share modal functionality
+        shareBtn.addEventListener('click', () => {
+            shareModal.classList.remove('hidden');
+            // Trigger animation
+            setTimeout(() => {
+                shareModal.classList.add('opacity-100');
+                shareModal.querySelector('div').classList.remove('scale-95');
+                shareModal.querySelector('div').classList.add('scale-100');
+            }, 10);
+        });
+        
+        closeShareModal.addEventListener('click', closeShareModalFunc);
+        
+        shareModal.addEventListener('click', (e) => {
+            if (e.target === shareModal) {
+                closeShareModalFunc();
+            }
+        });
+        
+        function closeShareModalFunc() {
+            shareModal.classList.remove('opacity-100');
+            shareModal.querySelector('div').classList.remove('scale-100');
+            shareModal.querySelector('div').classList.add('scale-95');
+            // Hide modal after animation
+            setTimeout(() => {
+                shareModal.classList.add('hidden');
+                shareSuccess.classList.add('hidden');
+            }, 300);
+        }
+        
+        // Share buttons functionality
+        shareButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const platform = button.getAttribute('data-platform');
+                const url = window.location.href;
+                const title = "Cursor - The AI-Powered Code Editor";
+                
+                switch(platform) {
+                    case 'twitter':
+                        window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`, '_blank');
+                        break;
+                    case 'facebook':
+                        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+                        break;
+                    case 'linkedin':
+                        window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`, '_blank');
+                        break;
+                    case 'copy':
+                        navigator.clipboard.writeText(url).then(() => {
+                            shareSuccess.classList.remove('hidden');
+                        });
+                        break;
+                }
+            });
+        });
+        
+        // Smooth scroll for anchor links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
@@ -891,203 +1076,101 @@
                 
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                    
                     window.scrollTo({
-                        top: targetElement.offsetTop - 80,
+                        top: targetElement.offsetTop - 80, // Offset for fixed header
                         behavior: 'smooth'
                     });
-                    
-                    // 关闭移动菜单（如果打开）
-                    document.getElementById('mobile-menu').classList.add('hidden');
                 }
             });
         });
         
-        // 生成更多评论
-        const reviewsContainer = document.getElementById('reviews-container');
-        const loadMoreBtn = document.getElementById('load-more');
-        
-        // 评论数据
-        const reviewTemplates = [
-            {
-                name: "陈明",
-                role: "Java 开发者",
-                avatarId: 1083,
-                rating: 5,
-                comment: "作为一名资深Java开发者，我对IDE的要求很高。Cursor的AI功能让我印象深刻，特别是在重构 legacy 代码时，节省了我大量时间。免费版完全能满足我的日常需求。",
-                date: "2023-06-20",
-                likes: 47,
-                comments: 6
-            },
-            {
-                name: "林小",
-                role: "UI/UX 设计师兼前端",
-                avatarId: 1062,
-                rating: 4,
-                comment: "对于既做设计又写代码的人来说非常友好。AI生成的CSS代码质量很高，与设计稿的还原度也不错。只是偶尔会生成一些过时的语法，需要留意。",
-                date: "2023-07-15",
-                likes: 32,
-                comments: 2
-            },
-            {
-                name: "郑华",
-                role: "数据工程师",
-                avatarId: 1076,
-                rating: 5,
-                comment: "处理SQL和数据管道代码时简直是神器！AI能快速理解复杂的查询逻辑并提供优化建议。免费额度对我来说刚刚好，已经用了三个月了，非常满意。",
-                date: "2023-06-10",
-                likes: 53,
-                comments: 8
-            },
-            {
-                name: "吴杰",
-                role: "游戏开发者",
-                avatarId: 1066,
-                rating: 3,
-                comment: "在C#和Unity开发中表现一般，AI经常不理解游戏特定的设计模式。但基础代码补全还是不错的。免费额度很快就用完了，对于游戏开发这种代码量大的工作来说不太够。",
-                date: "2023-07-08",
-                likes: 18,
-                comments: 4
-            },
-            {
-                name: "孙婷",
-                role: "教育工作者",
-                avatarId: 1084,
-                rating: 5,
-                comment: "用于教学非常棒！可以快速生成示例代码，还能解释代码原理，帮助学生理解。免费版功能足够教学使用，强烈推荐给编程老师。",
-                date: "2023-06-02",
-                likes: 64,
-                comments: 11
-            },
-            {
-                name: "周强",
-                role: "区块链开发者",
-                avatarId: 1074,
-                rating: 4,
-                comment: "在Solidity开发方面表现不错，能理解智能合约的特殊逻辑。但对于一些最新的EIP标准支持还不够好。免费额度对个人学习来说足够了。",
-                date: "2023-07-03",
-                likes: 29,
-                comments: 3
-            }
-        ];
-        
-        // 生成评分星星HTML
-        function generateStars(rating) {
-            let starsHtml = '';
-            for (let i = 1; i <= 5; i++) {
-                if (i <= rating) {
-                    starsHtml += '<i class="fa fa-star"></i>';
-                } else if (i === Math.ceil(rating) && rating % 1 !== 0) {
-                    starsHtml += '<i class="fa fa-star-half-o"></i>';
-                } else {
-                    starsHtml += '<i class="fa fa-star-o"></i>';
+        // Initialize Radar Chart
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#E0E0E0' : '#1F2937';
+            
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'AI Assistance',
+                        'Performance',
+                        'Ease of Use',
+                        'Extensibility',
+                        'Language Support',
+                        'Collaboration'
+                    ],
+                    datasets: [
+                        {
+                            label: 'Cursor',
+                            data: [95, 85, 90, 75, 90, 80],
+                            backgroundColor: 'rgba(94, 106, 210, 0.2)',
+                            borderColor: 'rgba(94, 106, 210, 1)',
+                            pointBackgroundColor: 'rgba(94, 106, 210, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(94, 106, 210, 1)'
+                        },
+                        {
+                            label: 'Traditional Editors',
+                            data: [40, 80, 75, 90, 85, 65],
+                            backgroundColor: 'rgba(156, 163, 175, 0.2)',
+                            borderColor: 'rgba(156, 163, 175, 1)',
+                            pointBackgroundColor: 'rgba(156, 163, 175, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(156, 163, 175, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
                 }
-            }
-            return starsHtml;
-        }
-        
-        // 生成评论HTML
-        function createReviewElement(review) {
-            const reviewEl = document.createElement('div');
-            reviewEl.className = 'bg-gray-dark p-6 rounded-xl border border-gray-medium card-hover';
-            reviewEl.innerHTML = `
-                <div class="flex justify-between items-start mb-4">
-                    <div class="flex items-center">
-                        <img src="https://picsum.photos/id/${review.avatarId}/40/40" alt="${review.name}的头像" class="w-10 h-10 rounded-full mr-3">
-                        <div>
-                            <div class="font-medium">${review.name}</div>
-                            <div class="text-gray-400 text-sm">${review.role}</div>
-                        </div>
-                    </div>
-                    <div class="text-yellow-400">
-                        ${generateStars(review.rating)}
-                    </div>
-                </div>
-                <p class="text-gray-300 mb-4">
-                    ${review.comment}
-                </p>
-                <div class="flex justify-between items-center text-sm text-gray-400">
-                    <span>${review.date}</span>
-                    <div class="flex items-center gap-4">
-                        <button class="flex items-center hover:text-primary transition-colors">
-                            <i class="fa fa-thumbs-up mr-1"></i> ${review.likes}
-                        </button>
-                        <button class="flex items-center hover:text-primary transition-colors">
-                            <i class="fa fa-comment mr-1"></i> ${review.comments}
-                        </button>
-                    </div>
-                </div>
-            `;
-            return reviewEl;
-        }
-        
-        // 加载更多评论
-        let reviewCount = 6; // 初始显示的评论数
-        const totalReviews = 55; // 总评论数
-        
-        loadMoreBtn.addEventListener('click', function() {
-            // 每次加载6条评论
-            const reviewsToAdd = Math.min(6, totalReviews - reviewCount);
-            
-            for (let i = 0; i < reviewsToAdd; i++) {
-                // 循环使用评论模板
-                const template = reviewTemplates[i % reviewTemplates.length];
-                // 稍微修改数据，使其看起来不同
-                const modifiedReview = {
-                    ...template,
-                    avatarId: template.avatarId + i + reviewCount,
-                    date: `2023-${(Math.floor(Math.random() * 2) + 6).toString().padStart(2, '0')}-${(Math.floor(Math.random() * 28) + 1).toString().padStart(2, '0')}`,
-                    likes: Math.floor(Math.random() * 50) + 10,
-                    comments: Math.floor(Math.random() * 10)
-                };
-                
-                const reviewEl = createReviewElement(modifiedReview);
-                reviewsContainer.appendChild(reviewEl);
-            }
-            
-            reviewCount += reviewsToAdd;
-            
-            // 如果所有评论都已加载，隐藏加载更多按钮
-            if (reviewCount >= totalReviews) {
-                loadMoreBtn.style.display = 'none';
-            }
-        });
-        
-        // 初始加载更多评论，达到12条
-        loadMoreBtn.click();
-        
-        // 评论筛选功能
-        const filterButtons = document.querySelectorAll('.review-filter');
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // 移除所有按钮的活跃状态
-                filterButtons.forEach(btn => {
-                    btn.classList.remove('bg-primary', 'text-white');
-                    btn.classList.add('bg-gray-medium', 'hover:bg-gray-medium/80');
-                });
-                
-                // 设置当前按钮为活跃状态
-                this.classList.remove('bg-gray-medium', 'hover:bg-gray-medium/80');
-                this.classList.add('bg-primary', 'text-white');
-                
-                // 这里可以添加实际的筛选逻辑
-                // 简单起见，这里只是模拟筛选效果
-                const filterType = this.textContent.trim();
-                console.log(`筛选: ${filterType}`);
             });
-        });
-        
-        // 滚动时导航栏效果
-        window.addEventListener('scroll', function() {
-            const header = document.querySelector('header');
-            if (window.scrollY > 50) {
-                header.classList.add('py-2', 'shadow-lg');
-                header.classList.remove('py-3');
-            } else {
-                header.classList.add('py-3');
-                header.classList.remove('py-2', 'shadow-lg');
-            }
+            
+            // Update chart when theme changes
+            themeToggle.addEventListener('click', () => {
+                window.location.reload(); // Simple way to refresh chart colors
+            });
         });
     </script>
-<script type="module" src="/main.js"></script>
+    
+    <!-- Module import as required -->
+    <script type="module" src="/main.js"></script>
 </body>
 </html>

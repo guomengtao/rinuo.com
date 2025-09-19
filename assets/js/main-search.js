@@ -5,6 +5,7 @@ let tools = [];
 let filteredTools = [];
 let popularTools = [];
 let isDataLoaded = false; // 标记数据是否已成功加载
+let currentSelectedIndex = -1; // 当前选中的搜索结果索引
 
 // DOM元素 - 会在初始化时获取
 let searchDOM = {
@@ -164,6 +165,9 @@ function performSearch(searchTerm) {
     return;
   }
   
+  // 重置当前选中索引
+  currentSelectedIndex = -1;
+  
   // 显示浮动结果
   showFloatingResults(searchTerm);
 }
@@ -278,9 +282,16 @@ function showFloatingResults(searchTerm) {
     `;
   } else {
     // 渲染简洁的浮动搜索结果项
-    floatingFiltered.forEach((tool) => {
+    floatingFiltered.forEach((tool, index) => {
       const item = document.createElement('div');
-      item.className = 'h-12 px-3 py-2 flex items-center justify-between rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors duration-200 cursor-pointer';
+      // 第一条结果默认选中
+      item.className = `h-12 px-3 py-2 flex items-center justify-between rounded-md transition-colors duration-200 cursor-pointer ${index === 0 ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`;
+      
+      // 如果是第一条结果，设置为当前选中
+      if (index === 0) {
+        currentSelectedIndex = 0;
+      }
+      
       item.innerHTML = `
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-6 h-6 bg-primary/10 dark:bg-primary/20 rounded flex items-center justify-center text-primary flex-shrink-0">
@@ -325,6 +336,8 @@ function clearSearch() {
     searchDOM.floatingResults.classList.add('hidden');
   }
   filteredTools = [...tools];
+  // 重置选中索引
+  currentSelectedIndex = -1;
 }
 
 // 动态创建浮动结果容器
@@ -388,6 +401,49 @@ function updateFloatingResultsPosition() {
   searchDOM.floatingResults.style.width = `${inputRect.width}px`;
 }
 
+// 更新选中的搜索结果
+function updateSelectedResult(delta) {
+  if (!searchDOM.floatingResults || searchDOM.floatingResults.classList.contains('hidden')) {
+    return;
+  }
+  
+  const results = searchDOM.floatingResultsContent.querySelectorAll('div[class*="cursor-pointer"]');
+  if (results.length === 0) {
+    return;
+  }
+  
+  // 移除之前选中的样式
+  if (currentSelectedIndex >= 0 && currentSelectedIndex < results.length) {
+    results[currentSelectedIndex].classList.remove('bg-gray-100', 'dark:bg-gray-700');
+    results[currentSelectedIndex].classList.add('hover:bg-gray-50', 'dark:hover:bg-gray-800');
+  }
+  
+  // 计算新的选中索引
+  currentSelectedIndex = (currentSelectedIndex + delta + results.length) % results.length;
+  
+  // 应用新的选中样式
+  if (currentSelectedIndex >= 0 && currentSelectedIndex < results.length) {
+    results[currentSelectedIndex].classList.remove('hover:bg-gray-50', 'dark:hover:bg-gray-800');
+    results[currentSelectedIndex].classList.add('bg-gray-100', 'dark:bg-gray-700');
+    
+    // 滚动到选中项
+    results[currentSelectedIndex].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// 打开当前选中的搜索结果
+function openSelectedResult() {
+  if (!searchDOM.floatingResults || searchDOM.floatingResults.classList.contains('hidden')) {
+    return;
+  }
+  
+  const results = searchDOM.floatingResultsContent.querySelectorAll('div[class*="cursor-pointer"]');
+  if (currentSelectedIndex >= 0 && currentSelectedIndex < results.length) {
+    // 触发点击事件
+    results[currentSelectedIndex].click();
+  }
+}
+
 // ------------------- 初始化搜索模块 -------------------
 // 初始化搜索功能
 export async function initSearch() {
@@ -431,10 +487,41 @@ export async function initSearch() {
       }
     });
     
-    // 添加回车键搜索支持
+    // 添加键盘事件处理（上下键选择和回车）
     if (searchDOM.searchInput) {
-      searchDOM.searchInput.addEventListener('keyup', (e) => {
-        if (e.key === 'Enter' && searchDOM.searchInput.value.trim()) {
+      searchDOM.searchInput.addEventListener('keydown', (e) => {
+        // 上下键选择结果
+        if (e.key === 'ArrowDown') {
+          e.preventDefault(); // 阻止默认行为（滚动页面）
+          updateSelectedResult(1); // 向下移动选择
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault(); // 阻止默认行为（滚动页面）
+          updateSelectedResult(-1); // 向上移动选择
+        } else if (e.key === 'Enter') {
+          e.preventDefault(); // 阻止默认行为
+          
+          // 如果搜索框有内容且浮动结果可见，优先打开选中的结果
+          if (searchDOM.searchInput.value.trim() && 
+              searchDOM.floatingResults && 
+              !searchDOM.floatingResults.classList.contains('hidden')) {
+            
+            // 获取所有结果项
+            const results = searchDOM.floatingResultsContent.querySelectorAll('div[class*="cursor-pointer"]');
+            
+            // 如果有结果
+            if (results.length > 0) {
+              // 如果没有选中的结果或选中的结果无效，默认选择第一条
+              if (currentSelectedIndex < 0 || currentSelectedIndex >= results.length) {
+                currentSelectedIndex = 0;
+              }
+              
+              // 打开选中的结果
+              openSelectedResult();
+              return;
+            }
+          }
+          
+          // 如果没有搜索结果或搜索框为空，则执行完整搜索
           performFullSearch(searchDOM.searchInput.value.toLowerCase().trim());
         }
       });

@@ -108,10 +108,18 @@ function renderPopup(){
     // Add view all link
     const viewAllContainer=document.createElement('div');
     viewAllContainer.className='px-3 py-1 text-xs text-center';
+    // 在renderPopup函数中修改viewAllLink样式
     const viewAllLink=document.createElement('a');
     viewAllLink.href='/my-history.html';
-    viewAllLink.className='text-primary hover:underline';
+    // 修改：移除hover:underline类
+    viewAllLink.className='text-primary transition-colors duration-150';
     viewAllLink.textContent='View all bookmarks';
+    
+    // 添加：确保鼠标经过时不显示下划线
+    viewAllLink.addEventListener('mouseenter', () => {
+    viewAllLink.style.textDecoration = 'none';
+    });
+    
     viewAllContainer.appendChild(viewAllLink);
     popup.appendChild(viewAllContainer);
     
@@ -120,81 +128,93 @@ function renderPopup(){
     content.className='max-h-[300px] overflow-y-auto overflow-x-hidden';
     popup.appendChild(content);
     
+    // 在createPopup函数中的链接创建部分修改
     list.forEach((b,i)=>{
-        const row=document.createElement('div');
-        // 鼠标经过时使用新的背景色
-        row.className='flex justify-between items-center px-3 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-150';
-        
-        // 添加轻微的悬停变换效果
-        row.addEventListener('mouseenter', () => {
-            row.style.transform = 'translateX(2px)';
-        });
-        row.addEventListener('mouseleave', () => {
-            row.style.transform = 'translateX(0)';
-        });
+    const row=document.createElement('div');
+    row.className='flex justify-between items-center px-3 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-150';
+    
+    // 添加轻微的悬停变换效果
+    row.addEventListener('mouseenter', () => {
+        row.style.transform = 'translateX(2px)';
+    });
+    row.addEventListener('mouseleave', () => {
+        row.style.transform = 'translateX(0)';
+    });
 
-        const link=document.createElement('a');
-        link.href=b.url;
-        link.textContent=b.title;
-        link.className='flex-1 mr-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary truncate transition-colors duration-150';
-        
-        // Add formatted time display
-        const time=document.createElement('span');
-        const date=new Date(b.ts);
-        time.className='text-[10px] text-gray-500 dark:text-gray-500 block mt-1';
-        time.textContent=`Added ${date.getMonth()+1}/${date.getDate()}`;
-        link.appendChild(time);
-        
-        // 链接悬停效果增强
-        link.addEventListener('mouseenter', () => {
-            link.style.color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#3b82f6';
-        });
+    const link=document.createElement('a');
+    link.href=b.url;
+    link.textContent=b.title;
+    // 修改：移除hover:underline类，并确保不会显示下划线
+    link.className='flex-1 mr-2 text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary truncate transition-colors duration-150';
+    
+    // 链接悬停效果增强 - 删除下划线相关代码
+    link.addEventListener('mouseenter', () => {
+        link.style.color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#3b82f6';
+        link.style.textDecoration = 'none'; // 确保不显示下划线
+    });
+    
+    // 添加：确保鼠标离开时也不显示下划线
+    link.addEventListener('mouseleave', () => {
+        link.style.textDecoration = 'none'; // 确保不显示下划线
+    });
 
-        const del=document.createElement('button');
-        del.innerHTML='<i class="fa fa-times"></i>';
-        del.className='cursor-pointer text-gray-400 opacity-70 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 transform hover:scale-110';
-        del.setAttribute('aria-label','Remove bookmark');
-        del.style.minWidth = '24px';
-        del.style.minHeight = '24px';
-        del.style.display = 'flex';
-        del.style.alignItems = 'center';
-        del.style.justifyContent = 'center';
+    // Add formatted time display
+    const time=document.createElement('span');
+    const date=new Date(b.ts);
+    time.className='text-[10px] text-gray-500 dark:text-gray-500 block mt-1';
+    time.textContent=`Added ${date.getMonth()+1}/${date.getDate()}`;
+    link.appendChild(time);
+    
+    // 链接悬停效果增强
+    link.addEventListener('mouseenter', () => {
+        link.style.color = getComputedStyle(document.documentElement).getPropertyValue('--primary-color') || '#3b82f6';
+    });
+
+    const del=document.createElement('button');
+    del.innerHTML='<i class="fa fa-times"></i>';
+    del.className='cursor-pointer text-gray-400 opacity-70 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20 transition-all duration-200 transform hover:scale-110';
+    del.setAttribute('aria-label','Remove bookmark');
+    del.style.minWidth = '24px';
+    del.style.minHeight = '24px';
+    del.style.display = 'flex';
+    del.style.alignItems = 'center';
+    del.style.justifyContent = 'center';
+    
+    // 删除按钮交互优化
+    del.addEventListener('mouseenter', () => {
+        del.style.opacity = '1';
+    });
+    del.addEventListener('mouseleave', () => {
+        del.style.opacity = '0.7';
+    });
+    
+    del.addEventListener('click',(e)=>{
+        e.preventDefault();
+        e.stopPropagation();
         
-        // 删除按钮交互优化
-        del.addEventListener('mouseenter', () => {
-            del.style.opacity = '1';
-        });
-        del.addEventListener('mouseleave', () => {
-            del.style.opacity = '0.7';
-        });
+        // 添加删除动画
+        row.style.height = row.offsetHeight + 'px';
+        row.style.overflow = 'hidden';
+        row.style.transition = 'all 0.3s ease-out';
         
-        del.addEventListener('click',(e)=>{
-            e.preventDefault();
-            e.stopPropagation();
-            
-            // 添加删除动画
-            row.style.height = row.offsetHeight + 'px';
-            row.style.overflow = 'hidden';
-            row.style.transition = 'all 0.3s ease-out';
+        setTimeout(() => {
+            row.style.height = '0';
+            row.style.opacity = '0';
+            row.style.margin = '0';
+            row.style.padding = '0';
             
             setTimeout(() => {
-                row.style.height = '0';
-                row.style.opacity = '0';
-                row.style.margin = '0';
-                row.style.padding = '0';
-                
-                setTimeout(() => {
-                    const bookmarks=readBookmarks();
-                    bookmarks.splice(i,1);
-                    writeBookmarks(bookmarks);
-                    renderPopup();
-                }, 300);
-            }, 10);
-        });
+                const bookmarks=readBookmarks();
+                bookmarks.splice(i,1);
+                writeBookmarks(bookmarks);
+                renderPopup();
+            }, 300);
+        }, 10);
+    });
 
-        row.appendChild(link);
-        row.appendChild(del);
-        content.appendChild(row);
+    row.appendChild(link);
+    row.appendChild(del);
+    content.appendChild(row);
     });
 }
 

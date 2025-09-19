@@ -1,864 +1,1052 @@
-<!DOCTYPE html><html lang="zh-CN"><head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>数据可视化库功能对比 - 黑夜模式</title>
-  <!-- 引入外部资源 -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-  
-  <!-- Tailwind 配置 -->
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#3b82f6',
-            secondary: '#10b981',
-            d3: '#f97316',
-            chartjs: '#ff6384',
-            highcharts: '#36a2eb',
-            echarts: '#9c27b0',
-            dark: '#121212',
-            darker: '#0a0a0a',
-            'dark-card': '#1e1e1e',
-            'dark-border': '#2d2d2d'
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'sans-serif'],
-          },
-        },
-      }
-    }
-  </script>
-  
-  <style type="text/tailwindcss">
-    @layer utilities {
-      .content-auto { content-visibility: auto; }
-      .card-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15); }
-      .rating-stars .star-filled { color: #f59e0b; }
-      .rating-stars .star-empty { color: #444444; }
-      .text-gradient { background-clip: text; -webkit-background-clip: text; color: transparent; }
-    }
-  </style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>D3.js - Data-Driven Documents | Powerful Data Visualization Library</title>
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="D3.js is a powerful JavaScript library for producing dynamic, interactive data visualizations in web browsers. Learn about its features, origin, and how to use it.">
+    <meta name="keywords" content="D3.js, data visualization, JavaScript, data-driven documents, web development">
+    <meta name="author" content="D3.js Community">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://example.com/free/detail/d3-js">
+    <meta property="og:title" content="D3.js - Data-Driven Documents">
+    <meta property="og:description" content="Powerful JavaScript library for data visualization">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/free/detail/d3-js">
+    <meta property="og:image" content="https://picsum.photos/1200/630?random=1">
+    
+    <!-- External Resources -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3182CE',
+                        secondary: '#805AD5',
+                        accent: '#ED8936',
+                        dark: {
+                            primary: '#2B6CB0',
+                            background: '#1A202C',
+                            card: '#2D3748'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Styles -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: balance;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+        }
+    </style>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        #scrollProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background-color: #3182CE;
+            width: 0%;
+            z-index: 50;
+            transition: width 0.2s ease;
+        }
+        
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+        }
+        
+        .social-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            transform: scale(1.15);
+        }
+    </style>
 </head>
-<body class="bg-dark text-gray-200 font-sans">
-  <!-- 导航栏 -->
-                 
-                 <header class="bg-darker shadow-md sticky top-0 z-50">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center space-x-2">
-        <i class="fa fa-bar-chart text-primary text-2xl"></i>
-        <h1 class="text-xl font-bold text-white">数据可视化库对比</h1>
-      </div>
-      <div class="hidden md:flex mx-4 items-center relative">
-    <div class="relative w-64">
-        <input type="text" id="searchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-        <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-            <i class="fa fa-search"></i>
-        </button>
-    </div>
-    <!-- 搜索结果浮动容器 -->
-    <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-        <div id="searchResults" class="max-h-80 overflow-y-auto">
-            <!-- 搜索结果将在这里动态生成 -->
-        </div>
-    </div>
-</div><nav class="hidden md:flex space-x-6">
-        <a href="#d3-intro" class="text-gray-300 hover:text-primary transition-colors">D3.js介绍</a>
-        <a href="#comparison" class="text-gray-300 hover:text-primary transition-colors">功能对比</a>
-        <a href="#reviews" class="text-gray-300 hover:text-primary transition-colors">社区评论</a>
-        <a href="#features" class="text-gray-300 hover:text-primary transition-colors">核心特性</a>
-      </nav>
-      <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-    <i class="fa fa-search text-xl"></i>
-</button><button id="mobile-menu-btn" class="md:hidden text-gray-300">
-        <i class="fa fa-bars text-xl"></i>
-      </button>
-    </div>
-    <!-- 移动端菜单 -->
-    <div id="mobile-menu" class="md:hidden hidden bg-darker border-t border-dark-border">
-      <div class="container mx-auto px-4 py-2 flex flex-col space-y-3">
-        <a href="#d3-intro" class="py-2 text-gray-300 hover:text-primary">D3.js介绍</a>
-        <a href="#comparison" class="py-2 text-gray-300 hover:text-primary">功能对比</a>
-        <a href="#reviews" class="py-2 text-gray-300 hover:text-primary">社区评论</a>
-        <a href="#features" class="py-2 text-gray-300 hover:text-primary">核心特性</a>
-      </div>
-    </div>
-          <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
+
+<body class="bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress"></div>
+    
+    <!-- Header Navigation -->
+    <header class="sticky top-0 bg-white/90 dark:bg-dark-background/90 shadow-md backdrop-blur-sm z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">D3</span>
+                    </div>
+                    <span class="font-bold text-xl hidden sm:inline">D3.js</span>
+                </a>
+                
+                <!-- Search Bar -->
+                <div class="hidden md:flex relative flex-1 max-w-md mx-8">
+                    <input type="text" id="searchInput" autocomplete="off" 
+                        class="w-full py-2 px-4 rounded-full bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                        placeholder="Search documentation...">
+                    <i class="fa fa-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                </div>
+                
+                <!-- Navigation Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" aria-label="Toggle dark mode" 
+                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-moon-o text-xl"></i>
+                    </button>
+                    
+                    <!-- Bookmark Button -->
+                    <button id="bookmarkBtn" aria-label="Bookmark this page" 
+                        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-star-o text-xl text-yellow-500"></i>
+                    </button>
+                    
+                    <!-- Mobile Search Button -->
+                    <button id="mobileSearchBtn" class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-search text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Search Bar -->
+            <div id="mobileSearchContainer" class="md:hidden mt-3 hidden">
+                <input type="text" 
+                    class="w-full py-2 px-4 rounded-full bg-gray-100 dark:bg-dark-card border border-gray-200 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                    placeholder="Search documentation...">
             </div>
         </div>
     </header>
+    
+    <!-- Breadcrumb Navigation -->
+    <nav class="bg-gray-100 dark:bg-dark-card py-2 px-4">
+        <div class="container mx-auto">
+            <div class="text-sm text-gray-600 dark:text-gray-400">
+                <a href="/" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Home</a>
+                <span class="mx-2">/</span>
+                <a href="/free" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Free Resources</a>
+                <span class="mx-2">/</span>
+                <a href="/free/detail/" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Resource List</a>
+                <span class="mx-2">/</span>
+                <span class="text-primary dark:text-dark-primary">D3.js</span>
+            </div>
+        </div>
+    </nav>
+    
+    <main>
+        <!-- Hero Section -->
+        <section class="relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-20 overflow-hidden">
+            <div class="absolute inset-0 overflow-hidden opacity-10 dark:opacity-5">
+                <div class="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-primary blur-3xl"></div>
+                <div class="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-secondary blur-3xl"></div>
+            </div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="flex flex-col lg:flex-row items-center">
+                    <div class="lg:w-1/2 mb-10 lg:mb-0">
+                        <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight mb-6 text-balance">
+                            Data-Driven <span class="text-primary dark:text-dark-primary">Documents</span>
+                        </h1>
+                        <p class="text-[clamp(1.1rem,2vw,1.3rem)] text-gray-600 dark:text-gray-300 mb-8 max-w-2xl leading-relaxed">
+                            D3.js is a powerful JavaScript library for producing dynamic, interactive data visualizations in web browsers.
+                        </p>
+                        <div class="flex flex-wrap gap-4">
+                            <a href="#features" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg shadow-primary/20 transition-all">
+                                Explore Features
+                            </a>
+                            <a href="#get-started" class="px-8 py-3 bg-white dark:bg-dark-card hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-white font-medium rounded-lg shadow-md transition-all">
+                                Get Started
+                            </a>
+                        </div>
+                        
+                        <div class="flex items-center mt-10 space-x-8">
+                            <div>
+                                <div class="text-3xl font-bold text-gray-800 dark:text-white">100k+</div>
+                                <div class="text-gray-600 dark:text-gray-400">GitHub Stars</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-gray-800 dark:text-white">2.8k</div>
+                                <div class="text-gray-600 dark:text-gray-400">Forks</div>
+                            </div>
+                            <div>
+                                <div class="text-3xl font-bold text-gray-800 dark:text-white">145</div>
+                                <div class="text-gray-600 dark:text-gray-400">Open Issues</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:w-1/2 animate-float">
+                        <img src="https://picsum.photos/800/600?random=2" alt="D3.js Data Visualization Example" 
+                            class="rounded-xl shadow-2xl w-full h-auto object-cover" loading="lazy">
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Key Advantages Section -->
+        <section id="features" class="py-20 bg-white dark:bg-dark-background">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">Key Advantages</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
+                        Why developers choose D3.js for their data visualization projects
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Advantage 1 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-code text-2xl text-primary dark:text-dark-primary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Full Control</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Unlike other visualization libraries, D3 gives you complete control over your HTML, SVG, and CSS.
+                        </p>
+                    </div>
+                    
+                    <!-- Advantage 2 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-refresh text-2xl text-secondary"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Data-Driven Updates</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Seamlessly update visualizations as data changes with smooth transitions and animations.
+                        </p>
+                    </div>
+                    
+                    <!-- Advantage 3 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-cubes text-2xl text-accent"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Extensible</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Build custom visualizations tailored to your needs, without being limited by predefined chart types.
+                        </p>
+                    </div>
+                    
+                    <!-- Advantage 4 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-globe text-2xl text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Web Standards</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Leverages web standards like SVG, HTML, and CSS, ensuring compatibility and accessibility.
+                        </p>
+                    </div>
+                    
+                    <!-- Advantage 5 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-bolt text-2xl text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">High Performance</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Optimized for handling large datasets and complex visualizations with excellent performance.
+                        </p>
+                    </div>
+                    
+                    <!-- Advantage 6 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="w-14 h-14 bg-teal-100 dark:bg-teal-900/30 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-users text-2xl text-teal-600 dark:text-teal-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold mb-3">Strong Community</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Backed by a large community of developers contributing plugins, examples, and support.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- About D3 Section -->
+        <section class="py-20 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col lg:flex-row gap-12 items-center">
+                    <div class="lg:w-1/2">
+                        <img src="https://picsum.photos/600/700?random=3" alt="Mike Bostock, creator of D3.js" 
+                            class="rounded-xl shadow-xl w-full h-auto object-cover" loading="lazy">
+                    </div>
+                    
+                    <div class="lg:w-1/2">
+                        <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-6">About D3.js</h2>
+                        
+                        <div class="mb-8">
+                            <h3 class="text-xl font-semibold mb-3 text-primary dark:text-dark-primary">Origin Story</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                                D3.js was created by Mike Bostock in 2011, while he was a PhD student at Stanford University. 
+                                It evolved from an earlier visualization library called Protovis, which Bostock co-created.
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                The goal was to create a more flexible tool that leverages modern web standards, allowing 
+                                developers to create custom data visualizations without being constrained by predefined chart types.
+                            </p>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-xl font-semibold mb-3 text-primary dark:text-dark-primary">The Creator</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4 leading-relaxed">
+                                Mike Bostock is a visualization engineer and computer scientist known for his work in data visualization. 
+                                After developing D3.js, he joined The New York Times as a graphics editor, where he created numerous 
+                                award-winning data visualizations using the library.
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
+                                Bostock's work has significantly influenced the field of web-based data visualization, making complex 
+                                data more accessible and understandable through interactive visualizations.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Technology Stack Section -->
+        <section class="py-20 bg-white dark:bg-dark-background">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">Technology Stack</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
+                        D3.js works seamlessly with these web technologies
+                    </p>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-6">
+                    <!-- Tech 1 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-6 w-full sm:w-auto flex items-center gap-4 shadow-md card-hover">
+                        <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-html5 text-2xl text-orange-600 dark:text-orange-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">HTML5</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Hypertext Markup Language</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tech 2 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-6 w-full sm:w-auto flex items-center gap-4 shadow-md card-hover">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-css3 text-2xl text-blue-600 dark:text-blue-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">CSS3</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Cascading Style Sheets</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tech 3 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-6 w-full sm:w-auto flex items-center gap-4 shadow-md card-hover">
+                        <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-code text-2xl text-yellow-600 dark:text-yellow-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">JavaScript</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">ECMAScript 6+</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tech 4 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-6 w-full sm:w-auto flex items-center gap-4 shadow-md card-hover">
+                        <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-paint-brush text-2xl text-green-600 dark:text-green-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">SVG</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Scalable Vector Graphics</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tech 5 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-6 w-full sm:w-auto flex items-center gap-4 shadow-md card-hover">
+                        <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-database text-2xl text-purple-600 dark:text-purple-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">JSON/CSV</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Data Formats</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Tech 6 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl p-6 w-full sm:w-auto flex items-center gap-4 shadow-md card-hover">
+                        <div class="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-lg flex items-center justify-center">
+                            <i class="fa fa-terminal text-2xl text-red-600 dark:text-red-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold">Node.js</h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Package Ecosystem</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Pros and Cons with Radar Chart -->
+        <section class="py-20 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">Pros & Cons</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
+                        A balanced look at D3.js compared to other visualization libraries
+                    </p>
+                </div>
+                
+                <div class="flex flex-col lg:flex-row gap-12 items-center">
+                    <div class="lg:w-1/2">
+                        <!-- Radar Chart Container -->
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg">
+                            <canvas id="radarChart" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="lg:w-1/2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Pros -->
+                            <div>
+                                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                                    <span class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mr-2">
+                                        <i class="fa fa-check text-green-600 dark:text-green-400"></i>
+                                    </span>
+                                    Advantages
+                                </h3>
+                                
+                                <ul class="space-y-4">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Unparalleled customization options</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">No hidden abstractions or limitations</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Excellent performance with large datasets</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Active development and community support</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Seamless integration with web standards</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Cons -->
+                            <div>
+                                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                                    <span class="w-8 h-8 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mr-2">
+                                        <i class="fa fa-times text-red-600 dark:text-red-400"></i>
+                                    </span>
+                                    Disadvantages
+                                </h3>
+                                
+                                <ul class="space-y-4">
+                                    <li class="flex items-start">
+                                        <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Steeper learning curve for beginners</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Requires more code for basic charts</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">No built-in chart types</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Requires understanding of SVG/HTML/CSS</span>
+                                    </li>
+                                    <li class="flex items-start">
+                                        <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                        <span class="text-gray-600 dark:text-gray-300">Not ideal for rapid prototyping</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Get Started Section -->
+        <section id="get-started" class="py-20 bg-white dark:bg-dark-background">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">Get Started with D3.js</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
+                        Free to use and easy to integrate into your projects
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 dark:bg-dark-card rounded-2xl p-8 md:p-12 shadow-xl max-w-4xl mx-auto">
+                    <div class="mb-10">
+                        <h3 class="text-xl font-semibold mb-4">Installation Options</h3>
+                        
+                        <div class="space-y-6">
+                            <!-- Option 1 -->
+                            <div>
+                                <h4 class="font-medium mb-2">CDN</h4>
+                                <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto scrollbar-hide">
+                                    <code class="font-mono text-sm">&lt;script src="https://d3js.org/d3.v7.min.js"&gt;&lt;/script&gt;</code>
+                                </div>
+                            </div>
+                            
+                            <!-- Option 2 -->
+                            <div>
+                                <h4 class="font-medium mb-2">npm</h4>
+                                <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto scrollbar-hide">
+                                    <code class="font-mono text-sm">npm install d3</code>
+                                </div>
+                            </div>
+                            
+                            <!-- Option 3 -->
+                            <div>
+                                <h4 class="font-medium mb-2">yarn</h4>
+                                <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto scrollbar-hide">
+                                    <code class="font-mono text-sm">yarn add d3</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-xl font-semibold mb-4">Basic Example</h3>
+                        <div class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto scrollbar-hide">
+                            <pre class="font-mono text-sm"><code>// Select the body element
+const svg = d3.select("body")
+  .append("svg")
+    .attr("width", 500)
+    .attr("height", 500);
 
-  <!-- 主要内容 -->
-  <main class="container mx-auto px-4 py-12">
-    <!-- D3.js 头部介绍 -->
-    <section id="d3-intro" class="mb-20 bg-gradient-to-br from-darker to-dark border border-dark-border rounded-2xl p-8 card-shadow">
-      <div class="flex flex-col md:flex-row items-center gap-10">
-        <div class="md:w-1/2">
-          <div class="inline-block px-4 py-1 rounded-full bg-d3/20 text-d3 text-sm font-medium mb-6">
-            数据可视化领域的瑞士军刀
-          </div>
-          <h2 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-white mb-6 leading-tight">
-            D3.js<br>
-            <span class="bg-gradient-to-r from-d3 to-orange-400 text-gradient">数据驱动的文档</span>
-          </h2>
-          <p class="text-gray-300 mb-6 text-lg">
-            D3.js（Data-Driven Documents）是一个基于Web标准的JavaScript库，它允许开发者将数据转换为富有洞察力的交互式可视化。
-            自2011年首次发布以来，D3.js已经成为数据可视化领域的行业标准之一。
-          </p>
-          <p class="text-gray-300 mb-6">
-            与其他封装好的可视化库不同，D3.js不提供预定义的图表类型，而是提供了一套强大的API，让开发者能够完全控制数据到DOM的映射过程。
-            这种灵活性使D3.js成为创建定制化、高性能数据可视化的首选工具。
-          </p>
-          <div class="grid grid-cols-2 gap-4 mb-8">
-            <div class="bg-dark-card p-4 rounded-lg border border-dark-border">
-              <div class="text-d3 text-2xl mb-2"><i class="fa fa-code"></i></div>
-              <h4 class="font-semibold text-white mb-1">基于Web标准</h4>
-              <p class="text-gray-400 text-sm">直接操作HTML、CSS和SVG，无需专有格式</p>
+// Create a circle
+svg.append("circle")
+    .attr("cx", 250)
+    .attr("cy", 250)
+    .attr("r", 100)
+    .style("fill", "steelblue");</code></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 text-center">
+                        <a href="https://d3js.org/" target="_blank" rel="noopener noreferrer"
+                            class="inline-flex items-center px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg shadow-lg shadow-primary/20 transition-all">
+                            Visit Official Website
+                            <i class="fa fa-external-link ml-2"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
-            <div class="bg-dark-card p-4 rounded-lg border border-dark-border">
-              <div class="text-d3 text-2xl mb-2"><i class="fa fa-cogs"></i></div>
-              <h4 class="font-semibold text-white mb-1">数据驱动</h4>
-              <p class="text-gray-400 text-sm">将数据绑定到DOM元素，实现数据与视图同步</p>
+        </section>
+        
+        <!-- Community Reviews -->
+        <section class="py-20 bg-gray-50 dark:bg-gray-900">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">Community Reviews</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
+                        What developers are saying about D3.js
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Review 1 -->
+                    <div class="bg-white dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/100/100?random=10" alt="Sarah Johnson" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-semibold">Sarah Johnson</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 italic">
+                            "D3.js transformed how I visualize complex datasets. The learning curve is steep, but the payoff is incredible. 
+                            Nothing else gives you this level of control over your visualizations."
+                        </p>
+                    </div>
+                    
+                    <!-- Review 2 -->
+                    <div class="bg-white dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/100/100?random=11" alt="David Chen" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-semibold">David Chen</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-half-o"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 italic">
+                            "As a data scientist, I appreciate how D3.js lets me create exactly the visualizations I need without 
+                            compromising on design or functionality. The community support is outstanding."
+                        </p>
+                    </div>
+                    
+                    <!-- Review 3 -->
+                    <div class="bg-white dark:bg-dark-card rounded-xl p-8 shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/100/100?random=12" alt="Michael Rodriguez" class="w-12 h-12 rounded-full object-cover mr-4" loading="lazy">
+                            <div>
+                                <h4 class="font-semibold">Michael Rodriguez</h4>
+                                <div class="flex text-yellow-400">
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star"></i>
+                                    <i class="fa fa-star-o"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300 italic">
+                            "It's not for beginners, but once you get the hang of D3.js, you'll wonder how you ever worked with 
+                            other visualization libraries. The flexibility is unmatched."
+                        </p>
+                    </div>
+                </div>
             </div>
-            <div class="bg-dark-card p-4 rounded-lg border border-dark-border">
-              <div class="text-d3 text-2xl mb-2"><i class="fa fa-magic"></i></div>
-              <h4 class="font-semibold text-white mb-1">过渡动画</h4>
-              <p class="text-gray-400 text-sm">创建流畅的状态转换和数据更新动画</p>
+        </section>
+        
+        <!-- Latest Updates -->
+        <section class="py-20 bg-white dark:bg-dark-background">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4">Latest Updates</h2>
+                    <p class="text-gray-600 dark:text-gray-300 max-w-3xl mx-auto text-lg">
+                        Recent developments in the D3.js ecosystem
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Update 1 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl overflow-hidden shadow-md card-hover">
+                        <img src="https://picsum.photos/600/300?random=20" alt="D3.js Version 7 Release" class="w-full h-48 object-cover" loading="lazy">
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">June 14, 2023</div>
+                            <h3 class="text-xl font-bold mb-3">D3.js Version 7.8.5 Released</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                The latest minor release includes performance improvements for large datasets and several bug fixes 
+                                related to axis rendering and transition animations.
+                            </p>
+                            <a href="#" class="text-primary dark:text-dark-primary font-medium hover:underline inline-flex items-center">
+                                Read More <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Update 2 -->
+                    <div class="bg-gray-50 dark:bg-dark-card rounded-xl overflow-hidden shadow-md card-hover">
+                        <img src="https://picsum.photos/600/300?random=21" alt="D3.js Workshop Series" class="w-full h-48 object-cover" loading="lazy">
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 dark:text-gray-400 mb-2">May 2, 2023</div>
+                            <h3 class="text-xl font-bold mb-3">Official Workshop Series Launched</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                The D3.js team has launched a new series of online workshops designed to help developers of all 
+                                skill levels master data visualization with D3.js.
+                            </p>
+                            <a href="#" class="text-primary dark:text-dark-primary font-medium hover:underline inline-flex items-center">
+                                Read More <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="bg-dark-card p-4 rounded-lg border border-dark-border">
-              <div class="text-d3 text-2xl mb-2"><i class="fa fa-expand"></i></div>
-              <h4 class="font-semibold text-white mb-1">无限扩展</h4>
-              <p class="text-gray-400 text-sm">从简单图表到复杂可视化，满足各种需求</p>
+        </section>
+        
+        <!-- Share Section -->
+        <section class="py-16 bg-primary dark:bg-dark-primary text-white">
+            <div class="container mx-auto px-4">
+                <div class="flex flex-col md:flex-row items-center justify-between">
+                    <div class="mb-8 md:mb-0">
+                        <h2 class="text-2xl md:text-3xl font-bold mb-2">Like what you see?</h2>
+                        <p class="opacity-90">Share D3.js with your developer friends</p>
+                    </div>
+                    
+                    <div class="flex space-x-4">
+                        <button id="shareFacebook" class="social-icon w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all">
+                            <i class="fa fa-facebook text-xl"></i>
+                        </button>
+                        <button id="shareTwitter" class="social-icon w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </button>
+                        <button id="shareLinkedIn" class="social-icon w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all">
+                            <i class="fa fa-linkedin text-xl"></i>
+                        </button>
+                        <button id="shareGithub" class="social-icon w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all">
+                            <i class="fa fa-github text-xl"></i>
+                        </button>
+                        <button id="shareCopyLink" class="social-icon w-12 h-12 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all">
+                            <i class="fa fa-link text-xl"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
-          </div>
-          <a href="https://d3js.org/" target="_blank" class="inline-flex items-center px-6 py-3 bg-d3 hover:bg-d3/80 text-white rounded-lg transition-colors">
-            访问D3.js官方网站
-            <i class="fa fa-external-link ml-2"></i>
-          </a>
-        </div>
-        <div class="md:w-1/2">
-          <div class="bg-dark-card rounded-xl p-6 border border-dark-border card-shadow">
-            <h3 class="text-xl font-semibold text-white mb-4">D3.js核心概念</h3>
-            <ul class="space-y-4">
-              <li class="flex items-start">
-                <div class="bg-d3/20 text-d3 p-2 rounded-lg mr-4 mt-1">
-                  <i class="fa fa-link"></i>
-                </div>
-                <div>
-                  <h4 class="font-medium text-white">数据绑定</h4>
-                  <p class="text-gray-400 text-sm">将数据与DOM元素关联，实现数据驱动的DOM操作</p>
-                </div>
-              </li>
-              <li class="flex items-start">
-                <div class="bg-d3/20 text-d3 p-2 rounded-lg mr-4 mt-1">
-                  <i class="fa fa-exchange"></i>
-                </div>
-                <div>
-                  <h4 class="font-medium text-white">选择集</h4>
-                  <p class="text-gray-400 text-sm">通过类似CSS选择器的语法选取DOM元素进行操作</p>
-                </div>
-              </li>
-              <li class="flex items-start">
-                <div class="bg-d3/20 text-d3 p-2 rounded-lg mr-4 mt-1">
-                  <i class="fa fa-film"></i>
-                </div>
-                <div>
-                  <h4 class="font-medium text-white">过渡效果</h4>
-                  <p class="text-gray-400 text-sm">平滑的状态过渡动画，增强数据变化的可读性</p>
-                </div>
-              </li>
-              <li class="flex items-start">
-                <div class="bg-d3/20 text-d3 p-2 rounded-lg mr-4 mt-1">
-                  <i class="fa fa-database"></i>
-                </div>
-                <div>
-                  <h4 class="font-medium text-white">数据转换</h4>
-                  <p class="text-gray-400 text-sm">强大的数据处理和转换功能，支持各种数据格式</p>
-                </div>
-              </li>
-              <li class="flex items-start">
-                <div class="bg-d3/20 text-d3 p-2 rounded-lg mr-4 mt-1">
-                  <i class="fa fa-mouse-pointer"></i>
-                </div>
-                <div>
-                  <h4 class="font-medium text-white">交互处理</h4>
-                  <p class="text-gray-400 text-sm">丰富的事件处理机制，支持复杂的用户交互</p>
-                </div>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
+        </section>
+    </main>
     
-    <!-- 页面标题 -->
-    <div class="text-center mb-16">
-      <h2 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold text-white mb-4">主流数据可视化库全面对比</h2>
-      <p class="text-gray-400 max-w-3xl mx-auto text-lg">
-        深入分析D3.js、Chart.js、Highcharts和ECharts的功能特性、适用场景和社区评价，
-        帮助你选择最适合项目需求的可视化解决方案
-      </p>
-    </div>
-    
-    <!-- 功能对比图表 -->
-    <section id="comparison" class="mb-20">
-      <div class="bg-dark-card rounded-xl shadow-lg p-6 md:p-8 mb-8 border border-dark-border">
-        <h3 class="text-2xl font-bold text-white mb-6 text-center">功能特性雷达图对比</h3>
-        <div class="h-[500px]">
-          <canvas id="radarChart"></canvas>
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-300 pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <!-- Column 1 -->
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">D3</span>
+                        </div>
+                        <span class="font-bold text-xl text-white">D3.js</span>
+                    </div>
+                    <p class="mb-6">
+                        A powerful JavaScript library for producing dynamic, interactive data visualizations in web browsers.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-discord text-xl"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-youtube-play text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Column 2 -->
+                <div>
+                    <h3 class="text-white font-semibold text-lg mb-6">Resources</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Tutorials</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Examples</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">API Reference</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Plugins</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Column 3 -->
+                <div>
+                    <h3 class="text-white font-semibold text-lg mb-6">Community</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#" class="hover:text-white transition-colors">GitHub</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Stack Overflow</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Discord</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Twitter</a></li>
+                        <li><a href="#" class="hover:text-white transition-colors">Events</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Column 4 -->
+                <div>
+                    <h3 class="text-white font-semibold text-lg mb-6">Stay Updated</h3>
+                    <p class="mb-4">Subscribe to our newsletter for the latest updates and resources.</p>
+                    <form class="mb-4">
+                        <div class="flex">
+                            <input type="email" id="subscribeEmail" placeholder="Your email address" 
+                                class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-gray-800">
+                            <button type="button" id="subscribeBtn" 
+                                class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
+                                <i class="fa fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </form>
+                    <p class="text-sm text-gray-500">
+                        We respect your privacy. Unsubscribe at any time.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div class="mb-4 md:mb-0">
+                        <p>&copy; 2023 D3.js. All rights reserved.</p>
+                    </div>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-sm hover:text-white transition-colors">Privacy Policy</a>
+                        <a href="#" class="text-sm hover:text-white transition-colors">Terms of Service</a>
+                        <a href="/sitemap" class="text-sm hover:text-white transition-colors">Sitemap</a>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-      
-      <div class="bg-dark-card rounded-xl shadow-lg p-6 md:p-8 border border-dark-border">
-        <h3 class="text-2xl font-bold text-white mb-6 text-center">性能测试对比 (每秒渲染帧数)</h3>
-        <div class="h-[400px]">
-          <canvas id="performanceChart"></canvas>
-        </div>
-      </div>
-    </section>
+    </footer>
     
-    <!-- 核心特性对比 -->
-    <section id="features" class="mb-20">
-      <h3 class="text-2xl font-bold text-white mb-8 text-center">核心特性详细对比</h3>
-      
-      <div class="overflow-x-auto">
-        <table class="min-w-full bg-dark-card rounded-xl shadow-lg border border-dark-border">
-          <thead>
-            <tr class="bg-darker text-left">
-              <th class="px-6 py-4 font-semibold text-gray-300">特性</th>
-              <th class="px-6 py-4 font-semibold text-d3">D3.js</th>
-              <th class="px-6 py-4 font-semibold text-chartjs">Chart.js</th>
-              <th class="px-6 py-4 font-semibold text-highcharts">Highcharts</th>
-              <th class="px-6 py-4 font-semibold text-echarts">ECharts</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-dark-border">
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">开源协议</td>
-              <td class="px-6 py-4">BSD</td>
-              <td class="px-6 py-4">MIT</td>
-              <td class="px-6 py-4">非商业免费</td>
-              <td class="px-6 py-4">Apache 2.0</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">学习曲线</td>
-              <td class="px-6 py-4">陡峭</td>
-              <td class="px-6 py-4">平缓</td>
-              <td class="px-6 py-4">中等</td>
-              <td class="px-6 py-4">中等</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">自定义程度</td>
-              <td class="px-6 py-4">★★★★★</td>
-              <td class="px-6 py-4">★★★☆☆</td>
-              <td class="px-6 py-4">★★★★☆</td>
-              <td class="px-6 py-4">★★★★☆</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">图表类型</td>
-              <td class="px-6 py-4">无限 (需自定义)</td>
-              <td class="px-6 py-4">20+ 基础图表</td>
-              <td class="px-6 py-4">40+ 图表</td>
-              <td class="px-6 py-4">50+ 图表</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">交互能力</td>
-              <td class="px-6 py-4">极强 (需自行实现)</td>
-              <td class="px-6 py-4">基础交互</td>
-              <td class="px-6 py-4">丰富</td>
-              <td class="px-6 py-4">丰富</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">社区支持</td>
-              <td class="px-6 py-4">★★★★★</td>
-              <td class="px-6 py-4">★★★★☆</td>
-              <td class="px-6 py-4">★★★☆☆</td>
-              <td class="px-6 py-4">★★★★☆</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">体积大小</td>
-              <td class="px-6 py-4">~200KB</td>
-              <td class="px-6 py-4">~110KB</td>
-              <td class="px-6 py-4">~300KB</td>
-              <td class="px-6 py-4">~400KB</td>
-            </tr>
-            <tr class="hover:bg-darker/50 transition-colors">
-              <td class="px-6 py-4 font-medium text-white">适用场景</td>
-              <td class="px-6 py-4">定制化需求高的复杂可视化</td>
-              <td class="px-6 py-4">简单图表、快速集成</td>
-              <td class="px-6 py-4">企业级报表、交互仪表盘</td>
-              <td class="px-6 py-4">大数据可视化、地理信息</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
+    <!-- Back to Top Button -->
+    <button id="backToTop" aria-label="Back to top" 
+        class="fixed bottom-8 right-8 bg-primary dark:bg-dark-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
     
-    <!-- 社区评论 -->
-    <section id="reviews" class="mb-20">
-      <h3 class="text-2xl font-bold text-white mb-8 text-center">社区真实评论</h3>
-      
-      <!-- 评论筛选 -->
-      <div class="flex flex-wrap justify-center gap-3 mb-10">
-        <button class="review-filter active px-5 py-2 rounded-full bg-primary text-white" data-library="all">
-          所有库
-        </button>
-        <button class="review-filter px-5 py-2 rounded-full bg-dark-card hover:bg-dark-border transition-colors" data-library="d3">
-          D3.js
-        </button>
-        <button class="review-filter px-5 py-2 rounded-full bg-dark-card hover:bg-dark-border transition-colors" data-library="chartjs">
-          Chart.js
-        </button>
-        <button class="review-filter px-5 py-2 rounded-full bg-dark-card hover:bg-dark-border transition-colors" data-library="highcharts">
-          Highcharts
-        </button>
-        <button class="review-filter px-5 py-2 rounded-full bg-dark-card hover:bg-dark-border transition-colors" data-library="echarts">
-          ECharts
-        </button>
-      </div>
-      
-      <!-- 评论列表 -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-container">
-        <!-- 评论将通过JavaScript动态生成 -->
-      </div>
-      
-      <!-- 加载更多按钮 -->
-      <div class="text-center mt-10">
-        <button id="load-more-reviews" class="px-6 py-3 bg-dark-card border border-primary text-primary hover:bg-primary hover:text-white rounded-lg transition-colors">
-          加载更多评论
-        </button>
-      </div>
-    </section>
-  </main>
-
-  <!-- 页脚 -->
-  <footer class="bg-darker text-gray-400 py-10 border-t border-dark-border">
-    <div class="container mx-auto px-4">
-      <div class="text-center">
-        <p>数据可视化库功能对比 © 2023</p>
-        <p class="text-sm mt-2">
-          本页面提供的信息仅供参考，实际选择应根据项目具体需求
-        </p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- JavaScript -->
-  <script>
-    // 页面加载完成后执行
-    document.addEventListener('DOMContentLoaded', function() {
-      // 初始化图表
-      initCharts();
-      
-      // 初始化评论
-      initReviews();
-      
-      // 移动端菜单切换
-      document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-        const mobileMenu = document.getElementById('mobile-menu');
-        mobileMenu.classList.toggle('hidden');
-      });
-      
-      // 评论筛选功能
-      document.querySelectorAll('.review-filter').forEach(button => {
-        button.addEventListener('click', function() {
-          // 更新按钮样式
-          document.querySelectorAll('.review-filter').forEach(btn => {
-            btn.classList.remove('active', 'bg-primary', 'text-white');
-            btn.classList.add('bg-dark-card', 'hover:bg-dark-border');
-          });
-          this.classList.add('active', 'bg-primary', 'text-white');
-          this.classList.remove('bg-dark-card', 'hover:bg-dark-border');
-          
-          // 筛选评论
-          const library = this.getAttribute('data-library');
-          filterReviews(library);
+    <!-- JavaScript -->
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
+        
+        // Check for saved theme preference or use system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Toggle theme when button is clicked
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
+            }
         });
-      });
-      
-      // 加载更多评论
-      document.getElementById('load-more-reviews').addEventListener('click', function() {
-        loadMoreReviews();
-      });
-    });
-    
-    // 初始化图表 - 适配黑夜模式
-    function initCharts() {
-      // 确保Chart.js已加载
-      if (typeof Chart === 'undefined') {
-        console.error('Chart.js未加载，请检查引入是否正确');
-        return;
-      }
-      
-      // 雷达图 - 功能特性对比
-      const radarCtx = document.getElementById('radarChart').getContext('2d');
-      new Chart(radarCtx, {
-        type: 'radar',
-        data: {
-          labels: [
-            '灵活性', 
-            '易用性', 
-            '交互能力', 
-            '性能', 
-            '文档质量', 
-            '社区活跃度',
-            '图表丰富度'
-          ],
-          datasets: [
-            {
-              label: 'D3.js',
-              data: [100, 40, 100, 85, 80, 95, 90],
-              backgroundColor: 'rgba(249, 115, 22, 0.2)',
-              borderColor: 'rgba(249, 115, 22, 1)',
-              pointBackgroundColor: 'rgba(249, 115, 22, 1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(249, 115, 22, 1)'
-            },
-            {
-              label: 'Chart.js',
-              data: [60, 90, 65, 80, 85, 85, 70],
-              backgroundColor: 'rgba(255, 99, 132, 0.2)',
-              borderColor: 'rgba(255, 99, 132, 1)',
-              pointBackgroundColor: 'rgba(255, 99, 132, 1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(255, 99, 132, 1)'
-            },
-            {
-              label: 'Highcharts',
-              data: [80, 85, 90, 75, 90, 75, 90],
-              backgroundColor: 'rgba(54, 162, 235, 0.2)',
-              borderColor: 'rgba(54, 162, 235, 1)',
-              pointBackgroundColor: 'rgba(54, 162, 235, 1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(54, 162, 235, 1)'
-            },
-            {
-              label: 'ECharts',
-              data: [85, 80, 90, 90, 85, 85, 95],
-              backgroundColor: 'rgba(156, 39, 176, 0.2)',
-              borderColor: 'rgba(156, 39, 176, 1)',
-              pointBackgroundColor: 'rgba(156, 39, 176, 1)',
-              pointBorderColor: '#fff',
-              pointHoverBackgroundColor: '#fff',
-              pointHoverBorderColor: 'rgba(156, 39, 176, 1)'
-            }
-          ]
-        },
-        options: {
-          elements: {
-            line: {
-              borderWidth: 3
-            }
-          },
-          scales: {
-            r: {
-              angleLines: {
-                display: true,
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              pointLabels: {
-                color: 'rgba(255, 255, 255, 0.7)'
-              },
-              suggestedMin: 0,
-              suggestedMax: 100,
-              ticks: {
-                color: 'rgba(255, 255, 255, 0.5)',
-                stepSize: 20,
-                backdropColor: 'transparent'
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: 'rgba(255, 255, 255, 0.7)',
-                padding: 20,
-                usePointStyle: true
-              }
-            }
-          }
-        }
-      });
-      
-      // 性能对比图表
-      const perfCtx = document.getElementById('performanceChart').getContext('2d');
-      new Chart(perfCtx, {
-        type: 'bar',
-        data: {
-          labels: ['100个数据点', '1,000个数据点', '10,000个数据点', '100,000个数据点'],
-          datasets: [
-            {
-              label: 'D3.js',
-              data: [58, 52, 35, 18],
-              backgroundColor: 'rgba(249, 115, 22, 0.7)',
-            },
-            {
-              label: 'Chart.js',
-              data: [60, 55, 30, 12],
-              backgroundColor: 'rgba(255, 99, 132, 0.7)',
-            },
-            {
-              label: 'Highcharts',
-              data: [55, 48, 25, 8],
-              backgroundColor: 'rgba(54, 162, 235, 0.7)',
-            },
-            {
-              label: 'ECharts',
-              data: [56, 50, 40, 25],
-              backgroundColor: 'rgba(156, 39, 176, 0.7)',
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              position: 'bottom',
-              labels: {
-                color: 'rgba(255, 255, 255, 0.7)'
-              }
-            },
-            title: {
-              display: true,
-              text: '不同数据量下的每秒渲染帧数 (FPS)',
-              color: 'rgba(255, 255, 255, 0.9)'
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              title: {
-                display: true,
-                text: '每秒帧数 (FPS)',
-                color: 'rgba(255, 255, 255, 0.7)'
-              },
-              ticks: {
-                color: 'rgba(255, 255, 255, 0.5)'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            },
-            x: {
-              ticks: {
-                color: 'rgba(255, 255, 255, 0.5)'
-              },
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              }
-            }
-          }
-        }
-      });
-    }
-    
-    // 评论数据
-    const reviewsData = [
-      {
-        id: 1,
-        library: 'd3',
-        user: '数据可视化工程师',
-        avatar: 'https://picsum.photos/id/1012/100/100',
-        rating: 5,
-        date: '2023-09-10',
-        content: 'D3.js给了我完全的创作自由，能够实现任何想象中的可视化效果。虽然学习曲线陡峭，但掌握后绝对值得，特别适合需要高度定制化的项目。'
-      },
-      {
-        id: 2,
-        library: 'chartjs',
-        user: '前端开发者',
-        avatar: 'https://picsum.photos/id/1025/100/100',
-        rating: 4,
-        date: '2023-09-05',
-        content: 'Chart.js是我做快速原型的首选，几行代码就能实现漂亮的图表。API设计非常直观，文档也很清晰，适合中小型项目使用。'
-      },
-      {
-        id: 3,
-        library: 'highcharts',
-        user: '产品经理',
-        avatar: 'https://picsum.photos/id/1027/100/100',
-        rating: 4,
-        date: '2023-08-28',
-        content: 'Highcharts的交互体验非常出色，客户很喜欢那些细节交互。企业版授权虽然不便宜，但考虑到开发效率和最终效果，还是值得投资的。'
-      },
-      {
-        id: 4,
-        library: 'echarts',
-        user: '大数据分析师',
-        avatar: 'https://picsum.photos/id/1074/100/100',
-        rating: 5,
-        date: '2023-08-20',
-        content: '处理百万级数据点时，ECharts的性能表现令人印象深刻。内置的图表类型非常丰富，特别是地理信息可视化方面，比其他库更有优势。'
-      },
-      {
-        id: 5,
-        library: 'd3',
-        user: 'UI设计师',
-        avatar: 'https://picsum.photos/id/1062/100/100',
-        rating: 3,
-        date: '2023-08-15',
-        content: '作为设计师，我喜欢D3.js的无限可能性，但实现设计稿需要写太多代码。希望有更多现成的组件可以直接使用，减少重复劳动。'
-      },
-      {
-        id: 6,
-        library: 'chartjs',
-        user: '全栈开发者',
-        avatar: 'https://picsum.photos/id/1066/100/100',
-        rating: 4,
-        date: '2023-08-10',
-        content: 'Chart.js的扩展性很好，虽然核心功能简单，但通过插件可以实现很多高级功能。体积小，加载快，对移动端友好，这是我最看重的。'
-      },
-      {
-        id: 7,
-        library: 'highcharts',
-        user: '技术负责人',
-        avatar: 'https://picsum.photos/id/1076/100/100',
-        rating: 3,
-        date: '2023-08-05',
-        content: 'Highcharts功能强大但体积较大，对于注重加载速度的项目不太友好。商业授权条款有些复杂，企业使用时需要特别注意合规问题。'
-      },
-      {
-        id: 8,
-        library: 'echarts',
-        user: '前端架构师',
-        avatar: 'https://picsum.photos/id/1083/100/100',
-        rating: 4,
-        date: '2023-07-30',
-        content: 'ECharts的配置项非常全面，几乎所有细节都可以自定义。与Vue、React等框架的集成也很顺畅，社区贡献的组件库丰富了生态系统。'
-      },
-      {
-        id: 9,
-        library: 'd3',
-        user: '数据科学家',
-        avatar: 'https://picsum.photos/id/1084/100/100',
-        rating: 5,
-        date: '2023-07-25',
-        content: '在学术研究中，D3.js帮助我创建了独特的数据可视化，完美呈现了我的研究成果。能够精确控制每一个像素的感觉非常好。'
-      },
-      {
-        id: 10,
-        library: 'chartjs',
-        user: '初创公司CTO',
-        avatar: 'https://picsum.photos/id/1092/100/100',
-        rating: 5,
-        date: '2023-07-20',
-        content: '对于资源有限的初创公司，Chart.js是理想选择。免费开源，学习成本低，团队能快速上手。性能足够支撑我们当前的数据规模。'
-      },
-      {
-        id: 11,
-        library: 'highcharts',
-        user: '金融科技开发者',
-        avatar: 'https://picsum.photos/id/1094/100/100',
-        rating: 5,
-        date: '2023-07-15',
-        content: '在金融图表领域，Highcharts几乎是行业标准。时间序列数据的处理非常专业，蜡烛图、技术指标等金融专用图表开箱即用。'
-      },
-      {
-        id: 12,
-        library: 'echarts',
-        user: 'GIS开发者',
-        avatar: 'https://picsum.photos/id/1096/100/100',
-        rating: 5,
-        date: '2023-07-10',
-        content: 'ECharts的地图可视化功能是我用过最好的，支持多种坐标系转换，地图交互流畅。结合GeoJSON可以轻松实现复杂的地理信息展示。'
-      }
-    ];
-    
-    // 更多评论数据（用于加载更多）
-    const moreReviewsData = [
-      {
-        id: 13,
-        library: 'd3',
-        user: '交互设计师',
-        avatar: 'https://picsum.photos/id/1098/100/100',
-        rating: 4,
-        date: '2023-07-05',
-        content: 'D3.js的过渡动画系统非常强大，可以创建流畅自然的状态变化效果。这对于强调数据变化的叙事可视化特别有价值。'
-      },
-      {
-        id: 14,
-        library: 'chartjs',
-        user: 'WordPress开发者',
-        avatar: 'https://picsum.photos/id/1100/100/100',
-        rating: 4,
-        date: '2023-06-30',
-        content: '在WordPress插件中集成Chart.js非常简单，轻量级特性不会影响网站加载速度。客户需要的基本图表类型都能满足。'
-      },
-      {
-        id: 15,
-        library: 'highcharts',
-        user: '企业应用开发者',
-        avatar: 'https://picsum.photos/id/1101/100/100',
-        rating: 4,
-        date: '2023-06-25',
-        content: 'Highcharts的导出功能很实用，用户可以方便地将图表保存为图片或PDF。这在企业报表场景中非常重要。'
-      },
-      {
-        id: 16,
-        library: 'echarts',
-        user: '游戏开发者',
-        avatar: 'https://picsum.photos/id/1102/100/100',
-        rating: 3,
-        date: '2023-06-20',
-        content: '尝试用ECharts做游戏数据可视化，性能表现不错，但自定义动画效果不如D3.js灵活。希望未来能有更多动画相关的API。'
-      },
-      {
-        id: 17,
-        library: 'd3',
-        user: '教育工作者',
-        avatar: 'https://picsum.photos/id/1103/100/100',
-        rating: 5,
-        date: '2023-06-15',
-        content: '用D3.js创建了交互式教学可视化，帮助学生更好地理解复杂概念。学生反馈这种可视化学习方式比传统图表更有效。'
-      },
-      {
-        id: 18,
-        library: 'chartjs',
-        user: '移动应用开发者',
-        avatar: 'https://picsum.photos/id/1104/100/100',
-        rating: 3,
-        date: '2023-06-10',
-        content: '在React Native项目中使用Chart.js需要一些额外配置，但效果不错。希望未来能有官方的移动适配版本。'
-      }
-    ];
-    
-    // 当前显示的评论数量
-    let displayedReviews = 6;
-    let loadedAll = false;
-    
-    // 初始化评论
-    function initReviews() {
-      const container = document.getElementById('reviews-container');
-      container.innerHTML = '';
-      
-      // 只显示部分评论
-      const initialReviews = reviewsData.slice(0, displayedReviews);
-      initialReviews.forEach(review => {
-        container.appendChild(createReviewElement(review));
-      });
-    }
-    
-    // 创建评论元素
-    function createReviewElement(review) {
-      const div = document.createElement('div');
-      div.className = `bg-dark-card rounded-xl shadow-md p-6 card-shadow review-item ${review.library} border border-dark-border`;
-      
-      // 星级评分HTML
-      let ratingHtml = '<div class="rating-stars flex mb-3">';
-      for (let i = 1; i <= 5; i++) {
-        if (i <= review.rating) {
-          ratingHtml += '<i class="fa fa-star star-filled mr-1"></i>';
-        } else {
-          ratingHtml += '<i class="fa fa-star star-empty mr-1"></i>';
-        }
-      }
-      ratingHtml += '</div>';
-      
-      // 库标签样式
-      let libraryClass = '';
-      let libraryName = '';
-      
-      switch(review.library) {
-        case 'd3':
-          libraryClass = 'bg-d3/10 text-d3';
-          libraryName = 'D3.js';
-          break;
-        case 'chartjs':
-          libraryClass = 'bg-chartjs/10 text-chartjs';
-          libraryName = 'Chart.js';
-          break;
-        case 'highcharts':
-          libraryClass = 'bg-highcharts/10 text-highcharts';
-          libraryName = 'Highcharts';
-          break;
-        case 'echarts':
-          libraryClass = 'bg-echarts/10 text-echarts';
-          libraryName = 'ECharts';
-          break;
-      }
-      
-      div.innerHTML = `
-        <div class="flex items-start mb-4">
-          <img src="${review.avatar}" alt="${review.user}" class="w-12 h-12 rounded-full mr-4">
-          <div>
-            <h4 class="font-semibold text-white">${review.user}</h4>
-            <span class="text-xs px-2 py-1 rounded-full ${libraryClass}">${libraryName}</span>
-          </div>
-        </div>
-        ${ratingHtml}
-        <p class="text-gray-300 mb-4">${review.content}</p>
-        <div class="text-sm text-gray-500">${review.date}</div>
-      `;
-      
-      return div;
-    }
-    
-    // 筛选评论
-    function filterReviews(library) {
-      const reviews = document.querySelectorAll('.review-item');
-      
-      reviews.forEach(review => {
-        if (library === 'all' || review.classList.contains(library)) {
-          review.style.display = 'block';
-        } else {
-          review.style.display = 'none';
-        }
-      });
-    }
-    
-    // 加载更多评论
-    function loadMoreReviews() {
-      const container = document.getElementById('reviews-container');
-      
-      // 如果已经加载了所有评论
-      if (displayedReviews >= reviewsData.length) {
-        // 添加更多评论数据
-        reviewsData.push(...moreReviewsData);
-      }
-      
-      // 计算需要加载的评论
-      const endIndex = Math.min(displayedReviews + 3, reviewsData.length);
-      const newReviews = reviewsData.slice(displayedReviews, endIndex);
-      
-      // 添加新评论
-      newReviews.forEach(review => {
-        const reviewElement = createReviewElement(review);
         
-        // 保持当前筛选状态
-        const activeFilter = document.querySelector('.review-filter.active').getAttribute('data-library');
-        if (activeFilter !== 'all' && !reviewElement.classList.contains(activeFilter)) {
-          reviewElement.style.display = 'none';
-        }
+        // Bookmark Button Functionality
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const bookmarkIcon = bookmarkBtn.querySelector('i');
         
-        container.appendChild(reviewElement);
-      });
-      
-      displayedReviews = endIndex;
-      
-      // 如果所有评论都已加载
-      if (displayedReviews >= reviewsData.length) {
-        document.getElementById('load-more-reviews').textContent = '已加载全部评论';
-        document.getElementById('load-more-reviews').disabled = true;
-        document.getElementById('load-more-reviews').classList.add('opacity-50', 'cursor-not-allowed');
-      }
-    }
-  </script>
-<script type="module" src="/main.js"></script>
-
-
-</body></html>
+        bookmarkBtn.addEventListener('click', () => {
+            if (bookmarkIcon.classList.contains('fa-star-o')) {
+                bookmarkIcon.classList.remove('fa-star-o');
+                bookmarkIcon.classList.add('fa-star');
+            } else {
+                bookmarkIcon.classList.remove('fa-star');
+                bookmarkIcon.classList.add('fa-star-o');
+            }
+        });
+        
+        // Mobile Search Toggle
+        const mobileSearchBtn = document.getElementById('mobileSearchBtn');
+        const mobileSearchContainer = document.getElementById('mobileSearchContainer');
+        
+        mobileSearchBtn.addEventListener('click', () => {
+            mobileSearchContainer.classList.toggle('hidden');
+        });
+        
+        // Scroll Progress Indicator
+        const scrollProgress = document.getElementById('scrollProgress');
+        
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.width = scrolled + '%';
+            
+            // Back to top button visibility
+            const backToTopBtn = document.getElementById('backToTop');
+            if (winScroll > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        // Back to Top Functionality
+        document.getElementById('backToTop').addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Share Functionality
+        const shareButtons = {
+            shareFacebook: () => {
+                const url = window.location.href;
+                window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+            },
+            shareTwitter: () => {
+                const url = window.location.href;
+                const text = 'Check out D3.js - a powerful data visualization library!';
+                window.open(`https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, '_blank', 'width=600,height=400');
+            },
+            shareLinkedIn: () => {
+                const url = window.location.href;
+                window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}`, '_blank', 'width=600,height=400');
+            },
+            shareGithub: () => {
+                window.open('https://github.com/d3/d3', '_blank');
+            },
+            shareCopyLink: () => {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    // Show a visual feedback instead of alert
+                    const shareCopyBtn = document.getElementById('shareCopyLink');
+                    const originalIcon = shareCopyBtn.innerHTML;
+                    shareCopyBtn.innerHTML = '<i class="fa fa-check text-xl"></i>';
+                    
+                    setTimeout(() => {
+                        shareCopyBtn.innerHTML = originalIcon;
+                    }, 2000);
+                });
+            }
+        };
+        
+        // Add event listeners to share buttons
+        Object.keys(shareButtons).forEach(id => {
+            document.getElementById(id).addEventListener('click', shareButtons[id]);
+        });
+        
+        // Radar Chart Initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Check for dark mode to adjust text color
+            const textColor = document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937';
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Customization',
+                        'Performance',
+                        'Ease of Use',
+                        'Community Support',
+                        'Pre-built Charts',
+                        'Learning Curve'
+                    ],
+                    datasets: [
+                        {
+                            label: 'D3.js',
+                            data: [10, 9, 5, 8, 3, 4],
+                            backgroundColor: 'rgba(49, 130, 206, 0.2)',
+                            borderColor: 'rgba(49, 130, 206, 1)',
+                            pointBackgroundColor: 'rgba(49, 130, 206, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(49, 130, 206, 1)'
+                        },
+                        {
+                            label: 'Other Libraries',
+                            data: [6, 7, 8, 7, 9, 8],
+                            backgroundColor: 'rgba(128, 90, 213, 0.2)',
+                            borderColor: 'rgba(128, 90, 213, 1)',
+                            pointBackgroundColor: 'rgba(128, 90, 213, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(128, 90, 213, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                color: textColor
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update chart colors when theme changes
+            themeToggle.addEventListener('click', () => {
+                const newTextColor = document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#1f2937';
+                const gridColor = document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                
+                radarChart.options.scales.r.angleLines.color = gridColor;
+                radarChart.options.scales.r.grid.color = gridColor;
+                radarChart.options.scales.r.pointLabels.color = newTextColor;
+                radarChart.options.scales.r.ticks.color = newTextColor;
+                radarChart.options.plugins.legend.labels.color = newTextColor;
+                
+                radarChart.update();
+            });
+        });
+    </script>
+    
+    <!-- Import main.js as module -->
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

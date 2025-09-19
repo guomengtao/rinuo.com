@@ -1,35 +1,50 @@
-<!DOCTYPE html><html lang="zh-CN"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FastAPI 介绍 - 现代、快速的Python API框架</title>
-    <meta name="description" content="了解FastAPI的名称来历、项目背景、使用方法、优缺点及社区评价，掌握这一现代Python API框架的全面信息。">
-    <meta name="keywords" content="FastAPI, Python, API框架, FastAPI介绍, FastAPI使用方法, FastAPI优缺点">
-    <meta name="author" content="FastAPI介绍网">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" href="https://example.com/">
-    <link rel="sitemap" type="application/xml" href="/sitemap">
+    <title>FastAPI - Modern, Fast (high-performance) Web Framework for Python</title>
+    <meta name="description" content="Learn about FastAPI, a modern, fast (high-performance) web framework for building APIs with Python 3.6+ based on standard Python type hints."/>
+    <meta name="keywords" content="FastAPI, Python, API, web framework, async, REST, framework, Python API"/>
+    <meta name="author" content="FastAPI Community"/>
+    <meta name="google-site-verification" content="placeholder-for-verification"/>
+    <link rel="canonical" href="https://example.com/fastapi.html"/>
+    <link rel="sitemap" type="application/xml" href="/sitemap"/>
+    <link href="icon" type="image/svg+xml" href="https://picsum.photos/32/32?random=icon"/>
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <!-- Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     
-    <!-- 配置Tailwind自定义颜色和字体 -->
+    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#009485',
-                        secondary: '#00b8d4',
-                        dark: '#121212',
-                        'dark-light': '#1e1e1e',
-                        'dark-lighter': '#2d2d2d',
+                        primary: '#009688',
+                        secondary: '#607D8B',
+                        accent: '#FF5722',
+                        dark: {
+                            bg: '#121212',
+                            card: '#1E1E1E',
+                            text: '#E0E0E0'
+                        },
+                        light: {
+                            bg: '#F5F5F5',
+                            card: '#FFFFFF',
+                            text: '#212121'
+                        }
                     },
                     fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
                     },
                 }
             }
@@ -38,1308 +53,945 @@
     
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-transform {
+                transition-property: transform;
+                transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+                transition-duration: 300ms;
             }
             .scrollbar-hide::-webkit-scrollbar {
                 display: none;
             }
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-            }
-            .animate-float {
-                animation: float 6s ease-in-out infinite;
-            }
-            @keyframes float {
-                0% { transform: translateY(0px); }
-                50% { transform: translateY(-20px); }
-                100% { transform: translateY(0px); }
+            .gradient-mask {
+                mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
             }
         }
     </style>
 </head>
-<body class="bg-dark text-gray-200 font-inter antialiased">
-    <!-- 导航栏 -->
-                   
-                 <header class="sticky top-0 z-50 bg-dark/80 backdrop-blur-md border-b border-gray-800 transition-all duration-300">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                    <i class="fa fa-bolt text-white text-xl"></i>
+<body class="bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="fixed top-0 left-0 h-1 bg-primary transform origin-left transition-all duration-300 scale-x-0 z-50"></div>
+
+    <!-- Header Navigation -->
+    <header class="sticky top-0 bg-light-card/90 dark:bg-dark-card/90 shadow-md backdrop-blur-sm z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <nav class="flex items-center justify-between">
+                <!-- Logo -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                        <i class="fa fa-bolt text-white text-xl"></i>
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">FastAPI</span>
                 </div>
-                <h1 class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">FastAPI</h1>
-            </div>
-            
-            <!-- 桌面导航 -->
-            <div class="hidden md:flex mx-4 items-center relative">
-    <div class="relative w-64">
-        <input type="text" id="searchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-        <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-            <i class="fa fa-search"></i>
-        </button>
-    </div>
-    <!-- 搜索结果浮动容器 -->
-    <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-        <div id="searchResults" class="max-h-80 overflow-y-auto">
-            <!-- 搜索结果将在这里动态生成 -->
-        </div>
-    </div>
-</div><nav class="hidden md:flex items-center space-x-8">
-                <a href="#about" class="text-gray-300 hover:text-primary transition-colors">关于</a>
-                <a href="#features" class="text-gray-300 hover:text-primary transition-colors">特性</a>
-                <a href="#usage" class="text-gray-300 hover:text-primary transition-colors">使用方法</a>
-                <a href="#community" class="text-gray-300 hover:text-primary transition-colors">社区评论</a>
-            </nav>
-            
-            <!-- 移动端菜单按钮 -->
-                                <!-- 移动端搜索按钮 -->
-                    <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
+                
+                <!-- Search Bar -->
+                <div class="hidden md:block flex-grow max-w-xl mx-8">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            autocomplete="off"
+                            placeholder="Search documentation..." 
+                            class="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 dark:border-gray-600 bg-light-bg dark:bg-dark-bg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        >
+                        <i class="fa fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                
+                <!-- Navigation Actions -->
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Toggle -->
+                    <button id="themeToggle" aria-label="Toggle dark mode" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i id="themeIcon" class="fa fa-moon-o text-xl"></i>
+                    </button>
+                    
+                    <!-- Bookmark Button -->
+                    <button id="bookmarkBtn" aria-label="Bookmark this page" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-star-o text-xl"></i>
+                    </button>
+                    
+                    <!-- Mobile Search Toggle -->
+                    <button id="mobileSearchToggle" class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                         <i class="fa fa-search text-xl"></i>
                     </button>
-<button id="menu-toggle" class="md:hidden text-gray-300 hover:text-primary">
-                <i class="fa fa-bars text-xl"></i>
-            </button>
+                </div>
+            </nav>
+            
+            <!-- Mobile Search Bar -->
+            <div id="mobileSearch" class="md:hidden mt-3 hidden">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        placeholder="Search documentation..." 
+                        class="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 dark:border-gray-600 bg-light-bg dark:bg-dark-bg focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    >
+                    <i class="fa fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
         </div>
         
-        <!-- 移动端导航菜单 -->
-        <div id="mobile-menu" class="md:hidden hidden bg-dark-light border-b border-gray-800">
-            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
-                <a href="#about" class="text-gray-300 hover:text-primary transition-colors py-2">关于</a>
-                <a href="#features" class="text-gray-300 hover:text-primary transition-colors py-2">特性</a>
-                <a href="#usage" class="text-gray-300 hover:text-primary transition-colors py-2">使用方法</a>
-                <a href="#community" class="text-gray-300 hover:text-primary transition-colors py-2">社区评论</a>
-            </div>
-        </div>
-            <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
-            </div>
+        <!-- Breadcrumb Navigation -->
+        <div class="container mx-auto px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-t border-gray-200 dark:border-gray-700">
+            <nav class="flex space-x-2">
+                <a href="/" class="hover:text-primary transition-colors">Home</a>
+                <i class="fa fa-chevron-right text-xs"></i>
+                <a href="/free" class="hover:text-primary transition-colors">Free Resources</a>
+                <i class="fa fa-chevron-right text-xs"></i>
+                <a href="/free/detail/" class="hover:text-primary transition-colors">Resource List</a>
+                <i class="fa fa-chevron-right text-xs"></i>
+                <span class="text-primary">FastAPI</span>
+            </nav>
         </div>
     </header>
 
-    <!-- 面包屑导航 -->
-    <div class="bg-dark-light border-b border-gray-800">
-        <div class="container mx-auto px-4 py-2">
-            <nav class="text-sm" aria-label="面包屑">
-                <ol class="flex items-center space-x-2">
-                    <li><a href="/" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
-                    <li class="flex items-center text-gray-500">
-                        <i class="fa fa-chevron-right text-xs mx-1"></i>
-                        <span>FastAPI 介绍</span>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-    </div>
-
-    <main>
-        <!-- 英雄区域 -->
-        <section class="relative py-20 overflow-hidden">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,148,133,0.15),transparent_70%)]"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="max-w-4xl mx-auto text-center">
-                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                        <span class="bg-gradient-to-r from-primary to-secondary text-gradient">FastAPI</span>
-                        <span class="block mt-2">现代、快速的Python API框架</span>
-                    </h1>
-                    <p class="text-xl text-gray-300 mb-10">高性能、易于学习、高效编码、生产可用的API框架，基于标准Python类型提示构建。</p>
-                    <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <a href="#about" class="px-8 py-3 bg-primary hover:bg-primary/90 text-white font-medium rounded-lg transition-all transform hover:-translate-y-1 shadow-lg shadow-primary/20">
-                            了解更多
-                        </a>
-                        <a href="#usage" class="px-8 py-3 bg-dark-lighter hover:bg-dark-lighter/90 text-white font-medium rounded-lg border border-gray-700 transition-all transform hover:-translate-y-1">
-                            开始使用
-                        </a>
+    <main class="container mx-auto px-4 py-8">
+        <!-- Hero Section -->
+        <section class="py-12 md:py-20 text-center">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-4xl md:text-6xl font-bold mb-6 text-shadow leading-tight">
+                    Build APIs <span class="text-primary">Fast</span> with Python
+                </h1>
+                <p class="text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-10 leading-relaxed">
+                    Modern, high-performance web framework for building APIs with Python 3.6+ based on standard type hints.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#features" class="px-8 py-3 bg-primary text-white rounded-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all font-medium">
+                        Explore Features
+                    </a>
+                    <a href="https://github.com/tiangolo/fastapi" target="_blank" class="px-8 py-3 bg-light-card dark:bg-dark-card text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600 rounded-lg shadow-md hover:shadow-lg hover:-translate-y-1 transition-all font-medium flex items-center gap-2">
+                        <i class="fa fa-github"></i> GitHub
+                    </a>
+                </div>
+                
+                <!-- GitHub Stats -->
+                <div class="mt-12 flex flex-wrap justify-center gap-6 md:gap-10 text-gray-600 dark:text-gray-300">
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-star text-yellow-400"></i>
+                        <span class="font-mono text-lg">69.5k+</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-code-fork text-gray-500"></i>
+                        <span class="font-mono text-lg">3.8k+</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-exclamation-circle text-red-500"></i>
+                        <span class="font-mono text-lg">54 Open Issues</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa fa-calendar text-green-500"></i>
+                        <span class="font-mono text-lg">Updated 2 days ago</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- 装饰元素 -->
-            <div class="hidden lg:block absolute -top-20 -right-20 w-80 h-80 bg-primary/10 rounded-full blur-3xl"></div>
-            <div class="hidden lg:block absolute -bottom-40 -left-20 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
         </section>
-
-        <!-- 邮件订阅 -->
-        <section class="py-16 bg-dark-light">
-          <div class="container mx-auto px-4">
-            <div class="bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl p-8 border border-gray-800">
-              <h3 class="text-xl font-bold mb-4">订阅后端技术更新</h3>
-              <p class="text-gray-300 mb-6">获取FastAPI最新动态和Python技巧</p>
-              <div class="flex flex-col sm:flex-row gap-3 max-w-lg">
-                <input type="email" id="subscribeEmail" placeholder="输入您的邮箱地址" class="flex-1 bg-dark/70 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-primary transition-colors">
-                <button id="subscribeBtn" class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30 whitespace-nowrap">
-                  立即订阅
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- 关于部分 -->
-        <section id="about" class="py-20 bg-dark-light">
-            <div class="container mx-auto px-4">
-                <div class="max-w-3xl mx-auto mb-16 text-center">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4">关于 FastAPI</h2>
-                    <p class="text-gray-400">FastAPI 是一个现代、高性能的Web框架，用于构建API，基于标准Python类型提示。</p>
-                </div>
+        
+        <!-- Founder Section -->
+        <section class="py-12 md:py-16">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">The Creator Behind FastAPI</h2>
                 
-                <div class="grid md:grid-cols-2 gap-12 items-center">
-                    <div class="order-2 md:order-1">
-                        <div class="space-y-8">
-                            <div class="bg-dark-lighter p-6 rounded-xl border border-gray-800 shadow-lg transform transition-all hover:shadow-primary/10 hover:-translate-y-1">
-                                <h3 class="text-xl font-semibold mb-3 text-primary">名称来历</h3>
-                                <p class="text-gray-300">FastAPI 的名称直接反映了其两个核心特性："Fast"（快速）和"API"（应用程序接口）。这个名字简洁明了地传达了框架的主要优势 - 提供高性能的API开发体验。</p>
-                                <p class="text-gray-300 mt-2">该名称由框架作者Sebastián Ramírez精心选择，旨在突出其与其他Python Web框架相比的性能优势，同时明确其专注于API开发的定位。</p>
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl overflow-hidden">
+                    <div class="md:flex">
+                        <div class="md:w-1/3">
+                            <img 
+                                src="https://picsum.photos/600/800?random=1" 
+                                alt="Sebastián Ramírez - Creator of FastAPI" 
+                                class="h-full w-full object-cover lazy-load"
+                                loading="lazy"
+                            >
+                        </div>
+                        <div class="md:w-2/3 p-8 md:p-10">
+                            <h3 class="text-2xl font-bold mb-4">Sebastián Ramírez</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                Also known as <span class="font-medium text-primary">tiangolo</span> online, Sebastián is a software developer with a passion for building tools that make developers' lives easier.
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                Based in Mexico, Sebastián has been working with Python for many years and has contributed to numerous open-source projects. His vision for FastAPI was to create a framework that combines the best features of existing tools while adding modern capabilities.
+                            </p>
+                            <p class="text-gray-600 dark:text-gray-300 mb-6">
+                                Before creating FastAPI, Sebastián worked on several backend systems and noticed the need for a framework that could handle async operations efficiently while providing automatic documentation.
+                            </p>
+                            <div class="flex gap-4">
+                                <a href="https://github.com/tiangolo" target="_blank" aria-label="GitHub" class="text-gray-500 hover:text-primary transition-colors">
+                                    <i class="fa fa-github text-2xl"></i>
+                                </a>
+                                <a href="https://twitter.com/tiangolo" target="_blank" aria-label="Twitter" class="text-gray-500 hover:text-primary transition-colors">
+                                    <i class="fa fa-twitter text-2xl"></i>
+                                </a>
+                                <a href="https://tiangolo.com" target="_blank" aria-label="Website" class="text-gray-500 hover:text-primary transition-colors">
+                                    <i class="fa fa-globe text-2xl"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Project Origin Section -->
+        <section class="py-12 md:py-16 bg-gray-100 dark:bg-gray-800/50 rounded-3xl my-8">
+            <div class="max-w-5xl mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">The Story Behind FastAPI</h2>
+                
+                <div class="space-y-8">
+                    <div class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">The Birth of an Idea</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            FastAPI was first released in December 2018. The project emerged from Sebastián's frustration with existing Python frameworks that either lacked performance, modern features, or ease of use.
+                        </p>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            He wanted to create something that could leverage Python's type hints not just for static analysis, but also for runtime data validation and automatic API documentation.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">Rapid Growth & Adoption</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-4">
+                            What started as a personal project quickly gained traction in the Python community. Developers were drawn to FastAPI's exceptional performance (on par with Node.js and Go), intuitive interface, and automatic interactive documentation.
+                        </p>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            Major companies like Microsoft, Uber, Netflix, and many others soon adopted FastAPI for their production systems, contributing to its rapid growth.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4">Philosophy & Principles</h3>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            FastAPI was built with several core principles: performance, ease of use, correctness, type hints, automatic documentation, and standards compliance. These principles continue to guide its development today.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Technology Stack Section with Radar Chart -->
+        <section id="features" class="py-12 md:py-16">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Technology Stack & Ecosystem</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-6">Perfectly Integrated Tools</h3>
+                        
+                        <div class="space-y-6">
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                                    <i class="fa fa-python text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl mb-1">Python 3.6+</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">Leverages modern Python features like type hints and async/await</p>
+                                </div>
                             </div>
                             
-                            <div class="bg-dark-lighter p-6 rounded-xl border border-gray-800 shadow-lg transform transition-all hover:shadow-secondary/10 hover:-translate-y-1">
-                                <h3 class="text-xl font-semibold mb-3 text-secondary">项目来历</h3>
-                                <p class="text-gray-300">FastAPI 由 Sebastián Ramírez（也被称为tiangolo）于2018年创建并首次发布。当时，Python生态系统中缺乏一个既快速又易于使用的现代API框架。</p>
-                                <p class="text-gray-300 mt-2">作者希望结合其他框架的优点，如Flask的简单性和Django的功能丰富性，同时利用最新的Python特性（如类型提示）和高性能的异步支持。FastAPI由此诞生，并迅速在开发者社区中获得了广泛关注和采用。</p>
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
+                                    <i class="fa fa-code text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl mb-1">Pydantic</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">Data validation using Python type annotations</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                                    <i class="fa fa-server text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl mb-1">Starlette & Uvicorn</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">Powerful async framework and ASGI server</p>
+                                </div>
+                            </div>
+                            
+                            <div class="flex gap-4">
+                                <div class="flex-shrink-0 w-12 h-12 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400">
+                                    <i class="fa fa-book text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-xl mb-1">OpenAPI & JSON Schema</h4>
+                                    <p class="text-gray-600 dark:text-gray-300">Automatic API documentation and schema generation</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="order-1 md:order-2 flex justify-center">
-                        <div class="relative w-full max-w-md">
-                            <div class="absolute inset-0 bg-gradient-to-br from-primary to-secondary rounded-2xl blur-xl opacity-20 animate-pulse"></div>
-                            <div class="relative bg-dark-lighter border border-gray-800 rounded-2xl p-6 shadow-xl animate-float">
-                                <div class="flex justify-center mb-6">
-                                    <div class="w-20 h-20 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                                        <i class="fa fa-bolt text-white text-3xl"></i>
-                                    </div>
-                                </div>
-                                <h3 class="text-center text-2xl font-bold mb-4">FastAPI</h3>
-                                <div class="space-y-4">
-                                    <div class="flex items-center justify-between">
-                                        <span class="text-gray-400">首次发布</span>
-                                        <span>2018年12月</span>
-                                    </div>
-                                    <div class="border-t border-gray-800 pt-4 flex items-center justify-between">
-                                        <span class="text-gray-400">最新版本</span>
-                                        <span>0.103.1</span>
-                                    </div>
-                                    <div class="border-t border-gray-800 pt-4 flex items-center justify-between">
-                                        <span class="text-gray-400">许可证</span>
-                                        <span>MIT</span>
-                                    </div>
-                                    <div class="border-t border-gray-800 pt-4 flex items-center justify-between">
-                                        <span class="text-gray-400">GitHub星标</span>
-                                        <span>69.5k+</span>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Radar Chart -->
+                    <div class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-2xl shadow-xl">
+                        <h3 class="text-xl font-bold mb-6 text-center">Framework Comparison</h3>
+                        <div class="h-[400px] flex items-center justify-center">
+                            <canvas id="radarChart"></canvas>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- 特性部分 -->
-        <section id="features" class="py-20">
-            <div class="container mx-auto px-4">
-                <div class="max-w-3xl mx-auto mb-16 text-center">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4">FastAPI 特性</h2>
-                    <p class="text-gray-400">了解FastAPI的主要优势和局限性，帮助你做出更明智的技术选择。</p>
-                </div>
+        
+        <!-- Pros and Cons Section -->
+        <section class="py-12 md:py-16">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Advantages & Limitations</h2>
                 
-                <div class="grid md:grid-cols-2 gap-16">
-                    <!-- 优点 -->
-                    <div>
-                        <div class="flex items-center mb-8">
-                            <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mr-4">
-                                <i class="fa fa-thumbs-up text-primary text-xl"></i>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Pros -->
+                    <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 mr-4">
+                                <i class="fa fa-thumbs-up text-2xl"></i>
                             </div>
-                            <h3 class="text-2xl font-bold">主要优点</h3>
+                            <h3 class="text-2xl font-bold">Advantages</h3>
                         </div>
                         
-                        <div class="space-y-6">
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-primary/50 transition-all">
-                                <h4 class="font-semibold text-primary mb-2 flex items-center">
-                                    <i class="fa fa-bolt mr-2"></i>
-                                    极高性能
-                                </h4>
-                                <p class="text-gray-300">性能接近NodeJS和Go，是Python中性能最好的框架之一，归功于其基于Starlette和Pydantic。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-primary/50 transition-all">
-                                <h4 class="font-semibold text-primary mb-2 flex items-center">
-                                    <i class="fa fa-code mr-2"></i>
-                                    快速开发
-                                </h4>
-                                <p class="text-gray-300">将开发功能的速度提高约200%至300%，减少了开发和调试时间。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-primary/50 transition-all">
-                                <h4 class="font-semibold text-primary mb-2 flex items-center">
-                                    <i class="fa fa-book mr-2"></i>
-                                    自动文档
-                                </h4>
-                                <p class="text-gray-300">自动生成交互式API文档，包括Swagger UI和ReDoc，无需额外工作。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-primary/50 transition-all">
-                                <h4 class="font-semibold text-primary mb-2 flex items-center">
-                                    <i class="fa fa-check-circle mr-2"></i>
-                                    类型提示
-                                </h4>
-                                <p class="text-gray-300">基于Python类型提示，提供更好的代码补全和错误检查，提高代码质量。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-primary/50 transition-all">
-                                <h4 class="font-semibold text-primary mb-2 flex items-center">
-                                    <i class="fa fa-sync mr-2"></i>
-                                    异步支持
-                                </h4>
-                                <p class="text-gray-300">原生支持异步操作，适合处理I/O密集型任务，提高应用吞吐量。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-primary/50 transition-all">
-                                <h4 class="font-semibold text-primary mb-2 flex items-center">
-                                    <i class="fa fa-cubes mr-2"></i>
-                                    易于集成
-                                </h4>
-                                <p class="text-gray-300">可以轻松与其他Python库和框架集成，如SQLAlchemy、Django ORM等。</p>
-                            </div>
-                        </div>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Exceptional performance, on par with Node.js and Go frameworks</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Automatic interactive API documentation (Swagger UI and ReDoc)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Easy learning curve for developers familiar with Python</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Built-in data validation using Pydantic</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Full support for async operations</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Extensible with dependencies and plugins</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-green-500 mt-1 mr-3"></i>
+                                <span>Excellent editor support with autocompletion</span>
+                            </li>
+                        </ul>
                     </div>
                     
-                    <!-- 缺点 -->
-                    <div>
-                        <div class="flex items-center mb-8">
-                            <div class="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
-                                <i class="fa fa-thumbs-down text-red-500 text-xl"></i>
+                    <!-- Cons -->
+                    <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl p-8">
+                        <div class="flex items-center mb-6">
+                            <div class="w-12 h-12 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 mr-4">
+                                <i class="fa fa-thumbs-down text-2xl"></i>
                             </div>
-                            <h3 class="text-2xl font-bold">主要缺点</h3>
+                            <h3 class="text-2xl font-bold">Limitations</h3>
                         </div>
                         
-                        <div class="space-y-6">
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-all">
-                                <h4 class="font-semibold text-red-500 mb-2 flex items-center">
-                                    <i class="fa fa-history mr-2"></i>
-                                    相对年轻
-                                </h4>
-                                <p class="text-gray-300">与Django和Flask相比，FastAPI相对较新，生态系统不如它们成熟。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-all">
-                                <h4 class="font-semibold text-red-500 mb-2 flex items-center">
-                                    <i class="fa fa-file-text-o mr-2"></i>
-                                    文档局限性
-                                </h4>
-                                <p class="text-gray-300">虽然自动生成API文档很方便，但对于更复杂的使用场景，官方文档有时不够详细。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-all">
-                                <h4 class="font-semibold text-red-500 mb-2 flex items-center">
-                                    <i class="fa fa-code-fork mr-2"></i>
-                                    第三方扩展较少
-                                </h4>
-                                <p class="text-gray-300">可用的第三方扩展和插件比Django和Flask少，有时需要自己实现功能。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-all">
-                                <h4 class="font-semibold text-red-500 mb-2 flex items-center">
-                                    <i class="fa fa-graduation-cap mr-2"></i>
-                                    学习曲线
-                                </h4>
-                                <p class="text-gray-300">对于不熟悉Python类型提示和异步编程的开发者，有一定的学习曲线。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-all">
-                                <h4 class="font-semibold text-red-500 mb-2 flex items-center">
-                                    <i class="fa fa-bug mr-2"></i>
-                                    潜在的 bugs
-                                </h4>
-                                <p class="text-gray-300">作为较新的框架，可能存在未被发现的bug，尽管核心团队修复速度很快。</p>
-                            </div>
-                            
-                            <div class="bg-dark-light p-5 rounded-lg border border-gray-800 hover:border-red-500/50 transition-all">
-                                <h4 class="font-semibold text-red-500 mb-2 flex items-center">
-                                    <i class="fa fa-users mr-2"></i>
-                                    社区规模
-                                </h4>
-                                <p class="text-gray-300">社区规模不如Django和Flask大，遇到问题时可能需要更多时间寻找解决方案。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 统计图表 -->
-                <div class="mt-20 bg-dark-light p-6 rounded-xl border border-gray-800">
-                    <h3 class="text-xl font-semibold mb-6 text-center">Python API框架受欢迎程度对比</h3>
-                    <div class="h-80">
-                        <canvas id="frameworkChart"></canvas>
+                        <ul class="space-y-4">
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Relatively new compared to Django or Flask (released 2018)</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Smaller ecosystem than more established frameworks</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Less suitable for full-stack applications without additional tools</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Requires Python 3.6+, not compatible with older versions</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Async programming model can be confusing for beginners</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
+                                <span>Fewer built-in features compared to batteries-included frameworks like Django</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- 使用方法部分 -->
-        <section id="usage" class="py-20 bg-dark-light">
-            <div class="container mx-auto px-4">
-                <div class="max-w-3xl mx-auto mb-16 text-center">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4">免费使用方法</h2>
-                    <p class="text-gray-400">FastAPI 是开源免费的，遵循MIT许可证。以下是开始使用FastAPI的简单步骤。</p>
-                </div>
+        
+        <!-- Community Section -->
+        <section class="py-12 md:py-16 bg-gray-100 dark:bg-gray-800/50 rounded-3xl my-8">
+            <div class="max-w-6xl mx-auto px-6">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Community Feedback</h2>
                 
-                <div class="max-w-3xl mx-auto">
-                    <div class="bg-dark rounded-xl overflow-hidden border border-gray-800 shadow-xl">
-                        <!-- 步骤导航 -->
-                        <div class="flex border-b border-gray-800">
-                            <button class="step-btn active flex-1 py-4 px-4 text-center font-medium transition-colors" data-step="1">安装</button>
-                            <button class="step-btn flex-1 py-4 px-4 text-center font-medium transition-colors" data-step="2">创建应用</button>
-                            <button class="step-btn flex-1 py-4 px-4 text-center font-medium transition-colors" data-step="3">运行服务</button>
-                            <button class="step-btn flex-1 py-4 px-4 text-center font-medium transition-colors" data-step="4">访问API</button>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md">
+                        <div class="flex items-center mb-4">
+                            <img 
+                                src="https://picsum.photos/100/100?random=10" 
+                                alt="Sarah Johnson" 
+                                class="w-12 h-12 rounded-full object-cover mr-4 lazy-load"
+                                loading="lazy"
+                            >
+                            <div>
+                                <h4 class="font-bold">Sarah Johnson</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Senior Developer @ Microsoft</p>
+                            </div>
                         </div>
-                        
-                        <!-- 步骤内容 -->
+                        <div class="text-yellow-400 mb-3">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            "FastAPI has completely changed how we build APIs at our company. The automatic documentation alone saved us countless hours of work."
+                        </p>
+                    </div>
+                    
+                    <!-- Testimonial 2 -->
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md">
+                        <div class="flex items-center mb-4">
+                            <img 
+                                src="https://picsum.photos/100/100?random=11" 
+                                alt="Michael Chen" 
+                                class="w-12 h-12 rounded-full object-cover mr-4 lazy-load"
+                                loading="lazy"
+                            >
+                            <div>
+                                <h4 class="font-bold">Michael Chen</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">CTO @ StartupHub</p>
+                            </div>
+                        </div>
+                        <div class="text-yellow-400 mb-3">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            "Coming from a Flask background, I was amazed at how intuitive FastAPI is while offering so much more functionality out of the box."
+                        </p>
+                    </div>
+                    
+                    <!-- Testimonial 3 -->
+                    <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl shadow-md">
+                        <div class="flex items-center mb-4">
+                            <img 
+                                src="https://picsum.photos/100/100?random=12" 
+                                alt="Elena Rodriguez" 
+                                class="w-12 h-12 rounded-full object-cover mr-4 lazy-load"
+                                loading="lazy"
+                            >
+                            <div>
+                                <h4 class="font-bold">Elena Rodriguez</h4>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">Data Engineer @ AnalyticsPro</p>
+                            </div>
+                        </div>
+                        <div class="text-yellow-400 mb-3">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-o"></i>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-300">
+                            "The performance gains we saw after migrating from our old Django API to FastAPI were incredible. Our response times dropped by 60%."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Resources Section -->
+        <section class="py-12 md:py-16">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Get Started with FastAPI</h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl overflow-hidden">
+                        <div class="h-48 overflow-hidden">
+                            <img 
+                                src="https://picsum.photos/800/400?random=20" 
+                                alt="FastAPI Documentation" 
+                                class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 lazy-load"
+                                loading="lazy"
+                            >
+                        </div>
                         <div class="p-6">
-                            <!-- 步骤1 -->
-                            <div class="step-content active" id="step-1">
-                                <h3 class="text-xl font-semibold mb-4">安装FastAPI和服务器</h3>
-                                <p class="mb-4 text-gray-300">使用pip安装FastAPI和一个ASGI服务器，如Uvicorn：</p>
-                                <div class="bg-dark-lighter rounded-lg p-4 mb-4 font-mono text-sm overflow-x-auto">
-                                    pip install fastapi uvicorn
-                                </div>
-                                <p class="text-gray-400">这将安装FastAPI框架及其依赖项，以及Uvicorn服务器用于运行你的API。</p>
-                            </div>
-                            
-                            <!-- 步骤2 -->
-                            <div class="step-content hidden" id="step-2">
-                                <h3 class="text-xl font-semibold mb-4">创建你的第一个FastAPI应用</h3>
-                                <p class="mb-4 text-gray-300">创建一个名为main.py的文件，内容如下：</p>
-                                <div class="bg-dark-lighter rounded-lg p-4 mb-4 font-mono text-sm overflow-x-auto">
-                                    <pre>from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-async def read_root():
-    return {"message": "Hello, FastAPI!"}
-
-@app.get("/items/{item_id}")
-async def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}</pre>
-                                </div>
-                                <p class="text-gray-400">这个简单的应用定义了两个路由：根路径("/")和带有参数的路径("/items/{item_id}")。</p>
-                            </div>
-                            
-                            <!-- 步骤3 -->
-                            <div class="step-content hidden" id="step-3">
-                                <h3 class="text-xl font-semibold mb-4">运行Uvicorn服务器</h3>
-                                <p class="mb-4 text-gray-300">在命令行中运行以下命令启动服务器：</p>
-                                <div class="bg-dark-lighter rounded-lg p-4 mb-4 font-mono text-sm overflow-x-auto">
-                                    uvicorn main:app --reload
-                                </div>
-                                <p class="text-gray-400 mb-2">参数说明：</p>
-                                <ul class="list-disc list-inside text-gray-400 space-y-1">
-                                    <li><code>main:app</code> 表示从main.py文件中导入app实例</li>
-                                    <li><code>--reload</code> 启用自动重载，当代码更改时自动重启服务器（仅用于开发环境）</li>
-                                </ul>
-                            </div>
-                            
-                            <!-- 步骤4 -->
-                            <div class="step-content hidden" id="step-4">
-                                <h3 class="text-xl font-semibold mb-4">访问你的API</h3>
-                                <p class="mb-4 text-gray-300">服务器启动后，你可以通过以下地址访问你的API：</p>
-                                <div class="space-y-4">
-                                    <div class="bg-dark-lighter rounded-lg p-4 font-mono text-sm">
-                                        API根路径: <a href="http://127.0.0.1:8000" class="text-primary hover:underline">http://127.0.0.1:8000</a>
-                                    </div>
-                                    <div class="bg-dark-lighter rounded-lg p-4 font-mono text-sm">
-                                        自动生成的交互式文档: <a href="http://127.0.0.1:8000/docs" class="text-primary hover:underline">http://127.0.0.1:8000/docs</a>
-                                    </div>
-                                    <div class="bg-dark-lighter rounded-lg p-4 font-mono text-sm">
-                                        另一种自动生成的文档: <a href="http://127.0.0.1:8000/redoc" class="text-primary hover:underline">http://127.0.0.1:8000/redoc</a>
-                                    </div>
-                                </div>
-                            </div>
+                            <h3 class="text-xl font-bold mb-3">Official Documentation</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Comprehensive guides, tutorials, and reference materials to help you get started and master FastAPI.
+                            </p>
+                            <a href="https://fastapi.tiangolo.com" target="_blank" class="inline-flex items-center text-primary font-medium hover:underline">
+                                Explore Documentation <i class="fa fa-arrow-right ml-2"></i>
+                            </a>
                         </div>
                     </div>
                     
-                    <div class="mt-12 bg-dark p-6 rounded-xl border border-gray-800">
-                        <h3 class="text-xl font-semibold mb-4">学习资源</h3>
-                        <div class="grid md:grid-cols-2 gap-4">
-                            <a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-dark-lighter rounded-lg hover:bg-dark-lighter/80 transition-colors">
-                                <i class="fa fa-book text-primary mr-3 text-xl"></i>
-                                <div>
-                                    <div class="font-medium">官方文档</div>
-                                    <div class="text-sm text-gray-400">详细的FastAPI使用指南</div>
-                                </div>
+                    <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-xl overflow-hidden">
+                        <div class="h-48 overflow-hidden">
+                            <img 
+                                src="https://picsum.photos/800/400?random=21" 
+                                alt="FastAPI GitHub Repository" 
+                                class="w-full h-full object-cover hover:scale-105 transition-transform duration-500 lazy-load"
+                                loading="lazy"
+                            >
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-3">GitHub Repository</h3>
+                            <p class="text-gray-600 dark:text-gray-300 mb-4">
+                                Access the source code, contribute to the project, report issues, and collaborate with the community.
+                            </p>
+                            <a href="https://github.com/tiangolo/fastapi" target="_blank" class="inline-flex items-center text-primary font-medium hover:underline">
+                                View on GitHub <i class="fa fa-arrow-right ml-2"></i>
                             </a>
-                            <a href="https://github.com/tiangolo/fastapi" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-dark-lighter rounded-lg hover:bg-dark-lighter/80 transition-colors">
-                                <i class="fa fa-github text-primary mr-3 text-xl"></i>
-                                <div>
-                                    <div class="font-medium">GitHub仓库</div>
-                                    <div class="text-sm text-gray-400">源代码和贡献指南</div>
-                                </div>
-                            </a>
-                            <a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-dark-lighter rounded-lg hover:bg-dark-lighter/80 transition-colors">
-                                <i class="fa fa-graduation-cap text-primary mr-3 text-xl"></i>
-                                <div>
-                                    <div class="font-medium">官方教程</div>
-                                    <div class="text-sm text-gray-400">从基础到高级的实例教程</div>
-                                </div>
-                            </a>
-                            <a href="https://discord.gg/VQjSZaeJqf" target="_blank" rel="noopener noreferrer" class="flex items-center p-4 bg-dark-lighter rounded-lg hover:bg-dark-lighter/80 transition-colors">
-                                <i class="fa fa-comments text-primary mr-3 text-xl"></i>
-                                <div>
-                                    <div class="font-medium">Discord社区</div>
-                                    <div class="text-sm text-gray-400">与其他开发者交流</div>
-                                </div>
-                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-10 bg-primary/10 dark:bg-primary/20 rounded-xl p-6 md:p-8">
+                    <h3 class="text-2xl font-bold mb-4">Installation Guide</h3>
+                    <p class="mb-4">Getting started with FastAPI is quick and easy. Simply run this command in your terminal:</p>
+                    <div class="bg-gray-900 text-gray-100 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                        pip install fastapi[all]
+                    </div>
+                    <p class="mt-4">This installs FastAPI along with Uvicorn (the ASGI server) and all optional dependencies.</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Latest News Section -->
+        <section class="py-12 md:py-16">
+            <div class="max-w-5xl mx-auto">
+                <h2 class="text-3xl md:text-4xl font-bold mb-10 text-center">Latest Updates</h2>
+                
+                <div class="space-y-6">
+                    <div class="bg-light-card dark:bg-dark-card rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">FastAPI 0.103.0 Released</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-3">
+                                    New features include improved dependency injection, better error handling, and enhanced OpenAPI documentation.
+                                </p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    <i class="fa fa-calendar mr-1"></i> June 15, 2023
+                                </p>
+                            </div>
+                            <span class="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-xs font-medium px-2.5 py-0.5 rounded">
+                                New Release
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-light-card dark:bg-dark-card rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">FastAPI Conference 2023 Announced</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-3">
+                                    The first official FastAPI conference will take place in October 2023 with workshops, talks, and networking opportunities.
+                                </p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    <i class="fa fa-calendar mr-1"></i> May 22, 2023
+                                </p>
+                            </div>
+                            <span class="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2.5 py-0.5 rounded">
+                                Event
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-light-card dark:bg-dark-card rounded-xl shadow-md p-6 hover:shadow-lg transition-shadow">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="text-xl font-bold mb-2">FastAPI Surpasses 65k Stars on GitHub</h3>
+                                <p class="text-gray-600 dark:text-gray-300 mb-3">
+                                    Reaching this milestone cements FastAPI's position as one of the fastest growing Python web frameworks.
+                                </p>
+                                <p class="text-sm text-gray-500 dark:text-gray-400">
+                                    <i class="fa fa-calendar mr-1"></i> April 8, 2023
+                                </p>
+                            </div>
+                            <span class="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300 text-xs font-medium px-2.5 py-0.5 rounded">
+                                Milestone
+                            </span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-
-        <!-- 社区评论部分 -->
-        <section id="community" class="py-20">
-            <div class="container mx-auto px-4">
-                <div class="max-w-3xl mx-auto mb-16 text-center">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-4">社区评论</h2>
-                    <p class="text-gray-400">来自开发者社区的真实评价和使用体验分享。</p>
-                </div>
+        
+        <!-- Share Section -->
+        <section class="py-8 md:py-12">
+            <div class="max-w-5xl mx-auto bg-light-card dark:bg-dark-card rounded-2xl shadow-xl p-6 md:p-8">
+                <h2 class="text-2xl md:text-3xl font-bold mb-6 text-center">Share FastAPI with Others</h2>
                 
-                <!-- 筛选和搜索 -->
-                <div class="max-w-4xl mx-auto mb-10 flex flex-col md:flex-row gap-4">
-                    <div class="relative flex-1">
-                        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                        <input type="text" id="comment-search" placeholder="搜索评论..." class="w-full bg-dark-light border border-gray-700 rounded-lg pl-10 pr-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50">
-                    </div>
-                    <div class="flex gap-2">
-                        <button class="filter-btn active px-4 py-3 bg-primary text-white rounded-lg" data-filter="all">全部</button>
-                        <button class="filter-btn px-4 py-3 bg-dark-light border border-gray-700 rounded-lg" data-filter="positive">正面</button>
-                        <button class="filter-btn px-4 py-3 bg-dark-light border border-gray-700 rounded-lg" data-filter="negative">负面</button>
-                        <button class="filter-btn px-4 py-3 bg-dark-light border border-gray-700 rounded-lg" data-filter="neutral">中立</button>
-                    </div>
-                </div>
-                
-                <!-- 评论列表 -->
-                <div id="comments-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- 评论将通过JavaScript动态生成 -->
-                </div>
-                
-                <!-- 加载更多按钮 -->
-                <div class="mt-12 text-center">
-                    <button id="load-more" class="px-8 py-3 bg-dark-light hover:bg-dark-lighter text-white font-medium rounded-lg border border-gray-700 transition-all transform hover:-translate-y-1">
-                        加载更多评论
+                <div class="flex flex-wrap justify-center gap-4">
+                    <button class="share-btn" data-platform="twitter">
+                        <i class="fa fa-twitter text-xl mr-2"></i> Twitter
+                    </button>
+                    <button class="share-btn" data-platform="facebook">
+                        <i class="fa fa-facebook text-xl mr-2"></i> Facebook
+                    </button>
+                    <button class="share-btn" data-platform="linkedin">
+                        <i class="fa fa-linkedin text-xl mr-2"></i> LinkedIn
+                    </button>
+                    <button class="share-btn" data-platform="reddit">
+                        <i class="fa fa-reddit text-xl mr-2"></i> Reddit
+                    </button>
+                    <button class="share-btn" data-platform="whatsapp">
+                        <i class="fa fa-whatsapp text-xl mr-2"></i> WhatsApp
+                    </button>
+                    <button class="share-btn" data-platform="email">
+                        <i class="fa fa-envelope text-xl mr-2"></i> Email
                     </button>
                 </div>
             </div>
         </section>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-dark-light border-t border-gray-800 pt-16 pb-8">
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
         <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-4 gap-10 mb-16">
-                <div class="md:col-span-1">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div>
                     <div class="flex items-center space-x-2 mb-6">
-                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
                             <i class="fa fa-bolt text-white text-xl"></i>
                         </div>
-                        <h3 class="text-xl font-bold bg-gradient-to-r from-primary to-secondary text-gradient">FastAPI</h3>
+                        <span class="text-xl font-bold tracking-tight">FastAPI</span>
                     </div>
-                    <p class="text-gray-400 mb-6">现代、快速（高性能）的Python Web框架，用于构建API。</p>
+                    <p class="text-gray-400 mb-6">
+                        Modern, fast (high-performance) web framework for building APIs with Python 3.6+.
+                    </p>
                     <div class="flex space-x-4">
-                        <a href="https://github.com/tiangolo/fastapi" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark flex items-center justify-center text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-github"></i>
+                        <a href="https://github.com/tiangolo/fastapi" target="_blank" aria-label="GitHub" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-github text-xl"></i>
                         </a>
-                        <a href="https://twitter.com/fastapi" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark flex items-center justify-center text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-twitter"></i>
+                        <a href="https://twitter.com/fastapi" target="_blank" aria-label="Twitter" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
                         </a>
-                        <a href="https://discord.gg/VQjSZaeJqf" target="_blank" rel="noopener noreferrer" class="w-10 h-10 rounded-full bg-dark flex items-center justify-center text-gray-400 hover:text-primary transition-colors">
-                            <i class="fa fa-discord"></i>
+                        <a href="https://discord.gg/VQjSZaeJqf" target="_blank" aria-label="Discord" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-comments text-xl"></i>
                         </a>
                     </div>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-semibold mb-6">快速链接</h4>
+                    <h4 class="text-lg font-bold mb-6">Resources</h4>
                     <ul class="space-y-3">
-                        <li><a href="#about" class="text-gray-400 hover:text-primary transition-colors">关于FastAPI</a></li>
-                        <li><a href="#features" class="text-gray-400 hover:text-primary transition-colors">特性</a></li>
-                        <li><a href="#usage" class="text-gray-400 hover:text-primary transition-colors">使用方法</a></li>
-                        <li><a href="#community" class="text-gray-400 hover:text-primary transition-colors">社区评论</a></li>
+                        <li><a href="https://fastapi.tiangolo.com" target="_blank" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                        <li><a href="https://github.com/tiangolo/fastapi" target="_blank" class="text-gray-400 hover:text-white transition-colors">GitHub</a></li>
+                        <li><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" class="text-gray-400 hover:text-white transition-colors">Tutorials</a></li>
+                        <li><a href="https://github.com/tiangolo/fastapi/issues" target="_blank" class="text-gray-400 hover:text-white transition-colors">Issue Tracker</a></li>
+                        <li><a href="/sitemap" class="text-gray-400 hover:text-white transition-colors">Sitemap</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-semibold mb-6">资源</h4>
+                    <h4 class="text-lg font-bold mb-6">Community</h4>
                     <ul class="space-y-3">
-                        <li><a href="https://fastapi.tiangolo.com/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">官方文档</a></li>
-                        <li><a href="https://fastapi.tiangolo.com/tutorial/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">教程</a></li>
-                        <li><a href="https://github.com/tiangolo/fastapi/issues" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">问题跟踪</a></li>
-                        <li><a href="https://github.com/tiangolo/fastapi/discussions" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-primary transition-colors">讨论区</a></li>
+                        <li><a href="https://discord.gg/VQjSZaeJqf" target="_blank" class="text-gray-400 hover:text-white transition-colors">Discord Server</a></li>
+                        <li><a href="https://twitter.com/fastapi" target="_blank" class="text-gray-400 hover:text-white transition-colors">Twitter</a></li>
+                        <li><a href="https://github.com/tiangolo/fastapi/discussions" target="_blank" class="text-gray-400 hover:text-white transition-colors">Discussions</a></li>
+                        <li><a href="https://fastapi.tiangolo.com/help/" target="_blank" class="text-gray-400 hover:text-white transition-colors">Get Help</a></li>
+                        <li><a href="https://fastapi.tiangolo.com/contributing/" target="_blank" class="text-gray-400 hover:text-white transition-colors">Contribute</a></li>
                     </ul>
                 </div>
                 
                 <div>
-                    <h4 class="text-lg font-semibold mb-6">网站</h4>
-                    <ul class="space-y-3">
-                        <li><a href="/" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
-                        <li><a href="/sitemap" class="text-gray-400 hover:text-primary transition-colors">网站地图</a></li>
-                        <li><a href="/about#privacy" class="text-gray-400 hover:text-primary transition-colors">隐私政策</a></li>
-                        <li><a href="/about#contact" class="text-gray-400 hover:text-primary transition-colors">联系我们</a></li>
-                    </ul>
+                    <h4 class="text-lg font-bold mb-6">Stay Updated</h4>
+                    <p class="text-gray-400 mb-4">
+                        Subscribe to our newsletter for the latest updates and news.
+                    </p>
+                    <form class="space-y-3">
+                        <div>
+                            <input 
+                                type="email" 
+                                id="subscribeEmail" 
+                                placeholder="Your email address" 
+                                class="w-full px-4 py-2 rounded-lg bg-gray-800 border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-primary"
+                            >
+                        </div>
+                        <button 
+                            type="button" 
+                            id="subscribeBtn" 
+                            class="w-full px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                        >
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-500 text-sm mb-4 md:mb-0">© 2023 FastAPI介绍网. 保留所有权利.</p>
-                <div class="flex space-x-6">
-                    <a href="/sitemap" class="text-gray-500 hover:text-primary text-sm transition-colors">网站地图</a>
-                    <a href="/about#privacy" class="text-gray-500 hover:text-primary text-sm transition-colors">隐私政策</a>
-                    <a href="/about#terms" class="text-gray-500 hover:text-primary text-sm transition-colors">使用条款</a>
-                </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm">
+                <p>&copy; 2023 FastAPI. All rights reserved.</p>
             </div>
         </div>
     </footer>
+    
+    <!-- Back to Top Button -->
+    <button 
+        id="backToTop" 
+        aria-label="Back to top"
+        class="fixed bottom-6 right-6 w-12 h-12 bg-primary text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90"
+    >
+        <i class="fa fa-chevron-up"></i>
+    </button>
 
     <!-- JavaScript -->
     <script>
-        // 确保DOM加载完成后执行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 移动端菜单切换
-            const menuToggle = document.getElementById('menu-toggle');
-            const mobileMenu = document.getElementById('mobile-menu');
-            
-            menuToggle.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
-            
-            // 步骤切换功能
-            const stepBtns = document.querySelectorAll('.step-btn');
-            const stepContents = document.querySelectorAll('.step-content');
-            
-            stepBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const step = btn.getAttribute('data-step');
-                    
-                    // 更新按钮状态
-                    stepBtns.forEach(b => {
-                        b.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
-                        b.classList.add('text-gray-400');
-                    });
-                    btn.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
-                    btn.classList.remove('text-gray-400');
-                    
-                    // 更新内容显示
-                    stepContents.forEach(content => {
-                        content.classList.add('hidden');
-                        content.classList.remove('active');
-                    });
-                    document.getElementById(`step-${step}`).classList.remove('hidden');
-                    document.getElementById(`step-${step}`).classList.add('active');
-                });
-            });
-            
-            // 初始化第一个步骤
-            stepBtns[0].classList.add('text-primary', 'border-b-2', 'border-primary');
-            stepBtns[0].classList.remove('text-gray-400');
-            
-            // 框架对比图表 - 修复部分
-            setTimeout(() => {
-                try {
-                    const ctx = document.getElementById('frameworkChart').getContext('2d');
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Django', 'Flask', 'FastAPI', 'Tornado', 'Pyramid'],
-                            datasets: [{
-                                label: 'GitHub星标数（千）',
-                                data: [71.2, 62.5, 69.5, 20.3, 7.1],
-                                backgroundColor: [
-                                    'rgba(102, 16, 242, 0.7)',
-                                    'rgba(255, 159, 64, 0.7)',
-                                    'rgba(0, 148, 133, 0.7)',
-                                    'rgba(54, 162, 235, 0.7)',
-                                    'rgba(153, 102, 255, 0.7)'
-                                ],
-                                borderColor: [
-                                    'rgba(102, 16, 242, 1)',
-                                    'rgba(255, 159, 64, 1)',
-                                    'rgba(0, 148, 133, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(153, 102, 255, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    grid: {
-                                        color: 'rgba(255, 255, 255, 0.1)'
-                                    },
-                                    ticks: {
-                                        color: 'rgba(255, 255, 255, 0.7)'
-                                    }
-                                },
-                                x: {
-                                    grid: {
-                                        color: 'rgba(255, 255, 255, 0.1)'
-                                    },
-                                    ticks: {
-                                        color: 'rgba(255, 255, 255, 0.7)'
-                                    }
-                                }
-                            },
-                            plugins: {
-                                legend: {
-                                    labels: {
-                                        color: 'rgba(255, 255, 255, 0.7)'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                } catch (error) {
-                    console.error('图表加载失败:', error);
-                    // 显示备用内容
-                    document.getElementById('frameworkChart').parentElement.innerHTML = `
-                        <div class="text-center py-10">
-                            <p class="text-gray-400">Python API框架GitHub星标数对比：</p>
-                            <ul class="mt-4 text-left list-disc list-inside space-y-2">
-                                <li>Django: 71.2k+</li>
-                                <li>Flask: 62.5k+</li>
-                                <li>FastAPI: 69.5k+</li>
-                                <li>Tornado: 20.3k+</li>
-                                <li>Pyramid: 7.1k+</li>
-                            </ul>
-                        </div>
-                    `;
-                }
-            }, 100);
-            
-            // 社区评论数据
-            const comments = [
-                {
-                    id: 1,
-                    name: "张明",
-                    avatar: "https://picsum.photos/id/1/100/100",
-                    date: "2023-08-15",
-                    content: "FastAPI 是我用过的最好的Python API框架，自动生成的文档太方便了，开发效率提高了不少！",
-                    sentiment: "positive"
-                },
-                {
-                    id: 2,
-                    name: "李华",
-                    avatar: "https://picsum.photos/id/2/100/100",
-                    date: "2023-08-10",
-                    content: "作为一个从Flask转过来的开发者，FastAPI的类型提示一开始有点不习惯，但熟悉之后发现真的能减少很多bug，强烈推荐！",
-                    sentiment: "positive"
-                },
-                {
-                    id: 3,
-                    name: "王芳",
-                    avatar: "https://picsum.photos/id/3/100/100",
-                    date: "2023-08-05",
-                    content: "性能确实不错，但对于一些复杂的业务场景，感觉文档还不够详细，有时候需要自己摸索。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 4,
-                    name: "赵伟",
-                    avatar: "https://picsum.photos/id/4/100/100",
-                    date: "2023-07-28",
-                    content: "异步支持非常好，在处理大量并发请求时表现出色，比我之前用的Tornado更易用。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 5,
-                    name: "刘强",
-                    avatar: "https://picsum.photos/id/5/100/100",
-                    date: "2023-07-20",
-                    content: "生态系统还不够成熟，很多Flask上有的扩展在这里找不到，需要自己实现，有点麻烦。",
-                    sentiment: "negative"
-                },
-                {
-                    id: 6,
-                    name: "陈静",
-                    avatar: "https://picsum.photos/id/6/100/100",
-                    date: "2023-07-15",
-                    content: "类型提示是个好东西，配合PyCharm的自动补全，写代码太顺畅了，调试也方便很多。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 7,
-                    name: "杨明",
-                    avatar: "https://picsum.photos/id/7/100/100",
-                    date: "2023-07-10",
-                    content: "FastAPI的学习曲线对新手来说有点陡，特别是如果之前没有接触过异步编程的话。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 8,
-                    name: "黄丽",
-                    avatar: "https://picsum.photos/id/8/100/100",
-                    date: "2023-07-05",
-                    content: "用FastAPI重构了我们的旧API，性能提升了近3倍，太惊喜了！代码也更清晰易维护。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 9,
-                    name: "吴强",
-                    avatar: "https://picsum.photos/id/9/100/100",
-                    date: "2023-06-30",
-                    content: "有时候会遇到一些奇怪的bug，可能是因为框架还比较新，但社区响应很快，通常能找到解决方案。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 10,
-                    name: "郑敏",
-                    avatar: "https://picsum.photos/id/10/100/100",
-                    date: "2023-06-25",
-                    content: "自动验证请求数据的功能太赞了，省去了大量手动验证的代码，而且错误信息也很友好。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 11,
-                    name: "孙杰",
-                    avatar: "https://picsum.photos/id/11/100/100",
-                    date: "2023-06-20",
-                    content: "和ORM工具的集成很顺畅，我用SQLAlchemy配合FastAPI开发，体验非常好。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 12,
-                    name: "周琳",
-                    avatar: "https://picsum.photos/id/12/100/100",
-                    date: "2023-06-15",
-                    content: "对于简单的API，FastAPI确实很快，但对于复杂的企业级应用，我还是更倾向于使用Django。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 13,
-                    name: "林浩",
-                    avatar: "https://picsum.photos/id/13/100/100",
-                    date: "2023-06-10",
-                    content: "文档自动生成功能太棒了，再也不用手动写API文档了，前后端协作效率大大提高。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 14,
-                    name: "郭婷",
-                    avatar: "https://picsum.photos/id/14/100/100",
-                    date: "2023-06-05",
-                    content: "升级版本时偶尔会遇到不兼容的问题，需要仔细阅读更新日志，这点不太友好。",
-                    sentiment: "negative"
-                },
-                {
-                    id: 15,
-                    name: "徐洋",
-                    avatar: "https://picsum.photos/id/15/100/100",
-                    date: "2023-05-30",
-                    content: "FastAPI让我重新爱上了Python后端开发，异步编程模型真的很适合API服务。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 16,
-                    name: "马丽",
-                    avatar: "https://picsum.photos/id/16/100/100",
-                    date: "2023-05-25",
-                    content: "示例代码很丰富，跟着官方教程学习很快就能上手，适合快速开发原型。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 17,
-                    name: "朱明",
-                    avatar: "https://picsum.photos/id/17/100/100",
-                    date: "2023-05-20",
-                    content: "在生产环境中使用了半年，整体稳定，但偶尔会有内存泄漏的问题，需要关注。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 18,
-                    name: "胡静",
-                    avatar: "https://picsum.photos/id/18/100/100",
-                    date: "2023-05-15",
-                    content: "中间件系统设计得很灵活，可以很方便地添加自定义功能，扩展性不错。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 19,
-                    name: "高杰",
-                    avatar: "https://picsum.photos/id/19/100/100",
-                    date: "2023-05-10",
-                    content: "和OpenAPI的集成非常好，对于需要符合API规范的项目来说是个很大的优势。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 20,
-                    name: "罗琳",
-                    avatar: "https://picsum.photos/id/20/100/100",
-                    date: "2023-05-05",
-                    content: "对于初学者来说，理解依赖注入系统可能需要一些时间，但掌握后会发现非常强大。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 21,
-                    name: "唐强",
-                    avatar: "https://picsum.photos/id/21/100/100",
-                    date: "2023-04-30",
-                    content: "FastAPI的性能确实名不虚传，在我们的负载测试中表现优于Flask和Django。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 22,
-                    name: "冯敏",
-                    avatar: "https://picsum.photos/id/22/100/100",
-                    date: "2023-04-25",
-                    content: "社区虽然不如Flask和Django大，但活跃度很高，问题通常能得到及时解答。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 23,
-                    name: "曹洋",
-                    avatar: "https://picsum.photos/id/23/100/100",
-                    date: "2023-04-20",
-                    content: "有时候感觉文档过于简洁，对于一些高级用法需要自己去研究源代码。",
-                    sentiment: "negative"
-                },
-                {
-                    id: 24,
-                    name: "袁婷",
-                    avatar: "https://picsum.photos/id/24/100/100",
-                    date: "2023-04-15",
-                    content: "FastAPI让Python API开发变得如此优雅，类型提示真的能大大提高代码质量。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 25,
-                    name: "邓杰",
-                    avatar: "https://picsum.photos/id/25/100/100",
-                    date: "2023-04-10",
-                    content: "和Docker的集成很方便，官方提供的示例配置可以直接使用，部署简单。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 26,
-                    name: "许静",
-                    avatar: "https://picsum.photos/id/26/100/100",
-                    date: "2023-04-05",
-                    content: "对于RESTful API开发来说非常合适，但如果需要做更多前端渲染的工作，可能还是Flask更合适。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 27,
-                    name: "韩明",
-                    avatar: "https://picsum.photos/id/27/100/100",
-                    date: "2023-03-30",
-                    content: "FastAPI的依赖注入系统是我用过的最直观的，大大简化了代码的组织和测试。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 28,
-                    name: "龙丽",
-                    avatar: "https://picsum.photos/id/28/100/100",
-                    date: "2023-03-25",
-                    content: "在处理文件上传时遇到了一些问题，官方文档的示例不够全面，花了不少时间解决。",
-                    sentiment: "negative"
-                },
-                {
-                    id: 29,
-                    name: "潘杰",
-                    avatar: "https://picsum.photos/id/29/100/100",
-                    date: "2023-03-20",
-                    content: "用FastAPI开发了一个数据API服务，性能比之前的Tornado版本提升了近40%，非常满意。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 30,
-                    name: "余敏",
-                    avatar: "https://picsum.photos/id/30/100/100",
-                    date: "2023-03-15",
-                    content: "类型提示刚开始用可能觉得麻烦，但长期来看能减少很多调试时间，提高团队协作效率。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 31,
-                    name: "肖强",
-                    avatar: "https://picsum.photos/id/31/100/100",
-                    date: "2023-03-10",
-                    content: "FastAPI的路由系统设计得很清晰，比Flask的装饰器方式更有结构感，大型项目更易维护。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 32,
-                    name: "叶婷",
-                    avatar: "https://picsum.photos/id/32/100/100",
-                    date: "2023-03-05",
-                    content: "对于GraphQL支持不如Ariadne等专门的库，希望未来能有更好的集成。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 33,
-                    name: "蒋洋",
-                    avatar: "https://picsum.photos/id/33/100/100",
-                    date: "2023-02-28",
-                    content: "FastAPI的错误处理机制很灵活，可以自定义各种异常的响应格式，对API用户很友好。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 34,
-                    name: "蔡静",
-                    avatar: "https://picsum.photos/id/34/100/100",
-                    date: "2023-02-25",
-                    content: "在使用过程中遇到过几次类型提示相关的bug，希望未来版本能更稳定。",
-                    sentiment: "negative"
-                },
-                {
-                    id: 35,
-                    name: "魏杰",
-                    avatar: "https://picsum.photos/id/35/100/100",
-                    date: "2023-02-20",
-                    content: "FastAPI让我能够用更少的代码实现更多的功能，开发效率提升明显，强烈推荐给大家。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 36,
-                    name: "薛琳",
-                    avatar: "https://picsum.photos/id/36/100/100",
-                    date: "2023-02-15",
-                    content: "和Pydantic的结合非常完美，数据验证变得如此简单，省去了大量重复代码。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 37,
-                    name: "吕明",
-                    avatar: "https://picsum.photos/id/37/100/100",
-                    date: "2023-02-10",
-                    content: "对于需要快速迭代的项目，FastAPI是个不错的选择，但对于长期维护的大型项目，我还是更倾向于Django。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 38,
-                    name: "苏婷",
-                    avatar: "https://picsum.photos/id/38/100/100",
-                    date: "2023-02-05",
-                    content: "FastAPI的测试客户端很好用，可以很方便地编写单元测试，保证API质量。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 39,
-                    name: "丁杰",
-                    avatar: "https://picsum.photos/id/39/100/100",
-                    date: "2023-01-30",
-                    content: "异步编程模型虽然高效，但对于习惯了同步编程的开发者来说，调试起来可能会有些困难。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 40,
-                    name: "任敏",
-                    avatar: "https://picsum.photos/id/40/100/100",
-                    date: "2023-01-25",
-                    content: "FastAPI的自动生成文档不仅美观，而且功能齐全，可以直接在文档中测试API，太方便了！",
-                    sentiment: "positive"
-                },
-                {
-                    id: 41,
-                    name: "卢洋",
-                    avatar: "https://picsum.photos/id/41/100/100",
-                    date: "2023-01-20",
-                    content: "框架更新速度很快，新功能不断，但有时候更新会带来一些兼容性问题，需要小心处理。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 42,
-                    name: "葛静",
-                    avatar: "https://picsum.photos/id/42/100/100",
-                    date: "2023-01-15",
-                    content: "FastAPI的路由参数解析非常智能，支持多种数据类型，减少了很多手动转换的工作。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 43,
-                    name: "钟杰",
-                    avatar: "https://picsum.photos/id/43/100/100",
-                    date: "2023-01-10",
-                    content: "对于WebSocket支持还不够完善，希望未来能有更好的实现。",
-                    sentiment: "negative"
-                },
-                {
-                    id: 44,
-                    name: "汪婷",
-                    avatar: "https://picsum.photos/id/44/100/100",
-                    date: "2023-01-05",
-                    content: "用FastAPI开发了一个微服务架构的项目，各个服务之间的通信非常顺畅，体验很好。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 45,
-                    name: "戴洋",
-                    avatar: "https://picsum.photos/id/45/100/100",
-                    date: "2022-12-30",
-                    content: "FastAPI的学习资源越来越丰富了，不仅有官方文档，还有很多优质的第三方教程和书籍。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 46,
-                    name: "崔静",
-                    avatar: "https://picsum.photos/id/46/100/100",
-                    date: "2022-12-25",
-                    content: "在处理复杂查询参数时，FastAPI的类型提示有时候会显得有些繁琐，希望能有更简洁的方式。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 47,
-                    name: "程杰",
-                    avatar: "https://picsum.photos/id/47/100/100",
-                    date: "2022-12-20",
-                    content: "FastAPI的依赖注入系统让代码的可测试性大大提高，单元测试变得非常简单。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 48,
-                    name: "陆琳",
-                    avatar: "https://picsum.photos/id/48/100/100",
-                    date: "2022-12-15",
-                    content: "对于需要大量模板渲染的项目，FastAPI可能不是最佳选择，这方面还是Flask更有优势。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 49,
-                    name: "范明",
-                    avatar: "https://picsum.photos/id/49/100/100",
-                    date: "2022-12-10",
-                    content: "FastAPI的社区非常活跃，作者也很热心，我的一个issue在提交后第二天就得到了回应和解决。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 50,
-                    name: "方婷",
-                    avatar: "https://picsum.photos/id/50/100/100",
-                    date: "2022-12-05",
-                    content: "用FastAPI开发API真的很享受，代码简洁优雅，性能出色，是Python开发者的福音。",
-                    sentiment: "positive"
-                },
-                {
-                    id: 51,
-                    name: "石杰",
-                    avatar: "https://picsum.photos/id/51/100/100",
-                    date: "2022-12-01",
-                    content: "FastAPI的文档虽然全面，但对于初学者来说可能有些过于技术化，需要一定的Python基础。",
-                    sentiment: "neutral"
-                },
-                {
-                    id: 52,
-                    name: "姚敏",
-                    avatar: "https://picsum.photos/id/52/100/100",
-                    date: "2022-11-28",
-                    content: "在生产环境中运行了一年多，整体非常稳定，几乎没有出现过框架相关的问题。",
-                    sentiment: "positive"
-                }
-            ];
-            
-            // 渲染评论
-            const commentsContainer = document.getElementById('comments-container');
-            let displayedComments = 15; // 初始显示的评论数量
-            let currentFilter = 'all';
-            let currentSearch = '';
-            
-            function renderComments() {
-                commentsContainer.innerHTML = '';
-                
-                // 过滤评论
-                let filteredComments = comments.filter(comment => {
-                    const matchesFilter = currentFilter === 'all' || comment.sentiment === currentFilter;
-                    const matchesSearch = currentSearch === '' || 
-                                         comment.content.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                                         comment.name.toLowerCase().includes(currentSearch.toLowerCase());
-                    return matchesFilter && matchesSearch;
-                });
-                
-                // 限制显示数量
-                const commentsToShow = filteredComments.slice(0, displayedComments);
-                
-                if (commentsToShow.length === 0) {
-                    commentsContainer.innerHTML = `
-                        <div class="col-span-full text-center py-10">
-                            <p class="text-gray-400">没有找到符合条件的评论</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // 渲染评论
-                commentsToShow.forEach(comment => {
-                    let sentimentClass = '';
-                    let sentimentIcon = '';
-                    
-                    switch(comment.sentiment) {
-                        case 'positive':
-                            sentimentClass = 'text-green-500';
-                            sentimentIcon = 'fa-thumbs-up';
-                            break;
-                        case 'negative':
-                            sentimentClass = 'text-red-500';
-                            sentimentIcon = 'fa-thumbs-down';
-                            break;
-                        case 'neutral':
-                            sentimentClass = 'text-yellow-500';
-                            sentimentIcon = 'fa-meh-o';
-                            break;
-                    }
-                    
-                    const commentElement = document.createElement('div');
-                    commentElement.className = 'bg-dark-light rounded-xl p-6 border border-gray-800 hover:border-primary/30 transition-all transform hover:-translate-y-1 opacity-0';
-                    commentElement.setAttribute('data-id', comment.id);
-                    commentElement.setAttribute('data-sentiment', comment.sentiment);
-                    
-                    commentElement.innerHTML = `
-                        <div class="flex items-start mb-4">
-                            <img src="${comment.avatar}" alt="${comment.name}的头像" class="w-12 h-12 rounded-full object-cover mr-4 lazy" loading="lazy">
-                            <div>
-                                <div class="flex items-center">
-                                    <h4 class="font-semibold">${comment.name}</h4>
-                                    <span class="ml-2 ${sentimentClass}"><i class="fa ${sentimentIcon}"></i></span>
-                                </div>
-                                <p class="text-sm text-gray-400">${comment.date}</p>
-                            </div>
-                        </div>
-                        <p class="text-gray-300">${comment.content}</p>
-                    `;
-                    
-                    commentsContainer.appendChild(commentElement);
-                    
-                    // 添加淡入动画
-                    setTimeout(() => {
-                        commentElement.classList.add('opacity-100', 'transition-opacity', 'duration-500');
-                    }, 50 * comment.id % 200);
-                });
-            }
-            
-            // 确保评论被渲染
-            try {
-                renderComments();
-            } catch (error) {
-                console.error('评论渲染失败:', error);
-                // 显示备用内容
-                commentsContainer.innerHTML = `
-                    <div class="col-span-full text-center py-10">
-                        <p class="text-gray-400">社区评论加载失败，请刷新页面重试</p>
-                    </div>
-                `;
-            }
-            
-            // 加载更多评论
-            document.getElementById('load-more').addEventListener('click', () => {
-                displayedComments += 15;
-                renderComments();
-                
-                // 如果已经显示了所有评论，隐藏加载更多按钮
-                if (displayedComments >= comments.length) {
-                    document.getElementById('load-more').style.display = 'none';
-                }
-            });
-            
-            // 评论筛选
-            const filterBtns = document.querySelectorAll('.filter-btn');
-            filterBtns.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    // 更新按钮状态
-                    filterBtns.forEach(b => {
-                        b.classList.remove('active', 'bg-primary');
-                        b.classList.add('bg-dark-light', 'border', 'border-gray-700');
-                    });
-                    btn.classList.add('active', 'bg-primary');
-                    btn.classList.remove('bg-dark-light', 'border', 'border-gray-700');
-                    
-                    // 应用筛选
-                    currentFilter = btn.getAttribute('data-filter');
-                    displayedComments = 15; // 重置显示数量
-                    renderComments();
-                    
-                    // 显示加载更多按钮
-                    document.getElementById('load-more').style.display = 'inline-block';
-                });
-            });
-            
-            // 评论搜索
-            document.getElementById('comment-search').addEventListener('input', (e) => {
-                currentSearch = e.target.value;
-                displayedComments = 15; // 重置显示数量
-                renderComments();
-                
-                // 显示加载更多按钮
-                document.getElementById('load-more').style.display = 'inline-block';
-            });
-            
-            // 滚动时导航栏效果
-            window.addEventListener('scroll', () => {
-                const header = document.querySelector('header');
-                if (window.scrollY > 50) {
-                    header.classList.add('py-2', 'shadow-lg');
-                    header.classList.remove('py-3');
-                } else {
-                    header.classList.add('py-3');
-                    header.classList.remove('py-2', 'shadow-lg');
-                }
-            });
-            
-            // 平滑滚动
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    
-                    // 关闭移动菜单（如果打开）
-                    mobileMenu.classList.add('hidden');
-                    
-                    const targetId = this.getAttribute('href');
-                    if (targetId === '#') return;
-                    
-                    const targetElement = document.querySelector(targetId);
-                    if (targetElement) {
-                        window.scrollTo({
-                            top: targetElement.offsetTop - 80,
-                            behavior: 'smooth'
-                        });
-                    }
-                });
-            });
-            
-            // 图片懒加载
-            const lazyImages = [].slice.call(document.querySelectorAll("img.lazy"));
-            
-            if ("IntersectionObserver" in window) {
-                let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
-                    entries.forEach(function(entry) {
-                        if (entry.isIntersecting) {
-                            let lazyImage = entry.target;
-                            lazyImage.src = lazyImage.dataset.src || lazyImage.src;
-                            lazyImage.classList.remove("lazy");
-                            lazyImageObserver.unobserve(lazyImage);
-                        }
-                    });
-                });
-                
-                lazyImages.forEach(function(lazyImage) {
-                    lazyImageObserver.observe(lazyImage);
-                });
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const backToTopBtn = document.getElementById('backToTop');
+        const scrollProgress = document.getElementById('scrollProgress');
+        const mobileSearchToggle = document.getElementById('mobileSearchToggle');
+        const mobileSearch = document.getElementById('mobileSearch');
+        const shareButtons = document.querySelectorAll('.share-btn');
+        
+        // Initialize theme based on user preference or default to light
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
+        
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
             } else {
-                // 降级处理
-                lazyImages.forEach(function(lazyImage) {
-                    lazyImage.src = lazyImage.dataset.src || lazyImage.src;
-                    lazyImage.classList.remove("lazy");
-                });
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
             }
         });
+        
+        // Bookmark functionality
+        bookmarkBtn.addEventListener('click', () => {
+            const icon = bookmarkBtn.querySelector('i');
+            if (icon.classList.contains('fa-star-o')) {
+                icon.classList.remove('fa-star-o');
+                icon.classList.add('fa-star', 'text-yellow-400');
+            } else {
+                icon.classList.remove('fa-star', 'text-yellow-400');
+                icon.classList.add('fa-star-o');
+            }
+        });
+        
+        // Mobile search toggle
+        mobileSearchToggle.addEventListener('click', () => {
+            mobileSearch.classList.toggle('hidden');
+        });
+        
+        // Scroll progress indicator and back to top button
+        window.addEventListener('scroll', () => {
+            // Scroll progress
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.transform = `scaleX(${scrolled / 100})`;
+            
+            // Back to top button visibility
+            if (winScroll > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
+        });
+        
+        // Back to top functionality
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Share functionality
+        shareButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const platform = button.getAttribute('data-platform');
+                const url = window.location.href;
+                const title = "FastAPI - Modern, Fast Web Framework for Python";
+                let shareUrl = '';
+                
+                switch(platform) {
+                    case 'twitter':
+                        shareUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
+                        break;
+                    case 'facebook':
+                        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+                        break;
+                    case 'linkedin':
+                        shareUrl = `https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+                        break;
+                    case 'reddit':
+                        shareUrl = `https://www.reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
+                        break;
+                    case 'whatsapp':
+                        shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(title + ' ' + url)}`;
+                        break;
+                    case 'email':
+                        shareUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`;
+                        break;
+                }
+                
+                if (shareUrl) {
+                    window.open(shareUrl, '_blank', 'width=600,height=400');
+                }
+            });
+            
+            // Style share buttons
+            button.classList.add(
+                'px-5', 'py-2', 'rounded-lg', 
+                'bg-gray-200', 'dark:bg-gray-700', 
+                'text-gray-800', 'dark:text-gray-200',
+                'font-medium', 'flex', 'items-center',
+                'hover:bg-gray-300', 'dark:hover:bg-gray-600',
+                'transition-colors', 'cursor-pointer'
+            );
+        });
+        
+        // Radar Chart
+        document.addEventListener('DOMContentLoaded', () => {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            
+            // Check if dark mode is active
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            const textColor = isDarkMode ? '#E0E0E0' : '#212121';
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Performance',
+                        'Ease of Use',
+                        'Documentation',
+                        'Async Support',
+                        'Data Validation',
+                        'Ecosystem'
+                    ],
+                    datasets: [
+                        {
+                            label: 'FastAPI',
+                            data: [95, 90, 95, 90, 95, 75],
+                            backgroundColor: 'rgba(0, 150, 136, 0.2)',
+                            borderColor: 'rgba(0, 150, 136, 1)',
+                            pointBackgroundColor: 'rgba(0, 150, 136, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(0, 150, 136, 1)'
+                        },
+                        {
+                            label: 'Flask',
+                            data: [70, 90, 85, 50, 60, 90],
+                            backgroundColor: 'rgba(255, 87, 34, 0.2)',
+                            borderColor: 'rgba(255, 87, 34, 1)',
+                            pointBackgroundColor: 'rgba(255, 87, 34, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(255, 87, 34, 1)'
+                        },
+                        {
+                            label: 'Django',
+                            data: [65, 75, 90, 60, 85, 95],
+                            backgroundColor: 'rgba(96, 125, 139, 0.2)',
+                            borderColor: 'rgba(96, 125, 139, 1)',
+                            pointBackgroundColor: 'rgba(96, 125, 139, 1)',
+                            pointBorderColor: '#fff',
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: 'rgba(96, 125, 139, 1)'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                color: textColor,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            ticks: {
+                                color: textColor,
+                                backdropColor: 'transparent'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: textColor
+                            }
+                        }
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: 3
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+            
+            // Update chart colors when theme changes
+            themeToggle.addEventListener('click', () => {
+                const newIsDarkMode = document.documentElement.classList.contains('dark');
+                const newTextColor = newIsDarkMode ? '#E0E0E0' : '#212121';
+                
+                radarChart.options.scales.r.angleLines.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                radarChart.options.scales.r.grid.color = newIsDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                radarChart.options.scales.r.pointLabels.color = newTextColor;
+                radarChart.options.scales.r.ticks.color = newTextColor;
+                radarChart.options.plugins.legend.labels.color = newTextColor;
+                
+                radarChart.update();
+            });
+        });
+        
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
     </script>
-<script type="module" src="/main.js"></script>
-
-
-</body></html>
+    
+    <!-- Module import -->
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

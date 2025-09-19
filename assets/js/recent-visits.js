@@ -43,6 +43,16 @@ function renderRecentVisits() {
     // 获取最近访问记录
     const recentVisits = getRecentVisits();
     
+    // 修改：只有当访问了超过5个不同的页面时才显示
+    if (recentVisits.length < 6) {
+        // 如果存在容器，则隐藏它
+        const container = document.getElementById('recent-visits-container');
+        if (container) {
+            container.style.display = 'none';
+        }
+        return;
+    }
+    
     // 如果没有访问记录，不显示这个部分
     if (recentVisits.length === 0) {
         return;

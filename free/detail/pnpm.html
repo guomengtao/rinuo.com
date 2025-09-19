@@ -1,1307 +1,1092 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>pnpm 介绍 - 快速、节省空间的包管理器</title>
-    <meta name="description" content="了解pnpm包管理器的特点、优势、使用方法及社区评价。pnpm是快速、节省磁盘空间的npm替代品。">
-    <meta name="keywords" content="pnpm, 包管理器, npm, yarn, 前端工具, 快速安装, 节省空间">
-    <link rel="canonical" href="https://example.com/free/detail/pnpm">
-    <link rel="sitemap" href="/sitemap">
-    <meta property="og:title" content="pnpm 介绍 - 快速、节省空间的包管理器">
-    <meta property="og:description" content="pnpm是一个快速高效的JavaScript包管理器，相比npm和yarn节省大量磁盘空间。">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="https://example.com/free/detail/pnpm">
+    <title>pnpm - Fast, disk space efficient package manager</title>
+    <meta name="description" content="pnpm is a fast, disk space efficient package manager. Learn about its features, origin, creator, and how it compares to other package managers.">
+    <meta name="keywords" content="pnpm, package manager, npm, yarn, fast, disk efficient, JavaScript, Node.js">
+    <meta name="author" content="pnpm community">
+    <meta property="og:title" content="pnpm - Modern Package Manager">
+    <meta property="og:description" content="Discover pnpm, the fast and disk-efficient alternative to npm and yarn.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://example.com/pnpm.html">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="pnpm - Fast Package Manager">
+    <meta name="twitter:description" content="pnpm saves disk space and boosts installation speed.">
+    <link rel="canonical" href="https://example.com/pnpm.html">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#8B5CF6', // 主色调：深紫色
-                        secondary: '#10B981', // 辅助色：绿色
+                        primary: '#F69220',
+                        secondary: '#2D3748',
                         dark: {
-                            100: '#374151',
-                            200: '#1F2937',
-                            300: '#111827',
-                            400: '#030712',
+                            bg: '#1A202C',
+                            card: '#2D3748'
                         },
-                        neon: {
-                            purple: '#BC13FE',
-                            blue: '#00F0FF',
-                            green: '#05FF00',
+                        light: {
+                            bg: '#F7FAFC',
+                            card: '#FFFFFF'
                         }
                     },
                     fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
                     },
                     animation: {
-                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'float': 'float 6s ease-in-out infinite',
-                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.7s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
                     },
                     keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-10px)' },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' }
                         },
-                        glow: {
-                            '0%': { boxShadow: '0 0 5px rgba(139, 92, 246, 0.5)' },
-                            '100%': { boxShadow: '0 0 20px rgba(139, 92, 246, 0.8)' },
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' }
                         }
                     }
-                },
+                }
             }
         }
     </script>
-    
     <style type="text/tailwindcss">
         @layer utilities {
             .content-auto {
                 content-visibility: auto;
             }
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            .bg-grid {
-                background-image: 
-                    linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px);
-                background-size: 20px 20px;
+            .bg-gradient-primary {
+                background: linear-gradient(135deg, #F69220 0%, #F8B148 100%);
             }
-            .glass {
-                background: rgba(31, 41, 55, 0.6);
-                backdrop-filter: blur(10px);
-                -webkit-backdrop-filter: blur(10px);
-            }
-            .scrollbar-hidden::-webkit-scrollbar {
+            .scrollbar-hide::-webkit-scrollbar {
                 display: none;
             }
-            .scrollbar-hidden {
+            .scrollbar-hide {
                 -ms-overflow-style: none;
                 scrollbar-width: none;
             }
         }
     </style>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        #scrollProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background-color: #F69220;
+            z-index: 50;
+            transition: width 0.2s ease;
+        }
+        
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-5px);
+        }
+        
+        .share-button {
+            transition: all 0.2s ease;
+        }
+        
+        .share-button:hover {
+            transform: scale(1.1);
+        }
+    </style>
 </head>
-<body class="font-inter bg-dark-400 text-gray-200 min-h-screen flex flex-col bg-grid">
-    <!-- 导航栏 -->
-                   
-                 <header class="sticky top-0 z-50 transition-all duration-300" id="navbar">
-        <div class="glass border-b border-primary/20">
-            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+<body class="bg-light-bg text-gray-800 dark:bg-dark-bg dark:text-gray-200 transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress" class="w-0"></div>
+
+    <!-- Navigation -->
+    <header class="sticky top-0 bg-white/90 dark:bg-dark-card/90 shadow-md backdrop-blur-sm z-40 transition-all duration-300">
+        <div class="container mx-auto px-4 py-3">
+            <nav class="flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-neon-purple flex items-center justify-center">
-                        <span class="text-white font-bold text-xl">p</span>
-                    
-            <!-- 搜索框 -->
-            <div class="hidden md:flex mx-4 items-center relative">
-                <div class="relative w-64">
-                    <input type="text" id="searchInput" placeholder="搜索开发资源..." 
-                        class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                    <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                        <i class="fa fa-search"></i>
-                    </button>
+                    <div class="text-primary text-2xl font-bold">pnpm</div>
                 </div>
-                <!-- 搜索结果浮动容器 -->
-                <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-                    <div id="searchResults" class="max-h-80 overflow-y-auto">
-                        <!-- 搜索结果将在这里动态生成 -->
+                
+                <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+                    <div class="relative w-full">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            autocomplete="off"
+                            placeholder="Search pnpm documentation..." 
+                            class="w-full py-2 px-4 pr-10 rounded-full bg-gray-100 dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                        >
+                        <i class="fa fa-search absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                     </div>
                 </div>
-            </div>
-</div>
-                    <span class="font-bold text-xl tracking-tight">pnpm</span>
+                
+                <div class="flex items-center space-x-6">
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-moon-o text-xl"></i>
+                    </button>
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-star-o text-xl"></i>
+                    </button>
+                    <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors md:hidden">
+                        <i class="fa fa-share-alt text-xl"></i>
+                    </button>
+                    <div class="hidden md:flex items-center space-x-3">
+                        <a href="https://github.com/pnpm/pnpm" target="_blank" rel="noopener" class="share-button text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                            <i class="fa fa-github text-xl"></i>
+                        </a>
+                        <a href="https://twitter.com/pnpmjs" target="_blank" rel="noopener" class="share-button text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://discord.gg/npm" target="_blank" rel="noopener" class="share-button text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                            <i class="fa fa-comments text-xl"></i>
+                        </a>
+                    </div>
                 </div>
-                
-                <nav class="hidden md:flex items-center space-x-8">
-                    <a href="#intro" class="hover:text-primary transition-colors">介绍</a>
-                    <a href="#features" class="hover:text-primary transition-colors">特性</a>
-                    <a href="#usage" class="hover:text-primary transition-colors">使用方法</a>
-                    <a href="#community" class="hover:text-primary transition-colors">社区评价</a>
-                </nav>
-                
-                <div class="flex items-center space-x-4">
-                    <button id="favorite-btn" class="p-2 rounded-full hover:bg-dark-200 transition-colors" aria-label="收藏">
-                        <i class="fa fa-star-o text-gray-400 hover:text-yellow-400 transition-colors"></i>
-                    </button>
-                    <button id="share-btn" class="p-2 rounded-full hover:bg-dark-200 transition-colors" aria-label="分享">
-                        <i class="fa fa-share-alt text-gray-400 hover:text-primary transition-colors"></i>
-                    </button>
-                    <button class="md:hidden p-2 rounded-full hover:bg-dark-200 transition-colors" id="mobile-menu-btn">
-                        <i class="fa fa-bars text-gray-400"></i>
-                    </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="container mx-auto px-4 py-3 text-sm">
+        <nav class="flex" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 md:space-x-3">
+                <li class="inline-flex items-center">
+                    <a href="/" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+                        <i class="fa fa-home mr-1"></i> Home
+                    </a>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-xs mx-1 text-gray-400"></i>
+                        <a href="/free" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">Free Resources</a>
+                    </div>
+                </li>
+                <li>
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-xs mx-1 text-gray-400"></i>
+                        <a href="/free/detail/" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">Package Managers</a>
+                    </div>
+                </li>
+                <li aria-current="page">
+                    <div class="flex items-center">
+                        <i class="fa fa-chevron-right text-xs mx-1 text-gray-400"></i>
+                        <span class="text-gray-700 dark:text-gray-300 font-medium">pnpm</span>
+                    </div>
+                </li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative w-full overflow-hidden bg-gradient-to-br from-gray-900 to-gray-800 text-white py-20 md:py-32">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute inset-0 bg-[url('https://picsum.photos/1920/1080?random=1')] bg-cover bg-center"></div>
+        </div>
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,6vw,4.5rem)] font-bold leading-tight mb-6 animate-fade-in text-shadow">
+                    pnpm: Fast, <span class="text-primary">Efficient</span> Package Management
+                </h1>
+                <p class="text-[clamp(1.1rem,2vw,1.3rem)] text-gray-300 mb-10 max-w-3xl mx-auto animate-slide-up">
+                    A modern package manager that saves disk space and boosts installation speed with its unique 
+                    content-addressable filesystem.
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4 animate-slide-up" style="animation-delay: 0.2s">
+                    <a href="#features" class="bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-primary/30 hover:shadow-xl">
+                        Explore Features
+                    </a>
+                    <a href="#installation" class="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold py-3 px-8 rounded-full transition-all border border-white/30">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+            
+            <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto animate-slide-up" style="animation-delay: 0.4s">
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-primary mb-2">35k+</div>
+                    <div class="text-gray-300">GitHub Stars</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-primary mb-2">12M+</div>
+                    <div class="text-gray-300">Weekly Downloads</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-primary mb-2">2.5k+</div>
+                    <div class="text-gray-300">Contributors</div>
+                </div>
+                <div class="bg-white/10 backdrop-blur-sm rounded-xl p-6 text-center card-hover">
+                    <div class="text-4xl font-bold text-primary mb-2">500+</div>
+                    <div class="text-gray-300">Packages</div>
                 </div>
             </div>
         </div>
         
-        <!-- 移动端菜单 -->
-        <div id="mobile-menu" class="glass hidden md:hidden border-b border-primary/20">
-            <div class="container mx-auto px-4 py-3 flex flex-col space-y-4">
-                <a href="#intro" class="hover:text-primary transition-colors py-2">介绍</a>
-                <a href="#features" class="hover:text-primary transition-colors py-2">特性</a>
-                <a href="#usage" class="hover:text-primary transition-colors py-2">使用方法</a>
-                <a href="#community" class="hover:text-primary transition-colors py-2">社区评价</a>
-            </div>
-        </div>
-            <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." 
-                    class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-                    <i class="fa fa-search"></i>
-                </button>
-            </div>
-        </div>
-    </header>
+        <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-light-bg dark:from-dark-bg to-transparent"></div>
+    </section>
 
-    <!-- 分享弹窗 -->
-    <div id="share-modal" class="fixed inset-0 bg-black/50 z-50 hidden items-center justify-center p-4">
-        <div class="bg-dark-300 rounded-xl p-6 w-full max-w-md border border-primary/30 shadow-lg shadow-primary/10">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-semibold">分享 pnpm 介绍</h3>
-                <button id="close-share" class="text-gray-400 hover:text-white">
-                    <i class="fa fa-times"></i>
-                </button>
-            </div>
-            <div class="grid grid-cols-4 gap-4">
-                <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-dark-200 transition-colors">
-                    <i class="fa fa-twitter text-blue-400 text-xl mb-2"></i>
-                    <span class="text-sm">Twitter</span>
-                </a>
-                <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-dark-200 transition-colors">
-                    <i class="fa fa-facebook text-blue-600 text-xl mb-2"></i>
-                    <span class="text-sm">Facebook</span>
-                </a>
-                <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-dark-200 transition-colors">
-                    <i class="fa fa-linkedin text-blue-700 text-xl mb-2"></i>
-                    <span class="text-sm">LinkedIn</span>
-                </a>
-                <a href="#" class="flex flex-col items-center p-3 rounded-lg hover:bg-dark-200 transition-colors">
-                    <i class="fa fa-copy text-gray-400 text-xl mb-2"></i>
-                    <span class="text-sm">复制链接</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <main class="flex-grow">
-        <!-- 面包屑导航 -->
-        <div class="container mx-auto px-4 py-4 text-sm text-gray-400">
-            <nav class="flex" aria-label="面包屑">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3">
-                    <li class="inline-flex items-center">
-                        <a href="/" class="hover:text-primary transition-colors">
-                            <i class="fa fa-home mr-1"></i>首页
-                        </a>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fa fa-angle-right text-gray-500 mx-2"></i>
-                            <a href="/free" class="hover:text-primary transition-colors">资源分类</a>
-                        </div>
-                    </li>
-                    <li>
-                        <div class="flex items-center">
-                            <i class="fa fa-angle-right text-gray-500 mx-2"></i>
-                            <a href="/free/detail/" class="hover:text-primary transition-colors">资源列表</a>
-                        </div>
-                    </li>
-                    <li aria-current="page">
-                        <div class="flex items-center">
-                            <i class="fa fa-angle-right text-gray-500 mx-2"></i>
-                            <span class="text-gray-300">pnpm 包管理器</span>
-                        </div>
-                    </li>
-                </ol>
-            </nav>
-        </div>
-
-        <!-- 英雄区域 -->
-        <section class="relative py-20 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-b from-dark-400 via-dark-400/90 to-dark-300 z-0"></div>
-            <div class="container mx-auto px-4 relative z-10">
-                <div class="max-w-4xl mx-auto text-center">
-                    <div class="inline-block mb-6 animate-float">
-                        <div class="w-20 h-20 md:w-28 md:h-28 rounded-xl bg-gradient-to-br from-primary to-neon-purple flex items-center justify-center shadow-lg shadow-primary/20">
-                            <span class="text-white font-bold text-4xl md:text-5xl">pnpm</span>
-                        </div>
-                    </div>
-                    <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                        <span class="bg-gradient-to-r from-primary to-neon-blue text-gradient">快速、节省空间</span>的包管理器
-                    </h1>
-                    <p class="text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto">
-                        pnpm 采用独特的存储机制，比 npm 和 yarn 节省大量磁盘空间，同时提供更快的安装速度
-                    </p>
-                    <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <a href="#usage" class="px-8 py-3 bg-gradient-to-r from-primary to-neon-purple rounded-lg font-medium hover:opacity-90 transition-opacity animate-glow">
-                            开始使用
-                        </a>
-                        <a href="#features" class="px-8 py-3 bg-dark-200 border border-primary/30 rounded-lg font-medium hover:bg-dark-100 transition-colors">
-                            了解更多
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 装饰元素 -->
-            <div class="absolute top-1/4 left-10 w-32 h-32 bg-primary/10 rounded-full blur-3xl"></div>
-            <div class="absolute bottom-1/4 right-10 w-40 h-40 bg-neon-blue/10 rounded-full blur-3xl"></div>
-        </section>
-
-        <!-- 介绍部分 -->
-        <section id="intro" class="py-20 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-4xl mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">什么是 pnpm？</h2>
-                        <div class="w-20 h-1 bg-gradient-to-r from-primary to-neon-blue mx-auto rounded-full"></div>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-12 items-center">
-                        <div class="space-y-6">
-                            <p class="text-lg leading-relaxed">
-                                pnpm 是 "Performant npm" 的缩写，是一个快速、磁盘空间高效的 Node.js 包管理器。它由 Zoltan Kochan 于 2017 年创建，旨在解决 npm 和 yarn 存在的性能和磁盘空间问题。
-                            </p>
-                            <p class="text-lg leading-relaxed">
-                                与其他包管理器不同，pnpm 使用内容可寻址存储来存储包，这意味着相同的包只会在磁盘上存储一次，大大减少了磁盘空间的占用。
-                            </p>
-                            <div class="p-4 bg-dark-200 rounded-lg border border-primary/20">
-                                <h3 class="font-semibold text-primary mb-2">名字含义</h3>
-                                <p>pnpm 代表 "Performant npm"（高性能的 npm），体现了其设计初衷：提供比传统包管理器更好的性能。</p>
-                            </div>
-                        </div>
-                        
-                        <div class="relative">
-                            <div class="bg-dark-200 rounded-xl p-6 border border-primary/20 shadow-xl shadow-primary/5 overflow-hidden relative group">
-                                <div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 group-hover:bg-primary/10 transition-colors"></div>
-                                <pre class="text-sm md:text-base text-gray-300 overflow-x-auto scrollbar-hidden"><code># pnpm 安装速度对比
-$ time npm install
-real    0m45.234s
-
-$ time yarn install
-real    0m32.156s
-
-$ time pnpm install
-real    0m12.789s</code></pre>
-                                <div class="absolute bottom-4 right-4 flex space-x-2">
-                                    <span class="px-2 py-1 bg-neon-green/20 text-neon-green text-xs rounded-full">更快</span>
-                                    <span class="px-2 py-1 bg-neon-blue/20 text-neon-blue text-xs rounded-full">更高效</span>
-                                </div>
-                            </div>
-                            <!-- 装饰元素 -->
-                            <div class="absolute -bottom-4 -left-4 w-full h-full bg-gradient-to-br from-primary to-neon-purple rounded-xl -z-10 opacity-30 blur-sm"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 起源和历史 -->
-        <section class="py-20 bg-dark-300 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-4xl mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">起源与发展</h2>
-                        <div class="w-20 h-1 bg-gradient-to-r from-primary to-neon-blue mx-auto rounded-full"></div>
-                    </div>
-                    
-                    <div class="relative">
-                        <!-- 时间线 -->
-                        <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-1 bg-primary/30 transform -translate-x-1/2"></div>
-                        
-                        <div class="space-y-16 relative">
-                            <!-- 2017 -->
-                            <div class="md:flex items-center">
-                                <div class="md:w-1/2 md:pr-12 md:text-right order-2 md:order-1 mt-6 md:mt-0">
-                                    <h3 class="text-2xl font-semibold mb-2">诞生之初</h3>
-                                    <p class="text-gray-300">
-                                        pnpm 由 Zoltan Kochan 于 2017 年创建，最初是作为解决 npm 3+ 中扁平化 node_modules 结构问题的实验项目。
-                                    </p>
-                                </div>
-                                <div class="md:w-12 flex justify-center order-1 md:order-2">
-                                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center relative z-10">
-                                        <span class="text-sm font-bold">2017</span>
-                                    </div>
-                                </div>
-                                <div class="md:w-1/2 md:pl-12 order-3 hidden md:block"></div>
-                            </div>
-                            
-                            <!-- 2018 -->
-                            <div class="md:flex items-center">
-                                <div class="md:w-1/2 md:pr-12 hidden md:block"></div>
-                                <div class="md:w-12 flex justify-center order-1">
-                                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center relative z-10">
-                                        <span class="text-sm font-bold">2018</span>
-                                    </div>
-                                </div>
-                                <div class="md:w-1/2 md:pl-12 order-2 mt-6 md:mt-0">
-                                    <h3 class="text-2xl font-semibold mb-2">社区认可</h3>
-                                    <p class="text-gray-300">
-                                        pnpm 开始获得开发者社区的关注，其独特的存储方式和性能优势吸引了第一批用户。
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <!-- 2020 -->
-                            <div class="md:flex items-center">
-                                <div class="md:w-1/2 md:pr-12 md:text-right order-2 md:order-1 mt-6 md:mt-0">
-                                    <h3 class="text-2xl font-semibold mb-2">广泛采用</h3>
-                                    <p class="text-gray-300">
-                                        随着 v5 版本的发布，pnpm 增加了对工作区的支持，开始被一些知名项目采用，包括 Vue.js 等。
-                                    </p>
-                                </div>
-                                <div class="md:w-12 flex justify-center order-1 md:order-2">
-                                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center relative z-10">
-                                        <span class="text-sm font-bold">2020</span>
-                                    </div>
-                                </div>
-                                <div class="md:w-1/2 md:pl-12 order-3 hidden md:block"></div>
-                            </div>
-                            
-                            <!-- 2022 -->
-                            <div class="md:flex items-center">
-                                <div class="md:w-1/2 md:pr-12 hidden md:block"></div>
-                                <div class="md:w-12 flex justify-center order-1">
-                                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center relative z-10">
-                                        <span class="text-sm font-bold">2022</span>
-                                    </div>
-                                </div>
-                                <div class="md:w-1/2 md:pl-12 order-2 mt-6 md:mt-0">
-                                    <h3 class="text-2xl font-semibold mb-2">成为主流</h3>
-                                    <p class="text-gray-300">
-                                        pnpm 下载量突破 10 亿次，成为前端开发中广泛使用的包管理器之一，许多大型企业开始采用。
-                                    </p>
-                                </div>
-                            </div>
-                            
-                            <!-- 现在 -->
-                            <div class="md:flex items-center">
-                                <div class="md:w-1/2 md:pr-12 md:text-right order-2 md:order-1 mt-6 md:mt-0">
-                                    <h3 class="text-2xl font-semibold mb-2">持续发展</h3>
-                                    <p class="text-gray-300">
-                                        pnpm 拥有活跃的社区和开发团队，不断迭代更新，提供更多功能和更好的性能，成为 npm 和 yarn 的有力替代品。
-                                    </p>
-                                </div>
-                                <div class="md:w-12 flex justify-center order-1 md:order-2">
-                                    <div class="w-8 h-8 rounded-full bg-neon-green flex items-center justify-center relative z-10 animate-pulse">
-                                        <span class="text-sm font-bold">现在</span>
-                                    </div>
-                                </div>
-                                <div class="md:w-1/2 md:pl-12 order-3 hidden md:block"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 动画展示 -->
-        <section class="py-20 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-4xl mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">工作原理动画展示</h2>
-                        <div class="w-20 h-1 bg-gradient-to-r from-primary to-neon-blue mx-auto rounded-full"></div>
-                        <p class="mt-4 text-gray-400 max-w-2xl mx-auto">
-                            pnpm 采用独特的内容可寻址存储和硬链接机制，大幅提高效率
-                        </p>
-                    </div>
-                    
-                    <div class="bg-dark-200 rounded-xl p-6 md:p-10 border border-primary/20 shadow-xl relative overflow-hidden">
-                        <!-- 动画容器 -->
-                        <div class="relative h-80 md:h-96 flex items-center justify-center">
-                            <!-- 传统包管理器 -->
-                            <div class="absolute left-0 top-0 w-full h-full flex flex-col md:flex-row items-center justify-center transition-opacity duration-1000" id="traditional-view">
-                                <div class="text-center md:mr-12 mb-8 md:mb-0">
-                                    <h3 class="text-xl font-semibold mb-4 text-gray-400">传统包管理器</h3>
-                                    <div class="w-48 h-48 md:w-56 md:h-56 relative">
-                                        <!-- 项目A -->
-                                        <div class="absolute top-0 left-1/4 w-24 h-16 bg-dark-300 border border-gray-600 rounded p-2 flex items-center justify-center">
-                                            <div>项目A</div>
-                                        </div>
-                                        <!-- 项目B -->
-                                        <div class="absolute bottom-0 right-1/4 w-24 h-16 bg-dark-300 border border-gray-600 rounded p-2 flex items-center justify-center">
-                                            <div>项目B</div>
-                                        </div>
-                                        <!-- 重复的依赖 -->
-                                        <div class="absolute top-1/3 left-0 w-20 h-12 bg-gray-700 border border-gray-500 rounded p-1 flex items-center justify-center text-xs">
-                                            <div>lodash@4.17</div>
-                                        </div>
-                                        <div class="absolute bottom-1/3 right-0 w-20 h-12 bg-gray-700 border border-gray-500 rounded p-1 flex items-center justify-center text-xs">
-                                            <div>lodash@4.17</div>
-                                        </div>
-                                        <!-- 箭头 -->
-                                        <svg class="absolute top-8 left-[80px] w-6 h-6 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                        </svg>
-                                        <svg class="absolute bottom-16 right-[80px] w-6 h-6 text-gray-500 transform rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                        </svg>
-                                    </div>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <div class="w-8 h-8 mx-auto bg-red-500 rounded-full mb-2 animate-pulse"></div>
-                                    <p class="text-gray-400">重复存储相同依赖</p>
-                                </div>
-                            </div>
-                            
-                            <!-- pnpm 方式 -->
-                            <div class="absolute left-0 top-0 w-full h-full flex flex-col md:flex-row items-center justify-center opacity-0 transition-opacity duration-1000" id="pnpm-view">
-                                <div class="text-center md:mr-12 mb-8 md:mb-0">
-                                    <h3 class="text-xl font-semibold mb-4 text-primary">pnpm 方式</h3>
-                                    <div class="w-48 h-48 md:w-56 md:h-56 relative">
-                                        <!-- 项目A -->
-                                        <div class="absolute top-0 left-1/4 w-24 h-16 bg-dark-300 border border-primary/30 rounded p-2 flex items-center justify-center">
-                                            <div>项目A</div>
-                                        </div>
-                                        <!-- 项目B -->
-                                        <div class="absolute bottom-0 right-1/4 w-24 h-16 bg-dark-300 border border-primary/30 rounded p-2 flex items-center justify-center">
-                                            <div>项目B</div>
-                                        </div>
-                                        <!-- 共享的依赖 -->
-                                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-24 h-16 bg-primary/20 border border-primary rounded p-2 flex items-center justify-center animate-pulse-slow">
-                                            <div>lodash@4.17</div>
-                                        </div>
-                                        <!-- 箭头 -->
-                                        <svg class="absolute top-8 left-[80px] w-6 h-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                        </svg>
-                                        <svg class="absolute bottom-16 right-[80px] w-6 h-6 text-primary transform rotate-180" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                                            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                                            <line x1="12" y1="22.08" x2="12" y2="12"></line>
-                                        </svg>
-                                    </div>
-                                </div>
-                                
-                                <div class="text-center">
-                                    <div class="w-8 h-8 mx-auto bg-green-500 rounded-full mb-2 animate-pulse"></div>
-                                    <p class="text-green-400">单一存储，多项目共享</p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 切换按钮 -->
-                        <div class="mt-8 flex justify-center">
-                            <button id="toggle-animation" class="px-6 py-2 bg-dark-300 border border-primary/30 rounded-lg flex items-center space-x-2 hover:bg-dark-100 transition-colors">
-                                <span>查看 pnpm 工作方式</span>
-                                <i class="fa fa-exchange text-primary"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 优缺点对比 -->
-        <section id="features" class="py-20 bg-dark-300 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-4xl mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">优缺点分析</h2>
-                        <div class="w-20 h-1 bg-gradient-to-r from-primary to-neon-blue mx-auto rounded-full"></div>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-8">
-                        <!-- 优点 -->
-                        <div class="bg-dark-200 rounded-xl p-6 border border-neon-green/20">
-                            <div class="flex items-center mb-6">
-                                <div class="w-10 h-10 rounded-full bg-neon-green/20 flex items-center justify-center mr-3">
-                                    <i class="fa fa-plus text-neon-green"></i>
-                                </div>
-                                <h3 class="text-2xl font-semibold">优点</h3>
-                            </div>
-                            
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <i class="fa fa-check-circle text-neon-green mt-1 mr-3"></i>
-                                    <span><strong class="text-neon-green">更快的安装速度</strong> - 比 npm 和 yarn 快 2-3 倍，特别是在冷缓存情况下</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check-circle text-neon-green mt-1 mr-3"></i>
-                                    <span><strong class="text-neon-green">节省磁盘空间</strong> - 通过内容可寻址存储，相同的包只存储一次</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check-circle text-neon-green mt-1 mr-3"></i>
-                                    <span><strong class="text-neon-green">严格的依赖管理</strong> - 避免了 npm 扁平化 node_modules 带来的依赖污染问题</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check-circle text-neon-green mt-1 mr-3"></i>
-                                    <span><strong class="text-neon-green">支持工作区</strong> - 对 monorepo 项目有良好支持</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check-circle text-neon-green mt-1 mr-3"></i>
-                                    <span><strong class="text-neon-green">向后兼容</strong> - 支持 npm 和 yarn 的配置文件和命令</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check-circle text-neon-green mt-1 mr-3"></i>
-                                    <span><strong class="text-neon-green">安全可靠</strong> - 避免了依赖劫持等安全问题</span>
-                                </li>
-                            </ul>
-                        </div>
-                        
-                        <!-- 缺点 -->
-                        <div class="bg-dark-200 rounded-xl p-6 border border-red-500/20">
-                            <div class="flex items-center mb-6">
-                                <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-3">
-                                    <i class="fa fa-minus text-red-500"></i>
-                                </div>
-                                <h3 class="text-2xl font-semibold">缺点</h3>
-                            </div>
-                            
-                            <ul class="space-y-4">
-                                <li class="flex items-start">
-                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                                    <span><strong class="text-red-500">生态系统兼容性</strong> - 少数老旧项目可能不兼容 pnpm 的非扁平化 node_modules</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                                    <span><strong class="text-red-500">学习曲线</strong> - 对于习惯了 npm/yarn 的开发者，需要适应一些差异</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                                    <span><strong class="text-red-500">某些工具支持有限</strong> - 少数构建工具对 pnpm 的支持不够完善</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                                    <span><strong class="text-red-500">链接问题</strong> - 在某些系统上，硬链接和符号链接可能导致问题</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                                    <span><strong class="text-red-500">缓存复杂性</strong> - 缓存系统偶尔会导致一些难以调试的问题</span>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <!-- 性能对比图表 -->
-                    <div class="mt-16 bg-dark-200 rounded-xl p-6 border border-primary/20">
-                        <h3 class="text-xl font-semibold mb-6 text-center">包管理器性能对比 (秒)</h3>
-                        <div class="h-80">
-                            <canvas id="performanceChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 免费资源和使用方法 -->
-        <section id="usage" class="py-20 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-4xl mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">免费资源与使用方法</h2>
-                        <div class="w-20 h-1 bg-gradient-to-r from-primary to-neon-blue mx-auto rounded-full"></div>
-                        <p class="mt-4 text-gray-400 max-w-2xl mx-auto">
-                            pnpm 是完全免费的开源软件，以下是获取和使用的方法
-                        </p>
-                    </div>
-                    
-                    <!-- 免费资源 -->
-                    <div class="bg-dark-200 rounded-xl p-6 border border-primary/20 mb-12">
-                        <h3 class="text-xl font-semibold mb-4">免费资源</h3>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <a href="https://pnpm.io/" target="_blank" class="group p-4 bg-dark-300 rounded-lg border border-gray-700 hover:border-primary transition-colors">
-                                <div class="flex items-center mb-2">
-                                    <i class="fa fa-book text-primary mr-2"></i>
-                                    <h4 class="font-medium">官方文档</h4>
-                                </div>
-                                <p class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                                    完整的官方文档，包含安装指南、命令参考和高级用法
-                                </p>
-                            </a>
-                            
-                            <a href="https://github.com/pnpm/pnpm" target="_blank" class="group p-4 bg-dark-300 rounded-lg border border-gray-700 hover:border-primary transition-colors">
-                                <div class="flex items-center mb-2">
-                                    <i class="fa fa-github text-primary mr-2"></i>
-                                    <h4 class="font-medium">GitHub 仓库</h4>
-                                </div>
-                                <p class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                                    源代码仓库，可以查看源码、提交 Issue 或贡献代码
-                                </p>
-                            </a>
-                            
-                            <a href="https://discord.gg/8bZsjYh" target="_blank" class="group p-4 bg-dark-300 rounded-lg border border-gray-700 hover:border-primary transition-colors">
-                                <div class="flex items-center mb-2">
-                                    <i class="fa fa-comments text-primary mr-2"></i>
-                                    <h4 class="font-medium">Discord 社区</h4>
-                                </div>
-                                <p class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                                    加入官方 Discord 服务器，与其他用户和开发者交流
-                                </p>
-                            </a>
-                            
-                            <a href="https://twitter.com/pnpmjs" target="_blank" class="group p-4 bg-dark-300 rounded-lg border border-gray-700 hover:border-primary transition-colors">
-                                <div class="flex items-center mb-2">
-                                    <i class="fa fa-twitter text-primary mr-2"></i>
-                                    <h4 class="font-medium">官方 Twitter</h4>
-                                </div>
-                                <p class="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">
-                                    关注最新动态、更新和社区新闻
-                                </p>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- 安装和使用方法 -->
-                    <div class="bg-dark-200 rounded-xl p-6 border border-primary/20">
-                        <h3 class="text-xl font-semibold mb-6">安装与基本使用</h3>
-                        
-                        <div class="space-y-8">
-                            <!-- 安装方法 -->
-                            <div>
-                                <h4 class="font-medium text-lg mb-3 flex items-center">
-                                    <span class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-2 text-sm">1</span>
-                                    安装 pnpm
-                                </h4>
-                                
-                                <div class="space-y-4">
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">使用 npm 安装：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>npm install -g pnpm</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">使用 Homebrew (macOS)：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>brew install pnpm</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">使用 curl：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>curl -fsSL https://get.pnpm.io/install.sh | sh -</code>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 基本命令 -->
-                            <div>
-                                <h4 class="font-medium text-lg mb-3 flex items-center">
-                                    <span class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-2 text-sm">2</span>
-                                    基本命令
-                                </h4>
-                                
-                                <div class="grid md:grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">安装项目依赖：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>pnpm install</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">安装新包：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>pnpm add react</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">安装开发依赖：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>pnpm add -D typescript</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">运行脚本：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>pnpm run dev</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">卸载包：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>pnpm remove lodash</code>
-                                        </div>
-                                    </div>
-                                    
-                                    <div>
-                                        <p class="text-sm text-gray-400 mb-2">更新依赖：</p>
-                                        <div class="bg-dark-400 rounded-lg p-3 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                            <code>pnpm update</code>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- 迁移指南 -->
-                            <div>
-                                <h4 class="font-medium text-lg mb-3 flex items-center">
-                                    <span class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-2 text-sm">3</span>
-                                    从 npm/yarn 迁移
-                                </h4>
-                                
-                                <p class="mb-3">pnpm 与 npm 和 yarn 的命令非常相似，迁移通常很简单：</p>
-                                
-                                <div class="bg-dark-400 rounded-lg p-4 font-mono text-sm overflow-x-auto scrollbar-hidden">
-                                    <code># 1. 安装 pnpm（见上文）
-# 2. 删除 node_modules 文件夹
-rm -rf node_modules
-
-# 3. 删除 package-lock.json 或 yarn.lock
-rm package-lock.json yarn.lock
-
-# 4. 使用 pnpm 安装依赖
-pnpm install
-
-# 现在你可以使用 pnpm 代替 npm/yarn 了！</code>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 社区评论 -->
-        <section id="community" class="py-20 bg-dark-300 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-5xl mx-auto">
-                    <div class="text-center mb-16">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-4">社区评价</h2>
-                        <div class="w-20 h-1 bg-gradient-to-r from-primary to-neon-blue mx-auto rounded-full"></div>
-                        <p class="mt-4 text-gray-400 max-w-2xl mx-auto">
-                            来自开发者社区的真实评价
-                        </p>
-                    </div>
-                    
-                    <!-- 评论筛选 -->
-                    <div class="flex flex-wrap justify-center gap-3 mb-10">
-                        <button class="px-4 py-1 bg-primary text-white rounded-full text-sm active-filter">全部评价</button>
-                        <button class="px-4 py-1 bg-dark-200 hover:bg-dark-100 rounded-full text-sm transition-colors">正面评价</button>
-                        <button class="px-4 py-1 bg-dark-200 hover:bg-dark-100 rounded-full text-sm transition-colors">中性评价</button>
-                        <button class="px-4 py-1 bg-dark-200 hover:bg-dark-100 rounded-full text-sm transition-colors">改进建议</button>
-                    </div>
-                    
-                    <!-- 评论网格 -->
-                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="comments-container">
-                        <!-- 评论会通过JavaScript动态生成 -->
-                    </div>
-                    
-                    <!-- 加载更多按钮 -->
-                    <div class="mt-10 text-center">
-                        <button id="load-more" class="px-6 py-2 bg-dark-200 border border-primary/30 rounded-lg hover:bg-dark-100 transition-colors">
-                            加载更多评论
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- CTA 区域 -->
-        <section class="py-20 relative">
-            <div class="container mx-auto px-4">
-                <div class="max-w-3xl mx-auto bg-gradient-to-r from-dark-200 to-dark-300 rounded-2xl p-8 md:p-12 border border-primary/30 shadow-xl shadow-primary/5 relative overflow-hidden">
-                    <!-- 装饰元素 -->
-                    <div class="absolute -top-20 -right-20 w-40 h-40 bg-primary/10 rounded-full blur-3xl"></div>
-                    <div class="absolute -bottom-20 -left-20 w-40 h-40 bg-neon-blue/10 rounded-full blur-3xl"></div>
-                    
-                    <div class="relative z-10 text-center">
-                        <h2 class="text-3xl md:text-4xl font-bold mb-6">准备好尝试 pnpm 了吗？</h2>
-                        <p class="text-lg text-gray-300 mb-8">
-                            加入数百万开发者的行列，体验更快、更高效的包管理方式
-                        </p>
-                        <div class="flex flex-col sm:flex-row justify-center gap-4">
-                            <a href="https://pnpm.io/installation" target="_blank" class="px-8 py-3 bg-gradient-to-r from-primary to-neon-purple rounded-lg font-medium hover:opacity-90 transition-opacity animate-glow">
-                                立即安装
-                            </a>
-                            <a href="https://pnpm.io/workspaces" target="_blank" class="px-8 py-3 bg-dark-200 border border-primary/30 rounded-lg font-medium hover:bg-dark-100 transition-colors">
-                                了解工作区
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- 页脚 -->
-    <footer class="bg-dark-400 border-t border-primary/20 py-12">
+    <!-- About Section -->
+    <section id="about" class="py-16 md:py-24">
         <div class="container mx-auto px-4">
-            <div class="max-w-5xl mx-auto">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                    <div>
-                        <div class="flex items-center space-x-2 mb-4">
-                            <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-neon-purple flex items-center justify-center">
-                                <span class="text-white font-bold text-xl">p</span>
-                            </div>
-                            <span class="font-bold text-xl tracking-tight">pnpm</span>
-                        </div>
-                        <p class="text-gray-400 mb-4">
-                            快速、节省空间的 Node.js 包管理器
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">About pnpm</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        A next-generation package manager for JavaScript with a focus on speed, efficiency, and reliability.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div class="order-2 md:order-1">
+                        <h3 class="text-2xl font-semibold mb-4">The Origin Story</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            pnpm was created in 2016 by Zoltan Kochan as a more efficient alternative to npm. 
+                            Frustrated with the inefficiencies of existing package managers, especially regarding 
+                            disk space usage and installation speed, Zoltan set out to create something better.
                         </p>
-                        <div class="flex space-x-4">
-                            <a href="https://github.com/pnpm/pnpm" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
-                                <i class="fa fa-github text-xl"></i>
-                            </a>
-                            <a href="https://twitter.com/pnpmjs" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
-                                <i class="fa fa-twitter text-xl"></i>
-                            </a>
-                            <a href="https://discord.gg/8bZsjYh" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
-                                <i class="fa fa-discord text-xl"></i>
-                            </a>
+                        <p class="text-gray-600 dark:text-gray-400 mb-6">
+                            The key insight was to use a content-addressable filesystem to store packages, 
+                            allowing for deduplication and shared dependencies across projects. This approach 
+                            drastically reduces disk usage and speeds up installations.
+                        </p>
+                        
+                        <div class="flex items-center space-x-4 mt-8">
+                            <img src="https://picsum.photos/100/100?random=3" alt="Zoltan Kochan, creator of pnpm" class="w-16 h-16 rounded-full object-cover border-2 border-primary">
+                            <div>
+                                <h4 class="font-semibold">Zoltan Kochan</h4>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Creator & Lead Maintainer</p>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div>
-                        <h4 class="font-semibold text-lg mb-4">资源</h4>
-                        <ul class="space-y-2">
-                            <li><a href="https://pnpm.io/docs" target="_blank" class="text-gray-400 hover:text-primary transition-colors">文档</a></li>
-                            <li><a href="https://pnpm.io/faq" target="_blank" class="text-gray-400 hover:text-primary transition-colors">FAQ</a></li>
-                            <li><a href="https://github.com/pnpm/pnpm/releases" target="_blank" class="text-gray-400 hover:text-primary transition-colors">发布记录</a></li>
-                            <li><a href="https://pnpm.io/benchmarks" target="_blank" class="text-gray-400 hover:text-primary transition-colors">性能测试</a></li>
-                        </ul>
+                    <div class="order-1 md:order-2">
+                        <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+                            <img src="https://picsum.photos/800/600?random=2" alt="pnpm command line interface" class="w-full h-auto rounded-2xl">
+                            <div class="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent flex items-end">
+                                <div class="p-6">
+                                    <div class="font-mono text-green-400 mb-2">~$ pnpm install</div>
+                                    <p class="text-white text-sm">Fast, disk efficient package manager</p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div>
-                        <h4 class="font-semibold text-lg mb-4">社区</h4>
-                        <ul class="space-y-2">
-                            <li><a href="https://github.com/pnpm/pnpm/issues" target="_blank" class="text-gray-400 hover:text-primary transition-colors">提交 Issue</a></li>
-                            <li><a href="https://github.com/pnpm/pnpm/blob/main/CONTRIBUTING.md" target="_blank" class="text-gray-400 hover:text-primary transition-colors">贡献指南</a></li>
-                            <li><a href="https://discord.gg/8bZsjYh" target="_blank" class="text-gray-400 hover:text-primary transition-colors">Discord</a></li>
-                            <li><a href="https://twitter.com/pnpmjs" target="_blank" class="text-gray-400 hover:text-primary transition-colors">Twitter</a></li>
-                        </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack Section -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-800/50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Compatible Tech Stack</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        pnpm works seamlessly with all modern JavaScript tools and frameworks.
+                    </p>
+                </div>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl text-center shadow-md card-hover">
+                        <i class="fa fa-html5 text-orange-500 text-4xl mb-4"></i>
+                        <h3 class="font-medium">HTML5</h3>
                     </div>
-                    
-                    <div>
-                        <h4 class="font-semibold text-lg mb-4">链接</h4>
-                        <ul class="space-y-2">
-                            <li><a href="/" class="text-gray-400 hover:text-primary transition-colors">首页</a></li>
-                            <li><a href="/free" class="text-gray-400 hover:text-primary transition-colors">资源分类</a></li>
-                            <li><a href="/free/detail/" class="text-gray-400 hover:text-primary transition-colors">资源列表</a></li>
-                            <li><a href="/sitemap" class="text-gray-400 hover:text-primary transition-colors">网站地图</a></li>
-                        </ul>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl text-center shadow-md card-hover">
+                        <i class="fa fa-css3 text-blue-500 text-4xl mb-4"></i>
+                        <h3 class="font-medium">CSS3</h3>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl text-center shadow-md card-hover">
+                        <i class="fa fa-code text-yellow-500 text-4xl mb-4"></i>
+                        <h3 class="font-medium">JavaScript</h3>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl text-center shadow-md card-hover">
+                        <i class="fa fa-react text-blue-400 text-4xl mb-4"></i>
+                        <h3 class="font-medium">React</h3>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl text-center shadow-md card-hover">
+                        <i class="fa fa-vuejs text-green-400 text-4xl mb-4"></i>
+                        <h3 class="font-medium">Vue</h3>
+                    </div>
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl text-center shadow-md card-hover">
+                        <i class="fa fa-nodejs text-green-600 text-4xl mb-4"></i>
+                        <h3 class="font-medium">Node.js</h3>
                     </div>
                 </div>
                 
-                <div class="pt-8 border-t border-gray-800 text-center text-gray-500 text-sm">
-                    <p>&copy; 2023 pnpm 介绍页面. 本网站仅作介绍用途，pnpm 是其 respective owners 的商标.</p>
-                    <p class="mt-2">
-                        <a href="/sitemap" class="hover:text-primary transition-colors">网站地图</a> | 
-                        <a href="/about#privacy" class="hover:text-primary transition-colors">隐私政策</a> | 
-                        <a href="/about#terms" class="hover:text-primary transition-colors">使用条款</a>
+                <div class="mt-16 text-center">
+                    <p class="text-gray-600 dark:text-gray-400 mb-6">
+                        pnpm is compatible with npm and yarn workflows, making it easy to migrate existing projects.
                     </p>
+                    <div class="inline-flex items-center space-x-4 bg-white dark:bg-dark-card px-6 py-3 rounded-full shadow-md">
+                        <div class="flex items-center">
+                            <i class="fa fa-check text-green-500 mr-2"></i>
+                            <span>npm workspaces</span>
+                        </div>
+                        <div class="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <i class="fa fa-check text-green-500 mr-2"></i>
+                            <span>yarn.lock support</span>
+                        </div>
+                        <div class="h-4 w-px bg-gray-300 dark:bg-gray-600"></div>
+                        <div class="flex items-center">
+                            <i class="fa fa-check text-green-500 mr-2"></i>
+                            <span>monorepos</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Key Advantages</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        Why developers around the world choose pnpm over other package managers.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-bolt text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Blazing Fast</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Install dependencies up to 2x faster than npm and yarn, thanks to its efficient caching mechanism.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-hdd-o text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Disk Efficient</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Saves gigabytes of disk space by storing each package version only once, even across projects.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-shield text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Secure</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Prevents phantom dependencies and node_modules pollution with its strict node_modules structure.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-code-fork text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Monorepo Support</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Built-in support for monorepos with workspaces, making it easy to manage multiple packages.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-exchange text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Compatible</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Works with npm and yarn workflows, making migration straightforward with minimal changes.
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="w-14 h-14 bg-primary/10 rounded-lg flex items-center justify-center mb-6">
+                            <i class="fa fa-terminal text-primary text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-3">Rich CLI</h3>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            Powerful command-line interface with useful features like interactive updates and filtering.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparison Section with Radar Chart -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-800/50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">How pnpm Compares</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        A visual comparison of pnpm against other popular package managers.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg">
+                            <canvas id="radarChart" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-6">Advantages & Disadvantages</h3>
+                        
+                        <div class="mb-8">
+                            <h4 class="text-xl font-medium mb-4 text-green-600 dark:text-green-400">Advantages</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                    <span>Significantly faster installations than npm and Yarn</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                    <span>Dramatically reduces disk space usage through deduplication</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                    <span>More secure with strict dependency management</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-plus-circle text-green-500 mt-1 mr-3"></i>
+                                    <span>Excellent monorepo support out of the box</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 class="text-xl font-medium mb-4 text-red-600 dark:text-red-400">Disadvantages</h4>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                    <span>Smaller ecosystem than npm</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                    <span>Some legacy tools might require configuration changes</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-minus-circle text-red-500 mt-1 mr-3"></i>
+                                    <span>Less familiar to new developers than npm</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Installation Section -->
+    <section id="installation" class="py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Get Started with pnpm</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        Install pnpm quickly and start enjoying faster, more efficient package management.
+                    </p>
+                </div>
+                
+                <div class="bg-white dark:bg-dark-card rounded-2xl shadow-xl overflow-hidden">
+                    <div class="bg-gray-900 text-white p-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <div class="ml-2 text-sm text-gray-400">Terminal</div>
+                        </div>
+                    </div>
+                    <div class="p-6 font-mono text-sm md:text-base bg-gray-900 text-green-400">
+                        <p class="mb-4"># Using npm</p>
+                        <p class="mb-6">npm install -g pnpm</p>
+                        
+                        <p class="mb-4"># Using Homebrew (macOS)</p>
+                        <p class="mb-6">brew install pnpm</p>
+                        
+                        <p class="mb-4"># Using curl</p>
+                        <p class="mb-6">curl -fsSL https://get.pnpm.io/install.sh | sh -</p>
+                        
+                        <p class="mb-4"># Initialize a new project</p>
+                        <p class="mb-6">pnpm init</p>
+                        
+                        <p class="mb-4"># Install a package</p>
+                        <p>pnpm add react</p>
+                    </div>
+                </div>
+                
+                <div class="mt-16 grid md:grid-cols-3 gap-8">
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md card-hover">
+                        <h3 class="text-xl font-semibold mb-3">Documentation</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Comprehensive guides and API references to help you master pnpm.
+                        </p>
+                        <a href="https://pnpm.io" target="_blank" rel="noopener" class="text-primary hover:text-primary/80 font-medium flex items-center">
+                            Read Docs <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md card-hover">
+                        <h3 class="text-xl font-semibold mb-3">GitHub Repository</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Explore the source code, contribute, or report issues on GitHub.
+                        </p>
+                        <a href="https://github.com/pnpm/pnpm" target="_blank" rel="noopener" class="text-primary hover:text-primary/80 font-medium flex items-center">
+                            View on GitHub <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md card-hover">
+                        <h3 class="text-xl font-semibold mb-3">Migration Guide</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            Learn how to migrate your project from npm or Yarn to pnpm.
+                        </p>
+                        <a href="https://pnpm.io/migration" target="_blank" rel="noopener" class="text-primary hover:text-primary/80 font-medium flex items-center">
+                            Migration Steps <i class="fa fa-arrow-right ml-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Community Section -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-800/50">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Community Feedback</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        What developers are saying about their experience with pnpm.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/60/60?random=10" alt="Sarah Johnson" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold">Sarah Johnson</h4>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Frontend Developer</p>
+                            </div>
+                        </div>
+                        <div class="text-yellow-400 mb-3">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            "pnpm has revolutionized my workflow. The installation speed is incredible, and I've reclaimed 
+                            over 10GB of disk space on my laptop. Can't imagine going back to npm!"
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/60/60?random=11" alt="Michael Chen" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold">Michael Chen</h4>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">Full Stack Engineer</p>
+                            </div>
+                        </div>
+                        <div class="text-yellow-400 mb-3">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-half-o"></i>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            "Managing our monorepo with pnpm has been a game-changer. The workspace support is fantastic, 
+                            and our CI pipelines are 30% faster since we made the switch."
+                        </p>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-md card-hover">
+                        <div class="flex items-center mb-4">
+                            <img src="https://picsum.photos/60/60?random=12" alt="Alex Rodriguez" class="w-12 h-12 rounded-full mr-4">
+                            <div>
+                                <h4 class="font-semibold">Alex Rodriguez</h4>
+                                <p class="text-gray-500 dark:text-gray-400 text-sm">DevOps Engineer</p>
+                            </div>
+                        </div>
+                        <div class="text-yellow-400 mb-3">
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star"></i>
+                            <i class="fa fa-star-o"></i>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400">
+                            "The disk space savings alone make pnpm worth adopting. We've reduced our Docker image sizes 
+                            significantly and our build times are much more consistent now."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Latest Updates Section -->
+    <section class="py-16 md:py-24">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Latest Updates</h2>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-3xl mx-auto text-lg">
+                        Stay up to date with the latest developments in the pnpm ecosystem.
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md card-hover">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-semibold">pnpm 8.6.0 Released</h3>
+                            <span class="bg-primary/10 text-primary text-sm font-medium px-3 py-1 rounded-full">Jul 15, 2023</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            New features include improved workspace protocol handling, better peer dependency warnings,
+                            and performance optimizations for large monorepos.
+                        </p>
+                        <a href="https://github.com/pnpm/pnpm/releases/tag/v8.6.0" target="_blank" rel="noopener" class="text-primary hover:text-primary/80 font-medium">
+                            Read Release Notes
+                        </a>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-md card-hover">
+                        <div class="flex justify-between items-start mb-4">
+                            <h3 class="text-xl font-semibold">pnpm Conf 2023 Announced</h3>
+                            <span class="bg-primary/10 text-primary text-sm font-medium px-3 py-1 rounded-full">Jun 30, 2023</span>
+                        </div>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">
+                            The first official pnpm conference will take place online in October 2023, featuring talks
+                            from core team members and community leaders.
+                        </p>
+                        <a href="https://pnpm.io/conf" target="_blank" rel="noopener" class="text-primary hover:text-primary/80 font-medium">
+                            Learn More
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="mt-12 bg-white dark:bg-dark-card p-6 rounded-xl shadow-md">
+                    <h3 class="text-xl font-semibold mb-6">GitHub Statistics</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">35,400+</div>
+                            <div class="text-gray-600 dark:text-gray-400">Stars</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">224</div>
+                            <div class="text-gray-600 dark:text-gray-400">Open Issues</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">2,500+</div>
+                            <div class="text-gray-600 dark:text-gray-400">Contributors</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">12M+</div>
+                            <div class="text-gray-600 dark:text-gray-400">Weekly Downloads</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-primary text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6">Ready to Boost Your Development Workflow?</h2>
+            <p class="text-white/90 max-w-2xl mx-auto text-lg mb-10">
+                Join thousands of developers who have switched to pnpm for faster, more efficient package management.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#installation" class="bg-white text-primary font-semibold py-3 px-8 rounded-full transition-all shadow-lg hover:shadow-black/20 hover:shadow-xl">
+                    Get Started Now
+                </a>
+                <a href="https://github.com/pnpm/pnpm" target="_blank" rel="noopener" class="bg-transparent border-2 border-white text-white font-semibold py-3 px-8 rounded-full transition-all hover:bg-white/10">
+                    Star on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="max-w-6xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                    <div>
+                        <h3 class="text-2xl font-bold text-primary mb-6">pnpm</h3>
+                        <p class="text-gray-400 mb-6">
+                            Fast, disk space efficient package manager for JavaScript.
+                        </p>
+                        <div class="flex space-x-4">
+                            <a href="https://github.com/pnpm/pnpm" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fa fa-github text-xl"></i>
+                            </a>
+                            <a href="https://twitter.com/pnpmjs" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fa fa-twitter text-xl"></i>
+                            </a>
+                            <a href="https://discord.gg/npm" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fa fa-discord text-xl"></i>
+                            </a>
+                            <a href="https://reddit.com/r/pnpm" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">
+                                <i class="fa fa-reddit text-xl"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-6">Resources</h4>
+                        <ul class="space-y-3">
+                            <li><a href="https://pnpm.io/docs" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Documentation</a></li>
+                            <li><a href="https://pnpm.io/examples" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Examples</a></li>
+                            <li><a href="https://pnpm.io/migration" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Migration Guide</a></li>
+                            <li><a href="https://pnpm.io/packages" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Related Packages</a></li>
+                            <li><a href="/sitemap" class="text-gray-400 hover:text-white transition-colors">Sitemap</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-6">Community</h4>
+                        <ul class="space-y-3">
+                            <li><a href="https://github.com/pnpm/pnpm/issues" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Issues</a></li>
+                            <li><a href="https://github.com/pnpm/pnpm/discussions" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Discussions</a></li>
+                            <li><a href="https://discord.gg/npm" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Discord</a></li>
+                            <li><a href="https://twitter.com/pnpmjs" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Twitter</a></li>
+                            <li><a href="https://github.com/pnpm/pnpm/blob/main/CODE_OF_CONDUCT.md" target="_blank" rel="noopener" class="text-gray-400 hover:text-white transition-colors">Code of Conduct</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="text-lg font-semibold mb-6">Stay Updated</h4>
+                        <p class="text-gray-400 mb-4">
+                            Subscribe to our newsletter for the latest updates and news.
+                        </p>
+                        <form class="mb-4">
+                            <div class="flex">
+                                <input 
+                                    type="email" 
+                                    id="subscribeEmail" 
+                                    placeholder="Your email address" 
+                                    class="px-4 py-2 rounded-l-lg w-full focus:outline-none text-gray-800"
+                                >
+                                <button 
+                                    type="button" 
+                                    id="subscribeBtn" 
+                                    class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors"
+                                >
+                                    Subscribe
+                                </button>
+                            </div>
+                        </form>
+                        <p class="text-gray-500 text-sm">
+                            We respect your privacy. Unsubscribe at any time.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-800 pt-8 mt-8 text-center text-gray-500 text-sm">
+                    <p>&copy; 2023 pnpm. All rights reserved.</p>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- 返回顶部按钮 -->
-    <button id="back-to-top" class="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg shadow-primary/20 opacity-0 invisible transition-all duration-300 z-40">
-        <i class="fa fa-arrow-up text-white"></i>
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="fixed bottom-8 right-8 bg-primary text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg opacity-0 invisible transition-all z-30">
+        <i class="fa fa-arrow-up"></i>
     </button>
 
-    <script>
-        // 导航栏滚动效果
-        const navbar = document.getElementById('navbar');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 50) {
-                navbar.classList.add('py-2');
-                navbar.classList.remove('py-4');
-            } else {
-                navbar.classList.remove('py-2');
-                navbar.classList.add('py-4');
-            }
-        });
-        
-        // 移动端菜单切换
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-        
-        // 动画展示切换
-        const toggleBtn = document.getElementById('toggle-animation');
-        const traditionalView = document.getElementById('traditional-view');
-        const pnpmView = document.getElementById('pnpm-view');
-        let showingTraditional = true;
-        
-        toggleBtn.addEventListener('click', () => {
-            if (showingTraditional) {
-                traditionalView.classList.add('opacity-0');
-                pnpmView.classList.remove('opacity-0');
-                toggleBtn.innerHTML = '<span>查看传统方式</span><i class="fa fa-exchange text-primary"></i>';
-            } else {
-                traditionalView.classList.remove('opacity-0');
-                pnpmView.classList.add('opacity-0');
-                toggleBtn.innerHTML = '<span>查看 pnpm 工作方式</span><i class="fa fa-exchange text-primary"></i>';
-            }
-            showingTraditional = !showingTraditional;
-        });
-        
-        // 性能对比图表
-        const ctx = document.getElementById('performanceChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['初始安装', '二次安装', '更新依赖', '添加新包'],
-                datasets: [
-                    {
-                        label: 'npm',
-                        data: [45, 22, 30, 18],
-                        backgroundColor: 'rgba(156, 163, 175, 0.6)',
-                        borderColor: 'rgba(156, 163, 175, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'yarn',
-                        data: [32, 15, 22, 14],
-                        backgroundColor: 'rgba(59, 130, 246, 0.6)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 1
-                    },
-                    {
-                        label: 'pnpm',
-                        data: [12, 8, 10, 6],
-                        backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                        borderColor: 'rgba(139, 92, 246, 1)',
-                        borderWidth: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        title: {
-                            display: true,
-                            text: '时间（秒）',
-                            color: 'rgba(209, 213, 219, 0.8)'
-                        },
-                        ticks: {
-                            color: 'rgba(209, 213, 219, 0.6)'
-                        },
-                        grid: {
-                            color: 'rgba(209, 213, 219, 0.1)'
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            color: 'rgba(209, 213, 219, 0.6)'
-                        },
-                        grid: {
-                            color: 'rgba(209, 213, 219, 0.1)'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: 'rgba(209, 213, 219, 0.8)'
-                        }
-                    }
-                }
-            }
-        });
-        
-        // 社区评论数据
-        const comments = [
-            {
-                name: "Alex Johnson",
-                avatar: "https://picsum.photos/id/1/40/40",
-                role: "前端开发者",
-                comment: "pnpm 彻底改变了我的工作流程！安装速度快得惊人，而且为我节省了大量磁盘空间。强烈推荐给所有前端开发者。",
-                rating: 5,
-                date: "2023-05-12"
-            },
-            {
-                name: "Sarah Chen",
-                avatar: "https://picsum.photos/id/2/40/40",
-                role: "全栈工程师",
-                comment: "从 yarn 迁移到 pnpm 非常顺利，团队的构建时间减少了近 60%。唯一的小问题是某些旧的 npm 包需要额外配置，但总体来说非常值得。",
-                rating: 4,
-                date: "2023-06-03"
-            },
-            {
-                name: "Michael Rodriguez",
-                avatar: "https://picsum.photos/id/3/40/40",
-                role: "DevOps 工程师",
-                comment: "在 CI/CD 管道中使用 pnpm 后，构建时间显著减少，为我们节省了大量资源成本。缓存机制非常高效。",
-                rating: 5,
-                date: "2023-04-28"
-            },
-            {
-                name: "Emma Watson",
-                avatar: "https://picsum.photos/id/4/40/40",
-                role: "React 开发者",
-                comment: "pnpm 的工作区支持太棒了！对于我们的 monorepo 项目来说简直是完美的解决方案，比 lerna 快多了。",
-                rating: 5,
-                date: "2023-05-20"
-            },
-            {
-                name: "David Kim",
-                avatar: "https://picsum.photos/id/5/40/40",
-                role: "Node.js 开发者",
-                comment: "速度确实很快，但我遇到了一些与符号链接相关的问题，特别是在 Windows 上。希望未来版本能改进。",
-                rating: 3,
-                date: "2023-06-15"
-            },
-            {
-                name: "Olivia Parker",
-                avatar: "https://picsum.photos/id/6/40/40",
-                role: "前端架构师",
-                comment: "作为一个管理多个项目的人，pnpm 节省的磁盘空间让我震惊。再也不用为 node_modules 占用几十 GB 空间而烦恼了。",
-                rating: 5,
-                date: "2023-04-10"
-            },
-            {
-                name: "Daniel Wilson",
-                avatar: "https://picsum.photos/id/7/40/40",
-                role: "Vue 开发者",
-                comment: "Vue 官方推荐使用 pnpm 不是没有道理的，在我们的 Vue 3 项目中表现非常出色，热重载速度也有提升。",
-                rating: 4,
-                date: "2023-05-05"
-            },
-            {
-                name: "Sophia Martinez",
-                avatar: "https://picsum.photos/id/8/40/40",
-                role: "Angular 开发者",
-                comment: "对于 Angular 项目来说，pnpm 是一个很好的选择，但需要注意一些第三方库可能存在的兼容性问题。",
-                rating: 4,
-                date: "2023-06-22"
-            },
-            {
-                name: "James Brown",
-                avatar: "https://picsum.photos/id/9/40/40",
-                role: "开发主管",
-                comment: "在团队中推广 pnpm 后，新人入职设置环境的时间从原来的 30 分钟缩短到了 5 分钟，太神奇了！",
-                rating: 5,
-                date: "2023-05-30"
-            },
-            {
-                name: "Lisa Wong",
-                avatar: "https://picsum.photos/id/10/40/40",
-                role: "JavaScript 开发者",
-                comment: "命令与 npm 非常相似，几乎没有学习成本。迁移过来后立刻感受到了速度提升，强烈推荐！",
-                rating: 5,
-                date: "2023-04-18"
-            },
-            {
-                name: "Robert Taylor",
-                avatar: "https://picsum.photos/id/11/40/40",
-                role: "全栈开发者",
-                comment: "pnpm 的依赖管理方式更严格，帮助我们发现了几个隐藏的依赖问题。这是一个意外的好处！",
-                rating: 4,
-                date: "2023-06-08"
-            },
-            {
-                name: "Mia Garcia",
-                avatar: "https://picsum.photos/id/12/40/40",
-                role: "前端开发者",
-                comment: "刚开始使用时遇到了一些小麻烦，但官方文档很详细，社区支持也很活跃，很快就解决了问题。",
-                rating: 4,
-                date: "2023-05-15"
-            }
-        ];
+    <!-- Mobile Share Menu -->
+    <div id="mobileShareMenu" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all">
+        <div class="bg-white dark:bg-dark-card rounded-xl p-6 max-w-md w-full mx-4 transform scale-95 transition-transform">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-semibold">Share pnpm</h3>
+                <button id="closeShareMenu" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    <i class="fa fa-times text-xl"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-4 gap-4 mb-6">
+                <a href="https://twitter.com/intent/tweet?url=https://example.com/pnpm.html&text=Check out pnpm, a fast and efficient package manager!" target="_blank" rel="noopener" class="share-button flex flex-col items-center justify-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-500">
+                    <i class="fa fa-twitter text-2xl mb-2"></i>
+                    <span class="text-sm">Twitter</span>
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com/pnpm.html" target="_blank" rel="noopener" class="share-button flex flex-col items-center justify-center p-4 rounded-lg bg-blue-600/10 dark:bg-blue-600/20 text-blue-600">
+                    <i class="fa fa-facebook text-2xl mb-2"></i>
+                    <span class="text-sm">Facebook</span>
+                </a>
+                <a href="https://www.linkedin.com/shareArticle?mini=true&url=https://example.com/pnpm.html&title=pnpm - Fast Package Manager" target="_blank" rel="noopener" class="share-button flex flex-col items-center justify-center p-4 rounded-lg bg-blue-700/10 dark:bg-blue-700/20 text-blue-700">
+                    <i class="fa fa-linkedin text-2xl mb-2"></i>
+                    <span class="text-sm">LinkedIn</span>
+                </a>
+                <a href="mailto:?subject=Check out pnpm&body=I thought you might be interested in pnpm: https://example.com/pnpm.html" class="share-button flex flex-col items-center justify-center p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    <i class="fa fa-envelope text-2xl mb-2"></i>
+                    <span class="text-sm">Email</span>
+                </a>
+            </div>
+            <div class="relative">
+                <input type="text" value="https://example.com/pnpm.html" class="w-full p-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-800 dark:text-gray-200" readonly>
+                <button id="copyLinkBtn" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary text-white px-3 py-1 rounded-lg text-sm">
+                    Copy
+                </button>
+            </div>
+        </div>
+    </div>
 
-        // 生成更多评论数据
-        const generateMoreComments = (count) => {
-            const moreComments = [];
-            const roles = ["前端开发者", "全栈工程师", "Node.js 开发者", "React 开发者", "Vue 开发者", "Angular 开发者", "开发主管", "DevOps 工程师"];
-            const commentsPositive = [
-                "pnpm 真的改变了我的开发体验，安装速度快得惊人！",
-                "节省了大量磁盘空间，对于我这种有很多项目的人来说太有用了。",
-                "从 npm 迁移过来非常顺利，几乎没有遇到任何问题。",
-                "工作区功能非常强大，管理多包项目变得轻而易举。",
-                "在 CI 环境中表现出色，大大缩短了构建时间。",
-                "依赖管理比 npm 更严格，避免了很多潜在问题。",
-                "缓存机制非常高效，第二次安装速度快得难以置信。",
-                "社区非常活跃，问题能得到及时解答。",
-                "命令行界面友好，与 npm 兼容，学习成本低。",
-                "对于大型项目来说，pnpm 是必备工具，性能提升明显。"
-            ];
-            const commentsMixed = [
-                "速度很快，但偶尔会有缓存相关的问题需要手动清理。",
-                "总体很好用，但某些旧包兼容性有问题，需要额外配置。",
-                "在 Windows 上使用体验不如 macOS/Linux，但仍然比 npm 好。",
-                "节省空间效果显著，但符号链接有时会导致工具链问题。",
-                "大部分情况下很棒，但升级版本时偶尔会有 breaking changes。"
-            ];
-            
-            for (let i = 0; i < count; i++) {
-                const isPositive = Math.random() > 0.2;
-                const rating = isPositive ? Math.floor(Math.random() * 2) + 4 : Math.floor(Math.random() * 2) + 3;
-                const commentText = isPositive 
-                    ? commentsPositive[Math.floor(Math.random() * commentsPositive.length)]
-                    : commentsMixed[Math.floor(Math.random() * commentsMixed.length)];
-                
-                moreComments.push({
-                    name: `用户${i + 13}`,
-                    avatar: `https://picsum.photos/id/${i + 13}/40/40`,
-                    role: roles[Math.floor(Math.random() * roles.length)],
-                    comment: commentText,
-                    rating: rating,
-                    date: `2023-${Math.floor(Math.random() * 2) + 4}-${Math.floor(Math.random() * 28) + 1}`
-                });
-            }
-            
-            return moreComments;
-        };
+    <script type="module" src="/main.js"></script>
+    <script>
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = themeToggle.querySelector('i');
         
-        // 合并评论数据
-        const allComments = [...comments, ...generateMoreComments(40)];
+        // Check for saved theme preference or use system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+            themeIcon.classList.remove('fa-moon-o');
+            themeIcon.classList.add('fa-sun-o');
+        } else {
+            document.documentElement.classList.remove('dark');
+            themeIcon.classList.remove('fa-sun-o');
+            themeIcon.classList.add('fa-moon-o');
+        }
         
-        // 渲染评论
-        const commentsContainer = document.getElementById('comments-container');
-        let displayedComments = 12;
-        
-        const renderComments = (count) => {
-            commentsContainer.innerHTML = '';
-            
-            const commentsToShow = allComments.slice(0, count);
-            
-            commentsToShow.forEach(comment => {
-                const commentEl = document.createElement('div');
-                commentEl.className = 'bg-dark-200 rounded-xl p-5 border border-gray-700 hover:border-primary/30 transition-colors';
-                
-                // 生成星级评分
-                let ratingHtml = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= comment.rating) {
-                        ratingHtml += '<i class="fa fa-star text-yellow-400"></i>';
-                    } else {
-                        ratingHtml += '<i class="fa fa-star-o text-gray-600"></i>';
-                    }
-                }
-                
-                commentEl.innerHTML = `
-                    <div class="flex items-start mb-4">
-                        <img src="${comment.avatar}" alt="${comment.name}的头像" class="w-10 h-10 rounded-full mr-3 lazy-load" loading="lazy">
-                        <div>
-                            <h4 class="font-semibold">${comment.name}</h4>
-                            <p class="text-sm text-gray-400">${comment.role}</p>
-                            <div class="flex mt-1">
-                                ${ratingHtml}
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-300 mb-3">${comment.comment}</p>
-                    <p class="text-xs text-gray-500">${comment.date}</p>
-                `;
-                
-                commentsContainer.appendChild(commentEl);
-            });
-        };
-        
-        // 初始渲染评论
-        renderComments(displayedComments);
-        
-        // 加载更多评论
-        document.getElementById('load-more').addEventListener('click', () => {
-            displayedComments += 12;
-            if (displayedComments >= allComments.length) {
-                displayedComments = allComments.length;
-                document.getElementById('load-more').textContent = '没有更多评论了';
-                document.getElementById('load-more').disabled = true;
-                document.getElementById('load-more').classList.add('opacity-50', 'cursor-not-allowed');
-            }
-            renderComments(displayedComments);
-        });
-        
-        // 收藏功能
-        const favoriteBtn = document.getElementById('favorite-btn');
-        let isFavorite = false;
-        
-        favoriteBtn.addEventListener('click', () => {
-            isFavorite = !isFavorite;
-            if (isFavorite) {
-                favoriteBtn.innerHTML = '<i class="fa fa-star text-yellow-400"></i>';
-                // 显示收藏成功提示（实际项目中可以实现）
+        // Toggle theme
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+                themeIcon.classList.remove('fa-sun-o');
+                themeIcon.classList.add('fa-moon-o');
             } else {
-                favoriteBtn.innerHTML = '<i class="fa fa-star-o text-gray-400"></i>';
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+                themeIcon.classList.remove('fa-moon-o');
+                themeIcon.classList.add('fa-sun-o');
             }
         });
         
-        // 分享功能
-        const shareBtn = document.getElementById('share-btn');
-        const shareModal = document.getElementById('share-modal');
-        const closeShare = document.getElementById('close-share');
+        // Bookmark Functionality
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const bookmarkIcon = bookmarkBtn.querySelector('i');
         
-        shareBtn.addEventListener('click', () => {
-            shareModal.style.display = 'flex';
-        });
+        // Check if bookmarked
+        if (localStorage.bookmarked === 'true') {
+            bookmarkIcon.classList.remove('fa-star-o');
+            bookmarkIcon.classList.add('fa-star');
+        }
         
-        closeShare.addEventListener('click', () => {
-            shareModal.style.display = 'none';
-        });
-        
-        // 点击模态框外部关闭
-        shareModal.addEventListener('click', (e) => {
-            if (e.target === shareModal) {
-                shareModal.style.display = 'none';
+        bookmarkBtn.addEventListener('click', () => {
+            if (bookmarkIcon.classList.contains('fa-star-o')) {
+                bookmarkIcon.classList.remove('fa-star-o');
+                bookmarkIcon.classList.add('fa-star');
+                localStorage.bookmarked = 'true';
+            } else {
+                bookmarkIcon.classList.remove('fa-star');
+                bookmarkIcon.classList.add('fa-star-o');
+                localStorage.bookmarked = 'false';
             }
         });
         
-        // 返回顶部按钮
-        const backToTopBtn = document.getElementById('back-to-top');
+        // Scroll Progress Indicator
+        const scrollProgress = document.getElementById('scrollProgress');
         
         window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            scrollProgress.style.width = scrolled + '%';
+            
+            // Back to top button visibility
+            const backToTopBtn = document.getElementById('backToTop');
+            if (winScroll > 300) {
                 backToTopBtn.classList.remove('opacity-0', 'invisible');
                 backToTopBtn.classList.add('opacity-100', 'visible');
             } else {
-                backToTopBtn.classList.add('opacity-0', 'invisible');
                 backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
             }
         });
         
-        backToTopBtn.addEventListener('click', () => {
+        // Back to top functionality
+        document.getElementById('backToTop').addEventListener('click', () => {
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
             });
         });
         
-        // 平滑滚动
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
-                
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                    
-                    // 关闭移动菜单（如果打开）
-                    if (!mobileMenu.classList.contains('hidden')) {
-                        mobileMenu.classList.add('hidden');
+        // Mobile Share Menu
+        const shareBtn = document.getElementById('shareBtn');
+        const mobileShareMenu = document.getElementById('mobileShareMenu');
+        const closeShareMenu = document.getElementById('closeShareMenu');
+        const copyLinkBtn = document.getElementById('copyLinkBtn');
+        
+        shareBtn.addEventListener('click', () => {
+            mobileShareMenu.classList.remove('opacity-0', 'invisible');
+            mobileShareMenu.classList.add('opacity-100', 'visible');
+            mobileShareMenu.querySelector('div').classList.remove('scale-95');
+            mobileShareMenu.querySelector('div').classList.add('scale-100');
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeShareMenu.addEventListener('click', closeShareMenuFunc);
+        
+        mobileShareMenu.addEventListener('click', (e) => {
+            if (e.target === mobileShareMenu) {
+                closeShareMenuFunc();
+            }
+        });
+        
+        function closeShareMenuFunc() {
+            mobileShareMenu.classList.remove('opacity-100', 'visible');
+            mobileShareMenu.classList.add('opacity-0', 'invisible');
+            mobileShareMenu.querySelector('div').classList.remove('scale-100');
+            mobileShareMenu.querySelector('div').classList.add('scale-95');
+            document.body.style.overflow = '';
+        }
+        
+        copyLinkBtn.addEventListener('click', () => {
+            const linkInput = mobileShareMenu.querySelector('input');
+            linkInput.select();
+            document.execCommand('copy');
+            
+            copyLinkBtn.textContent = 'Copied!';
+            setTimeout(() => {
+                copyLinkBtn.textContent = 'Copy';
+            }, 2000);
+        });
+        
+        // Radar Chart
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Installation Speed', 'Disk Efficiency', 'Security', 'Monorepo Support', 'Ecosystem', 'Ease of Use'],
+                datasets: [
+                    {
+                        label: 'pnpm',
+                        data: [95, 98, 90, 85, 75, 80],
+                        backgroundColor: 'rgba(246, 146, 32, 0.2)',
+                        borderColor: 'rgba(246, 146, 32, 1)',
+                        pointBackgroundColor: 'rgba(246, 146, 32, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(246, 146, 32, 1)'
+                    },
+                    {
+                        label: 'npm',
+                        data: [60, 50, 65, 70, 95, 85],
+                        backgroundColor: 'rgba(61, 133, 198, 0.2)',
+                        borderColor: 'rgba(61, 133, 198, 1)',
+                        pointBackgroundColor: 'rgba(61, 133, 198, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(61, 133, 198, 1)'
+                    },
+                    {
+                        label: 'Yarn',
+                        data: [75, 65, 70, 80, 85, 80],
+                        backgroundColor: 'rgba(71, 197, 106, 0.2)',
+                        borderColor: 'rgba(71, 197, 106, 1)',
+                        pointBackgroundColor: 'rgba(71, 197, 106, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(71, 197, 106, 1)'
+                    }
+                ]
+            },
+            options: {
+                elements: {
+                    line: {
+                        borderWidth: 3
+                    }
+                },
+                scales: {
+                    r: {
+                        angleLines: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                        },
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
+                        }
                     }
                 }
-            });
+            }
+        });
+        
+        // Update chart colors when theme changes
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.classList.contains('dark');
+            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            const textColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+            const tickColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+            
+            radarChart.options.scales.r.angleLines.color = gridColor;
+            radarChart.options.scales.r.grid.color = gridColor;
+            radarChart.options.scales.r.pointLabels.color = textColor;
+            radarChart.options.scales.r.ticks.color = tickColor;
+            radarChart.options.plugins.legend.labels.color = textColor;
+            
+            radarChart.update();
+        });
+        
+        // Lazy loading images
+        document.addEventListener("DOMContentLoaded", function() {
+            const lazyImages = [].slice.call(document.querySelectorAll("img"));
+            
+            if ("IntersectionObserver" in window) {
+                let lazyImageObserver = new IntersectionObserver(function(entries, observer) {
+                    entries.forEach(function(entry) {
+                        if (entry.isIntersecting) {
+                            let lazyImage = entry.target;
+                            lazyImage.src = lazyImage.dataset.src || lazyImage.src;
+                            lazyImageObserver.unobserve(lazyImage);
+                        }
+                    });
+                });
+                
+                lazyImages.forEach(function(lazyImage) {
+                    lazyImageObserver.observe(lazyImage);
+                });
+            }
         });
     </script>
-<script type="module" src="/main.js"></script>
 </body>
 </html>
