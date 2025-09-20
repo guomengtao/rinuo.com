@@ -81,6 +81,6 @@ Detai目录文件规范:
 9. 功能元素：返回顶部按钮、收藏按钮（五角星图标，id="bookmarkBtn"）、滚动进度指示器（id="scrollProgress"）、分享功能
 10. 页面优化：原生lazy延迟加载
 11. 底部：邮件订阅（input id="subscribeEmail"，按钮id="subscribeBtn"），仅样式无功能
-12. 代码要求：核心数据硬编码，全英文内容（美式口语），所有数据默认显示，最后通过module方式引入“/main.js”
+12. 代码要求：核心数据硬编码，全英文内容（美式口语），所有数据默认显示，最后通过用声明各式module方式引入“/main.js”
 13. 图片服务：使用类似picsum.photos/800/600?random=2格式
 14. JS要求：完善实现切换风格和分享功能，不使用alert弹窗
