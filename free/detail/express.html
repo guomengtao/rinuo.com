@@ -1,1185 +1,981 @@
-<!DOCTYPE html><html lang="zh-CN"><head>
+<!DOCTYPE html>
+<html lang="en">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Express.js - 快速、开放、极简的 Node.js Web 框架</title>
-    <meta name="description" content="深入了解 Express.js：名字含义、起源、优缺点分析、免费资源及使用方法，以及来自社区的真实评价。">
-    <meta name="keywords" content="Express, Express.js, Node.js, Web框架, 后端开发, JavaScript">
-    <link rel="canonical" href="https://example.com/free/detail/express-js">
-    <meta name="author" content="Web开发资源站">
-    <meta name="robots" content="index, follow">
-    <meta property="og:title" content="Express.js - 极简的 Node.js Web 框架">
-    <meta property="og:description" content="探索 Express.js 的特性、起源和社区评价，了解如何开始使用这个流行的 Node.js 框架。">
-    <meta property="og:type" content="article">
-    <meta property="og:url" content="https://example.com/free/detail/express-js">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Express.js - 快速、开放、极简的 Node.js Web 框架">
-    <meta name="twitter:description" content="深入了解 Express.js：名字含义、起源、优缺点分析、免费资源及使用方法。">
+    <title>Express.js - Fast, Unopinionated, Minimalist Web Framework</title>
+    <meta name="description" content="Discover Express.js: a fast, unopinionated, minimalist web framework for Node.js. Learn about its features, community, and how to get started.">
+    <meta name="keywords" content="Express, Express.js, Node.js, web framework, backend development, JavaScript, API development, middleware">
+    <meta name="author" content="FreeDevTools">
+    <meta property="og:title" content="Express.js - Fast, Unopinionated, Minimalist Web Framework">
+    <meta property="og:description" content="Discover Express.js: a fast, unopinionated, minimalist web framework for Node.js. Learn about its features, community, and how to get started.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rinuo.com/free/detail/express.html">
+    <link rel="canonical" href="https://rinuo.com/free/detail/express.html">
+    
+    <!-- External Resources -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Tailwind Configuration -->
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#007bff',
-                        secondary: '#61dafb',
-                        dark: '#0f172a',
-                        darker: '#020617',
-                        light: '#e2e8f0',
-                        accent: '#8b5cf6'
+                        primary: '#4F46E5', // Indigo for trust and professionalism
+                        secondary: '#10B981', // Green for action and positivity
+                        accent: '#F59E0B', // Amber for attention
+                        dark: {
+                            bg: '#111827',
+                            card: '#1F2937',
+                            text: '#F3F4F6',
+                            border: '#374151'
+                        },
+                        light: {
+                            bg: '#F9FAFB',
+                            card: '#FFFFFF',
+                            text: '#111827',
+                            border: '#E5E7EB'
+                        }
                     },
                     fontFamily: {
                         inter: ['Inter', 'system-ui', 'sans-serif'],
-                        mono: ['Fira Code', 'monospace']
                     },
-                }
-            },
-            darkMode: 'class'
+                },
+            }
         }
     </script>
+    
+    <!-- Custom Utilities -->
     <style type="text/tailwindcss">
         @layer utilities {
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .hero-gradient {
+                background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
             }
-            .bg-grid {
-                background-size: 40px 40px;
-                background-image: 
-                    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-                    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
             }
-            .content-auto {
-                content-visibility: auto;
+            .btn-primary {
+                @apply bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg;
             }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
+            .btn-secondary {
+                @apply bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300;
             }
-            .scrollbar-hide {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
+            .category-card {
+                @apply bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border card-hover;
+            }
+            .text-balance {
+                text-wrap: balance;
             }
         }
     </style>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Progress Indicator -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
-        
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        .reveal {
-            opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease;
-        }
-        
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .comment-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .comment-card:hover {
-            transform: translateY(-5px);
-        }
-        
-        .hero-particles {
-            position: absolute;
+        #scrollProgress {
+            position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-        }
-        
-        .particle {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(97, 218, 251, 0.1);
-            animation: float 10s infinite ease-in-out;
-        }
-        
-        @keyframes float {
-            0%, 100% {
-                transform: translateY(0) rotate(0deg);
-            }
-            50% {
-                transform: translateY(-30px) rotate(10deg);
-            }
-        }
-        
-        .code-block {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .code-block::before {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            100% {
-                left: 100%;
-            }
-        }
-        
-        .bookmark-btn.active {
-            animation: pulse 0.5s;
-        }
-        
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-            }
-            50% {
-                transform: scale(1.2);
-            }
-            100% {
-                transform: scale(1);
-            }
+            height: 4px;
+            background: linear-gradient(to right, #4F46E5, #10B981);
+            z-index: 100;
+            width: 0%;
+            transition: width 0.2s ease;
         }
     </style>
 </head>
-<body class="bg-darker text-light font-inter min-h-screen flex flex-col">
-    <!-- 导航栏 -->
-                   
-                 <header class="sticky top-0 z-50 bg-dark/80 backdrop-blur-md border-b border-gray-800 transition-all duration-300">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <div class="flex items-center">
-                    <a href="/" class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa fa-code text-secondary"></i>
-                        <span>DevResources</span>
-                    </a>
+<body class="font-inter bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text min-h-screen transition-colors duration-300">
+    <!-- Scroll Progress Indicator -->
+    <div id="scrollProgress"></div>
+    
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/95 dark:bg-dark-card/95 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2">
+                    <i class="fa fa-wrench text-primary text-2xl transform rotate-12"></i>
+                    <span class="text-xl font-bold">FreeDevTools</span>
+                </a>
+                
+                <!-- Desktop Navigation -->
+                <div class="hidden md:flex items-center gap-8">
+                    <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Home</a>
+                    <a href="/free" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">Resources</a>
+                    <a href="/about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">About</a>
+                    
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary rounded-full transition-colors" aria-label="Toggle theme">
+                        <i id="theme-icon" class="fa fa-moon-o" aria-hidden="true"></i>
+                    </button>
                 </div>
                 
-                <!-- 面包屑导航 -->
-                <div class="hidden md:flex mx-4 items-center relative">
-    <div class="relative w-64">
-        <input type="text" id="searchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-        <button id="searchBtn" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
-            <i class="fa fa-search"></i>
-        </button>
-    </div>
-    <!-- 搜索结果浮动容器 -->
-    <div id="floating-results" class="absolute z-50 mt-2 w-80 bg-white dark:bg-darker border border-gray-200 dark:border-dark-border rounded-lg shadow-lg overflow-hidden hidden">
-        <div id="searchResults" class="max-h-80 overflow-y-auto">
-            <!-- 搜索结果将在这里动态生成 -->
-        </div>
-    </div>
-</div><nav class="hidden md:flex items-center text-sm text-gray-400">
-                    <a href="/" class="hover:text-secondary transition-colors">首页</a>
-                    <i class="fa fa-chevron-right mx-2 text-xs"></i>
-                    <a href="/free" class="hover:text-secondary transition-colors">资源分类</a>
-                    <i class="fa fa-chevron-right mx-2 text-xs"></i>
-                    <a href="/free/detail/" class="hover:text-secondary transition-colors">资源列表</a>
-                    <i class="fa fa-chevron-right mx-2 text-xs"></i>
-                    <span class="text-secondary">Express.js</span>
-                </nav>
-                
-                <div class="flex items-center gap-4">
-                    <!-- 分享按钮 -->
-                    <div class="relative group">
-                        <button class="p-2 rounded-full hover:bg-gray-800 transition-colors">
-                            <i class="fa fa-share-alt text-gray-400 hover:text-white"></i>
-                        </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-dark border border-gray-800 rounded-lg shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform origin-top-right scale-95 group-hover:scale-100">
-                            <div class="p-3">
-                                <p class="text-sm font-medium mb-2">分享到</p>
-                                <div class="flex gap-2">
-                                    <a href="https://twitter.com/intent/tweet?url=https://example.com/free/detail/express-js&amp;text=Express.js - 快速、开放、极简的 Node.js Web 框架" target="_blank" rel="noopener" class="p-2 rounded-full bg-[#1DA1F2]/10 hover:bg-[#1DA1F2]/20 text-[#1DA1F2] transition-colors">
-                                        <i class="fa fa-twitter"></i>
-                                    </a>
-                                    <a href="https://www.facebook.com/sharer/sharer.php?u=https://example.com/free/detail/express-js" target="_blank" rel="noopener" class="p-2 rounded-full bg-[#1877F2]/10 hover:bg-[#1877F2]/20 text-[#1877F2] transition-colors">
-                                        <i class="fa fa-facebook"></i>
-                                    </a>
-                                    <a href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https://example.com/free/detail/express-js&amp;title=Express.js - 快速、开放、极简的 Node.js Web 框架" target="_blank" rel="noopener" class="p-2 rounded-full bg-[#0A66C2]/10 hover:bg-[#0A66C2]/20 text-[#0A66C2] transition-colors">
-                                        <i class="fa fa-linkedin"></i>
-                                    </a>
-                                    <a href="mailto:?subject=Express.js - 快速、开放、极简的 Node.js Web 框架&amp;body=查看这个资源: https://example.com/free/detail/express-js" class="p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors">
-                                        <i class="fa fa-envelope"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 收藏按钮 -->
-                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-800 transition-colors">
-                        <i class="fa fa-star-o text-gray-400 hover:text-white"></i>
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 dark:text-gray-300" aria-label="Open menu">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Navigation -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 border-t border-light-border dark:border-dark-border pt-4">
+                <div class="flex flex-col gap-4">
+                    <a href="/" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">Home</a>
+                    <a href="/free" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">Resources</a>
+                    <a href="/about.html" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors py-2">About</a>
+                    <button id="mobile-theme-toggle" class="p-2 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary rounded-full transition-colors flex items-center gap-2">
+                        <i id="mobile-theme-icon" class="fa fa-moon-o" aria-hidden="true"></i>
+                        <span>Theme</span>
                     </button>
                 </div>
             </div>
-        <button id="mobileSearchBtn" class="md:hidden text-gray-500 hover:text-primary ml-2">
-    <i class="fa fa-search text-xl"></i>
-</button></div>
-            <!-- 移动端搜索框 (默认隐藏) -->
-        <div class="md:hidden px-4 pb-3 hidden" id="mobileSearchContainer">
-            <div class="relative w-full">
-                <input type="text" id="mobileSearchInput" placeholder="搜索开发资源..." class="w-full bg-gray-100 dark:bg-dark-hover border border-gray-200 dark:border-dark-border rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all">
-                <button id="mobileSearchBtnAction" class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+        </div>
+    </nav>
+
+    <!-- Search Bar -->
+    <div class="sticky top-[69px] z-40 bg-white/95 dark:bg-dark-card/95 backdrop-blur-md border-b border-light-border dark:border-dark-border px-4 py-3">
+        <div class="container mx-auto">
+            <div class="relative">
+                <input type="text" id="searchInput" autocomplete="off" placeholder="Search for tools (e.g., React, VS Code, Express)" 
+                       class="w-full px-6 py-3 pr-40 rounded-lg text-gray-800 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50 shadow-sm transition-all duration-300 dark:bg-dark-bg dark:text-dark-text dark:placeholder-gray-400">
+                <button id="searchButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow">
                     <i class="fa fa-search"></i>
+                    <span class="hidden sm:inline">Search</span>
                 </button>
             </div>
         </div>
-    </header>
+    </div>
 
-    <!-- 英雄区域 -->
-    <section class="relative py-24 overflow-hidden bg-grid">
-        <div class="hero-particles" id="particles-container"></div>
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="max-w-4xl mx-auto text-center">
-                <div class="inline-block mb-6 bg-dark/50 backdrop-blur-sm px-4 py-2 rounded-full border border-gray-800">
-                    <span class="text-secondary text-sm font-medium">Node.js Web 框架</span>
+    <main class="container mx-auto px-4 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="mb-8 text-sm" aria-label="Breadcrumb">
+            <ol class="flex flex-wrap items-center">
+                <li class="flex items-center">
+                    <a href="/" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        <i class="fa fa-home mr-1"></i> Home
+                    </a>
+                    <i class="fa fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                </li>
+                <li class="flex items-center">
+                    <a href="/free" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        Free Resources
+                    </a>
+                    <i class="fa fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                </li>
+                <li class="flex items-center">
+                    <a href="/free/detail" class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">
+                        Resource Details
+                    </a>
+                    <i class="fa fa-chevron-right text-gray-400 mx-2 text-xs"></i>
+                </li>
+                <li class="text-gray-700 dark:text-gray-300 font-medium">Express.js</li>
+            </ol>
+        </nav>
+
+        <!-- Hero Section -->
+        <section class="relative py-16 md:py-24 overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-900 to-purple-900 text-white mb-12">
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute inset-0 bg-grid-pattern"></div>
+            </div>
+            <div class="relative z-10 max-w-4xl mx-auto text-center">
+                <div class="inline-block mb-6 p-3 bg-white/10 backdrop-blur-md rounded-full">
+                    <img src="https://picsum.photos/80/80?random=1" alt="Express.js Logo" class="w-20 h-20 object-cover rounded-full">
                 </div>
                 <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
-                    <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Express.js</span>
+                    <span class="bg-gradient-to-r from-white to-blue-200 text-transparent bg-clip-text">Express.js</span>
                 </h1>
-                <p class="text-xl md:text-2xl text-gray-300 mb-10 leading-relaxed">
-                    快速、开放、极简的 Node.js Web 框架，为构建强大的 Web 应用和 API 提供坚实基础
+                <p class="text-xl md:text-2xl text-blue-100 mb-8 leading-relaxed max-w-3xl mx-auto">
+                    Fast, unopinionated, minimalist web framework for Node.js, providing a solid foundation for building powerful web applications and APIs
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="#getting-started" class="bg-primary hover:bg-primary/90 text-white font-medium px-8 py-3 rounded-lg transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30">
-                        开始使用
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="https://expressjs.com" target="_blank" class="btn-primary flex items-center gap-2">
+                        <i class="fa fa-external-link"></i>
+                        <span>Official Website</span>
                     </a>
-                    <a href="#features" class="bg-transparent border border-gray-700 hover:border-gray-500 text-white font-medium px-8 py-3 rounded-lg transition-all">
-                        了解更多 <i class="fa fa-arrow-right ml-2"></i>
+                    <a href="https://github.com/expressjs/express" target="_blank" class="btn-secondary flex items-center gap-2 bg-white/20 text-white border-white/30 hover:bg-white/30">
+                        <i class="fa fa-github"></i>
+                        <span>GitHub Repository</span>
                     </a>
                 </div>
             </div>
-        </div>
-        
-        <!-- 波浪分隔符 -->
-        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" class="w-full h-[60px] text-dark fill-current">
-                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.11,130.83,141.14,214.81,130.19Z"></path>
-            </svg>
-        </div>
-    </section>
+        </section>
 
-    <!-- 主要内容 -->
-    <main class="flex-grow bg-dark">
-        <!-- 简介部分 -->
-        <section id="features" class="py-20">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto mb-16 text-center reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">关于 Express.js</h2>
-                    <p class="text-gray-400 text-lg">Express 是一个简洁而灵活的 Node.js Web 应用框架，为构建单页、多页和混合 Web 应用提供了强大的功能。</p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-12 items-center">
-                    <div class="reveal">
-                        <h3 class="text-2xl font-semibold mb-4 text-secondary">名字的含义</h3>
-                        <p class="text-gray-300 mb-6">Express 的名称代表了它的核心设计理念：提供快速（express）的 Web 应用开发体验。它旨在让开发者能够快速构建 Web 应用和 API，同时保持代码的简洁和可维护性。</p>
-                        
-                        <h3 class="text-2xl font-semibold mb-4 text-secondary">起源与发展</h3>
-                        <p class="text-gray-300 mb-4">Express 由 TJ Holowaychuk 于 2010 年创建，最初是作为 Node.js 生态系统中一个轻量级的 Web 框架而设计的。</p>
-                        <p class="text-gray-300">它借鉴了 Ruby on Rails 和 Sinatra 等框架的思想，但针对 Node.js 环境进行了优化。如今，Express 已成为最受欢迎的 Node.js Web 框架之一，拥有庞大的社区和丰富的中间件生态系统。</p>
-                    </div>
-                    
-                    <div class="relative reveal">
-                        <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 rounded-xl blur-xl"></div>
-                        <div class="relative bg-darker p-6 rounded-xl border border-gray-800 overflow-hidden code-block">
-                            <pre class="font-mono text-sm text-gray-300 overflow-x-auto scrollbar-hide"><code>// 一个简单的 Express 应用
-const express = require('express');
-const app = express();
-const port = 3000;
-
-app.get('/', (req, res) =&gt; {
-  res.send('Hello World!');
-});
-
-app.listen(port, () =&gt; {
-  console.log(`Example app listening on port ${port}`);
-});</code></pre>
-                            <div class="absolute top-3 right-3 flex gap-2">
-                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 动画展示部分 -->
-        <section class="py-20 bg-darker">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto mb-16 text-center reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Express 工作原理动画展示</h2>
-                    <p class="text-gray-400 text-lg">直观了解 Express 如何处理客户端请求并返回响应</p>
-                </div>
-                
-                <div class="max-w-4xl mx-auto reveal">
-                    <div class="relative bg-dark rounded-xl border border-gray-800 p-6 md:p-10 overflow-hidden">
-                        <div class="flex flex-col md:flex-row items-center justify-between gap-8">
-                            <!-- 客户端 -->
-                            <div class="w-full md:w-1/3 bg-darker p-4 rounded-lg border border-gray-700 text-center">
-                                <div class="w-12 h-12 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fa fa-desktop text-blue-400 text-xl"></i>
-                                </div>
-                                <h3 class="font-medium mb-2">客户端</h3>
-                                <p class="text-sm text-gray-400 mb-4">Web 浏览器或移动应用</p>
-                                <div id="client-action" class="text-xs bg-blue-500/10 text-blue-400 p-2 rounded">
-                                    发送请求
-                                </div>
-                            </div>
-                            
-                            <!-- 箭头动画 -->
-                            <div class="w-full md:w-1/3 flex justify-center">
-                                <div class="relative w-24 h-8">
-                                    <div class="absolute inset-0 flex items-center">
-                                        <div class="h-0.5 w-full bg-gray-700"></div>
-                                    </div>
-                                    <div class="absolute right-0 top-1/2 transform -translate-y-1/2 w-4 h-4 border-t-2 border-r-2 border-primary rotate-45"></div>
-                                    <div id="request-animation" class="absolute left-0 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-primary rounded-full"></div>
-                                </div>
-                            </div>
-                            
-                            <!-- Express 服务器 -->
-                            <div class="w-full md:w-1/3 bg-darker p-4 rounded-lg border border-gray-700 text-center">
-                                <div class="w-12 h-12 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <i class="fa fa-server text-green-400 text-xl"></i>
-                                </div>
-                                <h3 class="font-medium mb-2">Express 服务器</h3>
-                                <p class="text-sm text-gray-400 mb-4">处理请求并返回响应</p>
-                                <div id="server-action" class="text-xs bg-green-500/10 text-green-400 p-2 rounded">
-                                    处理请求
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 中间件流程 -->
-                        <div class="mt-10">
-                            <h4 class="text-center mb-6 text-sm text-gray-400">中间件处理流程</h4>
-                            <div class="flex flex-wrap gap-2 justify-center" id="middleware-flow">
-                                <div class="px-3 py-2 bg-gray-800 rounded text-sm">请求</div>
-                                <div class="px-3 py-2 bg-primary/20 text-primary rounded text-sm">日志中间件</div>
-                                <div class="px-3 py-2 bg-primary/20 text-primary rounded text-sm">解析中间件</div>
-                                <div class="px-3 py-2 bg-primary/20 text-primary rounded text-sm">路由处理</div>
-                                <div class="px-3 py-2 bg-primary/20 text-primary rounded text-sm">业务逻辑</div>
-                                <div class="px-3 py-2 bg-green-500/20 text-green-400 rounded text-sm">响应</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 优缺点分析 -->
-        <section class="py-20">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto mb-16 text-center reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Express.js 的优缺点</h2>
-                    <p class="text-gray-400 text-lg">了解 Express 框架的优势和潜在局限性，帮助你做出更明智的技术选择</p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-12">
-                    <!-- 优点 -->
-                    <div class="bg-darker rounded-xl border border-gray-800 p-8 reveal">
-                        <div class="flex items-center mb-6">
-                            <div class="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center mr-4">
-                                <i class="fa fa-plus text-green-400"></i>
-                            </div>
-                            <h3 class="text-2xl font-semibold">优点</h3>
-                        </div>
-                        
-                        <ul class="space-y-4">
-                            <li class="flex gap-4">
-                                <i class="fa fa-check-circle text-green-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">轻量级和灵活</h4>
-                                    <p class="text-gray-400 text-sm">Express 保持极简设计，只提供核心功能，让开发者可以根据需求自由选择组件。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-check-circle text-green-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">强大的路由系统</h4>
-                                    <p class="text-gray-400 text-sm">提供直观且灵活的路由系统，支持各种 HTTP 方法和路由参数。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-check-circle text-green-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">丰富的中间件生态</h4>
-                                    <p class="text-gray-400 text-sm">拥有大量现成的中间件，可轻松扩展功能，如身份验证、日志记录等。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-check-circle text-green-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">优秀的性能</h4>
-                                    <p class="text-gray-400 text-sm">基于 Node.js 的非阻塞 I/O 模型，适合处理大量并发请求。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-check-circle text-green-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">良好的文档和社区支持</h4>
-                                    <p class="text-gray-400 text-sm">完善的官方文档和活跃的社区，便于开发者学习和解决问题。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-check-circle text-green-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">与前端框架无缝集成</h4>
-                                    <p class="text-gray-400 text-sm">可以轻松与 React、Vue、Angular 等现代前端框架配合使用。</p>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                    
-                    <!-- 缺点 -->
-                    <div class="bg-darker rounded-xl border border-gray-800 p-8 reveal">
-                        <div class="flex items-center mb-6">
-                            <div class="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center mr-4">
-                                <i class="fa fa-minus text-red-400"></i>
-                            </div>
-                            <h3 class="text-2xl font-semibold">缺点</h3>
-                        </div>
-                        
-                        <ul class="space-y-4">
-                            <li class="flex gap-4">
-                                <i class="fa fa-times-circle text-red-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">需要更多手动配置</h4>
-                                    <p class="text-gray-400 text-sm">相比一些全栈框架，Express 需要开发者自行选择和配置更多组件。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-times-circle text-red-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">回调地狱问题</h4>
-                                    <p class="text-gray-400 text-sm">早期版本中容易出现回调嵌套过深的问题，虽然可通过 async/await 缓解。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-times-circle text-red-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">缺乏内置的结构规范</h4>
-                                    <p class="text-gray-400 text-sm">没有强制的项目结构，可能导致团队开发中代码风格不一致。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-times-circle text-red-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">不适合 CPU 密集型任务</h4>
-                                    <p class="text-gray-400 text-sm">基于 Node.js 单线程模型，处理 CPU 密集型任务时性能不佳。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-times-circle text-red-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">学习曲线陡峭</h4>
-                                    <p class="text-gray-400 text-sm">对于新手来说，理解中间件概念和异步编程模式可能有一定难度。</p>
-                                </div>
-                            </li>
-                            <li class="flex gap-4">
-                                <i class="fa fa-times-circle text-red-400 mt-1 flex-shrink-0"></i>
-                                <div>
-                                    <h4 class="font-medium mb-1">安全性需要额外配置</h4>
-                                    <p class="text-gray-400 text-sm">核心框架不包含安全特性，需要通过中间件（如 Helmet）来增强安全性。</p>
-                                </div>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 免费资源和使用方法 -->
-        <section id="getting-started" class="py-20 bg-darker">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto mb-16 text-center reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">免费资源与使用方法</h2>
-                    <p class="text-gray-400 text-lg">探索 Express.js 的免费资源，学习如何快速开始使用这个强大的框架</p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-12">
-                    <!-- 免费资源 -->
-                    <div class="reveal">
-                        <h3 class="text-2xl font-semibold mb-6 text-secondary">免费资源与服务</h3>
-                        
-                        <div class="space-y-6">
-                            <a href="https://expressjs.com/" target="_blank" rel="noopener" class="block group">
-                                <div class="bg-dark rounded-lg border border-gray-800 p-5 hover:border-primary/50 transition-colors">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <h4 class="font-medium group-hover:text-primary transition-colors">官方文档</h4>
-                                        <i class="fa fa-external-link text-gray-500 group-hover:text-primary transition-colors"></i>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">全面的官方文档，包含教程、API 参考和示例代码。</p>
-                                </div>
-                            </a>
-                            
-                            <a href="https://github.com/expressjs/express" target="_blank" rel="noopener" class="block group">
-                                <div class="bg-dark rounded-lg border border-gray-800 p-5 hover:border-primary/50 transition-colors">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <h4 class="font-medium group-hover:text-primary transition-colors">GitHub 仓库</h4>
-                                        <i class="fa fa-external-link text-gray-500 group-hover:text-primary transition-colors"></i>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">获取源代码、提交问题和参与社区贡献。</p>
-                                </div>
-                            </a>
-                            
-                            <a href="https://expressjs.com/en/resources/middleware.html" target="_blank" rel="noopener" class="block group">
-                                <div class="bg-dark rounded-lg border border-gray-800 p-5 hover:border-primary/50 transition-colors">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <h4 class="font-medium group-hover:text-primary transition-colors">中间件目录</h4>
-                                        <i class="fa fa-external-link text-gray-500 group-hover:text-primary transition-colors"></i>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">丰富的第三方中间件资源，扩展 Express 功能。</p>
-                                </div>
-                            </a>
-                            
-                            <a href="https://www.freecodecamp.org/news/tag/express/" target="_blank" rel="noopener" class="block group">
-                                <div class="bg-dark rounded-lg border border-gray-800 p-5 hover:border-primary/50 transition-colors">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <h4 class="font-medium group-hover:text-primary transition-colors">FreeCodeCamp 教程</h4>
-                                        <i class="fa fa-external-link text-gray-500 group-hover:text-primary transition-colors"></i>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">免费的 Express.js 教程和实战项目。</p>
-                                </div>
-                            </a>
-                            
-                            <a href="https://stackoverflow.com/questions/tagged/express.js" target="_blank" rel="noopener" class="block group">
-                                <div class="bg-dark rounded-lg border border-gray-800 p-5 hover:border-primary/50 transition-colors">
-                                    <div class="flex justify-between items-start mb-3">
-                                        <h4 class="font-medium group-hover:text-primary transition-colors">Stack Overflow</h4>
-                                        <i class="fa fa-external-link text-gray-500 group-hover:text-primary transition-colors"></i>
-                                    </div>
-                                    <p class="text-gray-400 text-sm">解决 Express 相关问题的社区问答平台。</p>
-                                </div>
-                            </a>
-                        </div>
-                    </div>
-                    
-                    <!-- 使用方法 -->
-                    <div class="reveal">
-                        <h3 class="text-2xl font-semibold mb-6 text-secondary">快速开始使用</h3>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <h4 class="font-medium mb-3">1. 安装 Node.js</h4>
-                                <p class="text-gray-400 text-sm mb-4">Express 基于 Node.js，首先需要安装 Node.js（包含 npm）。</p>
-                                <a href="https://nodejs.org/" target="_blank" rel="noopener" class="text-primary hover:underline text-sm">从官网下载 Node.js</a>
-                            </div>
-                            
-                            <div>
-                                <h4 class="font-medium mb-3">2. 创建项目并安装 Express</h4>
-                                <div class="bg-dark rounded-lg border border-gray-800 p-4 mb-4 overflow-x-auto scrollbar-hide">
-                                    <pre class="font-mono text-sm text-gray-300"><code>mkdir my-express-app
-cd my-express-app
-npm init -y
-npm install express</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="font-medium mb-3">3. 创建第一个 Express 应用</h4>
-                                <p class="text-gray-400 text-sm mb-3">创建 app.js 文件，添加以下代码：</p>
-                                <div class="bg-dark rounded-lg border border-gray-800 p-4 mb-4 overflow-x-auto scrollbar-hide">
-                                    <pre class="font-mono text-sm text-gray-300"><code>const express = require('express');
-const app = express();
-const port = 3000;
-
-app.get('/', (req, res) =&gt; {
-  res.send('Hello Express!');
-});
-
-app.listen(port, () =&gt; {
-  console.log(`应用运行在 http://localhost:${port}`);
-});</code></pre>
-                                </div>
-                            </div>
-                            
-                            <div>
-                                <h4 class="font-medium mb-3">4. 运行应用</h4>
-                                <div class="bg-dark rounded-lg border border-gray-800 p-4 mb-4 overflow-x-auto scrollbar-hide">
-                                    <pre class="font-mono text-sm text-gray-300"><code>node app.js</code></pre>
-                                </div>
-                                <p class="text-gray-400 text-sm">打开浏览器访问 <code class="bg-gray-800 px-1 py-0.5 rounded text-xs">http://localhost:3000</code> 查看结果。</p>
-                            </div>
-                            
-                            <div>
-                                <h4 class="font-medium mb-3">5. 学习更多</h4>
-                                <p class="text-gray-400 text-sm">查看 <a href="https://expressjs.com/en/starter/installing.html" target="_blank" rel="noopener" class="text-primary hover:underline">官方入门指南</a> 学习路由、中间件等高级概念。</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 社区评论 -->
-        <section class="py-20">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto mb-16 text-center reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">社区真实评价</h2>
-                    <p class="text-gray-400 text-lg">来自全球开发者对 Express.js 的真实体验和评价</p>
-                </div>
-                
-                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="comments-container">
-                    <!-- 评论会通过 JavaScript 动态生成 -->
-                </div>
-                
-                <!-- 加载更多按钮 -->
-                <div class="mt-12 text-center reveal">
-                    <button id="load-more" class="bg-transparent border border-gray-700 hover:border-gray-500 text-white font-medium px-6 py-2 rounded-lg transition-all">
-                        加载更多评论 <i class="fa fa-refresh ml-2"></i>
-                    </button>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 统计数据 -->
-        <section class="py-20 bg-darker">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto mb-16 text-center reveal">
-                    <h2 class="text-3xl md:text-4xl font-bold mb-6">Express.js 受欢迎程度</h2>
-                    <p class="text-gray-400 text-lg">了解 Express 在开发者社区中的使用情况和受欢迎程度</p>
-                </div>
-                
-                <div class="grid md:grid-cols-2 gap-12 items-center">
-                    <div class="reveal">
-                        <div class="bg-dark rounded-xl border border-gray-800 p-6 h-full">
-                            <h3 class="text-xl font-semibold mb-6">Web 框架使用比例</h3>
-                            <div class="h-80">
-                                <canvas id="frameworks-chart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="reveal">
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="bg-dark rounded-xl border border-gray-800 p-6 text-center">
-                                <div class="text-4xl font-bold text-primary mb-2">60K+</div>
-                                <div class="text-gray-400 text-sm">GitHub Stars</div>
-                            </div>
-                            <div class="bg-dark rounded-xl border border-gray-800 p-6 text-center">
-                                <div class="text-4xl font-bold text-primary mb-2">24M+</div>
-                                <div class="text-gray-400 text-sm">每周 npm 下载量</div>
-                            </div>
-                            <div class="bg-dark rounded-xl border border-gray-800 p-6 text-center">
-                                <div class="text-4xl font-bold text-primary mb-2">13Y+</div>
-                                <div class="text-gray-400 text-sm">稳定发展年限</div>
-                            </div>
-                            <div class="bg-dark rounded-xl border border-gray-800 p-6 text-center">
-                                <div class="text-4xl font-bold text-primary mb-2">10K+</div>
-                                <div class="text-gray-400 text-sm">第三方中间件</div>
-                            </div>
-                        </div>
-                        
-                        <div class="mt-6 bg-dark rounded-xl border border-gray-800 p-6">
-                            <h3 class="text-lg font-semibold mb-4">开发者满意度</h3>
-                            <div class="flex items-center mb-2">
-                                <div class="w-full bg-gray-700 rounded-full h-2.5">
-                                    <div class="bg-gradient-to-r from-primary to-secondary h-2.5 rounded-full" style="width: 87%"></div>
-                                </div>
-                                <span class="ml-4 text-sm font-medium">87%</span>
-                            </div>
-                            <p class="text-gray-400 text-sm">根据 2023 年 Stack Overflow 开发者调查</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-        
-        <!-- 邮件订阅 -->
-        <section class="py-20">
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="max-w-3xl mx-auto bg-gradient-to-r from-dark to-darker rounded-2xl border border-gray-800 p-8 md:p-12 shadow-xl reveal">
-                    <div class="text-center mb-8">
-                        <h2 class="text-2xl md:text-3xl font-bold mb-4">订阅 Express 相关更新</h2>
-                        <p class="text-gray-400">获取最新的 Express 教程、技巧和社区动态</p>
-                    </div>
-                    
-                    <form id="subscription-form" class="space-y-4">
-                        <div>
-                            <input type="email" id="subscribeEmail" placeholder="输入您的邮箱地址" class="w-full bg-darker border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-colors" required="">
-                        </div>
-                        <button type="submit" id="subscribeBtn" class="w-full bg-primary hover:bg-primary/90 text-white font-medium px-6 py-3 rounded-lg transition-all shadow-lg shadow-primary/20 hover:shadow-primary/30">
-                            立即订阅
-                        </button>
-                        <p id="subscriptionMessage" class="text-sm text-center hidden"></p>
-                    </form>
-                    
-                    <p class="text-gray-500 text-xs text-center mt-4">
-                        订阅即表示您同意接收我们的邮件通讯。您可以随时取消订阅。
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Content -->
+            <div class="lg:col-span-2 space-y-8">
+                <!-- Overview Section -->
+                <section class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                        <i class="fa fa-info-circle text-primary mr-3"></i>
+                        Overview
+                    </h2>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+                        Express.js is a minimal and flexible Node.js web application framework that provides a robust set of features for web and mobile applications.
+                        It's designed for building web applications and APIs with ease, emphasizing simplicity, speed, and flexibility.
                     </p>
+                    <p class="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">
+                        Express provides a thin layer of fundamental web application features, without obscuring Node.js features you know and love. It's the most widely used web framework for Node.js and serves as the foundation for many other Node.js frameworks.
+                    </p>
+                    
+                    <!-- Key Statistics -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">62.5k</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">GitHub Stars</div>
+                        </div>
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">1.2k</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Open Issues</div>
+                        </div>
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">14y</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Since 2009</div>
+                        </div>
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg text-center">
+                            <div class="text-3xl font-bold text-primary mb-1">100%</div>
+                            <div class="text-sm text-gray-500 dark:text-gray-400">Free & Open Source</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Features Section -->
+                <section class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                        <i class="fa fa-star text-primary mr-3"></i>
+                        Key Features
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary rounded-lg">
+                                <i class="fa fa-rocket text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Minimalist Design</h3>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm">Provides robust features with a minimal footprint, allowing developers to build applications with the flexibility they need.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary rounded-lg">
+                                <i class="fa fa-plug text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Middleware Ecosystem</h3>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm">Extensive middleware support for handling requests, responses, and everything in between.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary rounded-lg">
+                                <i class="fa fa-sitemap text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Routing</h3>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm">Robust routing system for defining application endpoints and handling HTTP methods.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary rounded-lg">
+                                <i class="fa fa-paint-brush text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Template Engines</h3>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm">Support for various template engines to generate dynamic HTML content.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary rounded-lg">
+                                <i class="fa fa-shield text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Error Handling</h3>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm">Built-in error handling mechanisms for robust application development.</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center bg-primary/10 dark:bg-primary/20 text-primary rounded-lg">
+                                <i class="fa fa-tachometer text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-semibold mb-2">Performance</h3>
+                                <p class="text-gray-700 dark:text-gray-300 text-sm">Optimized for high performance and scalability, suitable for production environments.</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- History and Origin -->
+                <section class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                        <i class="fa fa-history text-primary mr-3"></i>
+                        History & Origin
+                    </h2>
+                    <div class="space-y-4">
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            Express.js was created by TJ Holowaychuk and first released in November 2009. It was developed as a minimalist web framework for Node.js, building on the features of Connect middleware while providing robust routing and utilities for web applications.
+                        </p>
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            Originally inspired by Sinatra, a Ruby web framework known for its simplicity and flexibility, Express was designed to bring similar principles to the Node.js ecosystem. Over time, it has become the most widely used web framework for Node.js, powering countless web applications and APIs worldwide.
+                        </p>
+                        <p class="text-gray-700 dark:text-gray-300 leading-relaxed">
+                            In 2014, Holowaychuk announced he was stepping back from maintaining Express, and the framework transitioned to community leadership under the Node.js Foundation (now the OpenJS Foundation). This ensured the continued development and maintenance of Express as a critical piece of the Node.js ecosystem.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Getting Started -->
+                <section class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                        <i class="fa fa-play-circle text-primary mr-3"></i>
+                        Getting Started
+                    </h2>
+                    <div class="space-y-6">
+                        <p class="text-gray-700 dark:text-gray-300">
+                            Getting started with Express.js is straightforward. Follow these steps to create your first Express application:
+                        </p>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg border border-light-border dark:border-dark-border">
+                            <h3 class="font-semibold mb-3 flex items-center text-gray-800 dark:text-gray-200">
+                                <i class="fa fa-terminal mr-2 text-primary"></i>
+                                1. Install Node.js and npm
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">First, ensure you have Node.js and npm installed on your machine.</p>
+                            <div class="bg-gray-900 text-gray-100 p-3 rounded-md font-mono text-sm overflow-x-auto">
+                                node -v<br>
+                                npm -v
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg border border-light-border dark:border-dark-border">
+                            <h3 class="font-semibold mb-3 flex items-center text-gray-800 dark:text-gray-200">
+                                <i class="fa fa-folder-open mr-2 text-primary"></i>
+                                2. Create a new project
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Create a new directory and initialize a Node.js project.</p>
+                            <div class="bg-gray-900 text-gray-100 p-3 rounded-md font-mono text-sm overflow-x-auto">
+                                mkdir my-express-app<br>
+                                cd my-express-app<br>
+                                npm init -y
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg border border-light-border dark:border-dark-border">
+                            <h3 class="font-semibold mb-3 flex items-center text-gray-800 dark:text-gray-200">
+                                <i class="fa fa-download mr-2 text-primary"></i>
+                                3. Install Express
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Add Express as a dependency to your project.</p>
+                            <div class="bg-gray-900 text-gray-100 p-3 rounded-md font-mono text-sm overflow-x-auto">
+                                npm install express
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg border border-light-border dark:border-dark-border">
+                            <h3 class="font-semibold mb-3 flex items-center text-gray-800 dark:text-gray-200">
+                                <i class="fa fa-file-code-o mr-2 text-primary"></i>
+                                4. Create your first Express app
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Create an app.js file with the following code:</p>
+                            <div class="bg-gray-900 text-gray-100 p-3 rounded-md font-mono text-sm overflow-x-auto">
+                                const express = require('express');<br>
+                                const app = express();<br>
+                                const port = 3000;<br><br>
+                                
+                                app.get('/', (req, res) => {
+                                &nbsp;&nbsp;res.send('Hello World!');<br>
+                                });<br><br>
+                                
+                                app.listen(port, () => {
+                                &nbsp;&nbsp;console.log(`Example app listening on port ${port}`);
+                                });
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-4 rounded-lg border border-light-border dark:border-dark-border">
+                            <h3 class="font-semibold mb-3 flex items-center text-gray-800 dark:text-gray-200">
+                                <i class="fa fa-play mr-2 text-primary"></i>
+                                5. Run your app
+                            </h3>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Start your Express server:</p>
+                            <div class="bg-gray-900 text-gray-100 p-3 rounded-md font-mono text-sm overflow-x-auto">
+                                node app.js
+                            </div>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-3">Visit http://localhost:3000 in your browser to see your app in action!</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Pros and Cons -->
+                <section class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                        <i class="fa fa-balance-scale text-primary mr-3"></i>
+                        Pros & Cons
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Pros -->
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-semibold flex items-center text-secondary">
+                                <i class="fa fa-thumbs-up mr-2"></i>
+                                Advantages
+                            </h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Minimalist design that doesn't impose too many constraints</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Extensive middleware ecosystem for customization</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Excellent performance and scalability</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Mature and stable with a large community</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-check-circle text-secondary mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Perfect for building RESTful APIs</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Cons -->
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-semibold flex items-center text-red-500">
+                                <i class="fa fa-thumbs-down mr-2"></i>
+                                Limitations
+                            </h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-start">
+                                    <i class="fa fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Minimalist approach means you need to make more decisions</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Less structure compared to opinionated frameworks</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Requires additional libraries for complex features</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Can lead to inconsistent codebases on large projects</span>
+                                </li>
+                                <li class="flex items-start">
+                                    <i class="fa fa-exclamation-circle text-red-500 mt-1 mr-2"></i>
+                                    <span class="text-gray-700 dark:text-gray-300">Learning curve for best practices and middleware selection</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Community Reviews -->
+                <section class="bg-light-card dark:bg-dark-card p-6 md:p-8 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h2 class="text-2xl md:text-3xl font-bold mb-6 flex items-center">
+                        <i class="fa fa-comments text-primary mr-3"></i>
+                        Community Reviews
+                    </h2>
+                    <div class="space-y-6">
+                        <div class="bg-light-bg dark:bg-dark-bg p-6 rounded-lg border border-light-border dark:border-dark-border">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/64/64?random=2" alt="User Avatar" class="w-12 h-12 rounded-full mr-4">
+                                <div>
+                                    <h4 class="font-semibold">Sarah Johnson</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Senior Full-Stack Developer</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 italic mb-3">
+                                "Express is my go-to framework for Node.js development. Its flexibility and middleware ecosystem make it perfect for both small and large projects. I love how it doesn't impose too many opinions but still provides all the tools I need."
+                            </p>
+                            <div class="flex text-yellow-400">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-6 rounded-lg border border-light-border dark:border-dark-border">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/64/64?random=3" alt="User Avatar" class="w-12 h-12 rounded-full mr-4">
+                                <div>
+                                    <h4 class="font-semibold">Michael Chen</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">API Architect</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 italic mb-3">
+                                "I've been using Express for building RESTful APIs for years, and it's consistently delivered. The routing system is intuitive, and the performance is excellent. The only downside is that you need to carefully select middleware for production applications."
+                            </p>
+                            <div class="flex text-yellow-400">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-half-o"></i>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-light-bg dark:bg-dark-bg p-6 rounded-lg border border-light-border dark:border-dark-border">
+                            <div class="flex items-center mb-4">
+                                <img src="https://picsum.photos/64/64?random=4" alt="User Avatar" class="w-12 h-12 rounded-full mr-4">
+                                <div>
+                                    <h4 class="font-semibold">Emily Rodriguez</h4>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">Node.js Developer</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700 dark:text-gray-300 italic mb-3">
+                                "As someone who came from more opinionated frameworks, Express was a bit of an adjustment at first. But once I understood how to structure my applications properly, I fell in love with the flexibility. The community support is fantastic!"
+                            </p>
+                            <div class="flex text-yellow-400">
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star"></i>
+                                <i class="fa fa-star-o"></i>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- Sidebar -->
+            <div class="space-y-8">
+                <!-- Floating Action Buttons -->
+                <div class="sticky top-[130px] space-y-4">
+                    <!-- Share Button -->
+                    <button id="shareBtn" class="w-full flex items-center justify-center gap-2 bg-light-card dark:bg-dark-card hover:bg-primary hover:text-white text-light-text dark:text-dark-text px-4 py-3 rounded-xl border border-light-border dark:border-dark-border transition-colors duration-300">
+                        <i class="fa fa-share-alt"></i>
+                        <span>Share</span>
+                    </button>
+                    
+                    <!-- Bookmark Button -->
+                    <button id="bookmarkBtn" class="w-full flex items-center justify-center gap-2 bg-light-card dark:bg-dark-card hover:bg-primary hover:text-white text-light-text dark:text-dark-text px-4 py-3 rounded-xl border border-light-border dark:border-dark-border transition-colors duration-300">
+                        <i id="bookmarkIcon" class="fa fa-star-o"></i>
+                        <span>Bookmark</span>
+                    </button>
+                    
+                    <!-- Documentation Link -->
+                    <a href="https://expressjs.com/en/starter/installing.html" target="_blank" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white px-4 py-3 rounded-xl transition-colors duration-300">
+                        <i class="fa fa-book"></i>
+                        <span>Documentation</span>
+                    </a>
+                </div>
+                
+                <!-- Stats Radar Chart -->
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Performance Metrics</h3>
+                    <div class="w-full h-64">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Technology Stack -->
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Technology Stack</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">JavaScript (Node.js)</span>
+                            <i class="fa fa-code text-primary"></i>
+                        </li>
+                        <li class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">HTTP Server</span>
+                            <i class="fa fa-server text-primary"></i>
+                        </li>
+                        <li class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Middleware Architecture</span>
+                            <i class="fa fa-plug text-primary"></i>
+                        </li>
+                        <li class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Routing System</span>
+                            <i class="fa fa-sitemap text-primary"></i>
+                        </li>
+                        <li class="flex items-center justify-between">
+                            <span class="text-gray-700 dark:text-gray-300">Template Engines</span>
+                            <i class="fa fa-file-code-o text-primary"></i>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Recent Updates -->
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Recent Updates</h3>
+                    <div class="space-y-4">
+                        <div class="border-b border-light-border dark:border-dark-border pb-4">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">May 2023</span>
+                            <p class="text-gray-700 dark:text-gray-300 font-medium">Express.js 4.18.2 Released</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Bug fixes and security updates</p>
+                        </div>
+                        <div class="border-b border-light-border dark:border-dark-border pb-4">
+                            <span class="text-sm text-gray-500 dark:text-gray-400">February 2023</span>
+                            <p class="text-gray-700 dark:text-gray-300 font-medium">Express.js 4.18.1 Released</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Performance improvements</p>
+                        </div>
+                        <div>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">April 2021</span>
+                            <p class="text-gray-700 dark:text-gray-300 font-medium">Express.js 4.17.1 Released</p>
+                            <p class="text-sm text-gray-600 dark:text-gray-400">Security fixes and dependency updates</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Related Resources -->
+                <div class="bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+                    <h3 class="text-xl font-bold mb-4">Related Resources</h3>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="/free/detail/nodejs.html" class="flex items-center justify-between text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                <span>Node.js</span>
+                                <i class="fa fa-arrow-right text-xs"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/free/detail/nestjs.html" class="flex items-center justify-between text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                <span>NestJS</span>
+                                <i class="fa fa-arrow-right text-xs"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/free/detail/fastapi.html" class="flex items-center justify-between text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                <span>FastAPI</span>
+                                <i class="fa fa-arrow-right text-xs"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/free/detail/koa.html" class="flex items-center justify-between text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                <span>Koa.js</span>
+                                <i class="fa fa-arrow-right text-xs"></i>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/free/detail/hapi.html" class="flex items-center justify-between text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors">
+                                <span>Hapi.js</span>
+                                <i class="fa fa-arrow-right text-xs"></i>
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
-        </section>
+        </div>
     </main>
 
-    <!-- 页脚 -->
-    <footer class="bg-darker border-t border-gray-800 pt-16 pb-8">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-                <div>
-                    <a href="/" class="text-xl font-bold text-white flex items-center gap-2 mb-4">
-                        <i class="fa fa-code text-secondary"></i>
-                        <span>DevResources</span>
+    <!-- Back to Top Button -->
+    <button id="backToTopBtn" class="fixed bottom-8 right-8 bg-primary text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90 z-50">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 dark:bg-dark-card border-t border-light-border dark:border-dark-border py-12 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <!-- Logo and Description -->
+                <div class="md:col-span-1">
+                    <a href="/" class="flex items-center gap-2 mb-4">
+                        <i class="fa fa-wrench text-primary text-2xl transform rotate-12"></i>
+                        <span class="text-xl font-bold">FreeDevTools</span>
                     </a>
-                    <p class="text-gray-400 text-sm mb-6">
-                        发现最佳的开发资源、框架和工具，助力您的项目开发。
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                        Your source for free development resources and tools.
                     </p>
-                    <div class="flex gap-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-twitter"></i>
+                    <div class="flex space-x-4">
+                        <a href="https://github.com" target="_blank" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-github text-xl"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-github"></i>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-twitter text-xl"></i>
                         </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-linkedin"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-youtube-play"></i>
+                        <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-linkedin text-xl"></i>
                         </a>
                     </div>
                 </div>
                 
+                <!-- Quick Links -->
                 <div>
-                    <h4 class="font-semibold text-white mb-4">框架资源</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Node.js</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">React</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Vue</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Angular</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-white transition-colors">Django</a></li>
+                    <h4 class="text-lg font-semibold mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Home</a></li>
+                        <li><a href="/free" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Resources</a></li>
+                        <li><a href="/about.html" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">About Us</a></li>
+                        <li><a href="/sitemap" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Sitemap</a></li>
                     </ul>
                 </div>
                 
+                <!-- Categories -->
                 <div>
-                    <h4 class="font-semibold text-white mb-4">快速链接</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">首页</a></li>
-                        <li><a href="/free" class="text-gray-400 hover:text-white transition-colors">免费资源</a></li>
-                        <li><a href="/tutorials" class="text-gray-400 hover:text-white transition-colors">教程</a></li>
-                        <li><a href="/news" class="text-gray-400 hover:text-white transition-colors">开发资讯</a></li>
-                        <li><a href="/about" class="text-gray-400 hover:text-white transition-colors">关于我们</a></li>
+                    <h4 class="text-lg font-semibold mb-4">Categories</h4>
+                    <ul class="space-y-2">
+                        <li><a href="/free/frontend.html" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Frontend</a></li>
+                        <li><a href="/free/backend.html" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">Backend</a></li>
+                        <li><a href="/free/devops.html" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">DevOps</a></li>
+                        <li><a href="/free/ai-tools.html" class="text-gray-600 dark:text-gray-400 hover:text-primary transition-colors">AI Tools</a></li>
                     </ul>
                 </div>
                 
+                <!-- Newsletter -->
                 <div>
-                    <h4 class="font-semibold text-white mb-4">法律信息</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="/about#privacy" class="text-gray-400 hover:text-white transition-colors">隐私政策</a></li>
-                        <li><a href="/terms" class="text-gray-400 hover:text-white transition-colors">使用条款</a></li>
-                        <li><a href="/sitemap" class="text-gray-400 hover:text-white transition-colors">网站地图</a></li>
-                        <li><a href="/contact" class="text-gray-400 hover:text-white transition-colors">联系我们</a></li>
-                    </ul>
+                    <h4 class="text-lg font-semibold mb-4">Stay Updated</h4>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                        Subscribe to our newsletter for the latest tools and resources.
+                    </p>
+                    <form class="space-y-3">
+                        <div>
+                            <input type="email" id="subscribeEmail" placeholder="Your email address" class="w-full px-4 py-3 rounded-lg border border-light-border dark:border-dark-border focus:outline-none focus:ring-2 focus:ring-primary/50 bg-white dark:bg-dark-bg text-light-text dark:text-dark-text">
+                        </div>
+                        <button type="button" id="subscribeBtn" class="w-full bg-primary hover:bg-primary/90 text-white px-4 py-3 rounded-lg transition-colors">
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 pt-8">
-                <div class="flex flex-col md:flex-row justify-between items-center">
-                    <p class="text-gray-500 text-sm mb-4 md:mb-0">
-                        © 2023 DevResources. 保留所有权利。
-                    </p>
-                    <div class="flex gap-6">
-                        <a href="/sitemap" class="text-gray-500 hover:text-gray-300 text-sm transition-colors">网站地图</a>
-                        <a href="/about#privacy" class="text-gray-500 hover:text-gray-300 text-sm transition-colors">隐私政策</a>
-                        <a href="/terms" class="text-gray-500 hover:text-gray-300 text-sm transition-colors">使用条款</a>
-                    </div>
-                </div>
+            <div class="border-t border-light-border dark:border-dark-border mt-8 pt-8 text-center text-gray-600 dark:text-gray-400">
+                <p>&copy; 2023 FreeDevTools. All rights reserved.</p>
             </div>
         </div>
     </footer>
-    
-    <!-- 收藏列表（默认隐藏） -->
-    <div id="bookmarkList" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-end transform translate-x-full transition-transform duration-300">
-        <div class="bg-dark w-full max-w-md h-full overflow-y-auto border-l border-gray-800">
-            <div class="p-6 border-b border-gray-800">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold">我的收藏</h3>
-                    <button id="closeBookmarkList" class="text-gray-400 hover:text-white">
-                        <i class="fa fa-times"></i>
-                    </button>
-                </div>
-                <p class="text-gray-400 text-sm">查看和管理您收藏的资源</p>
-            </div>
-            <div class="p-6" id="bookmarks-container">
-                <!-- 收藏内容将通过 JavaScript 动态显示 -->
-                <div class="text-center text-gray-400 py-12">
-                    <i class="fa fa-star-o text-4xl mb-4"></i>
-                    <p>您还没有收藏任何资源</p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <script type="module" src="/main.js"></script>
+    <!-- JavaScript -->
     <script>
-        // 创建粒子效果
-        function createParticles() {
-            const container = document.getElementById('particles-container');
-            const particleCount = 50;
-            
-            for (let i = 0; i < particleCount; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                
-                // 随机大小和位置
-                const size = Math.random() * 10 + 5;
-                particle.style.width = `${size}px`;
-                particle.style.height = `${size}px`;
-                particle.style.left = `${Math.random() * 100}%`;
-                particle.style.top = `${Math.random() * 100}%`;
-                particle.style.animationDelay = `${Math.random() * 10}s`;
-                particle.style.animationDuration = `${Math.random() * 10 + 10}s`;
-                
-                container.appendChild(particle);
-            }
+        // Theme Toggle Functionality
+        const themeToggle = document.getElementById('theme-toggle');
+        const mobileThemeToggle = document.getElementById('mobile-theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const mobileThemeIcon = document.getElementById('mobile-theme-icon');
+        
+        // Apply saved theme or default to light mode
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+        updateThemeIcon();
+        
+        // Toggle theme function
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcon();
         }
         
-        // 滚动显示动画
-        function revealOnScroll() {
-            const reveals = document.querySelectorAll('.reveal');
-            
-            for (let i = 0; i < reveals.length; i++) {
-                const windowHeight = window.innerHeight;
-                const elementTop = reveals[i].getBoundingClientRect().top;
-                const elementVisible = 150;
-                
-                if (elementTop < windowHeight - elementVisible) {
-                    reveals[i].classList.add('active');
-                }
-            }
+        // Update icon based on theme
+        function updateThemeIcon() {
+            const isDark = document.documentElement.classList.contains('dark');
+            themeIcon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
+            mobileThemeIcon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
         }
         
-        // 请求动画
-        function animateRequest() {
-            const requestElement = document.getElementById('request-animation');
-            const clientAction = document.getElementById('client-action');
-            const serverAction = document.getElementById('server-action');
+        // Add event listeners for theme toggle
+        themeToggle.addEventListener('click', toggleTheme);
+        mobileThemeToggle.addEventListener('click', toggleTheme);
+        
+        // Mobile Menu Toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Back to Top Button
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+            }
             
-            setInterval(() => {
-                // 重置动画
-                requestElement.style.transition = 'none';
-                requestElement.style.left = '0';
-                clientAction.textContent = '发送请求';
-                serverAction.textContent = '等待请求';
-                
-                setTimeout(() => {
-                    // 开始动画
-                    requestElement.style.transition = 'left 1.5s ease-in-out';
-                    requestElement.style.left = 'calc(100% - 7px)';
-                    clientAction.textContent = '请求已发送';
-                    
-                    // 服务器响应
+            // Update scroll progress indicator
+            const scrollProgress = document.getElementById('scrollProgress');
+            const totalHeight = document.body.scrollHeight - window.innerHeight;
+            const progress = (window.scrollY / totalHeight) * 100;
+            scrollProgress.style.width = `${progress}%`;
+        });
+        
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Bookmark functionality
+        const bookmarkBtn = document.getElementById('bookmarkBtn');
+        const bookmarkIcon = document.getElementById('bookmarkIcon');
+        
+        // Check if bookmarked
+        const isBookmarked = localStorage.getItem('bookmark-express') === 'true';
+        updateBookmarkIcon();
+        
+        function toggleBookmark() {
+            const currentState = localStorage.getItem('bookmark-express') === 'true';
+            localStorage.setItem('bookmark-express', !currentState);
+            updateBookmarkIcon();
+            
+            // Show feedback
+            bookmarkBtn.classList.add('bg-secondary', 'text-white');
+            bookmarkBtn.classList.remove('bg-light-card', 'dark:bg-dark-card');
+            setTimeout(() => {
+                bookmarkBtn.classList.remove('bg-secondary', 'text-white');
+                bookmarkBtn.classList.add('bg-light-card', 'dark:bg-dark-card');
+            }, 1000);
+        }
+        
+        function updateBookmarkIcon() {
+            const isBookmarked = localStorage.getItem('bookmark-express') === 'true';
+            bookmarkIcon.className = isBookmarked ? 'fa fa-star' : 'fa fa-star-o';
+        }
+        
+        bookmarkBtn.addEventListener('click', toggleBookmark);
+        
+        // Share functionality
+        const shareBtn = document.getElementById('shareBtn');
+        
+        shareBtn.addEventListener('click', () => {
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Express.js - Fast, Unopinionated, Minimalist Web Framework',
+                    url: 'https://rinuo.com/free/detail/express.html'
+                }).then(() => {
+                    // Show success feedback
+                    shareBtn.classList.add('bg-secondary', 'text-white');
                     setTimeout(() => {
-                        serverAction.textContent = '处理中...';
-                        
-                        setTimeout(() => {
-                            serverAction.textContent = '响应已发送';
-                        }, 500);
+                        shareBtn.classList.remove('bg-secondary', 'text-white');
                     }, 1000);
-                }, 50);
-            }, 4000);
-        }
-        
-        // 中间件动画
-        function animateMiddleware() {
-            const middlewareItems = document.querySelectorAll('#middleware-flow > div');
-            let index = 0;
-            
-            setInterval(() => {
-                // 重置所有项
-                middlewareItems.forEach(item => {
-                    item.classList.remove('bg-primary/30', 'text-white');
-                    item.classList.add(index === 0 ? 'bg-gray-800' : 'bg-primary/20', index === 0 ? '' : 'text-primary');
-                    if (index === middlewareItems.length - 1) {
-                        middlewareItems[middlewareItems.length - 1].classList.remove('bg-primary/30', 'text-white');
-                        middlewareItems[middlewareItems.length - 1].classList.add('bg-green-500/20', 'text-green-400');
-                    }
+                }).catch(err => {
+                    console.error('Share failed:', err);
+                    showShareOptions();
                 });
-                
-                // 高亮当前项
-                if (index < middlewareItems.length - 1) {
-                    middlewareItems[index].classList.remove('bg-gray-800', 'bg-primary/20', 'text-primary');
-                    middlewareItems[index].classList.add('bg-primary/30', 'text-white');
-                }
-                
-                index = (index + 1) % middlewareItems.length;
-            }, 800);
-        }
-        
-        // 生成社区评论
-        function generateComments() {
-            const commentsContainer = document.getElementById('comments-container');
-            const comments = [
-                { name: "张明", avatar: "https://picsum.photos/id/1/40/40", role: "全栈开发者", comment: "Express 是我使用过的最灵活的 Node.js 框架，它不会强迫你遵循特定的项目结构，让我能够按照自己的方式组织代码。", rating: 5 },
-                { name: "李华", avatar: "https://picsum.photos/id/2/40/40", role: "后端工程师", comment: "对于构建 API，Express 简直是完美的选择。丰富的中间件生态系统让开发变得异常简单，社区支持也非常棒。", rating: 5 },
-                { name: "王芳", avatar: "https://picsum.photos/id/3/40/40", role: "前端开发者", comment: "作为前端开发者，学习 Express 让我能够独立完成全栈项目。它的学习曲线相对平缓，文档也很清晰。", rating: 4 },
-                { name: "赵伟", avatar: "https://picsum.photos/id/4/40/40", role: "DevOps 工程师", comment: "Express 应用部署简单，资源占用低，非常适合微服务架构。我们公司的大部分 API 服务都是基于 Express 构建的。", rating: 5 },
-                { name: "刘强", avatar: "https://picsum.photos/id/5/40/40", role: "技术负责人", comment: "Express 的灵活性既是优点也是缺点。对于大型项目，需要团队制定严格的编码规范，否则代码容易变得混乱。", rating: 4 },
-                { name: "陈静", avatar: "https://picsum.photos/id/6/40/40", role: "自由开发者", comment: "作为自由开发者，我喜欢 Express 的简洁和高效。它让我能够快速构建原型并交付给客户，大大提高了我的工作效率。", rating: 5 },
-                { name: "杨明", avatar: "https://picsum.photos/id/7/40/40", role: "软件工程师", comment: "Express 配合 MongoDB 简直是天作之合，MEAN 栈开发体验非常流畅。中间件机制让代码复用变得简单。", rating: 4 },
-                { name: "黄丽", avatar: "https://picsum.photos/id/8/40/40", role: "全栈开发", comment: "虽然现在有很多新的 Node.js 框架，但 Express 仍然是我的首选。它稳定、成熟，社区活跃，遇到问题很容易找到解决方案。", rating: 5 },
-                { name: "吴杰", avatar: "https://picsum.photos/id/9/40/40", role: "后端开发", comment: "Express 的路由系统设计得非常优雅，能够轻松处理复杂的 URL 结构。异步处理虽然需要一些学习，但掌握后非常强大。", rating: 4 },
-                { name: "郑琳", avatar: "https://picsum.photos/id/10/40/40", role: "技术顾问", comment: "对于初学者，Express 是学习 Node.js 后端开发的绝佳选择。它足够简单，又能覆盖大部分实际开发需求。", rating: 5 },
-                { name: "孙强", avatar: "https://picsum.photos/id/11/40/40", role: "系统架构师", comment: "在构建大型应用时，Express 可能需要配合一些额外的库来增强功能，如 TypeScript、装饰器等，但这也正是它的灵活性所在。", rating: 4 },
-                { name: "周婷", avatar: "https://picsum.photos/id/12/40/40", role: "前端工程师", comment: "作为前端开发者，我很喜欢 Express 与 React 的配合方式，能够轻松实现前后端分离架构，开发体验非常好。", rating: 5 }
-            ];
-            
-            // 生成更多评论（总共50+）
-            const moreComments = [];
-            for (let i = 13; i <= 50; i++) {
-                const ratings = [4, 5, 4, 5, 5, 4, 5, 3, 5, 4];
-                const randomRating = ratings[Math.floor(Math.random() * ratings.length)];
-                const commentsText = [
-                    "Express 是 Node.js 生态系统中不可或缺的一部分，使用起来非常方便。",
-                    "已经使用 Express 多年，从未让我失望过，社区非常活跃。",
-                    "对于小型项目，Express 是理想的选择，能够快速上手并交付。",
-                    "中间件系统设计得非常巧妙，扩展功能变得简单直观。",
-                    "虽然现在有很多新框架，但 Express 仍然是最可靠的选择之一。",
-                    "文档非常完善，即使是新手也能快速入门。",
-                    "Express 让 Node.js 开发变得如此简单，强烈推荐给所有开发者。",
-                    "灵活度很高，可以按照自己的需求定制项目结构和功能。"
-                ];
-                const randomComment = commentsText[Math.floor(Math.random() * commentsText.length)];
-                
-                moreComments.push({
-                    name: `用户${i}`,
-                    avatar: `https://picsum.photos/id/${i}/40/40`,
-                    role: "开发者",
-                    comment: randomComment,
-                    rating: randomRating
-                });
+            } else {
+                showShareOptions();
             }
+        });
+        
+        function showShareOptions() {
+            // Create a simple share options popup
+            const shareText = encodeURIComponent('Check out Express.js - a fast, unopinionated, minimalist web framework for Node.js!');
+            const shareUrl = encodeURIComponent('https://rinuo.com/free/detail/express.html');
             
-            // 合并评论并打乱顺序
-            const allComments = [...comments, ...moreComments].sort(() => Math.random() - 0.5);
-            
-            // 初始显示12条评论
-            const initialComments = allComments.slice(0, 12);
-            
-            // 渲染评论
-            initialComments.forEach(comment => {
-                const commentCard = document.createElement('div');
-                commentCard.className = 'bg-dark rounded-xl border border-gray-800 p-6 comment-card';
-                
-                // 生成星级评分
-                let ratingStars = '';
-                for (let i = 1; i <= 5; i++) {
-                    if (i <= comment.rating) {
-                        ratingStars += '<i class="fa fa-star text-yellow-400"></i>';
-                    } else {
-                        ratingStars += '<i class="fa fa-star-o text-gray-600"></i>';
-                    }
-                }
-                
-                commentCard.innerHTML = `
-                    <div class="flex items-center mb-4">
-                        <img src="${comment.avatar}" alt="${comment.name}的头像" class="w-12 h-12 rounded-full mr-4 object-cover lazy-load" loading="lazy">
-                        <div>
-                            <h4 class="font-medium">${comment.name}</h4>
-                            <p class="text-gray-400 text-sm">${comment.role}</p>
+            const popup = window.open('', '_blank', 'width=600,height=400');
+            if (popup) {
+                popup.document.write(`
+                    <html>
+                    <head><title>Share Express.js</title></head>
+                    <body style="padding: 20px; font-family: Arial, sans-serif;">
+                        <h3>Share Express.js</h3>
+                        <p>Copy the link below or share on social media:</p>
+                        <div style="margin: 15px 0;">
+                            <input type="text" value="https://rinuo.com/free/detail/express.html" readonly style="width: 100%; padding: 8px;" onclick="this.select();">
                         </div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="flex text-sm">
-                            ${ratingStars}
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <a href="https://twitter.com/intent/tweet?text=${shareText}&url=${shareUrl}" target="_blank" style="padding: 8px 12px; background: #1DA1F2; color: white; text-decoration: none; border-radius: 4px;">Twitter</a>
+                            <a href="https://www.linkedin.com/sharing/share-offsite/?url=${shareUrl}" target="_blank" style="padding: 8px 12px; background: #0077B5; color: white; text-decoration: none; border-radius: 4px;">LinkedIn</a>
+                            <a href="mailto:?subject=Check%20out%20Express.js&body=${shareText}%0A${shareUrl}" style="padding: 8px 12px; background: #EA4335; color: white; text-decoration: none; border-radius: 4px;">Email</a>
                         </div>
-                    </div>
-                    <p class="text-gray-300 text-sm">${comment.comment}</p>
-                `;
-                
-                commentsContainer.appendChild(commentCard);
-            });
-            
-            // 加载更多评论功能
-            let loadedCount = 12;
-            document.getElementById('load-more').addEventListener('click', () => {
-                const moreToLoad = allComments.slice(loadedCount, loadedCount + 12);
-                
-                if (moreToLoad.length === 0) {
-                    document.getElementById('load-more').innerHTML = '没有更多评论了 <i class="fa fa-check ml-2"></i>';
-                    document.getElementById('load-more').disabled = true;
-                    document.getElementById('load-more').classList.add('opacity-50', 'cursor-not-allowed');
-                    return;
-                }
-                
-                moreToLoad.forEach(comment => {
-                    const commentCard = document.createElement('div');
-                    commentCard.className = 'bg-dark rounded-xl border border-gray-800 p-6 comment-card';
-                    
-                    let ratingStars = '';
-                    for (let i = 1; i <= 5; i++) {
-                        if (i <= comment.rating) {
-                            ratingStars += '<i class="fa fa-star text-yellow-400"></i>';
-                        } else {
-                            ratingStars += '<i class="fa fa-star-o text-gray-600"></i>';
-                        }
-                    }
-                    
-                    commentCard.innerHTML = `
-                        <div class="flex items-center mb-4">
-                            <img src="${comment.avatar}" alt="${comment.name}的头像" class="w-12 h-12 rounded-full mr-4 object-cover lazy-load" loading="lazy">
-                            <div>
-                                <h4 class="font-medium">${comment.name}</h4>
-                                <p class="text-gray-400 text-sm">${comment.role}</p>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <div class="flex text-sm">
-                                ${ratingStars}
-                            </div>
-                        </div>
-                        <p class="text-gray-300 text-sm">${comment.comment}</p>
-                    `;
-                    
-                    commentsContainer.appendChild(commentCard);
-                });
-                
-                loadedCount += 12;
-            });
+                    </body>
+                    </html>
+                `);
+                popup.document.close();
+            }
         }
         
-        // 初始化框架使用情况图表
-        function initFrameworksChart() {
-            const ctx = document.getElementById('frameworks-chart').getContext('2d');
-            
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Express.js', 'Django', 'Flask', 'Spring', 'Ruby on Rails', '其他'],
-                    datasets: [{
-                        data: [42, 18, 12, 10, 8, 10],
-                        backgroundColor: [
-                            '#007bff',
-                            '#61dafb',
-                            '#8b5cf6',
-                            '#10b981',
-                            '#f59e0b',
-                            '#4b5563'
-                        ],
-                        borderWidth: 0,
-                        hoverOffset: 10
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: '#e2e8f0',
-                                padding: 20,
-                                usePointStyle: true,
-                                pointStyle: 'circle'
+        // Radar Chart
+        const ctx = document.getElementById('radarChart').getContext('2d');
+        const radarChart = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: ['Performance', 'Flexibility', 'Community', 'Documentation', 'Ease of Use', 'Middleware'],
+                datasets: [{
+                    label: 'Express.js',
+                    data: [95, 90, 98, 92, 85, 97],
+                    backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                    borderColor: 'rgba(79, 70, 229, 0.8)',
+                    pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(79, 70, 229, 1)'
+                }]
+            },
+            options: {
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true,
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        grid: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
+                        },
+                        pointLabels: {
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
+                            font: {
+                                size: 12
                             }
                         },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `${context.label}: ${context.raw}%`;
-                                }
-                            }
+                        ticks: {
+                            backdropColor: 'transparent',
+                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                            display: false
                         }
-                    },
-                    cutout: '65%'
-                }
-            });
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                maintainAspectRatio: false,
+                responsive: true
+            }
+        });
+        
+        // Update chart colors when theme changes
+        function updateChartColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            radarChart.options.scales.r.angleLines.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            radarChart.options.scales.r.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            radarChart.options.scales.r.pointLabels.color = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
+            radarChart.options.scales.r.ticks.color = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
+            radarChart.update();
         }
         
-        // 收藏功能交互
-        function setupBookmarkFunctionality() {
-            const bookmarkBtn = document.getElementById('bookmarkBtn');
-            const bookmarkList = document.getElementById('bookmarkList');
-            const closeBookmarkList = document.getElementById('closeBookmarkList');
-            
-            // 打开收藏列表
-            bookmarkBtn.addEventListener('click', () => {
-                bookmarkList.classList.remove('translate-x-full');
-                document.body.style.overflow = 'hidden';
-            });
-            
-            // 关闭收藏列表
-            closeBookmarkList.addEventListener('click', () => {
-                bookmarkList.classList.add('translate-x-full');
-                document.body.style.overflow = '';
-            });
-            
-            // 点击外部关闭收藏列表
-            bookmarkList.addEventListener('click', (e) => {
-                if (e.target === bookmarkList) {
-                    bookmarkList.classList.add('translate-x-full');
-                    document.body.style.overflow = '';
-                }
-            });
-        }
+        // Re-render chart when theme changes
+        themeToggle.addEventListener('click', updateChartColors);
+        mobileThemeToggle.addEventListener('click', updateChartColors);
         
-        // 订阅表单交互
-        function setupSubscriptionForm() {
-            const form = document.getElementById('subscription-form');
-            const messageElement = document.getElementById('subscriptionMessage');
-            
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                // 实际功能由 /main.js 处理，这里仅做演示
-                messageElement.textContent = '订阅成功！我们将定期发送最新资讯到您的邮箱。';
-                messageElement.classList.remove('hidden', 'text-red-400');
-                messageElement.classList.add('text-green-400');
-                
-                // 重置表单
-                form.reset();
-                
-                // 5秒后隐藏消息
-                setTimeout(() => {
-                    messageElement.classList.add('hidden');
-                }, 5000);
-            });
-        }
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
         
-        // 导航栏滚动效果
-        function setupNavbarScrollEffect() {
-            const header = document.querySelector('header');
-            
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) {
-                    header.classList.add('shadow-lg');
-                    header.classList.remove('border-b');
-                } else {
-                    header.classList.remove('shadow-lg');
-                    header.classList.add('border-b');
-                }
-            });
-        }
+        searchButton.addEventListener('click', () => {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            if (searchTerm) {
+                // Simple search implementation - in a real app, this would query a database or API
+                alert(`Searching for: ${searchTerm}`);
+                // In a complete implementation, you would redirect to search results page
+                // window.location.href = `/search?query=${encodeURIComponent(searchTerm)}`;
+            }
+        });
         
-        // 页面加载完成后初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            createParticles();
-            revealOnScroll();
-            animateRequest();
-            animateMiddleware();
-            generateComments();
-            initFrameworksChart();
-            setupBookmarkFunctionality();
-            setupSubscriptionForm();
-            setupNavbarScrollEffect();
-            
-            // 监听滚动事件，触发显示动画
-            window.addEventListener('scroll', revealOnScroll);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchButton.click();
+            }
         });
     </script>
-
-
-</body></html>
+    
+    <!-- Import Main JS -->
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
