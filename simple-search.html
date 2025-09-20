@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Search | FreeDevTools</title>
+    <!-- Meta Tags for SEO -->
+    <meta name="description" content="Simple search interface for developer tools and resources." />
+    <meta name="keywords" content="simple search, developer tools, search" />
+    <meta name="author" content="FreeDevTools" />
+    <link rel="canonical" href="https://rinuo.com/simple-search.html" />
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Simple Search | FreeDevTools" />
+    <meta property="og:description" content="Simple search interface for developer tools and resources." />
+    <meta property="og:url" content="https://rinuo.com/simple-search.html" />
+    <meta property="og:type" content="website" />
+    <!-- Sitemap Link -->
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.html" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet" />
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: {
+                            50: '#F9FAFB',
+                            100: '#F3F4F6',
+                            200: '#E5E7EB',
+                            300: '#D1D5DB',
+                            400: '#9CA3AF',
+                            500: '#6B7280',
+                            600: '#4B5563',
+                            700: '#374151',
+                            800: '#1F2937',
+                            900: '#111827'
+                        }
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Custom Styles -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            .search-result-highlight {
+                @apply bg-yellow-200 dark:bg-yellow-900 text-black dark:text-yellow-100 font-medium;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-gray-800 dark:bg-dark-900 dark:text-dark-50 min-h-screen transition-colors duration-300">
+    <!-- Header -->
+    <header class="bg-white dark:bg-dark-800 shadow-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <i class="fa fa-code text-2xl text-primary"></i>
+                    <span class="text-xl font-bold text-primary">FreeDevTools</span>
+                </a>
+
+                <!-- Navigation Links -->
+                <nav class="flex items-center space-x-6">
+                    <a href="/" class="font-medium hover:text-primary dark:hover:text-secondary transition-colors">Home</a>
+                    <a href="/search.html" class="font-medium hover:text-primary dark:hover:text-secondary transition-colors">Advanced Search</a>
+                    <a href="/about.html" class="font-medium hover:text-primary dark:hover:text-secondary transition-colors">About</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Breadcrumb Navigation -->
+        <nav class="flex items-center text-sm mb-6" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-2">
+                <li><a href="/" class="hover:text-primary dark:hover:text-secondary transition-colors">Home</a></li>
+                <li><span class="mx-2 text-gray-400">/</span></li>
+                <li class="text-gray-600 dark:text-gray-400 font-medium">Simple Search</li>
+            </ol>
+        </nav>
+
+        <!-- Search Section -->
+        <section class="max-w-2xl mx-auto">
+            <div class="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 mb-8">
+                <h1 class="text-2xl md:text-3xl font-bold mb-6 text-center">Simple Search</h1>
+                
+                <!-- Search Input -->
+                <div class="relative mb-4">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        placeholder="Search tools, frameworks, or resources..." 
+                        class="w-full py-3 px-10 pr-4 rounded-lg border border-gray-200 dark:border-dark-700 bg-gray-50 dark:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-lg"
+                        autocomplete="off"
+                    >
+                    <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl"></i>
+                </div>
+                
+                <!-- Results Count -->
+                <div id="resultsCount" class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    Enter a search term to find tools
+                </div>
+                
+                <!-- Search Results -->
+                <div id="searchResults" class="relative">
+                    <ul id="resultsList" class="max-h-96 overflow-y-auto scrollbar-hide rounded-lg bg-gray-50 dark:bg-dark-700 border border-gray-200 dark:border-dark-600">
+                        <!-- Results will be populated here -->
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-dark-700 mt-auto">
+        <div class="container mx-auto px-4 py-8">
+            <div class="text-center text-sm text-gray-500 dark:text-gray-400">
+                <p>© 2023 FreeDevTools. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main JavaScript -->
+    <script>
+        // Simple Search Functionality
+        document.addEventListener('DOMContentLoaded', async () => {
+            const searchInput = document.getElementById('searchInput');
+            const resultsList = document.getElementById('resultsList');
+            const resultsCount = document.getElementById('resultsCount');
+            
+            let allData = [];
+            let filteredResults = [];
+            let selectedIndex = -1;
+            
+            // Load data from JSON file
+            try {
+                const response = await fetch('/assets/data/data.json');
+                allData = await response.json();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                resultsCount.textContent = 'Failed to load data';
+            }
+            
+            // Search function
+            const search = (query) => {
+                if (!query.trim()) {
+                    resultsList.innerHTML = '';
+                    resultsCount.textContent = 'Enter a search term to find tools';
+                    filteredResults = [];
+                    selectedIndex = -1;
+                    return;
+                }
+                
+                // Convert query to lowercase for case-insensitive search
+                const lowerQuery = query.toLowerCase();
+                
+                // Filter data with improved ranking
+                // First, prioritize results where name starts with the query (case-insensitive)
+                const nameStartsWith = allData.filter(item => 
+                    item.name.toLowerCase().startsWith(lowerQuery)
+                );
+                
+                // Then, results where name contains but doesn't start with the query
+                const nameContains = allData.filter(item => 
+                    !nameStartsWith.includes(item) && 
+                    item.name.toLowerCase().includes(lowerQuery)
+                );
+                
+                // Finally, include other matches from category and tags
+                const otherMatches = allData.filter(item => 
+                    !nameStartsWith.includes(item) && 
+                    !nameContains.includes(item) && (
+                        item.category.toLowerCase().includes(lowerQuery) ||
+                        item.tags.some(tag => tag.toLowerCase().includes(lowerQuery))
+                    )
+                );
+                
+                // Combine results with proper prioritization
+                filteredResults = [...nameStartsWith, ...nameContains, ...otherMatches];
+                
+                // Update results count
+                resultsCount.textContent = `Found ${filteredResults.length} results`;
+                
+                // Render results
+                renderResults(filteredResults, query);
+                
+                // Default select first result
+                selectedIndex = 0;
+                highlightSelected();
+            };
+            
+            // Render search results
+            const renderResults = (results, query) => {
+                if (results.length === 0) {
+                    resultsList.innerHTML = '<li class="p-4 text-gray-500 dark:text-gray-400 text-center">No results found</li>';
+                    return;
+                }
+                
+                resultsList.innerHTML = '';
+                
+                results.forEach((item, index) => {
+                    const li = document.createElement('li');
+                    li.className = `p-3 hover:bg-gray-100 dark:hover:bg-dark-600 cursor-pointer transition-colors ${index === selectedIndex ? 'bg-primary/10 dark:bg-primary/20' : ''}`;
+                    li.dataset.index = index;
+                    
+                    // Highlight the search term in the name
+                    let highlightedName = item.name;
+                    if (query) {
+                        const regex = new RegExp(`(${query})`, 'gi');
+                        highlightedName = item.name.replace(regex, '<span class="search-result-highlight">$1</span>');
+                    }
+                    
+                    li.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h3 class="font-medium">${highlightedName}</h3>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">${item.category}</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                ${item.tags.slice(0, 2).map(tag => `
+                                    <span class="text-xs px-2 py-1 bg-gray-200 dark:bg-dark-600 rounded-full">${tag}</span>
+                                `).join('')}
+                                ${item.tags.length > 2 ? `
+                                    <span class="text-xs px-2 py-1 bg-gray-200 dark:bg-dark-600 rounded-full">+${item.tags.length - 2}</span>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Add click event to select result
+                    li.addEventListener('click', () => {
+                        openResult(index);
+                    });
+                    
+                    resultsList.appendChild(li);
+                });
+            };
+            
+            // Highlight selected result
+            const highlightSelected = () => {
+                const items = resultsList.querySelectorAll('li');
+                items.forEach((item, index) => {
+                    if (index === selectedIndex) {
+                        item.classList.add('bg-primary/10', 'dark:bg-primary/20');
+                    } else {
+                        item.classList.remove('bg-primary/10', 'dark:bg-primary/20');
+                    }
+                });
+                
+                // Scroll to selected item if it's out of view
+                if (selectedIndex >= 0 && items[selectedIndex]) {
+                    items[selectedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            };
+            
+            // Open selected result
+            const openResult = (index) => {
+                if (index >= 0 && index < filteredResults.length) {
+                    const result = filteredResults[index];
+                    // In a real app, you would navigate to the tool's page
+                    // For now, we'll just log it
+                    console.log(`Opening: ${result.name}`);
+                    alert(`Opening: ${result.name}`);
+                }
+            };
+            
+            // Event listeners
+            searchInput.addEventListener('input', () => {
+                search(searchInput.value);
+            });
+            
+            // Keyboard navigation
+            searchInput.addEventListener('keydown', (e) => {
+                if (filteredResults.length === 0) return;
+                
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        selectedIndex = Math.min(selectedIndex + 1, filteredResults.length - 1);
+                        highlightSelected();
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        selectedIndex = Math.max(selectedIndex - 1, 0);
+                        highlightSelected();
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        if (selectedIndex >= 0) {
+                            openResult(selectedIndex);
+                        }
+                        break;
+                }
+            });
+            
+            // Focus search input when page loads
+            searchInput.focus();
+        });
+    </script>
+
+    <!-- Import main.js for additional functionality -->
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -210,6 +210,12 @@ function showFloatingResults(searchTerm) {
            (tool.tags && Array.isArray(tool.tags) && tool.tags.some(tag => 
              typeof tag === 'string' && tag.toLowerCase() === searchTerm
            ));
+  }).sort((a, b) => {
+    // 在完全匹配中，优先显示name字段以搜索词开头的结果
+    const aNameStartsWith = a.name && a.name.toLowerCase().startsWith(searchTerm);
+    const bNameStartsWith = b.name && b.name.toLowerCase().startsWith(searchTerm);
+    if (aNameStartsWith !== bNameStartsWith) return bNameStartsWith - aNameStartsWith;
+    return (b.popularity || 0) - (a.popularity || 0);
   });
   
   // 2. 然后筛选部分匹配
@@ -235,7 +241,13 @@ function showFloatingResults(searchTerm) {
     
     return nameMatch || tagsMatch || categoryMatch;
   }).sort((a, b) => {
-    // 按相关性排序：先按名称匹配，再按标签匹配，最后按popularity
+    // 改进的排序逻辑：
+    // 1. 优先显示name字段以搜索词开头的结果
+    const aNameStartsWith = a.name && a.name.toLowerCase().startsWith(searchTerm);
+    const bNameStartsWith = b.name && b.name.toLowerCase().startsWith(searchTerm);
+    if (aNameStartsWith !== bNameStartsWith) return bNameStartsWith - aNameStartsWith;
+    
+    // 2. 然后按名称匹配、标签匹配排序
     const aNameRelevance = (a.name && a.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
     const bNameRelevance = (b.name && b.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
     const aTagRelevance = (a.tags && a.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
@@ -243,6 +255,8 @@ function showFloatingResults(searchTerm) {
     
     if (aNameRelevance !== bNameRelevance) return bNameRelevance - aNameRelevance;
     if (aTagRelevance !== bTagRelevance) return bTagRelevance - aTagRelevance;
+    
+    // 3. 最后按popularity排序
     return (b.popularity || 0) - (a.popularity || 0);
   });
   
