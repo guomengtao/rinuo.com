@@ -38,6 +38,10 @@ class EmailSubscription {
         // Debug prefix
         this.debugPrefix = '[Email Subscription Debug]';
         
+        // Timeout references
+        this.hideTimeout = null;
+        this.notificationTimeout = null;
+        
         this.init();
     }
     
@@ -214,66 +218,131 @@ class EmailSubscription {
         }
     }
     
-    // Show message (supports HTML content - now displays inside button)
+    // Show message as a beautiful popup notification
     showMessage(element, content, type, isHtml = false) {
-        console.log(`${this.debugPrefix} Showing message: [${type}] ${content}`);
+        console.log(`${this.debugPrefix} Showing popup message: [${type}] ${content}`);
         
         // Check if element is button container
         const isButtonContainer = element === this.elements.button;
         
-        // Remove all state classes
-        element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
-        // Add current state class
-        element.classList.add(`subscription-${type}`);
+        // Remove any existing notification
+        this.removeNotification();
         
-        // Special handling for button container
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.id = 'subscription-notification';
+        
+        // Set base styles
+        notification.className = 'fixed top-6 right-6 z-50 px-6 py-4 rounded-lg shadow-lg transform transition-all duration-500 ease-in-out opacity-0 translate-y-[-20px]';
+        
+        // Add type-specific styles and icon
+        let iconClass = '';
+        let bgColor = '';
+        let textColor = '';
+        
+        switch(type) {
+            case 'success':
+                iconClass = 'fa-check-circle';
+                bgColor = 'bg-green-500';
+                textColor = 'text-white';
+                break;
+            case 'error':
+                iconClass = 'fa-exclamation-circle';
+                bgColor = 'bg-red-500';
+                textColor = 'text-white';
+                break;
+            case 'info':
+                iconClass = 'fa-info-circle';
+                bgColor = 'bg-blue-500';
+                textColor = 'text-white';
+                break;
+            case 'loading':
+                iconClass = 'fa-spinner fa-spin';
+                bgColor = 'bg-amber-500';
+                textColor = 'text-white';
+                break;
+            default:
+                iconClass = 'fa-info-circle';
+                bgColor = 'bg-gray-500';
+                textColor = 'text-white';
+        }
+        
+        notification.classList.add(bgColor, textColor);
+        
+        // Set content with icon
+        const iconHtml = `<i class="fa ${iconClass} mr-2"></i>`;
+        if (isHtml) {
+            notification.innerHTML = iconHtml + content;
+        } else {
+            const textNode = document.createTextNode(content);
+            const iconElement = document.createElement('i');
+            iconElement.className = `fa ${iconClass} mr-2`;
+            notification.appendChild(iconElement);
+            notification.appendChild(textNode);
+        }
+        
+        // Add to document
+        document.body.appendChild(notification);
+        
+        // Trigger animation to show notification
+        setTimeout(() => {
+            notification.classList.remove('opacity-0', 'translate-y-[-20px]');
+            notification.classList.add('opacity-100', 'translate-y-0');
+        }, 10);
+        
+        // Auto-hide notification after 3 seconds
+        clearTimeout(this.notificationTimeout);
+        this.notificationTimeout = setTimeout(() => {
+            this.hideNotification();
+        }, 3000);
+        
+        // If this is a button container, also handle button state
         if (isButtonContainer) {
-            // Save original button text for restoration
+            // Save original button text if not already saved
             if (!this.buttonText) {
                 this.buttonText = this.buttonOriginalContent || this.messages.subscribe;
             }
             
-            // If error or loading state, show text directly on button
-            if (type === 'error' || type === 'info') {
-                element.innerHTML = content;
-            } else if (type === 'success' && isHtml) {
-                // For success state with HTML content, need special handling
-                // Create temp container to parse HTML content
-                const tempContainer = document.createElement('div');
-                tempContainer.innerHTML = content;
-                
-                // Get plain text content (remove links and HTML elements)
-                const textContent = tempContainer.textContent || 'Subscription successful';
-                element.innerHTML = textContent;
-            } else {
-                element.innerHTML = content;
-            }
-        } else {
-            // Original behavior: for non-button containers
-            if (isHtml) {
-                element.innerHTML = content;
-            } else {
-                element.textContent = content;
-            }
-        }
-        
-        // Auto-restore button state after 3 seconds (for success messages only)
-        if (type === 'success') {
-            clearTimeout(this.hideTimeout);
-            this.hideTimeout = setTimeout(() => {
-                console.log(`${this.debugPrefix} Auto-restoring button state`);
-                
-                if (isButtonContainer) {
+            // Remove all state classes
+            element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
+            // Add current state class
+            element.classList.add(`subscription-${type}`);
+            
+            // Auto-restore button state after 3 seconds (for success messages only)
+            if (type === 'success') {
+                clearTimeout(this.hideTimeout);
+                this.hideTimeout = setTimeout(() => {
+                    console.log(`${this.debugPrefix} Auto-restoring button state`);
+                    
                     // Restore button's original content
                     element.innerHTML = this.buttonOriginalContent || this.messages.subscribe;
-                } else {
-                    // For traditional containers, clear content
-                    element.innerHTML = '';
-                }
-                
-                // Remove all state classes
-                element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
-            }, 3000); // Adjusted to 3 seconds for better UX
+                    
+                    // Remove all state classes
+                    element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
+                }, 3000);
+            }
+        }
+    }
+    
+    // Hide notification with animation
+    hideNotification() {
+        const notification = document.getElementById('subscription-notification');
+        if (notification) {
+            notification.classList.remove('opacity-100', 'translate-y-0');
+            notification.classList.add('opacity-0', 'translate-y-[-20px]');
+            
+            // Remove from DOM after animation completes
+            setTimeout(() => {
+                this.removeNotification();
+            }, 500);
+        }
+    }
+    
+    // Remove notification from DOM
+    removeNotification() {
+        const notification = document.getElementById('subscription-notification');
+        if (notification) {
+            notification.remove();
         }
     }
     

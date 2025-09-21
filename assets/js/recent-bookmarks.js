@@ -247,7 +247,7 @@ function createBookmarkCard(bookmark) {
                 </span>
             </div>
         </div>
-        <h3 class="text-xl font-semibold mb-2">${bookmark.title}</h3>
+        <h3 class="text-xl font-semibold mb-2 truncate">${bookmark.title}</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-grow">
             View details about this resource
         </p>
