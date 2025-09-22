@@ -1,4 +1,4 @@
-console.log('Back to top functionality script loaded');
+
 
 // 创建全局返回顶部实例
 window.globalBackToTop = {

@@ -277,70 +277,103 @@ function hidePopup(){
 }
 
 // 导出
-export function init(){
-    // 初始化所有类型的收藏按钮
-    initBookmarkBtn('#bookmarkBtn');
-    document.querySelectorAll('.favorite-btn').forEach(btn => {
-        initBookmarkBtn(btn);
-    });
-    updateExistingBookmarksNames(); // 在初始化时更新所有现有收藏的名称格式
+// 在文件顶部添加样式元素创建函数
+function createBookmarkStyles() {
+  let styleElement = document.getElementById('bookmark-button-styles');
+  if (!styleElement) {
+    styleElement = document.createElement('style');
+    styleElement.id = 'bookmark-button-styles';
+    styleElement.textContent = `
+      /* 收藏按钮样式 - 独立于主题切换 */
+      .bookmark-icon {
+          transition: all 0.3s ease;
+      }
+      
+      .bookmark-icon.bookmarked {
+          color: #FFD700 !important;
+          text-shadow: 0 0 4px rgba(255, 215, 0, 0.7);
+      }
+      
+      .bookmark-icon:not(.bookmarked) {
+          color: inherit;
+          text-shadow: none;
+      }
+    `;
+    document.head.appendChild(styleElement);
+  }
 }
 
-// 初始化收藏按钮 - 支持传入选择器字符串或DOM元素
+// 在init函数中调用样式创建函数
+export function init(){
+  // 创建收藏按钮所需的样式
+  createBookmarkStyles();
+  
+  // 初始化所有类型的收藏按钮
+  initBookmarkBtn('#bookmarkBtn');
+  document.querySelectorAll('.favorite-btn').forEach(btn => {
+    initBookmarkBtn(btn);
+  });
+  updateExistingBookmarksNames();
+}
+
+// 初始化收藏按钮 - 修改updateBtnState函数以独立实现图标切换
 function initBookmarkBtn(selectorOrElement){
-    let btn;
-    if(typeof selectorOrElement === 'string'){
-        btn = document.querySelector(selectorOrElement);
-    } else {
-        btn = selectorOrElement;
+  let btn; 
+  if(typeof selectorOrElement === 'string'){
+    btn = document.querySelector(selectorOrElement);
+  } else {
+    btn = selectorOrElement;
+  }
+  
+  if(!btn) return;
+
+  function updateBtnState(){
+    const isBookmarkedState = isBookmarked();
+    btn.setAttribute('data-bookmarked', isBookmarkedState);
+    
+    // 获取图标元素
+    const icon = btn.querySelector('i');
+    if(icon){
+      // 为图标添加统一的类名，便于样式控制
+      icon.classList.add('bookmark-icon');
+      
+      // 使用同一个图标，但通过添加/移除bookmarked类来改变样式
+      if(isBookmarkedState){
+        icon.classList.add('bookmarked');
+      } else {
+        icon.classList.remove('bookmarked');
+      }
+      
+      // 确保使用相同的图标类（例如fa-star）
+      icon.classList.remove('fa-star-o', 'fa-bookmark-o', 'fa-heart-o');
+      icon.classList.add('fa-star');
     }
     
-    if(!btn) return;
-
-    // Update only text content, don't change other styles
-    function updateBtnState(){
-        const isBookmarkedState = isBookmarked();
-        btn.setAttribute('data-bookmarked', isBookmarkedState);
-        
-        // 检查是否有图标类名并更新图标
-        const icon = btn.querySelector('i');
-        if(icon){
-            if(isBookmarkedState){
-                // 移除所有可能的未选中状态图标
-                icon.classList.remove('fa-bookmark-o', 'fa-heart-o', 'fa-star-o');
-                // 只添加五角星选中状态图标
-                icon.classList.add('fa-star');
-            } else {
-                // 移除所有可能的选中状态图标
-                icon.classList.remove('fa-bookmark', 'fa-heart', 'fa-star');
-                // 只添加五角星未选中状态图标
-                icon.classList.add('fa-star-o');
-            }
-        }
-        
-        // Only update if button has text content, avoid interfering with icon buttons
-        if (btn.textContent.trim()) {
-            btn.textContent=isBookmarkedState?'Remove bookmark':'Add bookmark';
-        }
+    // 只更新文本内容（如果按钮有文本）
+    if (btn.textContent.trim()) {
+      btn.textContent = isBookmarkedState ? 'Remove bookmark' : 'Add bookmark';
     }
+  }
+  
+  updateBtnState();
+
+  btn.addEventListener('click',e=>{
+    e.preventDefault();
+    toggleBookmarkCurrent();
     updateBtnState();
+    // 不再调用window.ensureButtonsVisibility，完全独立
+  });
 
-    btn.addEventListener('click',e=>{
-        e.preventDefault();
-        toggleBookmarkCurrent();
-        updateBtnState();
-    });
-
-    // 优化鼠标交互
-    btn.addEventListener('mouseenter',()=>showPopup(btn));
-    btn.addEventListener('mouseleave',()=>{
-        setTimeout(()=>{
-            if(!popup.matches(':hover')) hidePopup();
-        }, 250);
-    });
-    popup.addEventListener('mouseleave',hidePopup);
-    popup.addEventListener('mouseenter',()=>{
-        popup.classList.remove('hidden');
-    });
+  // 优化鼠标交互
+  btn.addEventListener('mouseenter',()=>showPopup(btn));
+  btn.addEventListener('mouseleave',()=>{
+    setTimeout(()=>{
+      if(!popup.matches(':hover')) hidePopup();
+    }, 250);
+  });
+  popup.addEventListener('mouseleave',hidePopup);
+  popup.addEventListener('mouseenter',()=>{
+    popup.classList.remove('hidden');
+  });
 }
 window.addEventListener('DOMContentLoaded',init);

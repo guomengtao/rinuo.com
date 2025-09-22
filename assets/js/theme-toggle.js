@@ -1,45 +1,44 @@
-// 创建全局主题切换实例，以便在控制台测试和其他模块访问
 window.globalThemeToggle = {
   initialized: false,
   themeBtn: null
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  // 获取主题切换按钮元素
+  // Get theme toggle button element
   let themeToggle = document.getElementById('themeToggle');
   
-  // 初始化主题，默认白天模式
+  // Initialize theme, default to light mode
   function initializeTheme() {
-    // 检查localStorage中是否有保存的主题偏好
+    // Check if there's a saved theme preference in localStorage
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    // 如果没有保存的主题，则使用系统偏好
+    // If no saved theme, use system preference
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       document.documentElement.classList.add('dark');
     } else {
-      // 默认白天模式
+      // Default to light mode
       document.documentElement.classList.remove('dark');
     }
   }
   
-  // 切换主题函数
+  // Toggle theme function
   function toggleTheme() {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
   }
   
   if (themeToggle) {
-    // 初始化主题
+    // Initialize theme
     initializeTheme();
-    // 添加点击事件监听器，点击时切换主题
+    // Add click event listener to toggle theme on click
     themeToggle.addEventListener('click', toggleTheme);
     
-    // 更新全局实例
+    // Update global instance
     window.globalThemeToggle.initialized = true;
     window.globalThemeToggle.themeBtn = themeToggle;
   } else {
-    // 按照用户要求，当页面没有设置对应id时，不自动加入按钮
+    // As per user request, don't automatically add buttons when page doesn't have corresponding id
     window.globalThemeToggle.initialized = false;
     window.globalThemeToggle.themeBtn = null;
   }

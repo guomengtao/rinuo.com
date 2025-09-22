@@ -449,6 +449,11 @@ document.addEventListener('DOMContentLoaded', () => {
       showModal();
     });
     
+    // Ensure visibility after initialization
+    if (window.ensureButtonsVisibility) {
+      window.ensureButtonsVisibility();
+    }
+    
     // 标记为已初始化
     window.globalShare.initialized = true;
   } else {

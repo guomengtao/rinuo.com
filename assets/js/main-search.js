@@ -128,30 +128,43 @@ function getFallbackTools() {
 }
 
 // ------------------- 搜索功能核心函数 -------------------
-// 过滤搜索结果
+// 根据搜索框内容过滤工具
 function filterBySearch(e) {
-  // 获取触发事件的输入元素
-  const inputElement = e.target;
-  
-  // 保存当前活动的搜索框
-  activeSearchInput = inputElement;
-  
-  const searchTerm = inputElement.value.toLowerCase().trim();
-  
-  // 显示/隐藏清除按钮
-  if (searchDOM.clearSearchBtn) {
-    if (searchTerm) {
-      searchDOM.clearSearchBtn.classList.remove('hidden');
-    } else {
-      searchDOM.clearSearchBtn.classList.add('hidden');
-      // 清空搜索时的处理
-      clearSearch();
-      return;
+  try {
+    // 确保DOM元素已初始化
+    if (!searchDOM.floatingResults) {
+      createFloatingResultsContainer();
+    }
+    
+    // 获取触发事件的输入元素
+    const inputElement = e.target;
+    
+    // 保存当前活动的搜索框
+    activeSearchInput = inputElement;
+    
+    const searchTerm = inputElement.value.toLowerCase().trim();
+    
+    // 显示/隐藏清除按钮
+    if (searchDOM.clearSearchBtn) {
+      if (searchTerm) {
+        searchDOM.clearSearchBtn.classList.remove('hidden');
+      } else {
+        searchDOM.clearSearchBtn.classList.add('hidden');
+        // 清空搜索时的处理
+        clearSearch();
+        return;
+      }
+    }
+
+    // 执行搜索
+    performSearch(searchTerm);
+  } catch (error) {
+    console.error('Error in filterBySearch:', error);
+    // 出错时确保浮动结果容器存在
+    if (!searchDOM.floatingResults) {
+      createFloatingResultsContainer();
     }
   }
-
-  // 执行搜索
-  performSearch(searchTerm);
 }
 
 // 执行搜索的核心函数
@@ -190,149 +203,171 @@ function performFullSearch(searchTerm) {
 
 // 显示浮动结果
 function showFloatingResults(searchTerm) {
-  if (!searchDOM.floatingResults || !searchDOM.floatingResultsContent || !searchTerm.trim()) {
-    if (searchDOM.floatingResults) {
-      searchDOM.floatingResults.classList.add('hidden');
-    }
-    return;
-  }
-  
-  // 确保tools数据已加载
-  if (!tools || tools.length === 0) {
-    // 使用备用数据进行搜索
-    useFallbackData();
-  }
-  
-  // 增强搜索逻辑，确保能根据不同关键词返回不同结果
-  // 1. 首先筛选完全匹配
-  const exactMatches = tools.filter(tool => {
-    if (!tool) return false;
-    return (tool.name && typeof tool.name === 'string' && tool.name.toLowerCase() === searchTerm) ||
-           (tool.tags && Array.isArray(tool.tags) && tool.tags.some(tag => 
-             typeof tag === 'string' && tag.toLowerCase() === searchTerm
-           ));
-  }).sort((a, b) => {
-    // 在完全匹配中，优先显示name字段以搜索词开头的结果
-    const aNameStartsWith = a.name && a.name.toLowerCase().startsWith(searchTerm);
-    const bNameStartsWith = b.name && b.name.toLowerCase().startsWith(searchTerm);
-    if (aNameStartsWith !== bNameStartsWith) return bNameStartsWith - aNameStartsWith;
-    return (b.popularity || 0) - (a.popularity || 0);
-  });
-  
-  // 2. 然后筛选部分匹配
-  const partialMatches = tools.filter(tool => {
-    if (!tool) return false;
-    
-    // 排除已经在完全匹配中的工具
-    const isInExactMatches = exactMatches.some(exact => exact.name === tool.name);
-    if (isInExactMatches) return false;
-    
-    const nameMatch = tool.name && typeof tool.name === 'string' && 
-                      tool.name.toLowerCase().includes(searchTerm);
-    
-    const tagsMatch = tool.tags && Array.isArray(tool.tags) && 
-                      tool.tags.some(tag => 
-                        typeof tag === 'string' && 
-                        tag.toLowerCase().includes(searchTerm)
-                      );
-    
-    // 分类匹配
-    const categoryMatch = tool.category && typeof tool.category === 'string' && 
-                         tool.category.toLowerCase().includes(searchTerm);
-    
-    return nameMatch || tagsMatch || categoryMatch;
-  }).sort((a, b) => {
-    // 改进的排序逻辑：
-    // 1. 优先显示name字段以搜索词开头的结果
-    const aNameStartsWith = a.name && a.name.toLowerCase().startsWith(searchTerm);
-    const bNameStartsWith = b.name && b.name.toLowerCase().startsWith(searchTerm);
-    if (aNameStartsWith !== bNameStartsWith) return bNameStartsWith - aNameStartsWith;
-    
-    // 2. 然后按名称匹配、标签匹配排序
-    const aNameRelevance = (a.name && a.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
-    const bNameRelevance = (b.name && b.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
-    const aTagRelevance = (a.tags && a.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
-    const bTagRelevance = (b.tags && b.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
-    
-    if (aNameRelevance !== bNameRelevance) return bNameRelevance - aNameRelevance;
-    if (aTagRelevance !== bTagRelevance) return bTagRelevance - aTagRelevance;
-    
-    // 3. 最后按popularity排序
-    return (b.popularity || 0) - (a.popularity || 0);
-  });
-  
-  // 合并结果：完全匹配在前，部分匹配在后
-  const floatingFiltered = [...exactMatches, ...partialMatches].slice(0, 6); // 显示前6个结果作为预览
-  
-  // 清空浮动结果内容
-  searchDOM.floatingResultsContent.innerHTML = '';
-  
-  // 更新结果总数 - 确保显示所有匹配结果的真实数量
-  const totalResults = exactMatches.length + partialMatches.length;
-  
-  // 双重保障：首先尝试使用searchDOM引用，如果不存在则直接通过ID查找
-  let resultsCountElement = searchDOM.resultsCount;
-  if (!resultsCountElement) {
-    resultsCountElement = document.getElementById('results-count');
-  }
-  
-  if (resultsCountElement) {
-    resultsCountElement.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''}`;
-    // 同时更新searchDOM引用，确保后续操作正常
-    searchDOM.resultsCount = resultsCountElement;
-  }
-  
-  if (floatingFiltered.length === 0) {
-    searchDOM.floatingResultsContent.innerHTML = `
-      <div class="p-4 text-center text-gray-500 dark:text-gray-400">
-        <p class="text-sm">No results found</p>
-      </div>
-    `;
-  } else {
-    // 渲染简洁的浮动搜索结果项
-    floatingFiltered.forEach((tool, index) => {
-      const item = document.createElement('div');
-      // 第一条结果默认选中
-      item.className = `h-12 px-3 py-2 flex items-center justify-between rounded-md transition-colors duration-200 cursor-pointer ${index === 0 ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`;
-      
-      // 如果是第一条结果，设置为当前选中
-      if (index === 0) {
-        currentSelectedIndex = 0;
+  try {
+    // 确保DOM元素已初始化
+    if (!searchDOM.floatingResults || !searchDOM.floatingResultsContent) {
+      createFloatingResultsContainer();
+      // 如果创建后仍然没有DOM元素，可能是其他问题
+      if (!searchDOM.floatingResults || !searchDOM.floatingResultsContent) {
+        console.error('Failed to initialize floating results DOM elements');
+        return;
       }
+    }
+    
+    if (!searchTerm.trim()) {
+      searchDOM.floatingResults.classList.add('hidden');
+      return;
+    }
+    
+    // 确保tools数据已加载
+    if (!tools || tools.length === 0) {
+      // 使用备用数据进行搜索
+      useFallbackData();
+    }
+    
+    // 增强搜索逻辑，确保能根据不同关键词返回不同结果
+    // 1. 首先筛选完全匹配
+    const exactMatches = tools.filter(tool => {
+      if (!tool) return false;
+      return (tool.name && typeof tool.name === 'string' && tool.name.toLowerCase() === searchTerm) ||
+             (tool.tags && Array.isArray(tool.tags) && tool.tags.some(tag => 
+               typeof tag === 'string' && tag.toLowerCase() === searchTerm
+             ));
+    }).sort((a, b) => {
+      // 在完全匹配中，优先显示name字段以搜索词开头的结果
+      const aNameStartsWith = a.name && a.name.toLowerCase().startsWith(searchTerm);
+      const bNameStartsWith = b.name && b.name.toLowerCase().startsWith(searchTerm);
+      if (aNameStartsWith !== bNameStartsWith) return bNameStartsWith - aNameStartsWith;
+      return (b.popularity || 0) - (a.popularity || 0);
+    });
+    
+    // 2. 然后筛选部分匹配
+    const partialMatches = tools.filter(tool => {
+      if (!tool) return false;
       
-      item.innerHTML = `
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-6 h-6 bg-primary/10 dark:bg-primary/20 rounded flex items-center justify-center text-primary flex-shrink-0">
-            <i class="fa fa-wrench text-xs"></i>
-          </div>
-          <div class="flex-1 min-w-0">
-            <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">${tool.name || 'Unknown Tool'}</h4>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 whitespace-nowrap">
-          <span class="text-xs text-gray-500 dark:text-gray-400">${tool.category || '-'}</span>
-          ${tool.popularity ? `<span class="text-xs text-primary">${Math.round(tool.popularity * 100)}%</span>` : ''}
+      // 排除已经在完全匹配中的工具
+      const isInExactMatches = exactMatches.some(exact => exact.name === tool.name);
+      if (isInExactMatches) return false;
+      
+      const nameMatch = tool.name && typeof tool.name === 'string' && 
+                        tool.name.toLowerCase().includes(searchTerm);
+      
+      const tagsMatch = tool.tags && Array.isArray(tool.tags) && 
+                        tool.tags.some(tag => 
+                          typeof tag === 'string' && 
+                          tag.toLowerCase().includes(searchTerm)
+                        );
+      
+      // 分类匹配
+      const categoryMatch = tool.category && typeof tool.category === 'string' && 
+                           tool.category.toLowerCase().includes(searchTerm);
+      
+      return nameMatch || tagsMatch || categoryMatch;
+    }).sort((a, b) => {
+      // 改进的排序逻辑：
+      // 1. 优先显示name字段以搜索词开头的结果
+      const aNameStartsWith = a.name && a.name.toLowerCase().startsWith(searchTerm);
+      const bNameStartsWith = b.name && b.name.toLowerCase().startsWith(searchTerm);
+      if (aNameStartsWith !== bNameStartsWith) return bNameStartsWith - aNameStartsWith;
+      
+      // 2. 然后按名称匹配、标签匹配排序
+      const aNameRelevance = (a.name && a.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
+      const bNameRelevance = (b.name && b.name.toLowerCase().includes(searchTerm)) ? 1 : 0;
+      const aTagRelevance = (a.tags && a.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
+      const bTagRelevance = (b.tags && b.tags.some(tag => tag.toLowerCase().includes(searchTerm))) ? 1 : 0;
+      
+      if (aNameRelevance !== bNameRelevance) return bNameRelevance - aNameRelevance;
+      if (aTagRelevance !== bTagRelevance) return bTagRelevance - aTagRelevance;
+      
+      // 3. 最后按popularity排序
+      return (b.popularity || 0) - (a.popularity || 0);
+    });
+    
+    // 合并结果：完全匹配在前，部分匹配在后
+    const floatingFiltered = [...exactMatches, ...partialMatches].slice(0, 6); // 显示前6个结果作为预览
+    
+    // 清空浮动结果内容
+    searchDOM.floatingResultsContent.innerHTML = '';
+    
+    // 更新结果总数 - 确保显示所有匹配结果的真实数量
+    const totalResults = exactMatches.length + partialMatches.length;
+    
+    // 双重保障：首先尝试使用searchDOM引用，如果不存在则直接通过ID查找
+    let resultsCountElement = searchDOM.resultsCount;
+    if (!resultsCountElement) {
+      resultsCountElement = document.getElementById('results-count');
+    }
+    
+    if (resultsCountElement) {
+      resultsCountElement.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''}`;
+      // 同时更新searchDOM引用，确保后续操作正常
+      searchDOM.resultsCount = resultsCountElement;
+    }
+    
+    if (floatingFiltered.length === 0) {
+      searchDOM.floatingResultsContent.innerHTML = `
+        <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+          <p class="text-sm">No results found</p>
         </div>
       `;
-      
-      // 点击直接跳转到工具详情页
-      item.addEventListener('click', () => {
-        if (tool.file) {
-          window.location.href = `/free/detail/${tool.file}`;
-        } else {
-          // 如果没有file属性，使用原始的搜索功能
-          performFullSearch(tool.name || searchTerm);
+    } else {
+      // 渲染简洁的浮动搜索结果项
+      floatingFiltered.forEach((tool, index) => {
+        const item = document.createElement('div');
+        // 第一条结果默认选中
+        item.className = `h-12 px-3 py-2 flex items-center justify-between rounded-md transition-colors duration-200 cursor-pointer ${index === 0 ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`;
+        
+        // 如果是第一条结果，设置为当前选中
+        if (index === 0) {
+          currentSelectedIndex = 0;
         }
+        
+        item.innerHTML = `
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-6 h-6 bg-primary/10 dark:bg-primary/20 rounded flex items-center justify-center text-primary flex-shrink-0">
+              <i class="fa fa-wrench text-xs"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-medium text-sm text-gray-900 dark:text-gray-100 truncate">${tool.name || 'Unknown Tool'}</h4>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 whitespace-nowrap">
+            <span class="text-xs text-gray-500 dark:text-gray-400">${tool.category || '-'}</span>
+            ${tool.popularity ? `<span class="text-xs text-primary">${Math.round(tool.popularity * 100)}%</span>` : ''}
+          </div>
+        `;
+        
+        // 点击直接跳转到工具详情页
+        item.addEventListener('click', () => {
+          if (tool.file) {
+            window.location.href = `/free/detail/${tool.file}`;
+          } else {
+            // 如果没有file属性，使用原始的搜索功能
+            performFullSearch(tool.name || searchTerm);
+          }
+        });
+        
+        searchDOM.floatingResultsContent.appendChild(item);
       });
-      
-      searchDOM.floatingResultsContent.appendChild(item);
-    });
+    }
+    
+    // 更新浮动结果位置
+    updateFloatingResultsPosition();
+    
+    // 确保浮动结果可见
+    searchDOM.floatingResults.classList.remove('hidden');
+  } catch (error) {
+    console.error('Error in showFloatingResults:', error);
+    // 出错时尝试显示默认的空结果提示
+    if (searchDOM.floatingResults && searchDOM.floatingResultsContent) {
+      searchDOM.floatingResultsContent.innerHTML = `
+        <div class="p-4 text-center text-gray-500 dark:text-gray-400">
+          <p class="text-sm">Error loading results</p>
+        </div>
+      `;
+      searchDOM.floatingResults.classList.remove('hidden');
+    }
   }
-  
-  // 更新浮动结果位置
-  updateFloatingResultsPosition();
-  
-  searchDOM.floatingResults.classList.remove('hidden');
 }
 
 // 清空搜索
@@ -354,50 +389,66 @@ function clearSearch() {
 
 // 动态创建浮动结果容器
 function createFloatingResultsContainer() {
-  // 创建浮动结果容器
-  const floatingResults = document.createElement('div');
-  floatingResults.id = 'floating-results';
-  floatingResults.className = 'hidden fixed z-50 w-64 sm:w-80 md:w-96 max-h-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden';
+  // 检查是否已存在容器，防止重复创建
+  if (document.getElementById('floating-results')) {
+    searchDOM.floatingResults = document.getElementById('floating-results');
+    searchDOM.floatingResultsContent = document.getElementById('floating-results-content');
+    searchDOM.viewAllResultsBtn = document.getElementById('view-all-results');
+    searchDOM.resultsCount = document.getElementById('results-count');
+    return;
+  }
   
-  // 创建结果内容容器
-  const floatingResultsContent = document.createElement('div');
-  floatingResultsContent.id = 'floating-results-content';
-  floatingResultsContent.className = 'max-h-[calc(100%-70px)] overflow-y-auto';
-  
-  // 创建结果总数显示
-  const resultsCount = document.createElement('div');
-  resultsCount.id = 'results-count';
-  resultsCount.className = 'h-6 px-3 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-gray-100 dark:border-gray-700';
-  resultsCount.textContent = '0 results';
-  
-  // 创建查看全部结果按钮
-  const viewAllResultsBtn = document.createElement('button');
-  viewAllResultsBtn.id = 'view-all-results';
-  viewAllResultsBtn.className = 'w-full h-10 text-center text-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm font-medium border-t border-gray-100 dark:border-gray-700';
-  viewAllResultsBtn.textContent = 'View all results';
-  
-  // 组装容器
-  floatingResults.appendChild(floatingResultsContent);
-  floatingResults.appendChild(resultsCount);
-  floatingResults.appendChild(viewAllResultsBtn);
-  
-  // 更新DOM引用
-  searchDOM.resultsCount = resultsCount;
-  
-  // 添加到文档中
-  document.body.appendChild(floatingResults);
-  
-  // 更新DOM引用
-  searchDOM.floatingResults = floatingResults;
-  searchDOM.floatingResultsContent = floatingResultsContent;
-  searchDOM.viewAllResultsBtn = viewAllResultsBtn;
-  
-  // 设置浮动结果位置
-  if (searchDOM.searchInput) {
+  try {
+    // 创建浮动结果容器
+    const floatingResults = document.createElement('div');
+    floatingResults.id = 'floating-results';
+    floatingResults.className = 'hidden fixed z-50 w-64 sm:w-80 md:w-96 max-h-96 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden';
+    
+    // 创建结果内容容器
+    const floatingResultsContent = document.createElement('div');
+    floatingResultsContent.id = 'floating-results-content';
+    floatingResultsContent.className = 'max-h-[calc(100%-70px)] overflow-y-auto';
+    
+    // 创建结果总数显示
+    const resultsCount = document.createElement('div');
+    resultsCount.id = 'results-count';
+    resultsCount.className = 'h-6 px-3 text-xs text-gray-500 dark:text-gray-400 flex items-center justify-between border-t border-gray-100 dark:border-gray-700';
+    resultsCount.textContent = '0 results';
+    
+    // 创建查看全部结果按钮
+    const viewAllResultsBtn = document.createElement('button');
+    viewAllResultsBtn.id = 'view-all-results';
+    viewAllResultsBtn.className = 'w-full h-10 text-center text-primary hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 text-sm font-medium border-t border-gray-100 dark:border-gray-700';
+    viewAllResultsBtn.textContent = 'View all results';
+    
+    // 组装容器
+    floatingResults.appendChild(floatingResultsContent);
+    floatingResults.appendChild(resultsCount);
+    floatingResults.appendChild(viewAllResultsBtn);
+    
+    // 更新DOM引用
+    searchDOM.resultsCount = resultsCount;
+    
+    // 添加到文档中
+    document.body.appendChild(floatingResults);
+    
+    // 更新DOM引用
+    searchDOM.floatingResults = floatingResults;
+    searchDOM.floatingResultsContent = floatingResultsContent;
+    searchDOM.viewAllResultsBtn = viewAllResultsBtn;
+    
+    // 设置浮动结果位置
     updateFloatingResultsPosition();
     
-    // 监听窗口大小变化，更新浮动结果位置
+    // 监听窗口大小变化和滚动事件，更新浮动结果位置
     window.addEventListener('resize', updateFloatingResultsPosition);
+    window.addEventListener('scroll', updateFloatingResultsPosition);
+    
+    console.log('Floating results container created successfully');
+  } catch (error) {
+    console.error('Error creating floating results container:', error);
+    // 即使出错，也尝试设置默认位置
+    setDefaultFloatingPosition();
   }
 }
 
@@ -405,19 +456,24 @@ function createFloatingResultsContainer() {
 function updateFloatingResultsPosition() {
   if (!searchDOM.floatingResults) return;
   
-  // 不要修改HTML中已经设置好的定位样式
-  // HTML中浮动结果容器已经使用absolute定位相对于搜索框的父元素定位
-  // 我们只需确保它有合适的宽度和移除可能的transform效果
   try {
     const inputElement = activeSearchInput || searchDOM.searchInput;
     if (inputElement) {
       const inputRect = inputElement.getBoundingClientRect();
-      // 只设置宽度，不修改left和top，让它保持HTML中设置的相对于父元素的定位
+      // 设置浮动结果的位置为搜索框下方
+      searchDOM.floatingResults.style.position = 'fixed';
+      searchDOM.floatingResults.style.top = `${inputRect.bottom + window.scrollY + 5}px`;
+      searchDOM.floatingResults.style.left = `${inputRect.left + window.scrollX}px`;
       searchDOM.floatingResults.style.width = `${inputRect.width}px`;
-      searchDOM.floatingResults.style.transform = 'none'; // 移除可能的transform效果
+      searchDOM.floatingResults.style.transform = 'none';
+    } else {
+      // 如果找不到搜索框，设置默认位置
+      setDefaultFloatingPosition();
     }
   } catch (error) {
     console.error('Error updating floating results position:', error);
+    // 出错时设置默认位置
+    setDefaultFloatingPosition();
   }
 }
 
