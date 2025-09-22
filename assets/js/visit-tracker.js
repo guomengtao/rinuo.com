@@ -69,7 +69,7 @@ function recordPageVisit() {
         localStorage.setItem(VISIT_HISTORY_KEY, JSON.stringify(history));
         
     } catch (error) {
-        console.error('Failed to record page visit:', error);
+        // Silent error handling
     }
 }
 
@@ -87,7 +87,7 @@ function getRecentVisits() {
     try {
         return JSON.parse(localStorage.getItem(VISIT_HISTORY_KEY) || '[]');
     } catch (error) {
-        console.error('Failed to retrieve recent visits:', error);
+        // Silent error handling
         return [];
     }
 }
@@ -97,7 +97,7 @@ function clearVisitHistory() {
     try {
         localStorage.removeItem(VISIT_HISTORY_KEY);
     } catch (error) {
-        console.error('Failed to clear visit history:', error);
+        // Silent error handling
     }
 }
 

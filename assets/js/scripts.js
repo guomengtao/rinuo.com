@@ -38,7 +38,6 @@ function init() {
   // 添加一个小延迟，确保数据有时间加载
   setTimeout(() => {
     if (!isDataLoaded) {
-      console.warn('Data might not be fully loaded yet, using fallback temporarily');
       useFallbackData(true); // 临时使用备用数据
     }
   }, 1000);
@@ -62,7 +61,6 @@ async function loadToolsDataFromAllSources() {
   try {
     // 尝试从free/tools.json加载数据（与free/index.html保持一致）
     const response = await fetch('/free/tools.json');
-    console.log('Fetching from free/tools.json:', response.status);
     
     if (response.ok) {
       const data = await response.json();
@@ -72,9 +70,7 @@ async function loadToolsDataFromAllSources() {
     }
     
     // 如果free/tools.json加载失败，尝试本地数据源
-    console.warn('Failed to load from free/tools.json, trying local data');
     const localResponse = await fetch('assets/data/data.json');
-    console.log('Fetching from assets/data/data.json:', localResponse.status);
     
     if (localResponse.ok) {
       const localData = await localResponse.json();
@@ -84,11 +80,9 @@ async function loadToolsDataFromAllSources() {
     }
     
     // 如果所有数据源都失败，使用备用数据
-    console.error('All data sources failed, using fallback data');
     useFallbackData();
     
   } catch (error) {
-    console.error('Error loading tools data:', error);
     useFallbackData();
   }
 }
@@ -102,12 +96,8 @@ function processLoadedData(data, source) {
     
     // 获取热门工具（根据popularity排序）
     popularTools = [...tools].sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 12);
-    
-    console.log(`Tools loaded successfully from ${source}:`, tools.length, 'tools available');
-    console.log('Sample data:', tools.slice(0, 3)); // 添加调试信息，显示前3个工具
-    
+  
   } catch (jsonError) {
-    console.error('Failed to process tools data:', jsonError);
     useFallbackData();
   }
 }
@@ -117,7 +107,6 @@ function useFallbackData(temporary = false) {
   tools = getFallbackTools();
   popularTools = tools.slice(0, 5);
   filteredTools = [...tools];
-  console.log(`Using ${temporary ? 'temporary' : ''} fallback tools data:`, tools.length, 'tools available');
 }
 
 // 添加一个备用数据函数，确保即使数据加载失败也能搜索
@@ -207,12 +196,9 @@ function showFloatingResults(searchTerm) {
   
   // 确保tools数据已加载
   if (!tools || tools.length === 0) {
-    console.warn('No tools data available for search');
     // 使用备用数据进行搜索
     useFallbackData();
   }
-  
-  console.log(`Searching for: "${searchTerm}" in ${tools.length} tools`); // 添加搜索调试信息
   
   // 增强搜索逻辑，确保能根据不同关键词返回不同结果
   // 1. 首先筛选完全匹配
@@ -261,8 +247,7 @@ function showFloatingResults(searchTerm) {
   // 合并结果：完全匹配在前，部分匹配在后
   const floatingFiltered = [...exactMatches, ...partialMatches].slice(0, 6); // 显示前6个结果作为预览
   
-  console.log(`Search results for "${searchTerm}": ${floatingFiltered.length} tools found`); // 显示搜索结果数量
-  console.log('Results breakdown:', { exact: exactMatches.length, partial: partialMatches.length });
+
   
   // 清空浮动结果内容
   floatingResultsContent.innerHTML = '';

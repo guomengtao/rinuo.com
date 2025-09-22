@@ -1,15 +1,9 @@
 // ===== 全站书签(收藏)功能（Awwwards风格 + Tailwind） =====
 const BOOKMARK_KEY = 'bookmarks_v1';
-const DEBUG = true;
-
-function log(...args){ if(DEBUG) console.log('%c[bookmarks]','color:#06b6d4',...args);}
-function error(...args){ console.error('[bookmarks]',...args);}
 
 // Utility functions
 function storageAvailable(){
-    try{localStorage.setItem('__t','t');localStorage.removeItem('__t');return true;}
-    catch(e){error('localStorage not available:',e);return false;}
-}
+    try{localStorage.setItem('__t','t');localStorage.removeItem('__t');return true;}catch(e){return false;}}
 function readBookmarks(){ try{return JSON.parse(localStorage.getItem(BOOKMARK_KEY)||'[]');}catch{return [];} }
 function writeBookmarks(list){ localStorage.setItem(BOOKMARK_KEY,JSON.stringify(list)); }
 function getPageName(url){

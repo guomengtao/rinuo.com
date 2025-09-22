@@ -7,6 +7,9 @@ let popularTools = [];
 let isDataLoaded = false; // 标记数据是否已成功加载
 let currentSelectedIndex = -1; // 当前选中的搜索结果索引
 
+// 当前活动的搜索框
+let activeSearchInput = null;
+
 // DOM元素 - 会在初始化时获取
 let searchDOM = {
   searchInput: null,
@@ -29,9 +32,7 @@ async function loadToolsDataFromAllSources() {
     
     for (const path of pathsToTry) {
       try {
-        console.log(`Trying to load data from: ${path}`);
         const response = await fetch(path);
-        console.log(`Fetch status for ${path}:`, response.status);
         
         if (response.ok) {
           // 先检查响应内容是否为JSON格式
@@ -39,25 +40,21 @@ async function loadToolsDataFromAllSources() {
           if (contentType && contentType.includes('application/json')) {
             loadedData = await response.json();
             successPath = path;
-            console.log(`Successfully loaded data from: ${path}`);
             break;
           } else {
-            console.warn(`Response from ${path} is not JSON:`, contentType);
             // 尝试手动解析，可能是纯JSON没有Content-Type头
             const text = await response.text();
             try {
               loadedData = JSON.parse(text);
               successPath = path;
-              console.log(`Successfully parsed JSON from ${path} despite content-type`);
               break;
             } catch (jsonError) {
-              console.error(`Failed to parse response from ${path} as JSON:`, jsonError);
-              console.error(`Response content snippet:`, text.substring(0, 100));
+              // 静默失败，继续尝试下一个路径
             }
           }
         }
       } catch (fetchError) {
-        console.error(`Error fetching from ${path}:`, fetchError.message);
+        // 静默失败，继续尝试下一个路径
       }
     }
     
@@ -69,11 +66,9 @@ async function loadToolsDataFromAllSources() {
     }
     
     // 如果所有路径都失败，使用备用数据
-    console.error('All data sources failed, using fallback data with limited tools');
     useFallbackData();
     
   } catch (error) {
-    console.error('Critical error in data loading process:', error);
     useFallbackData();
   }
 }
@@ -88,10 +83,7 @@ function processLoadedData(data, source) {
     // 获取热门工具（根据popularity排序）
     popularTools = [...tools].sort((a, b) => (b.popularity || 0) - (a.popularity || 0)).slice(0, 12);
     
-    console.log(`Tools loaded successfully from ${source}:`, tools.length, 'tools available');
-    
   } catch (jsonError) {
-    console.error('Failed to process tools data:', jsonError);
     useFallbackData();
   }
 }
@@ -101,7 +93,7 @@ function useFallbackData(temporary = false) {
   tools = getFallbackTools();
   popularTools = tools.slice(0, 5);
   filteredTools = [...tools];
-  console.log(`Using ${temporary ? 'temporary' : ''} fallback tools data:`, tools.length, 'tools available');
+  // Silent fallback handling
 }
 
 // 添加一个备用数据函数，确保即使数据加载失败也能搜索
@@ -136,11 +128,15 @@ function getFallbackTools() {
 }
 
 // ------------------- 搜索功能核心函数 -------------------
-// 按搜索过滤
-function filterBySearch() {
-  if (!searchDOM.searchInput) return;
+// 过滤搜索结果
+function filterBySearch(e) {
+  // 获取触发事件的输入元素
+  const inputElement = e.target;
   
-  const searchTerm = searchDOM.searchInput.value.toLowerCase().trim();
+  // 保存当前活动的搜索框
+  activeSearchInput = inputElement;
+  
+  const searchTerm = inputElement.value.toLowerCase().trim();
   
   // 显示/隐藏清除按钮
   if (searchDOM.clearSearchBtn) {
@@ -174,6 +170,14 @@ function performSearch(searchTerm) {
 
 // 执行搜索并跳转到/free/index.html
 function performFullSearch(searchTerm) {
+  // 如果没有提供搜索词，尝试从当前活动的搜索框或桌面搜索框获取
+  if (!searchTerm || !searchTerm.trim()) {
+    const inputElement = activeSearchInput || searchDOM.searchInput;
+    if (inputElement) {
+      searchTerm = inputElement.value.toLowerCase().trim();
+    }
+  }
+  
   if (!searchTerm.trim()) return;
   
   // 构建带搜索参数的URL
@@ -195,12 +199,9 @@ function showFloatingResults(searchTerm) {
   
   // 确保tools数据已加载
   if (!tools || tools.length === 0) {
-    console.warn('No tools data available for search');
     // 使用备用数据进行搜索
     useFallbackData();
   }
-  console.log('Total tools available for search:', tools.length);
-  console.log('Tools array sample:', JSON.stringify(tools.slice(0, 3)));
   
   // 增强搜索逻辑，确保能根据不同关键词返回不同结果
   // 1. 首先筛选完全匹配
@@ -268,24 +269,17 @@ function showFloatingResults(searchTerm) {
   
   // 更新结果总数 - 确保显示所有匹配结果的真实数量
   const totalResults = exactMatches.length + partialMatches.length;
-  console.log('Total search results:', totalResults, 'for search term:', searchTerm);
-  console.log('Exact matches:', exactMatches.length, 'Partial matches:', partialMatches.length);
-  console.log('Total tools available:', tools.length);
   
   // 双重保障：首先尝试使用searchDOM引用，如果不存在则直接通过ID查找
   let resultsCountElement = searchDOM.resultsCount;
   if (!resultsCountElement) {
     resultsCountElement = document.getElementById('results-count');
-    console.log('Fallback to getElementById for results-count:', !!resultsCountElement);
   }
   
   if (resultsCountElement) {
-    console.log('Updating results count to:', totalResults);
     resultsCountElement.textContent = `${totalResults} result${totalResults !== 1 ? 's' : ''}`;
     // 同时更新searchDOM引用，确保后续操作正常
     searchDOM.resultsCount = resultsCountElement;
-  } else {
-    console.error('Critical: resultsCount element not found in DOM');
   }
   
   if (floatingFiltered.length === 0) {
@@ -335,13 +329,17 @@ function showFloatingResults(searchTerm) {
     });
   }
   
+  // 更新浮动结果位置
+  updateFloatingResultsPosition();
+  
   searchDOM.floatingResults.classList.remove('hidden');
 }
 
 // 清空搜索
 function clearSearch() {
-  if (searchDOM.searchInput) {
-    searchDOM.searchInput.value = '';
+  // 如果有活动的搜索框，清空它
+  if (activeSearchInput) {
+    activeSearchInput.value = '';
   }
   if (searchDOM.clearSearchBtn) {
     searchDOM.clearSearchBtn.classList.add('hidden');
@@ -405,14 +403,33 @@ function createFloatingResultsContainer() {
 
 // 更新浮动结果位置
 function updateFloatingResultsPosition() {
-  if (!searchDOM.floatingResults || !searchDOM.searchInput) return;
+  if (!searchDOM.floatingResults) return;
   
-  const inputRect = searchDOM.searchInput.getBoundingClientRect();
+  // 不要修改HTML中已经设置好的定位样式
+  // HTML中浮动结果容器已经使用absolute定位相对于搜索框的父元素定位
+  // 我们只需确保它有合适的宽度和移除可能的transform效果
+  try {
+    const inputElement = activeSearchInput || searchDOM.searchInput;
+    if (inputElement) {
+      const inputRect = inputElement.getBoundingClientRect();
+      // 只设置宽度，不修改left和top，让它保持HTML中设置的相对于父元素的定位
+      searchDOM.floatingResults.style.width = `${inputRect.width}px`;
+      searchDOM.floatingResults.style.transform = 'none'; // 移除可能的transform效果
+    }
+  } catch (error) {
+    console.error('Error updating floating results position:', error);
+  }
+}
+
+// 设置浮动结果的默认位置
+function setDefaultFloatingPosition() {
+  if (!searchDOM.floatingResults) return;
   
-  // 设置浮动结果位置在搜索框下方
-  searchDOM.floatingResults.style.left = `${inputRect.left}px`;
-  searchDOM.floatingResults.style.top = `${inputRect.bottom + 8}px`;
-  searchDOM.floatingResults.style.width = `${inputRect.width}px`;
+  // 默认位置：页面顶部中央
+  searchDOM.floatingResults.style.left = '50%';
+  searchDOM.floatingResults.style.transform = 'translateX(-50%)';
+  searchDOM.floatingResults.style.top = '80px'; // 距离顶部有一定距离
+  searchDOM.floatingResults.style.width = '320px'; // 默认宽度
 }
 
 // 更新选中的搜索结果
@@ -468,27 +485,41 @@ export async function initSearch() {
     // 添加一个小延迟，确保数据有时间加载
     setTimeout(() => {
       if (!isDataLoaded) {
-        console.warn('Data might not be fully loaded yet, using fallback temporarily');
         useFallbackData(true); // 临时使用备用数据
       }
     }, 1000);
     
     // 获取DOM元素
     searchDOM.searchInput = document.getElementById('searchInput');
+    searchDOM.searchInputMobile = document.getElementById('searchInputMobile');
     searchDOM.clearSearchBtn = document.getElementById('clearSearchBtn');
     searchDOM.searchButton = document.getElementById('searchButton');
     
-    // 尝试获取浮动结果容器，如果不存在则创建
-    if (!document.getElementById('floating-results')) {
+    // 只使用HTML中已有的浮动结果容器，不动态创建
+    searchDOM.floatingResults = document.getElementById('floating-results');
+    searchDOM.floatingResultsContent = document.getElementById('floating-results-content');
+    searchDOM.viewAllResultsBtn = document.getElementById('view-all-results');
+    
+    // 如果找不到容器，再创建一个
+    if (!searchDOM.floatingResults) {
       createFloatingResultsContainer();
-    } else {
-      searchDOM.floatingResults = document.getElementById('floating-results');
-      searchDOM.floatingResultsContent = document.getElementById('floating-results-content');
-      searchDOM.viewAllResultsBtn = document.getElementById('view-all-results');
     }
     
     // 添加事件监听
-    if (searchDOM.searchInput) searchDOM.searchInput.addEventListener('input', filterBySearch);
+    if (searchDOM.searchInput) {
+      searchDOM.searchInput.addEventListener('input', filterBySearch);
+      // 设置焦点事件监听器，更新活动搜索框
+      searchDOM.searchInput.addEventListener('focus', () => {
+        activeSearchInput = searchDOM.searchInput;
+      });
+    }
+    if (searchDOM.searchInputMobile) {
+      searchDOM.searchInputMobile.addEventListener('input', filterBySearch);
+      // 设置焦点事件监听器，更新活动搜索框
+      searchDOM.searchInputMobile.addEventListener('focus', () => {
+        activeSearchInput = searchDOM.searchInputMobile;
+      });
+    }
     if (searchDOM.clearSearchBtn) searchDOM.clearSearchBtn.addEventListener('click', clearSearch);
     if (searchDOM.searchButton) searchDOM.searchButton.addEventListener('click', () => {
       if (searchDOM.searchInput && searchDOM.searchInput.value.trim()) {
@@ -502,8 +533,8 @@ export async function initSearch() {
     });
     
     // 添加键盘事件处理（上下键选择和回车）
-    if (searchDOM.searchInput) {
-      searchDOM.searchInput.addEventListener('keydown', (e) => {
+    function setupKeyboardEvents(inputElement) {
+      inputElement.addEventListener('keydown', (e) => {
         // 上下键选择结果
         if (e.key === 'ArrowDown') {
           e.preventDefault(); // 阻止默认行为（滚动页面）
@@ -540,10 +571,14 @@ export async function initSearch() {
         }
       });
     }
-    
+
+    // 为桌面和移动搜索框设置键盘事件
+    if (searchDOM.searchInput) setupKeyboardEvents(searchDOM.searchInput);
+    if (searchDOM.searchInputMobile) setupKeyboardEvents(searchDOM.searchInputMobile);
+
     // 添加点击外部关闭浮动结果的功能
     document.addEventListener('click', (e) => {
-      if (searchDOM.searchInput && searchDOM.floatingResults && !searchDOM.searchInput.contains(e.target) && !searchDOM.floatingResults.contains(e.target)) {
+      if ((searchDOM.searchInput || searchDOM.searchInputMobile) && searchDOM.floatingResults && !searchDOM.searchInput?.contains(e.target) && !searchDOM.searchInputMobile?.contains(e.target) && !searchDOM.floatingResults.contains(e.target)) {
         searchDOM.floatingResults.classList.add('hidden');
       }
     });
@@ -555,9 +590,8 @@ export async function initSearch() {
       });
     }
     
-    console.log('Search module initialized successfully');
   } catch (error) {
-    console.error('Error initializing search module:', error);
+    // 静默处理初始化错误
   }
 }
 

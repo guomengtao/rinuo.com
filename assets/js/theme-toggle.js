@@ -1,7 +1,3 @@
-console.log('Theme toggle script loaded');
-
-console.log('Theme toggle script loaded');
-
 // 创建全局主题切换实例，以便在控制台测试和其他模块访问
 window.globalThemeToggle = {
   initialized: false,
@@ -9,8 +5,6 @@ window.globalThemeToggle = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('DOMContentLoaded event fired for theme toggle functionality');
-  
   // 获取主题切换按钮元素
   let themeToggle = document.getElementById('themeToggle');
   
@@ -33,11 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
   function toggleTheme() {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
-    console.log(`Theme toggled to ${isDark ? 'dark' : 'light'} mode`);
   }
   
   if (themeToggle) {
-    console.log('Theme toggle button found, adding click event listener');
     // 初始化主题
     initializeTheme();
     // 添加点击事件监听器，点击时切换主题
@@ -47,10 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
     window.globalThemeToggle.initialized = true;
     window.globalThemeToggle.themeBtn = themeToggle;
   } else {
-    console.log('Theme toggle button not found, stopping auto-creation as per configuration');
     // 按照用户要求，当页面没有设置对应id时，不自动加入按钮
     window.globalThemeToggle.initialized = false;
     window.globalThemeToggle.themeBtn = null;
-    console.log('Theme toggle functionality not initialized since no button exists');
   }
 });

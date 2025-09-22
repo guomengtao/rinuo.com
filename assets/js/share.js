@@ -1,11 +1,8 @@
 // Simplified share functionality
-console.log('Share functionality module loaded');
-
 // 定义全局实例
 window.globalShare = {
   shareBtn: null,
-  initialized: false,
-  debugPrefix: '[Share Module Debug]'
+  initialized: false
 };
 
 // 创建模态框样式
@@ -379,8 +376,6 @@ function handleShare(site) {
   
   // 在新窗口中打开分享链接
   window.open(shareUrl, '_blank', 'noopener,noreferrer');
-  
-  console.log(`${window.globalShare.debugPrefix} Shared to ${site.label}: ${shareUrl}`);
 }
 
 // 复制链接到剪贴板
@@ -395,10 +390,7 @@ function copyLinkToClipboard(link, button) {
       button.textContent = originalText;
       button.classList.remove('copied');
     }, 2000);
-    
-    console.log(`${window.globalShare.debugPrefix} Link copied to clipboard: ${link}`);
   }).catch(err => {
-    console.error(`${window.globalShare.debugPrefix} Failed to copy link:`, err);
     
     // 降级方案：选择并复制
     const textArea = document.createElement('textarea');
@@ -416,7 +408,7 @@ function copyLinkToClipboard(link, button) {
         button.classList.remove('copied');
       }, 2000);
     } catch (fallbackErr) {
-      console.error(`${window.globalShare.debugPrefix} Fallback copy failed:`, fallbackErr);
+      // 静默处理错误
     }
     document.body.removeChild(textArea);
   });
@@ -433,7 +425,6 @@ function showModal() {
     }
     
     modal.classList.add('visible');
-    console.log(`${window.globalShare.debugPrefix} Modal shown`);
   }
 }
 
@@ -442,13 +433,10 @@ function hideModal() {
   const modal = document.getElementById('shareModal');
   if (modal) {
     modal.classList.remove('visible');
-    console.log(`${window.globalShare.debugPrefix} Modal hidden`);
   }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log(`${window.globalShare.debugPrefix} DOMContentLoaded event fired`);
-  
   // 创建模态框样式和结构
   createModalStyles();
   createModal();
@@ -457,7 +445,6 @@ document.addEventListener('DOMContentLoaded', () => {
   window.globalShare.shareBtn = shareBtn;
   
   if (shareBtn) {
-    console.log(`${window.globalShare.debugPrefix} Share button found, adding click event listener`);
     shareBtn.addEventListener('click', () => {
       showModal();
     });
@@ -465,9 +452,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 标记为已初始化
     window.globalShare.initialized = true;
   } else {
-    console.log(`${window.globalShare.debugPrefix} Share button not found`);
     window.globalShare.initialized = false;
   }
-  
-  console.log(`${window.globalShare.debugPrefix} Module initialized, status:`, window.globalShare.initialized);
 });

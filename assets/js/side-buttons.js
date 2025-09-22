@@ -1,27 +1,16 @@
 // assets/js/side-buttons.js
 
 // 动态加载 side-buttons.html
-console.log("Fetching side-buttons.html ...");
-fetch('/assets/html/side-buttons.html')
-  .then(res => {
-    console.log("Fetched HTML response:", res);
-    return res.text();
-  })
-  .then(html => {
-    // 把 HTML 插入到 body 末尾
-    document.body.insertAdjacentHTML('beforeend', html);
-    console.log("Inserted side-buttons.html into DOM");
-    const debugTopBtn = document.getElementById('top-btn');
-    if (debugTopBtn) {
-      console.log("DEBUG: #top-btn found with classes:", debugTopBtn.classList.value);
-    } else {
-      console.warn("DEBUG: #top-btn not found in inserted HTML");
-    }
+document.addEventListener('DOMContentLoaded', () => {
+  fetch('/assets/html/side-buttons.html')
+    .then(res => res.text())
+    .then(html => {
+      // 把 HTML 插入到 body 末尾
+      document.body.insertAdjacentHTML('beforeend', html);
 
     // === 按钮逻辑 ===
 
     // 返回顶部按钮
-    console.log("Top button initialized");
     const topBtn = document.getElementById('top-btn');
     window.addEventListener('scroll', () => {
       if (window.scrollY > 200) {
@@ -35,7 +24,6 @@ fetch('/assets/html/side-buttons.html')
     });
 
     // 主页按钮
-    console.log("Home button initialized");
     const homeBtn = document.getElementById('home-btn');
     if (homeBtn) {
       homeBtn.addEventListener('click', () => {
@@ -44,7 +32,6 @@ fetch('/assets/html/side-buttons.html')
     }
 
     // 切换主题按钮
-    console.log("Theme button initialized");
     const themeBtn = document.getElementById('theme-btn');
     if (themeBtn) {
       const sunIcon = themeBtn.querySelector('.fa-sun');
@@ -100,7 +87,6 @@ fetch('/assets/html/side-buttons.html')
     }
 
     // 展开更多按钮
-    console.log("More button initialized");
     const moreBtn = document.getElementById('more-btn');
     const extraButtons = document.getElementById('extra-buttons');
     if (moreBtn && extraButtons) {
@@ -110,7 +96,6 @@ fetch('/assets/html/side-buttons.html')
     }
 
     // 复制链接按钮
-    console.log("Copy link button initialized");
     const copyBtn = document.getElementById('copy-link-btn');
     if (copyBtn) {
       copyBtn.addEventListener('click', () => {
@@ -120,7 +105,6 @@ fetch('/assets/html/side-buttons.html')
     }
 
     // 刷新按钮
-    console.log("Refresh button initialized");
     const refreshBtn = document.getElementById('refresh-btn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => {
@@ -143,5 +127,6 @@ fetch('/assets/html/side-buttons.html')
         toast.classList.remove('translate-y-0', 'opacity-100');
       }, 2000);
     }
-  })
-  .catch(err => console.error("Error loading side-buttons.html:", err));
+    })
+    .catch(err => {});
+});

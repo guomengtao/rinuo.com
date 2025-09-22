@@ -35,8 +35,7 @@ class EmailSubscription {
             ...window.subscriptionMessages // Allow overriding texts via global variable
         };
 
-        // Debug prefix
-        this.debugPrefix = '[Email Subscription Debug]';
+
         
         // Timeout references
         this.hideTimeout = null;
@@ -46,139 +45,100 @@ class EmailSubscription {
     }
     
     // Initialize: detect elements and bind events
-    init() {
-        console.log(`${this.debugPrefix} Starting component initialization`);
-        
-        // Get elements from the page
-        this.elements = {
-            input: document.getElementById(this.ids.input),
-            button: document.getElementById(this.ids.button)
-        };
-        
-        // Detailed log: output element detection status
-        console.log(`${this.debugPrefix} Element detection results:`, {
-            input: this.elements.input ? 'Found' : 'Not found',
-            button: this.elements.button ? 'Found' : 'Not found'
-        });
-        
-        // Check if all required elements are present
-        const missing = Object.entries(this.elements)
-            .filter(([_, el]) => !el)
-            .map(([key]) => `#${this.ids[key]}`);
-        
-        if (missing.length > 0) {
-            console.error(`${this.debugPrefix} Initialization failed: Missing required elements ${missing.join(', ')}`);
-            return;
-        }
+        init() {
+            // Get elements from the page
+            this.elements = {
+                input: document.getElementById(this.ids.input),
+                button: document.getElementById(this.ids.button)
+            };
+            
+            // Check if all required elements are present
+            const missing = Object.entries(this.elements)
+                .filter(([_, el]) => !el)
+                .map(([key]) => `#${this.ids[key]}`);
+            
+            if (missing.length > 0) {
+                return;
+            }
         
         // Create message container (will show inside button now)
         this.createMessageContainer();
         
         // Bind button click event
-        this.elements.button.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log(`${this.debugPrefix} Subscribe button clicked`);
-            this.handleSubmit();
-        });
-        
-        // Support submitting with Enter key
-        this.elements.input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            this.elements.button.addEventListener('click', (e) => {
                 e.preventDefault();
-                console.log(`${this.debugPrefix} Enter key pressed, triggering subscription`);
                 this.handleSubmit();
-            }
-        });
-        
-        console.log(`${this.debugPrefix} Component initialization complete, functionality ready`);
+            });
+            
+            // Support submitting with Enter key
+            this.elements.input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleSubmit();
+                }
+            });
     }
     
     // Create message container - now using button itself as container
-    createMessageContainer() {
-        // Save the button's original HTML content (like icons)
-        this.buttonOriginalContent = this.elements.button.innerHTML;
-        
-        // Use button itself as message container
-        this.elements.message = this.elements.button;
-        
-        console.log(`${this.debugPrefix} Set button as message container`);
-    }
+        createMessageContainer() {
+            // Save the button's original HTML content (like icons)
+            this.buttonOriginalContent = this.elements.button.innerHTML;
+            
+            // Use button itself as message container
+            this.elements.message = this.elements.button;
+        }
     
     // Core submission logic
-    async handleSubmit() {
-        const { input, button, message } = this.elements;
-        const email = input.value.trim();
-        const name = input.dataset.name || ''; // Support getting name from input's data attribute
-        
-        console.log(`${this.debugPrefix} Starting subscription process, email: ${email}, name: ${name}`);
-        
-        // Email validation
-        if (!email) {
-            console.log(`${this.debugPrefix} Validation failed: Email is empty`);
-            this.showMessage(message, this.messages.empty, 'error');
-            return;
-        }
-        
-        if (!this.validateEmail(email)) {
-            console.log(`${this.debugPrefix} Validation failed: Invalid email format (${email})`);
-            this.showMessage(message, this.messages.invalid, 'error');
-            return;
-        }
-        
-        console.log(`${this.debugPrefix} Email validation passed (${email})`);
-        
-        // Prevent duplicate submissions
-        button.disabled = true;
-        this.showMessage(message, this.messages.loading, 'info'); // Show loading message
-        
-        try {
-            // Check if in local development environment
-            const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            console.log(`${this.debugPrefix} Environment check: ${isDev ? 'Local development' : 'Production'}`);
+        async handleSubmit() {
+            const { input, button, message } = this.elements;
+            const email = input.value.trim();
+            const name = input.dataset.name || ''; // Support getting name from input's data attribute
             
-            // Construct request URL
-            const requestUrl = `${this.config.url}/functions/v1/${this.config.functionName}`;
-            console.log(`${this.debugPrefix} Preparing to send request to: ${requestUrl}`);
+            // Email validation
+            if (!email) {
+                this.showMessage(message, this.messages.empty, 'error');
+                return;
+            }
             
-            // Debug: show first 10 and last 10 chars of API key (to confirm it's complete)
-            console.log(`${this.debugPrefix} API key validation: ${this.config.key.substring(0, 10)}...${this.config.key.substring(this.config.key.length - 10)}`);
+            if (!this.validateEmail(email)) {
+                this.showMessage(message, this.messages.invalid, 'error');
+                return;
+            }
+            
+            // Prevent duplicate submissions
+            button.disabled = true;
+            this.showMessage(message, this.messages.loading, 'info'); // Show loading message
+            
+            try {
+                // Construct request URL
+                const requestUrl = `${this.config.url}/functions/v1/${this.config.functionName}`;
             
             // Call Supabase Cloud Function (using full API key)
-            const response = await fetch(
-                requestUrl,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${this.config.key}`
-                    },
-                    body: JSON.stringify({ email, name }) // Send both email and name
+                const response = await fetch(
+                    requestUrl,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.config.key}`
+                        },
+                        body: JSON.stringify({ email, name }) // Send both email and name
+                    }
+                );
+                
+                // Parse response content
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonError) {
+                    throw new Error('Server returned invalid format');
                 }
-            );
-            
-            // Output response status info
-            console.log(`${this.debugPrefix} Received response: status=${response.status}, statusText=${response.statusText}`);
-            
-            // Parse response content
-            let result;
-            try {
-                result = await response.json();
-                console.log(`${this.debugPrefix} Response content parsed successfully:`, result);
-            } catch (jsonError) {
-                console.error(`${this.debugPrefix} Failed to parse response content (not JSON format):`, jsonError);
-                console.log(`${this.debugPrefix} Raw response content:`, await response.text());
-                throw new Error('Server returned invalid format');
-            }
-            
-            // Check response status
-            if (!response.ok) {
-                const errorMsg = result.error || `HTTP error: ${response.status}`;
-                console.error(`${this.debugPrefix} Request failed: ${errorMsg}`);
-                throw new Error(errorMsg);
-            }
-            
-            // Subscription successful - show message using API response info
-            console.log(`${this.debugPrefix} Subscription successful, email: ${email}`);
+                
+                // Check response status
+                if (!response.ok) {
+                    const errorMsg = result.error || `HTTP error: ${response.status}`;
+                    throw new Error(errorMsg);
+                }
             
             // Show different messages based on API response status
             if (result.isVerified) {
@@ -206,21 +166,18 @@ class EmailSubscription {
             input.value = '';
             
         } catch (err) {
-            console.error(`${this.debugPrefix} Subscription process error:`, err);
-            // Use API error message if available
-            const errorMsg = err.message || this.messages.error;
-            this.showMessage(message, errorMsg, 'error');
-        } finally {
-            // Restore button state
-            button.disabled = false;
-            // Note: Button content will be auto-restored in showMessage's setTimeout
-            console.log(`${this.debugPrefix} Subscription process ended, button state restored`);
-        }
+                // Use API error message if available
+                const errorMsg = err.message || this.messages.error;
+                this.showMessage(message, errorMsg, 'error');
+            } finally {
+                // Restore button state
+                button.disabled = false;
+                // Note: Button content will be auto-restored in showMessage's setTimeout
+            }
     }
     
     // Show message as a beautiful popup notification
-    showMessage(element, content, type, isHtml = false) {
-        console.log(`${this.debugPrefix} Showing popup message: [${type}] ${content}`);
+        showMessage(element, content, type, isHtml = false) {
         
         // Check if element is button container
         const isButtonContainer = element === this.elements.button;
@@ -309,18 +266,16 @@ class EmailSubscription {
             element.classList.add(`subscription-${type}`);
             
             // Auto-restore button state after 3 seconds (for success messages only)
-            if (type === 'success') {
-                clearTimeout(this.hideTimeout);
-                this.hideTimeout = setTimeout(() => {
-                    console.log(`${this.debugPrefix} Auto-restoring button state`);
-                    
-                    // Restore button's original content
-                    element.innerHTML = this.buttonOriginalContent || this.messages.subscribe;
-                    
-                    // Remove all state classes
-                    element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
-                }, 3000);
-            }
+                if (type === 'success') {
+                    clearTimeout(this.hideTimeout);
+                    this.hideTimeout = setTimeout(() => {
+                        // Restore button's original content
+                        element.innerHTML = this.buttonOriginalContent || this.messages.subscribe;
+                        
+                        // Remove all state classes
+                        element.classList.remove('subscription-success', 'subscription-error', 'subscription-info', 'subscription-loading');
+                    }, 3000);
+                }
         }
     }
     
@@ -347,27 +302,22 @@ class EmailSubscription {
     }
     
     // Email format validation
-    validateEmail(email) {
-        const isValid = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
-        console.log(`${this.debugPrefix} Email format validation: ${email} => ${isValid ? 'Valid' : 'Invalid'}`);
-        return isValid;
-    }
+        validateEmail(email) {
+            const isValid = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/.test(email);
+            return isValid;
+        }
 }
 
 // Auto-initialize (browser environment only)
 if (typeof window !== 'undefined') {
-    console.log('[Email Subscription Debug] Browser environment detected, preparing initialization');
     // Wait for DOM to be fully loaded (to ensure elements exist)
     const initWhenReady = () => {
-        console.log('[Email Subscription Debug] DOM is ready, starting component instance creation');
         new EmailSubscription();
     };
     
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        console.log('[Email Subscription Debug] DOM already loaded, initializing immediately');
         initWhenReady();
     } else {
-        console.log('[Email Subscription Debug] Waiting for DOM to load before initializing');
         document.addEventListener('DOMContentLoaded', initWhenReady);
     }
 }

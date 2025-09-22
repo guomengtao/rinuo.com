@@ -15,7 +15,6 @@ let tawkAPI = window.Tawk_API || {};
 export function initTawk() {
   // 若已加载，直接返回API，避免重复请求
   if (tawkLoaded) {
-    console.log("Tawk.to 已初始化，直接返回API");
     return Promise.resolve(tawkAPI);
   }
 
@@ -30,13 +29,11 @@ export function initTawk() {
       // 3. 监听Tawk.to加载完成事件（加载成功后标记状态并返回API）
       tawkAPI.onLoad = function () {
         tawkLoaded = true;
-        console.log("Tawk.to 客服加载完成");
         resolve(tawkAPI);
       };
 
       // 4. 监听Tawk.to会话状态变化（可选：可根据业务扩展，如“用户进入会话”时触发操作）
       tawkAPI.onStatusChange = function (status) {
-        console.log("Tawk.to 会话状态变化：", status);
         // 状态说明：
         // - 'online'：客服在线
         // - 'offline'：客服离线
@@ -83,7 +80,6 @@ export function showTawkWindow() {
   if (tawkLoaded && tawkAPI) {
     tawkAPI.maximize(); // Tawk.to原生方法：最大化/显示客服窗口
   } else {
-    console.warn("Tawk.to 未加载完成，无法显示客服窗口");
     // 可选：未加载时自动初始化并显示
     initTawk().then(() => tawkAPI.maximize());
   }
@@ -97,8 +93,6 @@ export function showTawkWindow() {
 export function hideTawkWindow() {
   if (tawkLoaded && tawkAPI) {
     tawkAPI.minimize(); // Tawk.to原生方法：最小化/隐藏客服窗口
-  } else {
-    console.warn("Tawk.to 未加载完成，无法隐藏客服窗口");
   }
 }
 
@@ -121,7 +115,7 @@ export function setTawkUserInfo(userInfo = {}) {
         // memberLevel: "VIP"
       },
       function (error) {
-        if (error) console.error("Tawk.to 设置用户信息失败：", error);
+        // 静默处理错误
       }
     );
   }
@@ -137,12 +131,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // 页面DOM加载完成后，自动初始化Tawk.to
   initTawk()
     .then(() => {
-      console.log("Tawk.to 自动初始化成功");
       // 可选：若有登录态，可在此处设置用户信息（需替换为实际用户数据）
       // const currentUser = getUserInfoFromLocalStorage(); // 假设从本地存储获取用户信息
       // setTawkUserInfo(currentUser);
     })
     .catch((error) => {
-      console.error("Tawk.to 自动初始化失败：", error);
+      // 静默处理错误
     });
 });
