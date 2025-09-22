@@ -466,8 +466,9 @@ function updateFloatingResultsPosition() {
       const inputRect = inputElement.getBoundingClientRect();
       // 设置浮动结果的位置为搜索框下方
       searchDOM.floatingResults.style.position = 'fixed';
-      searchDOM.floatingResults.style.top = `${inputRect.bottom + window.scrollY + 5}px`;
-      searchDOM.floatingResults.style.left = `${inputRect.left + window.scrollX}px`;
+      // 修复：移除window.scrollY和window.scrollX，因为fixed定位是相对于视口的
+      searchDOM.floatingResults.style.top = `${inputRect.bottom + 5}px`;
+      searchDOM.floatingResults.style.left = `${inputRect.left}px`;
       searchDOM.floatingResults.style.width = `${inputRect.width}px`;
       searchDOM.floatingResults.style.transform = 'none';
     } else {
