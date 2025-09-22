@@ -1,6 +1,7 @@
 import '/assets/js/bookmarks.js';       // Import triggers auto-start
 import '/assets/js/email-subscription.js'; // Import triggers auto-start
 import '/assets/js/main-search.js';      // Main search functionality import
+import '/assets/js/auto-focus-search.js'; // Auto-focus for search inputs
 import '/assets/js/visit-tracker.js';       // Visit history tracker
 import '/assets/js/recent-visits.js';       // Recent visits rendering
 import '/assets/js/recent-bookmarks.js';    // Recent bookmarks rendering

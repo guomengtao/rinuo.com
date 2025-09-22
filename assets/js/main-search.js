@@ -338,13 +338,17 @@ function showFloatingResults(searchTerm) {
         `;
         
         // 点击直接跳转到工具详情页
-        item.addEventListener('click', () => {
-          if (tool.file) {
-            window.location.href = `/free/detail/${tool.file}`;
-          } else {
-            // 如果没有file属性，使用原始的搜索功能
-            performFullSearch(tool.name || searchTerm);
-          }
+        item.addEventListener('click', (e) => {
+        // 防止事件冒泡
+        e.stopPropagation();
+        
+        if (tool.file) {
+        // 确保在当前窗口打开链接
+        window.location.href = `/free/detail/${tool.file}`;
+        } else {
+        // 如果没有file属性，使用原始的搜索功能
+        performFullSearch(tool.name || searchTerm);
+        }
         });
         
         searchDOM.floatingResultsContent.appendChild(item);
@@ -601,8 +605,11 @@ export async function initSearch() {
         } else if (e.key === 'Enter') {
           e.preventDefault(); // 阻止默认行为
           
+          // 获取当前活动的搜索框
+          const currentInput = activeSearchInput || searchDOM.searchInput;
+          
           // 如果搜索框有内容且浮动结果可见，优先打开选中的结果
-          if (searchDOM.searchInput.value.trim() && 
+          if (currentInput && currentInput.value.trim() && 
               searchDOM.floatingResults && 
               !searchDOM.floatingResults.classList.contains('hidden')) {
             
@@ -623,7 +630,7 @@ export async function initSearch() {
           }
           
           // 如果没有搜索结果或搜索框为空，则执行完整搜索
-          performFullSearch(searchDOM.searchInput.value.toLowerCase().trim());
+          // performFullSearch(searchDOM.searchInput.value.toLowerCase().trim());
         }
       });
     }
