@@ -3,907 +3,646 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Replit - Online IDE & Code Collaboration Platform</title>
-    <meta name="description" content="Replit is a powerful online IDE and code collaboration platform that lets you build, test, and deploy projects instantly. Learn about its features, community, and how to get started.">
-    <meta name="keywords" content="Replit, online IDE, code collaboration, programming platform, cloud development">
+    <title>Replit - Create & Learn Together</title>
+    <meta name="description" content="Replit is a fun place to create, code, and share projects with friends. Learn how to make games, stories, and more!">
+    <meta name="keywords" content="Replit, coding, learn, create, projects, kids, children, programming">
     <meta name="author" content="Replit">
-    <meta property="og:title" content="Replit - Online IDE & Code Collaboration">
-    <meta property="og:description" content="Build, test, and deploy code instantly with Replit's powerful online platform.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://example.com/replit">
-    <link rel="canonical" href="https://example.com/replit">
-    <link rel="sitemap" type="application/xml" href="/sitemap">
+    <link rel="sitemap" href="/sitemap">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#6366f1',
-                        secondary: '#10b981',
-                        dark: '#1e293b',
-                        light: '#f8fafc',
+                        primary: '#6366F1',
+                        secondary: '#EC4899',
+                        accent: '#10B981',
+                        dark: {
+                            bg: '#1E293B',
+                            text: '#F8FAFC'
+                        }
                     },
                     fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                        bubblegum: ['"Bubblegum Sans"', '"Comic Sans MS"', 'cursive'],
+                        opensans: ['"Open Sans"', 'sans-serif']
                     },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'typing': 'typing 3.5s steps(40, end)',
+                        'blink-caret': 'blink-caret .75s step-end infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        typing: {
+                            'from': { width: '0' },
+                            'to': { width: '100%' }
+                        },
+                        'blink-caret': {
+                            'from, to': { borderColor: 'transparent' },
+                            '50%': { borderColor: '#6366F1' }
+                        }
+                    }
                 }
             }
         }
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .content-auto {
-                content-visibility: auto;
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
             }
-            .text-gradient {
-                background-clip: text;
-                -webkit-background-clip: text;
-                -webkit-text-fill-color: transparent;
+            .code-block {
+                position: relative;
+                overflow: hidden;
+                border-radius: 0.5rem;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
             }
-            .animate-float {
-                animation: float 6s ease-in-out infinite;
+            .terminal-header {
+                background-color: #2D3748;
+                padding: 0.5rem;
+                border-top-left-radius: 0.5rem;
+                border-top-right-radius: 0.5rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
             }
-            .scrollbar-hide::-webkit-scrollbar {
-                display: none;
+            .terminal-dot {
+                width: 0.75rem;
+                height: 0.75rem;
+                border-radius: 50%;
             }
-            .card-hover {
-                transition: all 0.3s ease;
+            .typing-container {
+                position: relative;
+                height: 2rem;
             }
-            .card-hover:hover {
-                transform: translateY(-8px);
+            .typing-text {
+                overflow: hidden;
+                border-right: 0.15em solid;
+                white-space: nowrap;
+                margin: 0 auto;
+                animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
             }
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-            100% { transform: translateY(0px); }
+            .particle {
+                position: absolute;
+                border-radius: 50%;
+                pointer-events: none;
+            }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
-<body class="font-inter bg-light text-gray-800 dark:bg-dark dark:text-gray-100 transition-colors duration-300">
-    <!-- Scroll Progress Indicator -->
-    <div id="scrollProgress" class="fixed top-0 left-0 h-1 bg-primary z-50 w-0 transition-all duration-200"></div>
-
-    <!-- Navigation -->
-    <header class="fixed top-0 left-0 right-0 bg-white/90 dark:bg-dark/90 backdrop-blur-sm z-40 transition-all duration-300 shadow-sm">
+<body class="font-opensans bg-gray-50 text-gray-800 dark:bg-dark-bg dark:text-dark-text transition-colors duration-300">
+    <!-- Header with Logo and Search -->
+    <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
         <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-10">
-                <a href="#" class="text-2xl font-bold text-primary">Replit</a>
-                <nav class="hidden md:flex space-x-6">
-                    <a href="#features" class="hover:text-primary transition-colors">Features</a>
-                    <a href="#about" class="hover:text-primary transition-colors">About</a>
-                    <a href="#community" class="hover:text-primary transition-colors">Community</a>
-                    <a href="#resources" class="hover:text-primary transition-colors">Resources</a>
-                </nav>
-            </div>
+            <!-- Logo -->
+            <a href="/" class="flex items-center">
+                <i class="fa-solid fa-code text-3xl text-primary mr-2"></i>
+                <span class="font-bubblegum text-2xl text-primary">Replit</span>
+            </a>
             
-            <div class="flex-1 max-w-md mx-4 hidden md:block">
+            <!-- Desktop Search -->
+            <div class="hidden md:block flex-grow max-w-xl mx-8">
                 <input type="text" id="searchInput" autocomplete="off" 
-                    class="w-full py-2 px-4 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                    placeholder="Search Replit features...">
+                       class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:border-gray-700 transition-all duration-300"
+                       placeholder="Search Replit..." autofocus>
             </div>
             
-            <div class="flex items-center space-x-4">
-                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fa fa-moon-o dark:hidden text-xl"></i>
-                    <i class="fa fa-sun-o hidden dark:block text-xl"></i>
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-4">
+                <button id="bookmarkBtn" class="text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors">
+                    <i class="fa-regular fa-star text-xl"></i>
                 </button>
-                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
-                    <i class="fa fa-star-o text-xl"></i>
+                <button id="shareBtn" class="text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors">
+                    <i class="fa-solid fa-share-nodes text-xl"></i>
                 </button>
-                <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors md:hidden">
-                    <i class="fa fa-share-alt text-xl"></i>
-                </button>
-                <a href="#" class="hidden md:block bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-full transition-all">Sign Up Free</a>
-                <button class="md:hidden text-xl">
-                    <i class="fa fa-bars"></i>
+                <button id="themeToggle" class="text-gray-600 hover:text-primary dark:text-gray-300 dark:hover:text-primary transition-colors">
+                    <i class="fa-solid fa-sun text-xl dark:hidden"></i>
+                    <i class="fa-solid fa-moon text-xl hidden dark:block"></i>
                 </button>
             </div>
-        </div>
-    </header>
-
-    <!-- Mobile Search (Hidden by default) -->
-    <div class="fixed top-16 left-0 right-0 bg-white dark:bg-dark z-30 hidden md:hidden transition-all duration-300 shadow-md">
-        <div class="container mx-auto px-4 py-3">
-            <input type="text" id="mobileSearchInput" autocomplete="off" 
-                class="w-full py-2 px-4 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all"
-                placeholder="Search Replit features...">
-        </div>
-    </div>
-
-    <!-- Breadcrumb Navigation -->
-    <div class="pt-20 pb-4 px-4 container mx-auto">
-        <div class="text-sm text-gray-500 dark:text-gray-400">
-            <a href="/" class="hover:text-primary transition-colors">Home</a>
-            <span class="mx-2">/</span>
-            <a href="/free" class="hover:text-primary transition-colors">Free Resources</a>
-            <span class="mx-2">/</span>
-            <a href="/free/detail/" class="hover:text-primary transition-colors">Resource List</a>
-            <span class="mx-2">/</span>
-            <span class="text-primary">Replit</span>
-        </div>
-    </div>
-
-    <!-- Hero Section -->
-    <section class="relative min-h-[80vh] flex items-center overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-16">
-        <div class="absolute inset-0 overflow-hidden">
-            <div class="absolute -right-24 -top-24 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-            <div class="absolute left-1/4 bottom-0 w-72 h-72 bg-secondary/10 rounded-full blur-3xl"></div>
         </div>
         
-        <div class="container mx-auto px-4 relative z-10">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="space-y-6 max-w-xl">
-                    <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-extrabold leading-tight">
-                        Code, Collaborate, <span class="bg-gradient-to-r from-primary to-secondary text-gradient">Create</span>
-                    </h1>
-                    <p class="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
-                        Replit is a powerful online IDE that lets you build, test, and deploy projects instantly. No setup required, just start coding.
-                    </p>
-                    <div class="flex flex-wrap gap-4 pt-4">
-                        <a href="#features" class="bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-medium transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
-                            Explore Features
-                        </a>
-                        <a href="#resources" class="bg-white dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-white px-8 py-3 rounded-full font-medium transition-all shadow-md hover:shadow-lg">
-                            Get Started Free
-                        </a>
-                    </div>
-                    <div class="flex items-center gap-6 pt-4">
-                        <div class="flex -space-x-2">
-                            <img src="https://picsum.photos/100/100?random=1" alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white dark:border-dark">
-                            <img src="https://picsum.photos/100/100?random=2" alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white dark:border-dark">
-                            <img src="https://picsum.photos/100/100?random=3" alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white dark:border-dark">
-                            <div class="w-10 h-10 rounded-full bg-gray-100 dark:bg-gray-800 border-2 border-white dark:border-dark flex items-center justify-center text-sm font-medium">
-                                +2M
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden px-4 pb-3">
+            <input type="text" id="searchInputMobile" autocomplete="off"
+                   class="w-full px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-800 dark:border-gray-700 transition-all duration-300"
+                   placeholder="Search Replit...">
+        </div>
+    </header>
+    
+    <!-- Breadcrumb Navigation -->
+    <nav class="bg-gray-100 dark:bg-gray-800 py-2 px-4 transition-colors duration-300">
+        <div class="container mx-auto">
+            <a href="/" class="text-primary hover:underline">Home</a>
+            <span class="mx-2">›</span>
+            <a href="/free" class="text-primary hover:underline">Free Resources</a>
+            <span class="mx-2">›</span>
+            <span class="text-gray-600 dark:text-gray-400">Replit Introduction</span>
+        </div>
+    </nav>
+    
+    <!-- Hero Section with Animation -->
+    <section class="relative bg-gradient-to-r from-indigo-500 to-purple-600 text-white overflow-hidden">
+        <div class="absolute inset-0 overflow-hidden">
+            <!-- Floating code symbols -->
+            <div class="particle bg-white/20 w-4 h-4 animate-float" style="top: 20%; left: 10%; animation-delay: 0s;"></div>
+            <div class="particle bg-white/20 w-6 h-6 animate-float" style="top: 30%; left: 80%; animation-delay: 0.5s;"></div>
+            <div class="particle bg-white/20 w-3 h-3 animate-float" style="top: 60%; left: 20%; animation-delay: 1s;"></div>
+            <div class="particle bg-white/20 w-5 h-5 animate-float" style="top: 70%; left: 90%; animation-delay: 1.5s;"></div>
+            <div class="particle bg-white/20 w-4 h-4 animate-float" style="top: 40%; left: 50%; animation-delay: 2s;"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 py-20 md:py-32 relative z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="font-bubblegum text-4xl md:text-6xl mb-6 text-shadow">
+                    Welcome to Replit!
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 opacity-90">
+                    A magical place where you can create, code, and share amazing things!
+                </p>
+                <div class="typing-container mb-8">
+                    <p class="typing-text font-mono text-lg md:text-xl">Let's make something awesome together!</p>
+                </div>
+                <button class="bg-white text-primary hover:bg-gray-100 font-bubblegum px-8 py-3 rounded-full text-lg shadow-lg transform hover:scale-105 transition-all duration-300">
+                    Get Started <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Wave separator -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" class="w-full h-auto fill-gray-50 dark:fill-dark-bg">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+            </svg>
+        </div>
+    </section>
+    
+    <!-- What is Replit Section -->
+    <section class="py-16 container mx-auto px-4">
+        <div class="max-w-4xl mx-auto">
+            <h2 class="font-bubblegum text-3xl md:text-4xl text-center mb-12 text-primary">What is Replit?</h2>
+            
+            <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 dark:bg-gray-800 transition-colors duration-300">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="md:w-1/3">
+                        <div class="bg-gradient-to-br from-primary to-purple-400 p-1 rounded-xl">
+                            <div class="bg-white dark:bg-gray-900 rounded-lg p-4 text-center">
+                                <i class="fa-solid fa-laptop-code text-5xl text-primary mb-4 animate-bounce-slow"></i>
+                                <p class="font-bubblegum text-xl">Creative Space</p>
                             </div>
                         </div>
-                        <p class="text-sm text-gray-600 dark:text-gray-400">
-                            Joined by over 2 million developers worldwide
+                    </div>
+                    <div class="md:w-2/3">
+                        <p class="text-lg mb-4">
+                            Replit is like a super fun playground for creating things with code! It's a special website where you can make your own games, stories, art, and so much more.
+                        </p>
+                        <p class="text-lg">
+                            The best part? You don't need to download anything to start creating. Everything happens right in your web browser, and you can share your creations with friends easily!
                         </p>
                     </div>
                 </div>
-                
-                <div class="relative">
-                    <div class="relative z-10 animate-float rounded-xl overflow-hidden shadow-2xl border border-gray-200 dark:border-gray-700">
-                        <img src="https://picsum.photos/800/600?random=10" alt="Replit IDE Interface" class="w-full h-auto rounded-xl">
+            </div>
+        </div>
+    </section>
+    
+    <!-- What Can You Do Section -->
+    <section class="py-16 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <h2 class="font-bubblegum text-3xl md:text-4xl text-center mb-12 text-primary">What Can You Make?</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Card 1 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-48 bg-gradient-to-r from-blue-400 to-indigo-500 flex items-center justify-center">
+                        <i class="fa-solid fa-gamepad text-white text-6xl animate-float"></i>
                     </div>
-                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-primary to-secondary rounded-xl blur-3xl opacity-30 -z-10"></div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Games</h3>
+                        <p>Create your own video games! Make puzzles, adventures, or even racing games that you and your friends can play.</p>
+                    </div>
+                </div>
+                
+                <!-- Card 2 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-48 bg-gradient-to-r from-green-400 to-emerald-500 flex items-center justify-center">
+                        <i class="fa-solid fa-paintbrush text-white text-6xl animate-float" style="animation-delay: 0.5s;"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Art & Music</h3>
+                        <p>Make colorful drawings, animations, or even your own music using code. Turn your ideas into digital art!</p>
+                    </div>
+                </div>
+                
+                <!-- Card 3 -->
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-48 bg-gradient-to-r from-pink-400 to-rose-500 flex items-center justify-center">
+                        <i class="fa-solid fa-comments text-white text-6xl animate-float" style="animation-delay: 1s;"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Stories & Apps</h3>
+                        <p>Build interactive stories where readers choose what happens next, or create your own little apps and tools.</p>
+                    </div>
                 </div>
             </div>
         </div>
+    </section>
+    
+    <!-- How It Works Section -->
+    <section class="py-16 container mx-auto px-4">
+        <h2 class="font-bubblegum text-3xl md:text-4xl text-center mb-12 text-primary">How Does It Work?</h2>
         
-        <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-light dark:from-dark to-transparent"></div>
-    </section>
-
-    <!-- GitHub Stats -->
-    <section class="py-12 bg-white dark:bg-gray-900">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                    <div class="text-4xl font-bold text-primary mb-2">15.8k</div>
-                    <div class="text-gray-600 dark:text-gray-400">GitHub Stars</div>
+        <div class="max-w-4xl mx-auto">
+            <div class="space-y-12">
+                <!-- Step 1 -->
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center font-bubblegum text-2xl md:flex-shrink-0">1</div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex-grow dark:bg-gray-800">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Sign Up</h3>
+                        <p>Create your own account in just a minute. You can use an email or even sign up with Google!</p>
+                    </div>
                 </div>
-                <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                    <div class="text-4xl font-bold text-primary mb-2">2.4k</div>
-                    <div class="text-gray-600 dark:text-gray-400">Forks</div>
+                
+                <!-- Step 2 -->
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center font-bubblegum text-2xl md:flex-shrink-0">2</div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex-grow dark:bg-gray-800">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Choose a Language</h3>
+                        <p>Pick a programming language. Don't worry if you don't know what that is - start with something simple like Scratch or Python!</p>
+                    </div>
                 </div>
-                <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                    <div class="text-4xl font-bold text-primary mb-2">78</div>
-                    <div class="text-gray-600 dark:text-gray-400">Open Issues</div>
+                
+                <!-- Step 3 -->
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center font-bubblegum text-2xl md:flex-shrink-0">3</div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex-grow dark:bg-gray-800">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Start Creating</h3>
+                        <p>Write your code, click run, and see what happens! You can change your code and try again as many times as you want.</p>
+                    </div>
                 </div>
-                <div class="p-6 rounded-xl bg-gray-50 dark:bg-gray-800/50">
-                    <div class="text-4xl font-bold text-primary mb-2">420+</div>
-                    <div class="text-gray-600 dark:text-gray-400">Contributors</div>
+                
+                <!-- Step 4 -->
+                <div class="flex flex-col md:flex-row gap-6 items-center">
+                    <div class="bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center font-bubblegum text-2xl md:flex-shrink-0">4</div>
+                    <div class="bg-white p-6 rounded-xl shadow-md flex-grow dark:bg-gray-800">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Share Your Work</h3>
+                        <p>When you're proud of what you made, share it with friends and family. They can see and even play with your creation!</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Features Section -->
-    <section id="features" class="py-20 bg-gray-50 dark:bg-gray-800/50">
+    
+    <!-- Code Example Section -->
+    <section class="py-16 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
         <div class="container mx-auto px-4">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Powerful Features for Modern Development</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300">Replit provides everything you need to build, test, and deploy your projects in one place.</p>
-            </div>
+            <h2 class="font-bubblegum text-3xl md:text-4xl text-center mb-12 text-primary">Try Some Code!</h2>
             
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover">
-                    <div class="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fa fa-code text-2xl text-primary"></i>
+            <div class="max-w-4xl mx-auto">
+                <p class="text-center mb-8 text-lg">Look at this simple code example. Can you guess what it does?</p>
+                
+                <div class="code-block bg-gray-900 text-gray-100 mb-8">
+                    <div class="terminal-header">
+                        <div class="terminal-dot bg-red-500"></div>
+                        <div class="terminal-dot bg-yellow-500"></div>
+                        <div class="terminal-dot bg-green-500"></div>
+                        <span class="text-gray-400 text-sm">python example.py</span>
                     </div>
-                    <h3 class="text-xl font-bold mb-3">Online IDE</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Write, run, and debug code in over 50 programming languages without any setup.</p>
+                    <pre class="p-4 text-sm md:text-base overflow-x-auto"><code><span class="text-green-400"># This is a simple program</span>
+<span class="text-blue-400">for</span> count <span class="text-blue-400">in</span> range(5):
+    <span class="text-yellow-300">print</span>(<span class="text-orange-300">f"I love coding! This is message number {count + 1}"</span>)</code></pre>
                 </div>
                 
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover">
-                    <div class="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fa fa-users text-2xl text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Real-time Collaboration</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Collaborate with teammates in real-time with multiplayer editing and chat.</p>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover">
-                    <div class="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fa fa-rocket text-2xl text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Instant Deployment</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Deploy your projects with a single click and share them with the world.</p>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover">
-                    <div class="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fa fa-database text-2xl text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Persistent Storage</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Store data with Replit Database and access it from any of your projects.</p>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover">
-                    <div class="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fa fa-terminal text-2xl text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Command Line Access</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Access a full Linux terminal with sudo privileges for advanced operations.</p>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg hover:shadow-xl transition-all card-hover">
-                    <div class="w-14 h-14 bg-primary/10 dark:bg-primary/20 rounded-lg flex items-center justify-center mb-6">
-                        <i class="fa fa-plug text-2xl text-primary"></i>
-                    </div>
-                    <h3 class="text-xl font-bold mb-3">Extensible</h3>
-                    <p class="text-gray-600 dark:text-gray-400">Enhance your workflow with custom extensions and integrations.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section id="about" class="py-20 bg-white dark:bg-gray-900">
-        <div class="container mx-auto px-4">
-            <div class="grid md:grid-cols-2 gap-16 items-center">
-                <div>
-                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6">About Replit</h2>
+                <div class="text-center">
+                    <button id="runCodeBtn" class="bg-primary hover:bg-primary/90 text-white font-bubblegum px-6 py-3 rounded-full text-lg shadow-md transform hover:scale-105 transition-all duration-300">
+                        Run This Code <i class="fa-solid fa-play ml-2"></i>
+                    </button>
                     
-                    <div class="space-y-6">
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">The Origin Story</h3>
-                            <p class="text-gray-600 dark:text-gray-300 leading-relaxed">
-                                Replit was founded in 2016 with a simple mission: to make programming more accessible to everyone. The idea emerged from the frustration of setting up development environments and the desire to create a platform where anyone can start coding instantly.
-                            </p>
-                        </div>
-                        
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">Founders</h3>
-                            <div class="grid grid-cols-2 gap-6">
-                                <div class="flex items-center space-x-4">
-                                    <img src="https://picsum.photos/200/200?random=20" alt="Amjad Masad" class="w-16 h-16 rounded-full object-cover">
-                                    <div>
-                                        <h4 class="font-semibold">Amjad Masad</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">CEO & Co-founder</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-center space-x-4">
-                                    <img src="https://picsum.photos/200/200?random=21" alt="Haya Odeh" class="w-16 h-16 rounded-full object-cover">
-                                    <div>
-                                        <h4 class="font-semibold">Haya Odeh</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Co-founder</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <h3 class="text-xl font-semibold mb-3">Technology Stack</h3>
-                            <div class="flex flex-wrap gap-3">
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">Node.js</span>
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">React</span>
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">TypeScript</span>
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">Rust</span>
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">Docker</span>
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">Kubernetes</span>
-                                <span class="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-sm">PostgreSQL</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div>
-                    <div class="relative">
-                        <div class="aspect-square max-w-md mx-auto relative z-10 rounded-2xl overflow-hidden shadow-2xl">
-                            <canvas id="radarChart" width="400" height="400"></canvas>
-                        </div>
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full bg-gradient-to-r from-primary to-secondary rounded-2xl blur-3xl opacity-20 -z-10"></div>
+                    <div id="codeOutput" class="mt-6 p-4 bg-white rounded-xl shadow-md hidden dark:bg-gray-900">
+                        <h4 class="font-bubblegum text-lg mb-2 text-primary">Output:</h4>
+                        <pre class="text-left bg-gray-100 p-3 rounded dark:bg-gray-800" id="outputContent"></pre>
                     </div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Pros and Cons Section -->
-    <section class="py-20 bg-gray-50 dark:bg-gray-800/50">
-        <div class="container mx-auto px-4">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Pros & Cons</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300">An honest look at what makes Replit shine and where it could improve.</p>
-            </div>
+    
+    <!-- Interactive Quiz Section -->
+    <section class="py-16 container mx-auto px-4">
+        <h2 class="font-bubblegum text-3xl md:text-4xl text-center mb-12 text-primary">Fun Quiz Time!</h2>
+        
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl p-6 md:p-8 dark:bg-gray-800">
+            <form id="quizForm" class="space-y-6">
+                <div class="quiz-question">
+                    <p class="font-bubblegum text-xl mb-4">1. What can you create on Replit?</p>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q1" value="A" class="mr-3"> Games
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q1" value="B" class="mr-3"> Drawings
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q1" value="C" class="mr-3"> Stories
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q1" value="D" class="mr-3"> All of the above
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="quiz-question">
+                    <p class="font-bubblegum text-xl mb-4">2. Where does Replit work?</p>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q2" value="A" class="mr-3"> Only on phones
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q2" value="B" class="mr-3"> In a web browser
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q2" value="C" class="mr-3"> Only at school
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q2" value="D" class="mr-3"> None of these
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="quiz-question">
+                    <p class="font-bubblegum text-xl mb-4">3. What's the best part about Replit?</p>
+                    <div class="space-y-2">
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q3" value="A" class="mr-3"> You can share your creations
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q3" value="B" class="mr-3"> It's hard to use
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q3" value="C" class="mr-3"> You can only make one project
+                        </label>
+                        <label class="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-700 cursor-pointer">
+                            <input type="radio" name="q3" value="D" class="mr-3"> It costs a lot of money
+                        </label>
+                    </div>
+                </div>
+                
+                <button type="submit" class="w-full bg-secondary hover:bg-secondary/90 text-white font-bubblegum px-6 py-3 rounded-full text-lg shadow-md transform hover:scale-105 transition-all duration-300">
+                    Check My Answers <i class="fa-solid fa-check ml-2"></i>
+                </button>
+            </form>
             
-            <div class="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg">
-                    <h3 class="text-2xl font-bold mb-6 text-secondary flex items-center">
-                        <i class="fa fa-plus-circle mr-3"></i> Advantages
-                    </h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>No setup required - start coding immediately</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>Excellent for beginners and education purposes</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>Powerful collaboration features</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>Easy deployment and sharing options</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-secondary mt-1 mr-3"></i>
-                            <span>Large community and resource library</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-white dark:bg-gray-900 rounded-xl p-8 shadow-lg">
-                    <h3 class="text-2xl font-bold mb-6 text-red-500 flex items-center">
-                        <i class="fa fa-minus-circle mr-3"></i> Limitations
-                    </h3>
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>Some advanced features require a paid plan</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>Internet connection required for full functionality</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>Performance limitations compared to local IDEs</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>Storage constraints on free plans</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3"></i>
-                            <span>Limited customization compared to desktop IDEs</span>
-                        </li>
-                    </ul>
+            <div id="quizResults" class="mt-8 hidden">
+                <div class="p-6 rounded-xl bg-green-50 border border-green-200 dark:bg-green-900/30 dark:border-green-800">
+                    <h3 class="font-bubblegum text-2xl text-center mb-4 text-green-600 dark:text-green-400">Your Results!</h3>
+                    <p class="text-center text-lg mb-4" id="scoreMessage"></p>
+                    <div id="correctAnswers" class="space-y-4 mt-6"></div>
                 </div>
             </div>
         </div>
     </section>
-
-    <!-- Community Section -->
-    <section id="community" class="py-20 bg-white dark:bg-gray-900">
-        <div class="container mx-auto px-4">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">What the Community Says</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300">Hear from developers who use Replit every day.</p>
-            </div>
-            
-            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-8 shadow-md card-hover">
-                    <div class="flex items-center mb-4">
-                        <img src="https://picsum.photos/100/100?random=30" alt="User avatar" class="w-12 h-12 rounded-full mr-4">
-                        <div>
-                            <h4 class="font-semibold">Sarah Johnson</h4>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-300 italic">
-                        "Replit transformed my classroom. My students can start coding immediately without any setup headaches. The collaboration features are amazing!"
-                    </p>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-8 shadow-md card-hover">
-                    <div class="flex items-center mb-4">
-                        <img src="https://picsum.photos/100/100?random=31" alt="User avatar" class="w-12 h-12 rounded-full mr-4">
-                        <div>
-                            <h4 class="font-semibold">Michael Chen</h4>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-half-o"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-300 italic">
-                        "As a freelance developer, Replit lets me quickly prototype ideas and share them with clients. The instant deployment is a game changer."
-                    </p>
-                </div>
-                
-                <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-8 shadow-md card-hover">
-                    <div class="flex items-center mb-4">
-                        <img src="https://picsum.photos/100/100?random=32" alt="User avatar" class="w-12 h-12 rounded-full mr-4">
-                        <div>
-                            <h4 class="font-semibold">Alex Rodriguez</h4>
-                            <div class="text-yellow-400">
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star"></i>
-                                <i class="fa fa-star-o"></i>
-                            </div>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 dark:text-gray-300 italic">
-                        "I learned to code using Replit. The community support and easy-to-use interface made all the difference in my journey from beginner to professional."
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
+    
     <!-- Resources Section -->
-    <section id="resources" class="py-20 bg-gray-50 dark:bg-gray-800/50">
+    <section class="py-16 bg-gray-100 dark:bg-gray-800 transition-colors duration-300">
         <div class="container mx-auto px-4">
-            <div class="text-center max-w-3xl mx-auto mb-16">
-                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-4">Get Started with Replit</h2>
-                <p class="text-xl text-gray-600 dark:text-gray-300">Everything you need to begin your Replit journey.</p>
-            </div>
+            <h2 class="font-bubblegum text-3xl md:text-4xl text-center mb-12 text-primary">Want to Learn More?</h2>
             
-            <div class="grid md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
-                <div>
-                    <h3 class="text-2xl font-bold mb-6">Free Resources & Usage</h3>
-                    
-                    <div class="space-y-6">
-                        <div>
-                            <h4 class="text-xl font-semibold mb-2">Free Plan Includes:</h4>
-                            <ul class="space-y-2 pl-6">
-                                <li class="flex items-start">
-                                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
-                                    <span>Unlimited public repls</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
-                                    <span>1 GB storage</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
-                                    <span>Basic hosting</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
-                                    <span>Community access</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <i class="fa fa-check text-secondary mt-1 mr-2"></i>
-                                    <span>5 private repls</span>
-                                </li>
-                            </ul>
-                        </div>
-                        
-                        <div>
-                            <h4 class="text-xl font-semibold mb-2">How to Get Started:</h4>
-                            <ol class="space-y-2 pl-6">
-                                <li class="flex items-start">
-                                    <span class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 mt-0.5 flex-shrink-0">1</span>
-                                    <span>Sign up for a free account at replit.com</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 mt-0.5 flex-shrink-0">2</span>
-                                    <span>Create a new repl and choose your language</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 mt-0.5 flex-shrink-0">3</span>
-                                    <span>Start coding and run your project with the play button</span>
-                                </li>
-                                <li class="flex items-start">
-                                    <span class="bg-primary text-white rounded-full w-6 h-6 flex items-center justify-center mr-2 mt-0.5 flex-shrink-0">4</span>
-                                    <span>Share your work with others using the share button</span>
-                                </li>
-                            </ol>
-                        </div>
-                        
-                        <a href="#" class="inline-block bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full font-medium transition-all shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30">
-                            Create Free Account
-                        </a>
+            <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+                <a href="https://replit.com/tutorials" class="group bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-40 bg-gradient-to-r from-indigo-400 to-purple-500 flex items-center justify-center">
+                        <i class="fa-solid fa-book text-white text-6xl group-hover:scale-110 transition-transform duration-300"></i>
                     </div>
-                </div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Tutorials</h3>
+                        <p>Step-by-step guides that teach you how to create cool projects, from simple to amazing!</p>
+                    </div>
+                </a>
                 
-                <div>
-                    <div class="bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-2xl">
-                        <img src="https://picsum.photos/800/600?random=40" alt="Replit Dashboard" class="w-full h-auto lazy-load" loading="lazy">
-                        <div class="p-6">
-                            <h3 class="text-xl font-bold mb-2">Latest Updates</h3>
-                            <div class="space-y-4">
-                                <div class="flex items-start">
-                                    <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-2 mr-4">
-                                        <i class="fa fa-code text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold">Python 3.11 Support</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Added support for the latest Python features and improvements.</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start">
-                                    <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-2 mr-4">
-                                        <i class="fa fa-mobile text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold">Mobile Interface Update</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Redesigned mobile experience for better on-the-go coding.</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start">
-                                    <div class="bg-primary/10 dark:bg-primary/20 rounded-lg p-2 mr-4">
-                                        <i class="fa fa-cloud text-primary"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-semibold">Improved Hosting</h4>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Faster deployment times and better reliability for hosted projects.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <a href="https://replit.com/community" class="group bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-40 bg-gradient-to-r from-pink-400 to-red-500 flex items-center justify-center">
+                        <i class="fa-solid fa-users text-white text-6xl group-hover:scale-110 transition-transform duration-300"></i>
                     </div>
-                </div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Community</h3>
+                        <p>See what other creators have made and share your own projects with a friendly community.</p>
+                    </div>
+                </a>
+                
+                <a href="https://replit.com/blog" class="group bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-40 bg-gradient-to-r from-green-400 to-teal-500 flex items-center justify-center">
+                        <i class="fa-solid fa-newspaper text-white text-6xl group-hover:scale-110 transition-transform duration-300"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Blog</h3>
+                        <p>Read stories about cool projects, new features, and tips to become a better creator.</p>
+                    </div>
+                </a>
+                
+                <a href="https://replit.com/discord" class="group bg-white rounded-xl shadow-lg overflow-hidden transform hover:-translate-y-2 transition-all duration-300 dark:bg-gray-900">
+                    <div class="h-40 bg-gradient-to-r from-blue-400 to-cyan-500 flex items-center justify-center">
+                        <i class="fa-brands fa-discord text-white text-6xl group-hover:scale-110 transition-transform duration-300"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bubblegum text-xl mb-2 text-primary">Discord Server</h3>
+                        <p>Chat with other creators, ask questions, and make new friends who love creating things too!</p>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
-
-    <!-- CTA Section -->
-    <section class="py-20 bg-gradient-to-r from-primary to-secondary text-white">
-        <div class="container mx-auto px-4 text-center">
-            <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-6">Join the Replit Community</h2>
-            <p class="text-xl opacity-90 max-w-2xl mx-auto mb-10">
-                Start coding instantly, collaborate with friends, and build amazing projects together.
-            </p>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="#" class="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-full font-medium transition-all shadow-lg hover:shadow-xl">
-                    Sign Up Free
-                </a>
-                <a href="#" class="bg-transparent border-2 border-white hover:bg-white/10 px-8 py-3 rounded-full font-medium transition-all">
-                    Explore Projects
-                </a>
-            </div>
-        </div>
-    </section>
-
+    
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-300 py-12">
+    <footer class="bg-gray-900 text-white py-12">
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
-                <div>
-                    <h3 class="text-2xl font-bold text-white mb-6">Replit</h3>
-                    <p class="mb-6">
-                        The simplest way to code, collaborate, and create.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-twitter text-xl"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-github text-xl"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-discord text-xl"></i>
-                        </a>
-                        <a href="#" class="text-gray-400 hover:text-white transition-colors">
-                            <i class="fa fa-youtube-play text-xl"></i>
-                        </a>
-                    </div>
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                <div class="flex items-center mb-6 md:mb-0">
+                    <i class="fa-brands fa-code text-3xl text-primary mr-2"></i>
+                    <span class="font-bubblegum text-2xl text-white">Replit</span>
                 </div>
                 
-                <div>
-                    <h4 class="text-white font-semibold mb-6">Product</h4>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="hover:text-white transition-colors">Features</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Education</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Teams</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Enterprise</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="text-white font-semibold mb-6">Resources</h4>
-                    <ul class="space-y-3">
-                        <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Tutorials</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Community</a></li>
-                        <li><a href="#" class="hover:text-white transition-colors">Status</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="text-white font-semibold mb-6">Stay Updated</h4>
-                    <p class="mb-4">Subscribe to our newsletter for the latest updates.</p>
-                    <div class="flex">
-                        <input type="email" id="subscribeEmail" placeholder="Your email" 
-                            class="bg-gray-800 text-white px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary w-full">
-                        <button id="subscribeBtn" class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-colors">
-                            <i class="fa fa-paper-plane"></i>
-                        </button>
-                    </div>
+                <div class="flex space-x-6">
+                    <a href="https://twitter.com/replit" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-brands fa-twitter text-xl"></i>
+                    </a>
+                    <a href="https://instagram.com/replit" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-brands fa-instagram text-xl"></i>
+                    </a>
+                    <a href="https://youtube.com/replit" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-brands fa-youtube text-xl"></i>
+                    </a>
+                    <a href="https://github.com/replit" class="text-gray-400 hover:text-white transition-colors">
+                        <i class="fa-brands fa-github text-xl"></i>
+                    </a>
                 </div>
             </div>
             
-            <div class="border-t border-gray-800 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
+            <hr class="border-gray-800 mb-8">
+            
+            <div class="max-w-2xl mx-auto">
+                <h3 class="font-bubblegum text-xl text-center mb-4">Stay Updated!</h3>
+                <p class="text-center text-gray-400 mb-6">Get cool ideas and new features sent to your email.</p>
+                
+                <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                    <input type="email" id="subscribeEmail" placeholder="Your email address" 
+                           class="flex-grow px-4 py-3 rounded-full bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                    <button id="subscribeBtn" class="bg-primary hover:bg-primary/90 text-white font-bubblegum px-6 py-3 rounded-full shadow-md transition-all duration-300">
+                        Subscribe
+                    </button>
+                </form>
+            </div>
+            
+            <div class="text-center text-gray-500 text-sm mt-12">
                 <p>© 2023 Replit. All rights reserved.</p>
-                <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="#" class="hover:text-white transition-colors">Privacy Policy</a>
-                    <a href="#" class="hover:text-white transition-colors">Terms of Service</a>
-                    <a href="#" class="hover:text-white transition-colors">Cookie Policy</a>
-                    <a href="#" class="hover:text-white transition-colors">/sitemap</a>
+                <div class="mt-2 space-x-4">
+                    <a href="/sitemap" class="hover:text-gray-300 transition-colors">Sitemap</a>
+                    <a href="https://replit.com/terms" class="hover:text-gray-300 transition-colors">Terms</a>
+                    <a href="https://replit.com/privacy" class="hover:text-gray-300 transition-colors">Privacy</a>
                 </div>
             </div>
         </div>
     </footer>
-
-    <!-- Back to Top Button -->
-    <button id="backToTop" class="fixed bottom-8 right-8 bg-primary hover:bg-primary/90 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-all opacity-0 invisible">
-        <i class="fa fa-arrow-up"></i>
-    </button>
-
-    <!-- Share Modal (Hidden by default) -->
-    <div id="shareModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center opacity-0 invisible transition-all duration-300">
-        <div class="bg-white dark:bg-gray-900 rounded-xl p-8 max-w-md w-full mx-4 transform scale-95 transition-all duration-300">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-xl font-bold">Share Replit</h3>
-                <button id="closeShareModal" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                    <i class="fa fa-times text-xl"></i>
-                </button>
-            </div>
-            <p class="mb-6 text-gray-600 dark:text-gray-400">Share this page with your friends and colleagues.</p>
-            <div class="flex justify-center space-x-6 mb-6">
-                <a href="#" class="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white hover:bg-blue-600 transition-colors">
-                    <i class="fa fa-facebook"></i>
-                </a>
-                <a href="#" class="w-12 h-12 rounded-full bg-sky-400 flex items-center justify-center text-white hover:bg-sky-500 transition-colors">
-                    <i class="fa fa-twitter"></i>
-                </a>
-                <a href="#" class="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white hover:bg-green-600 transition-colors">
-                    <i class="fa fa-whatsapp"></i>
-                </a>
-                <a href="#" class="w-12 h-12 rounded-full bg-gray-800 flex items-center justify-center text-white hover:bg-gray-900 transition-colors">
-                    <i class="fa fa-link"></i>
-                </a>
-            </div>
-            <div class="relative">
-                <input type="text" value="https://example.com/replit" readonly 
-                    class="w-full bg-gray-100 dark:bg-gray-800 px-4 py-3 rounded-lg text-center">
-                <button id="copyLink" class="absolute right-2 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90 text-white px-3 py-1 rounded transition-colors">
-                    Copy
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- JavaScript -->
+    
+    <script type="module" src="/main.js"></script>
     <script>
-        // DOM Elements
-        const themeToggle = document.getElementById('themeToggle');
-        const backToTop = document.getElementById('backToTop');
-        const scrollProgress = document.getElementById('scrollProgress');
-        const bookmarkBtn = document.getElementById('bookmarkBtn');
-        const shareBtn = document.getElementById('shareBtn');
-        const shareModal = document.getElementById('shareModal');
-        const closeShareModal = document.getElementById('closeShareModal');
-        const copyLink = document.getElementById('copyLink');
-
-        // Initialize theme from localStorage or default to light
-        if (localStorage.getItem('theme') === 'dark' || 
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-        } else {
-            document.documentElement.classList.remove('dark');
-        }
-
-        // Theme Toggle
-        themeToggle.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
-
-        // Scroll Progress Indicator
-        window.addEventListener('scroll', () => {
-            const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-            const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrollPercentage = (scrollTop / scrollHeight) * 100;
-            scrollProgress.style.width = scrollPercentage + '%';
-
-            // Show/hide back to top button
-            if (scrollTop > 300) {
-                backToTop.classList.remove('opacity-0', 'invisible');
-                backToTop.classList.add('opacity-100', 'visible');
-            } else {
-                backToTop.classList.remove('opacity-100', 'visible');
-                backToTop.classList.add('opacity-0', 'invisible');
-            }
-        });
-
-        // Back to Top functionality
-        backToTop.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        // Bookmark functionality
-        let isBookmarked = false;
-        bookmarkBtn.addEventListener('click', () => {
-            isBookmarked = !isBookmarked;
-            const icon = bookmarkBtn.querySelector('i');
-            if (isBookmarked) {
-                icon.classList.remove('fa-star-o');
-                icon.classList.add('fa-star', 'text-yellow-400');
-            } else {
-                icon.classList.remove('fa-star', 'text-yellow-400');
-                icon.classList.add('fa-star-o');
-            }
-        });
-
-        // Share Modal functionality
-        function openShareModal() {
-            shareModal.classList.remove('opacity-0', 'invisible');
-            shareModal.classList.add('opacity-100', 'visible');
-            shareModal.querySelector('div').classList.remove('scale-95');
-            shareModal.querySelector('div').classList.add('scale-100');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeShareModalFunc() {
-            shareModal.classList.remove('opacity-100', 'visible');
-            shareModal.classList.add('opacity-0', 'invisible');
-            shareModal.querySelector('div').classList.remove('scale-100');
-            shareModal.querySelector('div').classList.add('scale-95');
-            document.body.style.overflow = '';
-        }
-
-        shareBtn.addEventListener('click', openShareModal);
-        closeShareModal.addEventListener('click', closeShareModalFunc);
-
-        // Close modal when clicking outside
-        shareModal.addEventListener('click', (e) => {
-            if (e.target === shareModal) {
-                closeShareModalFunc();
-            }
-        });
-
-        // Copy link functionality
-        copyLink.addEventListener('click', () => {
-            const linkInput = shareModal.querySelector('input');
-            linkInput.select();
-            document.execCommand('copy');
+        // Code example functionality
+        document.getElementById('runCodeBtn').addEventListener('click', function() {
+            const outputDiv = document.getElementById('codeOutput');
+            const outputContent = document.getElementById('outputContent');
             
-            const originalText = copyLink.textContent;
-            copyLink.textContent = 'Copied!';
+            // Simulate code execution with delay for effect
+            this.disabled = true;
+            this.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Running...';
+            
             setTimeout(() => {
-                copyLink.textContent = originalText;
-            }, 2000);
+                outputContent.textContent = 'I love coding! This is message number 1\nI love coding! This is message number 2\nI love coding! This is message number 3\nI love coding! This is message number 4\nI love coding! This is message number 5';
+                outputDiv.classList.remove('hidden');
+                outputDiv.classList.add('animate-fade-in');
+                
+                this.disabled = false;
+                this.innerHTML = 'Run This Code <i class="fa-solid fa-play ml-2"></i>';
+                
+                // Scroll to output
+                outputDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 1500);
         });
-
-        // Radar Chart
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        const radarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: [
-                    'Ease of Use',
-                    'Performance',
-                    'Collaboration',
-                    'Language Support',
-                    'Deployment',
-                    'Free Features'
-                ],
-                datasets: [{
-                    label: 'Replit',
-                    data: [95, 75, 90, 85, 88, 80],
-                    backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                    borderColor: 'rgba(99, 102, 241, 1)',
-                    pointBackgroundColor: 'rgba(99, 102, 241, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(99, 102, 241, 1)'
-                }, {
-                    label: 'Industry Average',
-                    data: [65, 80, 50, 70, 60, 55],
-                    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                    borderColor: 'rgba(16, 185, 129, 1)',
-                    pointBackgroundColor: 'rgba(16, 185, 129, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
-                }]
-            },
-            options: {
-                elements: {
-                    line: {
-                        borderWidth: 3
-                    }
-                },
-                scales: {
-                    r: {
-                        angleLines: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                        },
-                        grid: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                        },
-                        pointLabels: {
-                            color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b'
-                        },
-                        ticks: {
-                            backdropColor: 'transparent',
-                            color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b'
-                        }
-                    }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: document.documentElement.classList.contains('dark') ? '#f8fafc' : '#1e293b'
-                        }
+        
+        // Quiz functionality
+        document.getElementById('quizForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Check answers
+            const answers = {
+                q1: 'D',
+                q2: 'B',
+                q3: 'A'
+            };
+            
+            let score = 0;
+            const userAnswers = {};
+            
+            // Get user answers
+            for (const [question, correctAnswer] of Object.entries(answers)) {
+                const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+                if (selectedOption) {
+                    userAnswers[question] = selectedOption.value;
+                    if (selectedOption.value === correctAnswer) {
+                        score++;
                     }
                 }
             }
+            
+            // Calculate percentage
+            const totalQuestions = Object.keys(answers).length;
+            const percentage = Math.round((score / totalQuestions) * 100);
+            
+            // Prepare score message
+            let scoreMessage = '';
+            if (percentage === 100) {
+                scoreMessage = `Perfect score! You got ${score} out of ${totalQuestions} correct! 🎉`;
+            } else if (percentage >= 70) {
+                scoreMessage = `Great job! You got ${score} out of ${totalQuestions} correct! 👍`;
+            } else {
+                scoreMessage = `Nice try! You got ${score} out of ${totalQuestions} correct. Try again! 😊`;
+            }
+            
+            // Prepare correct answers
+            const correctAnswersHtml = `
+                <div class="p-3 bg-gray-100 rounded-lg dark:bg-gray-700">
+                    <p><strong>1. What can you create on Replit?</strong><br>
+                    Correct answer: All of the above</p>
+                </div>
+                <div class="p-3 bg-gray-100 rounded-lg dark:bg-gray-700">
+                    <p><strong>2. Where does Replit work?</strong><br>
+                    Correct answer: In a web browser</p>
+                </div>
+                <div class="p-3 bg-gray-100 rounded-lg dark:bg-gray-700">
+                    <p><strong>3. What's the best part about Replit?</strong><br>
+                    Correct answer: You can share your creations</p>
+                </div>
+            `;
+            
+            // Update and show results
+            document.getElementById('scoreMessage').textContent = scoreMessage;
+            document.getElementById('correctAnswers').innerHTML = correctAnswersHtml;
+            document.getElementById('quizResults').classList.remove('hidden');
+            
+            // Scroll to results
+            document.getElementById('quizResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
-
-        // Update chart colors when theme changes
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            radarChart.options.scales.r.angleLines.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            radarChart.options.scales.r.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-            radarChart.options.scales.r.pointLabels.color = isDark ? '#f8fafc' : '#1e293b';
-            radarChart.options.scales.r.ticks.color = isDark ? '#94a3b8' : '#64748b';
-            radarChart.options.plugins.legend.labels.color = isDark ? '#f8fafc' : '#1e293b';
-            radarChart.update();
-        });
-
-        // Smooth scrolling for anchor links
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const targetId = this.getAttribute('href');
-                if (targetId === '#') return;
+        
+        // Initialize particles animation in hero section
+        function createParticles() {
+            const heroSection = document.querySelector('section.relative.bg-gradient-to-r');
+            if (!heroSection) return;
+            
+            // Create additional particles on mouse move
+            heroSection.addEventListener('mousemove', function(e) {
+                if (Math.random() > 0.7) return; // Only create particles sometimes
                 
-                const targetElement = document.querySelector(targetId);
-                if (targetElement) {
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
-                    });
-                }
+                const particle = document.createElement('div');
+                particle.classList.add('particle', 'bg-white/10');
+                
+                // Random size between 2-6px
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Position at mouse
+                particle.style.left = `${e.clientX}px`;
+                particle.style.top = `${e.clientY}px`;
+                
+                heroSection.appendChild(particle);
+                
+                // Animate and remove after time
+                setTimeout(() => {
+                    particle.style.opacity = '0';
+                    particle.style.transform = `translateY(-20px)`;
+                    particle.style.transition = 'opacity 1s ease, transform 1s ease';
+                    
+                    setTimeout(() => {
+                        particle.remove();
+                    }, 1000);
+                }, 1000);
             });
+        }
+        
+        // Initialize everything when page loads
+        window.addEventListener('load', function() {
+            createParticles();
+            
+            // Focus mobile search on mobile if desktop isn't focused
+            if (window.innerWidth < 768) {
+                document.getElementById('searchInputMobile').focus();
+            }
         });
     </script>
-    <script type="module" src="/main.js"></script>
 </body>
 </html>
