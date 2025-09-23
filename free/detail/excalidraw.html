@@ -1,43 +1,32 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-US">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excalidraw - Hand-drawn Style Diagram Editor</title>
-    <meta name="description" content="Excalidraw is a free, open-source手绘风格 diagram editor. Learn about its technology stack, founders, origin, and more.">
-    <meta name="keywords" content="Excalidraw, diagram editor,手绘风格, open source, collaborative drawing">
-    <meta name="author" content="Excalidraw Team">
-    <meta property="og:title" content="Excalidraw - Hand-drawn Style Diagram Editor">
-    <meta property="og:description" content="Discover Excalidraw, the free and open-source diagram editor with a unique hand-drawn style.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://example.com/excalidraw.html">
-    <meta property="og:image" content="https://picsum.photos/800/600?random=1">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Excalidraw - Hand-drawn Style Diagram Editor">
-    <meta name="twitter:description" content="Discover Excalidraw, the free and open-source diagram editor with a unique hand-drawn style.">
-    <meta name="twitter:image" content="https://picsum.photos/800/600?random=1">
+    <title>Excalidraw: Draw Anything You Imagine!</title>
+    <meta name="description" content="Learn about Excalidraw, the fun drawing tool that helps you create amazing sketches and diagrams easily!">
+    <meta name="keywords" content="Excalidraw, drawing, sketching, diagrams, creative, learn, fun">
+    <meta name="author" content="Excalidraw Learning">
     <link rel="canonical" href="https://example.com/excalidraw.html">
-    <link rel="sitemap" type="application/xml" href="/sitemap">
+    <link rel="sitemap" href="/sitemap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        primary: '#2E75CC',
-                        secondary: '#F0F4F8',
-                        accent: '#FF6B6B',
-                        dark: {
-                            bg: '#1A1A2E',
-                            card: '#16213E',
-                            text: '#E2E8F0'
-                        }
+                        primary: '#2D7FF9', // Excalidraw blue
+                        secondary: '#2383E2',
+                        accent: '#F2C94C',
+                        light: '#F8F9FA',
+                        dark: '#1A1A2E'
                     },
                     fontFamily: {
-                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                        comic: ['Comic Sans MS', 'Comic Neue', 'cursive'],
+                        display: ['Bubblegum Sans', 'cursive'],
+                        sans: ['Nunito', 'sans-serif']
                     },
                 }
             }
@@ -45,883 +34,752 @@
     </script>
     <style type="text/tailwindcss">
         @layer utilities {
-            .content-auto {
-                content-visibility: auto;
-            }
             .text-shadow {
-                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
             }
-            .transition-smooth {
-                transition: all 0.3s ease-in-out;
+            .float {
+                animation: float 6s ease-in-out infinite;
             }
+            .draw-animation {
+                stroke-dasharray: 1000;
+                stroke-dashoffset: 1000;
+                animation: dash 5s linear forwards;
+            }
+            .typing-effect {
+                overflow: hidden;
+                border-right: 0.15em solid #2D7FF9;
+                white-space: nowrap;
+                margin: 0 auto;
+                animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+            }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #2D7FF9 }
         }
     </style>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        html {
-            scroll-behavior: smooth;
-        }
-        
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        #scrollProgress {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background-color: #2E75CC;
-            width: 0%;
-            z-index: 50;
-            transition: width 0.1s ease;
-        }
-        
-        .share-btn {
-            transition: transform 0.2s ease;
-        }
-        
-        .share-btn:hover {
-            transform: translateY(-3px);
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Comic+Neue:wght@400;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
-<body class="bg-gray-50 text-gray-800 dark:bg-dark-bg dark:text-dark-text transition-smooth">
-    <!-- Scroll Progress Indicator -->
-    <div id="scrollProgress"></div>
-
-    <!-- Navigation Bar -->
-    <header class="sticky top-0 bg-white/90 dark:bg-dark-card/90 shadow-md backdrop-blur-sm z-40 transition-smooth">
-        <div class="container mx-auto px-4 py-3">
-            <nav class="flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <a href="/" class="text-primary dark:text-white font-bold text-xl flex items-center">
-                        <i class="fa fa-pencil-square-o mr-2" aria-hidden="true"></i>
-                        <span>Excalidraw</span>
-                    </a>
-                </div>
-                
-                <div class="hidden md:flex items-center space-x-6">
-                    <a href="#about" class="hover:text-primary dark:hover:text-white transition-smooth">About</a>
-                    <a href="#features" class="hover:text-primary dark:hover:text-white transition-smooth">Features</a>
-                    <a href="#community" class="hover:text-primary dark:hover:text-white transition-smooth">Community</a>
-                    <a href="#updates" class="hover:text-primary dark:hover:text-white transition-smooth">Updates</a>
-                </div>
-                
-                <div class="flex items-center space-x-4">
-                    <div class="relative w-full max-w-[200px] md:max-w-[300px]">
-                        <input type="text" id="searchInput" autocomplete="off" 
-                            class="w-full pl-9 pr-4 py-2 rounded-full text-sm border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-smooth"
-                            placeholder="Search...">
-                        <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
-                    </div>
-                    
-                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-smooth">
-                        <i class="fa fa-moon-o text-xl" aria-hidden="true"></i>
-                    </button>
-                    
-                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-smooth">
-                        <i class="fa fa-star-o text-xl" aria-hidden="true"></i>
-                    </button>
-                </div>
-            </nav>
-        </div>
-    </header>
-
-    <main class="container mx-auto px-4 py-8">
-        <!-- Breadcrumb Navigation -->
-        <div class="text-sm mb-8 text-gray-500 dark:text-gray-400">
-            <a href="/" class="hover:text-primary dark:hover:text-white transition-smooth">Home</a>
-            <span class="mx-2">/</span>
-            <a href="/free" class="hover:text-primary dark:hover:text-white transition-smooth">Free Resources</a>
-            <span class="mx-2">/</span>
-            <a href="/free/detail/" class="hover:text-primary dark:hover:text-white transition-smooth">Resource List</a>
-            <span class="mx-2">/</span>
-            <span class="text-gray-700 dark:text-gray-300">Excalidraw</span>
-        </div>
-
-        <!-- Hero Section -->
-        <section class="mb-20 text-center">
-            <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 leading-tight text-shadow">
-                Excalidraw
-            </h1>
-            <p class="text-[clamp(1.1rem,2vw,1.5rem)] text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10">
-                The free, open-source diagram editor with a unique hand-drawn style.
-            </p>
-            <div class="relative max-w-4xl mx-auto rounded-xl overflow-hidden shadow-2xl mb-10 transform hover:scale-[1.01] transition-smooth">
-                <img src="https://picsum.photos/1200/600?random=1" alt="Excalidraw Interface Demo" class="w-full h-auto lazy" loading="lazy">
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-                    <p class="text-white font-medium">Create beautiful hand-drawn diagrams effortlessly</p>
-                </div>
+<body class="bg-light text-gray-800 dark:bg-dark dark:text-gray-100 transition-colors duration-300">
+    <!-- Top Navigation -->
+    <div class="sticky top-0 z-50 bg-white dark:bg-gray-800 shadow-md">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="flex items-center">
+                <svg class="h-10 w-10 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 20C4 19.4477 4.44772 19 5 19H19C19.5523 19 20 19.4477 20 20C20 20.5523 19.5523 21 19 21H5C4.44772 21 4 20.5523 4 20Z" fill="#2D7FF9"/>
+                    <path d="M4 14C4 13.4477 4.44772 13 5 13H19C19.5523 13 20 13.4477 20 14C20 14.5523 19.5523 15 19 15H5C4.44772 15 4 14.5523 4 14Z" fill="#2D7FF9"/>
+                    <path d="M4 8C4 7.44772 4.44772 7 5 7H16C16.5523 7 17 7.44772 17 8C17 8.55228 16.5523 9 16 9H5C4.44772 9 4 8.55228 4 8Z" fill="#2D7FF9"/>
+                    <path d="M7 3H10C10.5523 3 11 3.44772 11 4C11 4.55228 10.5523 5 10 5H7C6.44772 5 6 4.55228 6 4C6 3.44772 6.44772 3 7 3Z" fill="#2D7FF9"/>
+                </svg>
+                <span class="font-display text-2xl font-bold text-primary">Excalidraw</span>
+            </a>
+            
+            <!-- Desktop Search -->
+            <div class="hidden md:block flex-grow max-w-md mx-8">
+                <input type="text" id="searchInput" autocomplete="off" 
+                       class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700"
+                       placeholder="Search...">
             </div>
-            <div class="flex flex-wrap justify-center gap-4">
-                <a href="https://github.com/excalidraw/excalidraw" target="_blank" rel="noopener noreferrer" 
-                    class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-smooth flex items-center">
-                    <i class="fa fa-github mr-2" aria-hidden="true"></i> GitHub
-                </a>
-                <a href="https://excalidraw.com" target="_blank" rel="noopener noreferrer" 
-                    class="bg-white dark:bg-dark-card hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-800 dark:text-white px-6 py-3 rounded-lg font-medium shadow-lg hover:shadow-xl transition-smooth border border-gray-200 dark:border-gray-700 flex items-center">
-                    <i class="fa fa-external-link mr-2" aria-hidden="true"></i> Try Now
+            
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-4">
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-moon text-xl dark:hidden"></i>
+                    <i class="fas fa-sun text-xl hidden dark:block"></i>
+                </button>
+                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="far fa-star text-xl"></i>
+                </button>
+                <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-share-alt text-xl"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden px-4 pb-3">
+            <input type="text" id="searchInputMobile" autocomplete="off" 
+                   class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary dark:bg-gray-700"
+                   placeholder="Search...">
+        </div>
+    </div>
+    
+    <!-- Breadcrumb Navigation -->
+    <div class="container mx-auto px-4 py-3 text-sm">
+        <a href="/" class="hover:text-primary transition-colors">Home</a>
+        <span class="mx-2">→</span>
+        <a href="/free" class="hover:text-primary transition-colors">Free Resources</a>
+        <span class="mx-2">→</span>
+        <span class="text-primary">Learning Excalidraw</span>
+    </div>
+    
+    <!-- Hero Section with Animation -->
+    <section class="relative bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-20 overflow-hidden">
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="font-display text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-shadow leading-tight">
+                    Let's <span class="text-primary">Draw</span> with Excalidraw!
+                </h1>
+                <p class="font-comic text-[clamp(1.2rem,2vw,1.5rem)] mb-8 typing-effect">
+                    Create awesome sketches with this cool tool!
+                </p>
+                <a href="#learn-more" class="inline-block bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                    Start Creating!
                 </a>
             </div>
-        </section>
-
-        <!-- Stats Section -->
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-            <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg hover:shadow-xl transition-smooth border border-gray-100 dark:border-gray-800">
-                <div class="flex items-center mb-4">
-                    <div class="p-3 rounded-full bg-primary/10 text-primary mr-4">
-                        <i class="fa fa-star text-2xl" aria-hidden="true"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold">GitHub Stars</h3>
-                </div>
-                <p class="text-3xl font-bold mb-2">75.6k+</p>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">Growing rapidly with community support</p>
-            </div>
+        </div>
+        
+        <!-- Drawing Animation -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <svg class="absolute top-1/4 right-10 w-64 h-64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="40" stroke="#2D7FF9" stroke-width="2" fill="none" class="draw-animation" />
+                <rect x="30" y="30" width="40" height="40" stroke="#F2C94C" stroke-width="2" fill="none" class="draw-animation" style="animation-delay: 1s" />
+                <line x1="30" y1="30" x2="70" y2="70" stroke="#2383E2" stroke-width="2" class="draw-animation" style="animation-delay: 2s" />
+                <line x1="70" y1="30" x2="30" y2="70" stroke="#2383E2" stroke-width="2" class="draw-animation" style="animation-delay: 2.5s" />
+            </svg>
             
-            <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg hover:shadow-xl transition-smooth border border-gray-100 dark:border-gray-800">
-                <div class="flex items-center mb-4">
-                    <div class="p-3 rounded-full bg-primary/10 text-primary mr-4">
-                        <i class="fa fa-code-fork text-2xl" aria-hidden="true"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold">Forks</h3>
-                </div>
-                <p class="text-3xl font-bold mb-2">2.4k+</p>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">Active development from contributors worldwide</p>
-            </div>
+            <svg class="absolute bottom-1/4 left-10 w-48 h-48" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M40 10 L70 40 L40 70 L10 40 Z" stroke="#2D7FF9" stroke-width="2" fill="none" class="draw-animation" style="animation-delay: 1.5s" />
+                <circle cx="40" cy="40" r="15" stroke="#F2C94C" stroke-width="2" fill="none" class="draw-animation" style="animation-delay: 3s" />
+            </svg>
             
-            <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg hover:shadow-xl transition-smooth border border-gray-100 dark:border-gray-800">
-                <div class="flex items-center mb-4">
-                    <div class="p-3 rounded-full bg-primary/10 text-primary mr-4">
-                        <i class="fa fa-exclamation-circle text-2xl" aria-hidden="true"></i>
-                    </div>
-                    <h3 class="text-xl font-semibold">Open Issues</h3>
+            <svg class="absolute top-1/2 left-1/3 w-32 h-32" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="10" y="10" width="40" height="20" stroke="#2D7FF9" stroke-width="2" fill="none" class="draw-animation" style="animation-delay: 2s" />
+                <rect x="20" y="30" width="20" height="20" stroke="#2D7FF9" stroke-width="2" fill="none" class="draw-animation" style="animation-delay: 2.5s" />
+                <circle cx="30" cy="20" r="3" stroke="#2383E2" stroke-width="2" fill="#2383E2" class="draw-animation" style="animation-delay: 3s" />
+            </svg>
+        </div>
+    </section>
+    
+    <!-- What is Excalidraw Section -->
+    <section id="learn-more" class="py-16 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-8 text-center">What is Excalidraw?</h2>
+                
+                <div class="bg-blue-50 dark:bg-gray-700 rounded-2xl p-6 shadow-md mb-10">
+                    <p class="font-comic text-lg mb-4">
+                        Imagine having a super easy drawing tool that works right in your web browser. That's Excalidraw!
+                    </p>
+                    <p class="font-comic text-lg">
+                        It's like having a digital sketchbook where you can draw anything you want - from simple shapes to amazing stories, cool science diagrams, or even your favorite video game characters!
+                    </p>
                 </div>
-                <p class="text-3xl font-bold mb-2">196</p>
-                <p class="text-gray-500 dark:text-gray-400 text-sm">Active problem tracking and solutions</p>
+                
+                <div class="flex flex-col md:flex-row gap-8 items-center">
+                    <div class="md:w-1/2">
+                        <img src="https://picsum.photos/600/400?random=1" alt="Excalidraw drawing example" class="rounded-xl shadow-lg w-full h-auto">
+                    </div>
+                    <div class="md:w-1/2">
+                        <h3 class="font-display text-2xl font-bold mb-4 text-primary">Why Use Excalidraw?</h3>
+                        <ul class="space-y-3 font-comic">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Super easy to use - no complicated buttons!</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Looks like hand-drawn sketches - so cool!</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Works on any computer, tablet, or even phone</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>You can share your drawings with friends easily</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>It's completely free to use!</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
-        </section>
-
-        <!-- About Section -->
-        <section id="about" class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-10 text-center">About Excalidraw</h2>
-            
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        </div>
+    </section>
+    
+    <!-- How to Use Section with Interactive Demo -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-8 text-center">How to Use Excalidraw</h2>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md mb-10">
+                    <p class="font-comic text-lg mb-6">
+                        Using Excalidraw is as easy as 1-2-3! Let's try a simple drawing together:
+                    </p>
+                    
+                    <!-- Interactive Demo -->
+                    <div class="border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                        <!-- Demo Toolbar -->
+                        <div class="bg-gray-100 dark:bg-gray-700 p-3 flex items-center gap-2 flex-wrap">
+                            <button id="rectTool" class="p-2 bg-white dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+                                <i class="fas fa-square"></i>
+                            </button>
+                            <button id="circleTool" class="p-2 bg-white dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+                                <i class="fas fa-circle"></i>
+                            </button>
+                            <button id="lineTool" class="p-2 bg-white dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button id="textTool" class="p-2 bg-white dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+                                <i class="fas fa-font"></i>
+                            </button>
+                            <button id="eraseTool" class="p-2 bg-white dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors">
+                                <i class="fas fa-eraser"></i>
+                            </button>
+                            <button id="clearTool" class="p-2 bg-white dark:bg-gray-600 rounded hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors ml-auto">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                        </div>
+                        
+                        <!-- Drawing Area -->
+                        <div id="drawingDemo" class="w-full h-64 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+                            <div class="absolute inset-0 flex items-center justify-center text-gray-400 text-sm" id="demoInstructions">
+                                <p>Choose a tool above and click/drag here to draw!</p>
+                            </div>
+                            <!-- Drawings will appear here via JavaScript -->
+                        </div>
+                    </div>
+                    
+                    <p class="font-comic text-lg mt-6">
+                        See how easy that was? In real Excalidraw, you can also change colors, add stickers, and even collaborate with friends on the same drawing!
+                    </p>
+                </div>
+                
+                <!-- Example Gallery -->
                 <div>
-                    <h3 class="text-xl font-semibold mb-4">What is Excalidraw?</h3>
-                    <p class="mb-4 text-gray-700 dark:text-gray-300">
-                        Excalidraw is a free and open-source diagramming tool that lets you create beautiful hand-drawn style illustrations with ease. It's perfect for sketching diagrams, wireframes, flowcharts, and more.
-                    </p>
-                    <p class="mb-4 text-gray-700 dark:text-gray-300">
-                        The tool focuses on simplicity and intuitiveness, providing a minimal interface that doesn't distract from your creative process while still offering powerful features.
-                    </p>
-                    
-                    <h3 class="text-xl font-semibold mt-8 mb-4">Project Origin</h3>
-                    <p class="mb-4 text-gray-700 dark:text-gray-300">
-                        Excalidraw was created in 2020 by <strong>Christopher Chedeau</strong> (also known as Vjeux), a software engineer at Facebook. Frustrated by the lack of simple tools for creating hand-drawn style diagrams quickly, he built the initial version of Excalidraw.
-                    </p>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        The project quickly gained popularity within the developer community for its simplicity and unique aesthetic, leading to a thriving open-source community that continues to expand its capabilities.
-                    </p>
-                </div>
-                
-                <div class="relative">
-                    <img src="https://picsum.photos/800/600?random=2" alt="Excalidraw Illustration Example" class="w-full h-auto rounded-xl shadow-lg lazy" loading="lazy">
-                    <div class="absolute -bottom-6 -left-6 bg-white dark:bg-dark-card p-4 rounded-lg shadow-lg border border-gray-100 dark:border-gray-800 max-w-xs">
-                        <div class="flex items-center mb-2">
-                            <img src="https://picsum.photos/100/100?random=10" alt="Christopher Chedeau" class="w-12 h-12 rounded-full mr-4 lazy" loading="lazy">
-                            <div>
-                                <h4 class="font-semibold">Christopher Chedeau</h4>
-                                <p class="text-sm text-gray-500 dark:text-gray-400">Founder of Excalidraw</p>
+                    <h3 class="font-display text-2xl font-bold mb-6 text-center">What Can You Create?</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                            <img src="https://picsum.photos/400/300?random=10" alt="Science diagram example" class="w-full h-48 object-cover">
+                            <div class="p-3 bg-white dark:bg-gray-800">
+                                <h4 class="font-display font-bold">Science Diagrams</h4>
+                                <p class="font-comic text-sm">Draw the solar system or plant cells!</p>
+                            </div>
+                        </div>
+                        <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                            <img src="https://picsum.photos/400/300?random=11" alt="Storyboard example" class="w-full h-48 object-cover">
+                            <div class="p-3 bg-white dark:bg-gray-800">
+                                <h4 class="font-display font-bold">Story Boards</h4>
+                                <p class="font-comic text-sm">Plan your next comic or movie!</p>
+                            </div>
+                        </div>
+                        <div class="rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+                            <img src="https://picsum.photos/400/300?random=12" alt="Game design example" class="w-full h-48 object-cover">
+                            <div class="p-3 bg-white dark:bg-gray-800">
+                                <h4 class="font-display font-bold">Game Designs</h4>
+                                <p class="font-comic text-sm">Create levels for your dream game!</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </section>
-
-        <!-- Technology Stack Section -->
-        <section class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-10 text-center">Technology Stack</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center">
-                        <i class="fa fa-code text-primary mr-2" aria-hidden="true"></i>
-                        Frontend Technologies
-                    </h3>
-                    <ul class="space-y-3">
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>JavaScript</strong> - Core programming language</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>TypeScript</strong> - For type safety and better developer experience</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>React</strong> - UI library for building the user interface</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>Canvas API</strong> - For rendering the drawing surface</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                    <h3 class="text-xl font-semibold mb-4 flex items-center">
-                        <i class="fa fa-cogs text-primary mr-2" aria-hidden="true"></i>
-                        Additional Tools
-                    </h3>
-                    <ul class="space-y-3">
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>WebRTC</strong> - For real-time collaboration features</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>IndexedDB</strong> - For local storage of drawings</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>Vercel</strong> - For hosting the web application</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-primary mt-1 mr-2" aria-hidden="true"></i>
-                            <span><strong>Yjs</strong> - For CRDT-based collaborative editing</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Radar Chart Section -->
-            <div class="max-w-2xl mx-auto bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                <h3 class="text-xl font-semibold mb-6 text-center">Excalidraw Feature Comparison</h3>
-                <div class="aspect-square max-w-md mx-auto">
-                    <canvas id="radarChart"></canvas>
-                </div>
-            </div>
-        </section>
-
-        <!-- Pros and Cons Section -->
-        <section id="features" class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-10 text-center">Pros & Cons</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center mb-6">
-                        <div class="p-3 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 mr-4">
-                            <i class="fa fa-thumbs-up text-2xl" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold">Advantages</h3>
-                    </div>
-                    
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Beautiful hand-drawn aesthetic that feels more personal than sterile diagrams</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Completely free and open-source with no hidden costs</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Simple, intuitive interface that doesn't get in your way</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Excellent real-time collaboration features</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-check-circle text-green-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Works entirely in the browser with no installation required</span>
-                        </li>
-                    </ul>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                    <div class="flex items-center mb-6">
-                        <div class="p-3 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 mr-4">
-                            <i class="fa fa-thumbs-down text-2xl" aria-hidden="true"></i>
-                        </div>
-                        <h3 class="text-xl font-semibold">Limitations</h3>
-                    </div>
-                    
-                    <ul class="space-y-4">
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Not suitable for highly detailed technical diagrams requiring precision</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Limited export options compared to professional tools</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Some advanced features require familiarity with keyboard shortcuts</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Offline functionality is limited without setting up local environment</span>
-                        </li>
-                        <li class="flex items-start">
-                            <i class="fa fa-times-circle text-red-500 mt-1 mr-3" aria-hidden="true"></i>
-                            <span>Not ideal for complex 3D diagrams or highly stylized illustrations</span>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-
-        <!-- Community Section -->
-        <section id="community" class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-10 text-center">Community Reactions</h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-smooth">
-                    <div class="flex items-center mb-4">
-                        <img src="https://picsum.photos/100/100?random=3" alt="Sarah Johnson" class="w-12 h-12 rounded-full mr-4 lazy" loading="lazy">
-                        <div>
-                            <h4 class="font-semibold">Sarah Johnson</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">UX Designer</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 text-yellow-400">
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                    </div>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        "Excalidraw has completely changed how I sketch wireframes. The hand-drawn style makes my early concepts feel more approachable and less final, which encourages better feedback!"
-                    </p>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-smooth">
-                    <div class="flex items-center mb-4">
-                        <img src="https://picsum.photos/100/100?random=4" alt="Michael Chen" class="w-12 h-12 rounded-full mr-4 lazy" loading="lazy">
-                        <div>
-                            <h4 class="font-semibold">Michael Chen</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Software Engineer</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 text-yellow-400">
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star-half-o" aria-hidden="true"></i>
-                    </div>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        "As a developer, I love how quickly I can sketch system architectures. The collaboration features are fantastic for pair programming sessions when we need to visualize concepts."
-                    </p>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-smooth">
-                    <div class="flex items-center mb-4">
-                        <img src="https://picsum.photos/100/100?random=5" alt="Alex Rodriguez" class="w-12 h-12 rounded-full mr-4 lazy" loading="lazy">
-                        <div>
-                            <h4 class="font-semibold">Alex Rodriguez</h4>
-                            <p class="text-sm text-gray-500 dark:text-gray-400">Product Manager</p>
-                        </div>
-                    </div>
-                    <div class="mb-3 text-yellow-400">
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star" aria-hidden="true"></i>
-                        <i class="fa fa-star-o" aria-hidden="true"></i>
-                    </div>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        "Excalidraw has become essential for my team's brainstorming sessions. We can collaborate in real-time and the output looks professional enough to share with stakeholders immediately."
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Updates Section -->
-        <section id="updates" class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-10 text-center">Latest Updates</h2>
-            
-            <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 mb-8">
-                <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                    <div>
-                        <h3 class="text-xl font-semibold">Version 0.15.0 Release</h3>
-                        <p class="text-gray-500 dark:text-gray-400">June 15, 2023</p>
-                    </div>
-                    <span class="bg-primary/10 text-primary text-sm px-3 py-1 rounded-full inline-block mt-2 md:mt-0">Latest</span>
-                </div>
-                <p class="mb-4 text-gray-700 dark:text-gray-300">
-                    The latest release introduces improved shape libraries, better text handling, and performance optimizations for large diagrams.
-                </p>
-                <a href="https://github.com/excalidraw/excalidraw/releases/tag/v0.15.0" target="_blank" rel="noopener noreferrer" 
-                    class="text-primary hover:text-primary/80 font-medium flex items-center inline-flex">
-                    Read release notes <i class="fa fa-arrow-right ml-2" aria-hidden="true"></i>
-                </a>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                        <div>
-                            <h3 class="text-lg font-semibold">New Collaboration Features</h3>
-                            <p class="text-gray-500 dark:text-gray-400">May 2, 2023</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        Enhanced real-time collaboration with user presence indicators and improved conflict resolution for concurrent edits.
-                    </p>
-                </div>
-                
-                <div class="bg-white dark:bg-dark-card p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                        <div>
-                            <h3 class="text-lg font-semibold">Mobile Interface Improvements</h3>
-                            <p class="text-gray-500 dark:text-gray-400">April 10, 2023</p>
-                        </div>
-                    </div>
-                    <p class="text-gray-700 dark:text-gray-300">
-                        Redesigned touch controls and better responsiveness make Excalidraw much more usable on tablets and mobile devices.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- How to Use Section -->
-        <section class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-10 text-center">How to Get & Use Excalidraw</h2>
-            
-            <div class="bg-white dark:bg-dark-card p-8 rounded-xl shadow-lg border border-gray-100 dark:border-gray-800 max-w-3xl mx-auto">
-                <ol class="space-y-6">
-                    <li class="flex">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold mr-4">1</div>
-                        <div>
-                            <h3 class="font-semibold text-lg mb-1">Access via Web Browser</h3>
-                            <p class="text-gray-700 dark:text-gray-300">
-                                Simply visit <a href="https://excalidraw.com" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">excalidraw.com</a> - no installation required. Your drawings are saved automatically in your browser.
-                            </p>
-                        </div>
-                    </li>
-                    <li class="flex">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold mr-4">2</div>
-                        <div>
-                            <h3 class="font-semibold text-lg mb-1">Install Desktop App</h3>
-                            <p class="text-gray-700 dark:text-gray-300">
-                                Download the official desktop app for Windows, macOS, or Linux from the <a href="https://github.com/excalidraw/excalidraw-desktop/releases" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">GitHub releases page</a>.
-                            </p>
-                        </div>
-                    </li>
-                    <li class="flex">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold mr-4">3</div>
-                        <div>
-                            <h3 class="font-semibold text-lg mb-1">Self-Hosted Instance</h3>
-                            <p class="text-gray-700 dark:text-gray-300">
-                                Deploy your own instance using the <a href="https://github.com/excalidraw/excalidraw" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">source code</a> for enhanced privacy and control.
-                            </p>
-                        </div>
-                    </li>
-                    <li class="flex">
-                        <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold mr-4">4</div>
-                        <div>
-                            <h3 class="font-semibold text-lg mb-1">Integrate with Other Tools</h3>
-                            <p class="text-gray-700 dark:text-gray-300">
-                                Use Excalidraw extensions for VS Code, Obsidian, and other productivity tools for seamless workflow integration.
-                            </p>
-                        </div>
-                    </li>
-                </ol>
-                
-                <div class="mt-8 p-4 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20">
-                    <p class="text-center text-gray-700 dark:text-gray-300">
-                        Excalidraw is completely free to use, modify, and distribute under the <a href="https://github.com/excalidraw/excalidraw/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline">MIT License</a>.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Share Section -->
-        <section class="mb-20">
-            <h2 class="text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-8 text-center">Share Excalidraw</h2>
-            
-            <div class="flex flex-wrap justify-center gap-4">
-                <button class="share-btn bg-[#1877F2] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-smooth" data-platform="facebook">
-                    <i class="fa fa-facebook-square text-2xl" aria-hidden="true"></i>
-                </button>
-                <button class="share-btn bg-[#1DA1F2] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-smooth" data-platform="twitter">
-                    <i class="fa fa-twitter text-2xl" aria-hidden="true"></i>
-                </button>
-                <button class="share-btn bg-[#25D366] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-smooth" data-platform="whatsapp">
-                    <i class="fa fa-whatsapp text-2xl" aria-hidden="true"></i>
-                </button>
-                <button class="share-btn bg-[#0A66C2] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-smooth" data-platform="linkedin">
-                    <i class="fa fa-linkedin-square text-2xl" aria-hidden="true"></i>
-                </button>
-                <button class="share-btn bg-[#FF0000] text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-smooth" data-platform="pinterest">
-                    <i class="fa fa-pinterest-square text-2xl" aria-hidden="true"></i>
-                </button>
-                <button class="share-btn bg-gray-800 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-smooth" data-platform="copy">
-                    <i class="fa fa-link text-2xl" aria-hidden="true"></i>
-                </button>
-            </div>
-            
-            <div id="shareNotification" class="hidden fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-6 py-3 rounded-lg shadow-xl z-50 fade-in">
-                <p id="shareMessage">Link copied to clipboard!</p>
-            </div>
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-dark-card border-t border-gray-200 dark:border-gray-800 py-10">
+        </div>
+    </section>
+    
+    <!-- Fun Features Section -->
+    <section class="py-16 bg-white dark:bg-gray-800">
         <div class="container mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4 flex items-center">
-                        <i class="fa fa-pencil-square-o text-primary mr-2" aria-hidden="true"></i>
-                        Excalidraw
-                    </h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">
-                        The free and open-source手绘风格 diagram editor.
-                    </p>
-                    <div class="flex space-x-4">
-                        <a href="https://github.com/excalidraw/excalidraw" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">
-                            <i class="fa fa-github text-xl" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://twitter.com/excalidraw" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">
-                            <i class="fa fa-twitter text-xl" aria-hidden="true"></i>
-                        </a>
-                        <a href="https://discord.gg/UexuTaE8AE" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">
-                            <i class="fa fa-discord text-xl" aria-hidden="true"></i>
-                        </a>
+            <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-12 text-center">Cool Features of Excalidraw</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-primary text-4xl mb-4">
+                        <i class="fas fa-magic"></i>
                     </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Smart Shapes</h3>
+                    <p class="font-comic">Draw perfect shapes easily - just sketch roughly, and Excalidraw will clean it up!</p>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Resources</h3>
-                    <ul class="space-y-2">
-                        <li><a href="https://docs.excalidraw.com/" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Documentation</a></li>
-                        <li><a href="https://github.com/excalidraw/excalidraw/blob/master/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Contribute</a></li>
-                        <li><a href="https://github.com/excalidraw/excalidraw/issues" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Issues</a></li>
-                        <li><a href="https://excalidraw.com/blog/" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Blog</a></li>
-                    </ul>
+                <div class="bg-purple-50 dark:bg-purple-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-purple-500 text-4xl mb-4">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Collaborate</h3>
+                    <p class="font-comic">Draw with friends at the same time, even if they're in a different room!</p>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Community</h3>
-                    <ul class="space-y-2">
-                        <li><a href="https://github.com/excalidraw/excalidraw/discussions" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Discussions</a></li>
-                        <li><a href="https://discord.gg/UexuTaE8AE" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Discord</a></li>
-                        <li><a href="https://twitter.com/excalidraw" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Twitter</a></li>
-                        <li><a href="https://www.reddit.com/r/excalidraw/" target="_blank" rel="noopener noreferrer" class="text-gray-600 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-smooth">Reddit</a></li>
-                    </ul>
+                <div class="bg-green-50 dark:bg-green-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-green-500 text-4xl mb-4">
+                        <i class="fas fa-link"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Share Easily</h3>
+                    <p class="font-comic">Send your drawings to friends with a simple link - no downloads needed!</p>
                 </div>
                 
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">Stay Updated</h3>
-                    <p class="text-gray-600 dark:text-gray-400 mb-4">
-                        Subscribe to our newsletter for the latest updates and tips.
-                    </p>
-                    <form class="flex">
-                        <input type="email" id="subscribeEmail" placeholder="Your email" 
-                            class="flex-grow px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-primary/50 border border-gray-300 dark:border-gray-600 dark:bg-gray-800">
-                        <button type="submit" 
-                            class="bg-primary hover:bg-primary/90 text-white px-4 py-2 rounded-r-lg transition-smooth">
-                            <i class="fa fa-paper-plane" aria-hidden="true"></i>
+                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-yellow-500 text-4xl mb-4">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Fun Colors</h3>
+                    <p class="font-comic">Choose from lots of colors to make your drawings pop and stand out!</p>
+                </div>
+                
+                <div class="bg-red-50 dark:bg-red-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-red-500 text-4xl mb-4">
+                        <i class="fas fa-sticky-note"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Stickers & Icons</h3>
+                    <p class="font-comic">Add cool stickers like arrows, emojis, and symbols to your drawings!</p>
+                </div>
+                
+                <div class="bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-shadow">
+                    <div class="text-indigo-500 text-4xl mb-4">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Save Your Work</h3>
+                    <p class="font-comic">Download your drawings or save them online to work on later!</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Quiz Section -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-8 text-center">Excalidraw Quiz Time!</h2>
+                <p class="font-comic text-lg text-center mb-10">Test what you've learned about Excalidraw with this fun quiz!</p>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-md">
+                    <form id="excalidrawQuiz">
+                        <!-- Question 1 -->
+                        <div class="mb-8">
+                            <h3 class="font-display text-xl font-bold mb-3">1. What is Excalidraw?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q1" value="A" class="mr-3">
+                                    <span>A video game</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q1" value="B" class="mr-3">
+                                    <span>A drawing tool you use in a web browser</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q1" value="C" class="mr-3">
+                                    <span>A type of robot</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 2 -->
+                        <div class="mb-8">
+                            <h3 class="font-display text-xl font-bold mb-3">2. Which of these can you NOT do with Excalidraw?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q2" value="A" class="mr-3">
+                                    <span>Draw pictures with friends at the same time</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q2" value="B" class="mr-3">
+                                    <span>Turn rough sketches into perfect shapes</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q2" value="C" class="mr-3">
+                                    <span>Make food for your pet</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 3 -->
+                        <div class="mb-8">
+                            <h3 class="font-display text-xl font-bold mb-3">3. How much does Excalidraw cost?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q3" value="A" class="mr-3">
+                                    <span>It's completely free to use!</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q3" value="B" class="mr-3">
+                                    <span>$100 per month</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                    <input type="radio" name="q3" value="C" class="mr-3">
+                                    <span>You have to trade your favorite toy for it</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                            Check My Answers!
                         </button>
                     </form>
+                    
+                    <div id="quizResult" class="mt-6 hidden p-4 rounded-lg"></div>
                 </div>
             </div>
+        </div>
+    </section>
+    
+    <!-- Resources Section -->
+    <section class="py-16 bg-white dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-12 text-center">Want to Create More?</h2>
             
-            <div class="pt-6 border-t border-gray-200 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-500 dark:text-gray-500 text-sm mb-4 md:mb-0">
-                    &copy; 2023 Excalidraw. Released under the MIT License.
-                </p>
-                <div class="flex space-x-6">
-                    <a href="https://github.com/excalidraw/excalidraw/blob/master/LICENSE" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:text-gray-500 dark:hover:text-white text-sm transition-smooth">License</a>
-                    <a href="https://excalidraw.com/privacy/" target="_blank" rel="noopener noreferrer" class="text-gray-500 hover:text-primary dark:text-gray-500 dark:hover:text-white text-sm transition-smooth">Privacy</a>
-                    <a href="/sitemap" class="text-gray-500 hover:text-primary dark:text-gray-500 dark:hover:text-white text-sm transition-smooth">Sitemap</a>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                <a href="https://excalidraw.com/" target="_blank" rel="noopener noreferrer" 
+                   class="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 flex flex-col h-full">
+                    <div class="text-primary text-4xl mb-4">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Try Excalidraw Now</h3>
+                    <p class="font-comic flex-grow">Go to the official website and start drawing right away - no account needed!</p>
+                    <span class="text-primary font-bold mt-4 flex items-center">
+                        Start Drawing <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+                
+                <a href="https://twitter.com/excalidraw" target="_blank" rel="noopener noreferrer" 
+                   class="bg-sky-50 dark:bg-sky-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 flex flex-col h-full">
+                    <div class="text-sky-500 text-4xl mb-4">
+                        <i class="fab fa-twitter"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">See Cool Drawings</h3>
+                    <p class="font-comic flex-grow">Check out amazing drawings from people all over the world for inspiration!</p>
+                    <span class="text-sky-500 font-bold mt-4 flex items-center">
+                        Get Inspired <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+                
+                <a href="https://github.com/excalidraw/excalidraw" target="_blank" rel="noopener noreferrer" 
+                   class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 flex flex-col h-full">
+                    <div class="text-gray-700 dark:text-gray-300 text-4xl mb-4">
+                        <i class="fab fa-github"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Learn How It Works</h3>
+                    <p class="font-comic flex-grow">Find out how Excalidraw was made and how it keeps getting better!</p>
+                    <span class="text-gray-700 dark:text-gray-300 font-bold mt-4 flex items-center">
+                        Learn More <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+                
+                <a href="https://www.youtube.com/results?search_query=excalidraw+tutorial" target="_blank" rel="noopener noreferrer" 
+                   class="bg-red-50 dark:bg-red-900/20 rounded-2xl p-6 shadow-md hover:shadow-lg transition-all transform hover:-translate-y-1 flex flex-col h-full">
+                    <div class="text-red-500 text-4xl mb-4">
+                        <i class="fab fa-youtube"></i>
+                    </div>
+                    <h3 class="font-display text-xl font-bold mb-2">Watch Tutorials</h3>
+                    <p class="font-comic flex-grow">See step-by-step videos that teach you cool tricks with Excalidraw!</p>
+                    <span class="text-red-500 font-bold mt-4 flex items-center">
+                        Watch Videos <i class="fas fa-arrow-right ml-2"></i>
+                    </span>
+                </a>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 dark:bg-gray-950 text-white py-10">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                    <div class="flex items-center mb-6 md:mb-0">
+                        <svg class="h-12 w-12 mr-3" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M4 20C4 19.4477 4.44772 19 5 19H19C19.5523 19 20 19.4477 20 20C20 20.5523 19.5523 21 19 21H5C4.44772 21 4 20.5523 4 20Z" fill="#2D7FF9"/>
+                            <path d="M4 14C4 13.4477 4.44772 13 5 13H19C19.5523 13 20 13.4477 20 14C20 14.5523 19.5523 15 19 15H5C4.44772 15 4 14.5523 4 14Z" fill="#2D7FF9"/>
+                            <path d="M4 8C4 7.44772 4.44772 7 5 7H16C16.5523 7 17 7.44772 17 8C17 8.55228 16.5523 9 16 9H5C4.44772 9 4 8.55228 4 8Z" fill="#2D7FF9"/>
+                            <path d="M7 3H10C10.5523 3 11 3.44772 11 4C11 4.55228 10.5523 5 10 5H7C6.44772 5 6 4.55228 6 4C6 3.44772 6.44772 3 7 3Z" fill="#2D7FF9"/>
+                        </svg>
+                        <span class="font-display text-2xl font-bold">Excalidraw</span>
+                    </div>
+                    
+                    <div class="flex space-x-6">
+                        <a href="https://twitter.com/excalidraw" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
+                            <i class="fab fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="https://github.com/excalidraw/excalidraw" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
+                            <i class="fab fa-github text-2xl"></i>
+                        </a>
+                        <a href="https://discord.gg/UexuTaE" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
+                            <i class="fab fa-discord text-2xl"></i>
+                        </a>
+                        <a href="https://www.youtube.com/results?search_query=excalidraw" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">
+                            <i class="fab fa-youtube text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <hr class="border-gray-700 mb-8">
+                
+                <div class="mb-8">
+                    <h3 class="font-display text-xl font-bold mb-4 text-center">Stay Updated!</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                        <input type="email" id="subscribeEmail" placeholder="Your email address" 
+                               class="flex-grow px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-900">
+                        <button id="subscribeBtn" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center text-sm text-gray-400">
+                    <p>&copy; 2023 Excalidraw Project. All rights reserved.</p>
+                    <p class="mt-2">
+                        <a href="/sitemap" class="hover:text-primary transition-colors">Sitemap</a> | 
+                        <a href="https://github.com/excalidraw/excalidraw/blob/master/CODE_OF_CONDUCT.md" target="_blank" rel="noopener noreferrer" class="hover:text-primary transition-colors">Code of Conduct</a>
+                    </p>
                 </div>
             </div>
         </div>
     </footer>
-
-    <!-- Back to Top Button -->
-    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary/90 text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-smooth z-40">
-        <i class="fa fa-arrow-up" aria-hidden="true"></i>
-    </button>
-
-    <script>
-        // Theme Toggle Functionality
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = themeToggle.querySelector('i');
-        
-        // Check for saved theme preference or use system preference
-        if (localStorage.getItem('theme') === 'dark' || 
-            (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-            themeIcon.classList.remove('fa-moon-o');
-            themeIcon.classList.add('fa-sun-o');
-        } else {
-            document.documentElement.classList.remove('dark');
-            themeIcon.classList.remove('fa-sun-o');
-            themeIcon.classList.add('fa-moon-o');
-        }
-        
-        themeToggle.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-                themeIcon.classList.remove('fa-sun-o');
-                themeIcon.classList.add('fa-moon-o');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-                themeIcon.classList.remove('fa-moon-o');
-                themeIcon.classList.add('fa-sun-o');
-            }
-        });
-        
-        // Bookmark Functionality
-        const bookmarkBtn = document.getElementById('bookmarkBtn');
-        const bookmarkIcon = bookmarkBtn.querySelector('i');
-        
-        if (localStorage.getItem('bookmarked-excalidraw') === 'true') {
-            bookmarkIcon.classList.remove('fa-star-o');
-            bookmarkIcon.classList.add('fa-star');
-        }
-        
-        bookmarkBtn.addEventListener('click', () => {
-            if (bookmarkIcon.classList.contains('fa-star-o')) {
-                bookmarkIcon.classList.remove('fa-star-o');
-                bookmarkIcon.classList.add('fa-star');
-                localStorage.setItem('bookmarked-excalidraw', 'true');
-                showNotification('Added to bookmarks!');
-            } else {
-                bookmarkIcon.classList.remove('fa-star');
-                bookmarkIcon.classList.add('fa-star-o');
-                localStorage.setItem('bookmarked-excalidraw', 'false');
-                showNotification('Removed from bookmarks!');
-            }
-        });
-        
-        // Scroll Progress Indicator
-        window.addEventListener('scroll', () => {
-            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
-            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            const scrolled = (winScroll / height) * 100;
-            document.getElementById('scrollProgress').style.width = scrolled + '%';
+    
+    <script type="module">
+        // Drawing Demo Functionality
+        function setupDrawingDemo() {
+            const drawingArea = document.getElementById('drawingDemo');
+            const instructions = document.getElementById('demoInstructions');
+            const rectTool = document.getElementById('rectTool');
+            const circleTool = document.getElementById('circleTool');
+            const lineTool = document.getElementById('lineTool');
+            const textTool = document.getElementById('textTool');
+            const eraseTool = document.getElementById('eraseTool');
+            const clearTool = document.getElementById('clearTool');
             
-            // Back to top button visibility
-            const backToTopBtn = document.getElementById('backToTop');
-            if (winScroll > 300) {
-                backToTopBtn.classList.remove('opacity-0', 'invisible');
-                backToTopBtn.classList.add('opacity-100', 'visible');
-            } else {
-                backToTopBtn.classList.remove('opacity-100', 'visible');
-                backToTopBtn.classList.add('opacity-0', 'invisible');
-            }
-        });
-        
-        // Back to Top Functionality
-        document.getElementById('backToTop').addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-        
-        // Search Functionality
-        const searchInput = document.getElementById('searchInput');
-        searchInput.addEventListener('keyup', (e) => {
-            if (e.key === 'Enter' && searchInput.value.trim() !== '') {
-                // In a real implementation, this would trigger a search
-                const searchTerm = encodeURIComponent(searchInput.value.trim());
-                window.location.href = `/search?q=${searchTerm}`;
-            }
-        });
-        
-        // Share Functionality
-        const shareButtons = document.querySelectorAll('.share-btn');
-        const shareNotification = document.getElementById('shareNotification');
-        const shareMessage = document.getElementById('shareMessage');
-        
-        shareButtons.forEach(button => {
-            button.addEventListener('click', () => {
-                const platform = button.getAttribute('data-platform');
-                const url = window.location.href;
-                const title = 'Excalidraw - Hand-drawn Style Diagram Editor';
+            let currentTool = null;
+            let isDrawing = false;
+            let startX, startY;
+            let currentElement = null;
+            
+            // Set active tool
+            function setActiveTool(tool) {
+                // Remove active class from all tools
+                [rectTool, circleTool, lineTool, textTool, eraseTool].forEach(btn => {
+                    btn.classList.remove('ring-2', 'ring-primary');
+                });
                 
-                switch(platform) {
-                    case 'facebook':
-                        window.open(`https://www.facebook.com/sharer/sharer.php?u=${url}`, '_blank', 'width=600,height=400');
-                        break;
-                    case 'twitter':
-                        window.open(`https://twitter.com/intent/tweet?url=${url}&text=${title}`, '_blank', 'width=600,height=400');
-                        break;
-                    case 'whatsapp':
-                        window.open(`https://api.whatsapp.com/send?text=${title} ${url}`, '_blank', 'width=600,height=400');
-                        break;
-                    case 'linkedin':
-                        window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${url}&title=${title}`, '_blank', 'width=600,height=400');
-                        break;
-                    case 'pinterest':
-                        window.open(`https://pinterest.com/pin/create/button/?url=${url}&description=${title}`, '_blank', 'width=600,height=400');
-                        break;
-                    case 'copy':
-                        navigator.clipboard.writeText(url).then(() => {
-                            showNotification('Link copied to clipboard!');
-                        }).catch(err => {
-                            showNotification('Failed to copy link');
-                            console.error('Could not copy text: ', err);
-                        });
-                        break;
+                // Add active class to selected tool
+                tool.classList.add('ring-2', 'ring-primary');
+                currentTool = tool.id;
+            }
+            
+            // Event listeners for tools
+            rectTool.addEventListener('click', () => setActiveTool(rectTool));
+            circleTool.addEventListener('click', () => setActiveTool(circleTool));
+            lineTool.addEventListener('click', () => setActiveTool(lineTool));
+            textTool.addEventListener('click', () => setActiveTool(textTool));
+            eraseTool.addEventListener('click', () => setActiveTool(eraseTool));
+            
+            // Clear all drawings
+            clearTool.addEventListener('click', () => {
+                while (drawingArea.children.length > 1) {
+                    drawingArea.removeChild(drawingArea.lastChild);
+                }
+                instructions.classList.remove('hidden');
+            });
+            
+            // Mouse down event
+            drawingArea.addEventListener('mousedown', (e) => {
+                if (!currentTool || currentTool === 'eraseTool') return;
+                
+                instructions.classList.add('hidden');
+                isDrawing = true;
+                const rect = drawingArea.getBoundingClientRect();
+                startX = e.clientX - rect.left;
+                startY = e.clientY - rect.top;
+                
+                // Create element based on selected tool
+                if (currentTool === 'rectTool') {
+                    currentElement = document.createElement('div');
+                    currentElement.className = 'absolute border-2 border-primary bg-primary/10';
+                    currentElement.style.left = `${startX}px`;
+                    currentElement.style.top = `${startY}px`;
+                } else if (currentTool === 'circleTool') {
+                    currentElement = document.createElement('div');
+                    currentElement.className = 'absolute border-2 border-primary bg-primary/10 rounded-full';
+                    currentElement.style.left = `${startX}px`;
+                    currentElement.style.top = `${startY}px`;
+                } else if (currentTool === 'lineTool') {
+                    currentElement = document.createElement('svg');
+                    currentElement.className = 'absolute pointer-events-none';
+                    currentElement.style.left = '0';
+                    currentElement.style.top = '0';
+                    currentElement.style.width = '100%';
+                    currentElement.style.height = '100%';
+                    
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                    line.setAttribute('x1', startX);
+                    line.setAttribute('y1', startY);
+                    line.setAttribute('x2', startX);
+                    line.setAttribute('y2', startY);
+                    line.setAttribute('stroke', '#2D7FF9');
+                    line.setAttribute('stroke-width', '2');
+                    currentElement.appendChild(line);
+                } else if (currentTool === 'textTool') {
+                    currentElement = document.createElement('div');
+                    currentElement.className = 'absolute font-comic text-primary';
+                    currentElement.style.left = `${startX}px`;
+                    currentElement.style.top = `${startY}px`;
+                    currentElement.contentEditable = true;
+                    currentElement.textContent = 'Double click to edit';
+                    drawingArea.appendChild(currentElement);
+                    currentElement = null;
+                    isDrawing = false;
+                    return;
+                }
+                
+                if (currentElement) {
+                    drawingArea.appendChild(currentElement);
                 }
             });
-        });
-        
-        // Show Notification
-        function showNotification(message) {
-            shareMessage.textContent = message;
-            shareNotification.classList.remove('hidden');
             
-            setTimeout(() => {
-                shareNotification.classList.add('hidden');
-            }, 3000);
-        }
-        
-        // Newsletter Subscription
-        const subscribeForm = document.querySelector('footer form');
-        subscribeForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const emailInput = document.getElementById('subscribeEmail');
-            const email = emailInput.value.trim();
-            
-            if (email && validateEmail(email)) {
-                // In a real implementation, this would submit to a server
-                emailInput.value = '';
-                showNotification('Thank you for subscribing!');
-            } else {
-                showNotification('Please enter a valid email address');
-            }
-        });
-        
-        // Email Validation
-        function validateEmail(email) {
-            const re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-            return re.test(email);
-        }
-        
-        // Radar Chart
-        const ctx = document.getElementById('radarChart').getContext('2d');
-        const radarChart = new Chart(ctx, {
-            type: 'radar',
-            data: {
-                labels: [
-                    'Ease of Use',
-                    'Collaboration',
-                    'Customization',
-                    'Performance',
-                    'Export Options',
-                    'Offline Support'
-                ],
-                datasets: [{
-                    label: 'Excalidraw',
-                    data: [95, 90, 75, 85, 65, 70],
-                    backgroundColor: 'rgba(46, 117, 204, 0.2)',
-                    borderColor: 'rgba(46, 117, 204, 1)',
-                    pointBackgroundColor: 'rgba(46, 117, 204, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(46, 117, 204, 1)'
-                }, {
-                    label: 'Competitors Average',
-                    data: [70, 65, 85, 75, 80, 75],
-                    backgroundColor: 'rgba(255, 107, 107, 0.2)',
-                    borderColor: 'rgba(255, 107, 107, 1)',
-                    pointBackgroundColor: 'rgba(255, 107, 107, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(255, 107, 107, 1)'
-                }]
-            },
-            options: {
-                scales: {
-                    r: {
-                        angleLines: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                        },
-                        grid: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
-                        },
-                        pointLabels: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
-                        },
-                        ticks: {
-                            backdropColor: 'transparent',
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
-                        }
+            // Mouse move event
+            drawingArea.addEventListener('mousemove', (e) => {
+                if (!isDrawing || !currentElement) return;
+                
+                const rect = drawingArea.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                
+                // Update element based on tool
+                if (currentTool === 'rectTool' || currentTool === 'circleTool') {
+                    const width = currentX - startX;
+                    const height = currentY - startY;
+                    
+                    currentElement.style.width = `${Math.abs(width)}px`;
+                    currentElement.style.height = `${Math.abs(height)}px`;
+                    
+                    if (width < 0) {
+                        currentElement.style.left = `${currentX}px`;
                     }
-                },
-                plugins: {
-                    legend: {
-                        labels: {
-                            color: document.documentElement.classList.contains('dark') ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'
-                        }
+                    
+                    if (height < 0) {
+                        currentElement.style.top = `${currentY}px`;
+                    }
+                } else if (currentTool === 'lineTool') {
+                    const line = currentElement.querySelector('line');
+                    line.setAttribute('x2', currentX);
+                    line.setAttribute('y2', currentY);
+                }
+            });
+            
+            // Mouse up event
+            drawingArea.addEventListener('mouseup', () => {
+                isDrawing = false;
+                currentElement = null;
+            });
+            
+            // Erase functionality
+            drawingArea.addEventListener('click', (e) => {
+                if (currentTool === 'eraseTool' && e.target !== drawingArea && e.target !== instructions) {
+                    drawingArea.removeChild(e.target);
+                    
+                    // Show instructions if drawing area is empty
+                    if (drawingArea.children.length <= 1) {
+                        instructions.classList.remove('hidden');
                     }
                 }
-            }
-        });
-        
-        // Update chart colors when theme changes
-        themeToggle.addEventListener('click', () => {
-            const isDark = document.documentElement.classList.contains('dark');
-            const textColor = isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)';
-            const lightTextColor = isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)';
-            const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+            });
             
-            radarChart.options.scales.r.angleLines.color = gridColor;
-            radarChart.options.scales.r.grid.color = gridColor;
-            radarChart.options.scales.r.pointLabels.color = textColor;
-            radarChart.options.scales.r.ticks.color = lightTextColor;
-            radarChart.options.plugins.legend.labels.color = textColor;
+            // Touch support for mobile devices
+            drawingArea.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousedown', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                drawingArea.dispatchEvent(mouseEvent);
+            });
             
-            radarChart.update();
-        });
+            drawingArea.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent('mousemove', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                drawingArea.dispatchEvent(mouseEvent);
+            });
+            
+            drawingArea.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                const mouseEvent = new MouseEvent('mouseup', {});
+                drawingArea.dispatchEvent(mouseEvent);
+            });
+        }
         
-        // Lazy loading animation
+        // Quiz functionality
+        function setupQuiz() {
+            const quizForm = document.getElementById('excalidrawQuiz');
+            const quizResult = document.getElementById('quizResult');
+            
+            quizForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                // Correct answers
+                const correctAnswers = {
+                    q1: 'B',
+                    q2: 'C',
+                    q3: 'A'
+                };
+                
+                // Get user answers
+                const userAnswers = {
+                    q1: quizForm.q1.value,
+                    q2: quizForm.q2.value,
+                    q3: quizForm.q3.value
+                };
+                
+                // Calculate score
+                let score = 0;
+                for (const question in correctAnswers) {
+                    if (userAnswers[question] === correctAnswers[question]) {
+                        score++;
+                    }
+                }
+                
+                // Display result
+                let message, bgColor, textColor;
+                
+                if (score === 3) {
+                    message = `Wow! You got all ${score} answers right! 🎉 You're an Excalidraw pro!`;
+                    bgColor = 'bg-green-100 dark:bg-green-900/30';
+                    textColor = 'text-green-800 dark:text-green-300';
+                } else if (score >= 2) {
+                    message = `Great job! You got ${score} out of 3 correct! 👍 Keep drawing and learning!`;
+                    bgColor = 'bg-blue-100 dark:bg-blue-900/30';
+                    textColor = 'text-blue-800 dark:text-blue-300';
+                } else {
+                    message = `You got ${score} out of 3 correct. That's okay! 🎨 Practice with Excalidraw and try again!`;
+                    bgColor = 'bg-yellow-100 dark:bg-yellow-900/30';
+                    textColor = 'text-yellow-800 dark:text-yellow-300';
+                }
+                
+                quizResult.innerHTML = `<p class="font-comic text-lg">${message}</p>`;
+                quizResult.className = `mt-6 p-4 rounded-lg ${bgColor} ${textColor}`;
+                quizResult.classList.remove('hidden');
+            });
+        }
+        
+        // Initialize all functionalities when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            const lazyImages = document.querySelectorAll('img.lazy');
-            
-            if ('IntersectionObserver' in window) {
-                const imageObserver = new IntersectionObserver((entries, observer) => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting) {
-                            const image = entry.target;
-                            image.classList.add('fade-in');
-                            imageObserver.unobserve(image);
-                        }
-                    });
-                });
-                
-                lazyImages.forEach(image => {
-                    imageObserver.observe(image);
-                });
-            }
+            setupDrawingDemo();
+            setupQuiz();
         });
     </script>
     <script type="module" src="/main.js"></script>
 </body>
 </html>
+    

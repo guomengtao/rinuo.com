@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html lang="en-US">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ArgoCD for Kids - Fun with Deployment</title>
-    <!-- Google SEO Optimization -->
-    <meta name="description" content="Learn about ArgoCD in a fun and simple way! Perfect for young learners to understand how computer programs get deployed.">
-    <meta name="keywords" content="ArgoCD, kids, learn, deployment, computer, fun">
-    <meta name="author" content="Kids Tech Learning">
-    <link rel="sitemap" href="/sitemap">
+    <title>ArgoCD for Young Learners</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome -->
-    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- Font Awesome 7.0.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <!-- Google Fonts - Nunito (child-friendly) -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind Configuration -->
     <script>
@@ -21,16 +18,29 @@
             theme: {
                 extend: {
                     colors: {
-                        primary: '#4F46E5',
-                        secondary: '#10B981',
+                        primary: '#3563E9',
+                        secondary: '#4ADE80',
                         accent: '#F59E0B',
-                        light: '#F3F4F6',
-                        dark: '#1F2937'
+                        dark: {
+                            primary: '#1E40AF',
+                            background: '#111827'
+                        }
                     },
                     fontFamily: {
-                        comic: ['Comic Sans MS', 'cursive', 'sans-serif'],
+                        nunito: ['Nunito', 'sans-serif'],
                     },
-                }
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                },
             }
         }
     </script>
@@ -41,386 +51,854 @@
                 content-visibility: auto;
             }
             .text-shadow {
-                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
             }
-            .animate-float {
-                animation: float 3s ease-in-out infinite;
+            .code-particle {
+                position: absolute;
+                font-family: monospace;
+                pointer-events: none;
             }
-            .animate-bounce-slow {
-                animation: bounce 3s ease-in-out infinite;
+            .typing-cursor {
+                border-right: 3px solid;
+                animation: cursor-blink 1s step-end infinite;
             }
-            .animate-spin-slow {
-                animation: spin 8s linear infinite;
+            @keyframes cursor-blink {
+                from, to { border-color: transparent }
+                50% { border-color: currentColor }
             }
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-        
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
+            .bracket-animation {
+                animation: bracket-move 2s infinite;
+            }
+            @keyframes bracket-move {
+                0%, 100% { transform: scale(1); opacity: 0.7; }
+                50% { transform: scale(1.1); opacity: 1; }
+            }
         }
     </style>
 </head>
 
-<body class="bg-light text-gray-800 dark:bg-dark dark:text-gray-100 transition-colors duration-300 font-comic">
-    <!-- Scroll Progress Indicator -->
-    <div id="scrollProgress" class="fixed top-0 left-0 h-2 bg-primary z-50 transition-all duration-300" style="width: 0%"></div>
-
-    <!-- Navigation Bar -->
-    <nav class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-40 transition-colors duration-300">
-        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center">
-                <div class="text-primary dark:text-secondary text-2xl font-bold animate-spin-slow">
-                    <i class="fa fa-rocket"></i>
+<body class="font-nunito bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Navigation Bar - Sticky -->
+    <header class="sticky top-0 bg-white dark:bg-gray-900 shadow-md z-50 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">A</span>
+                    </div>
+                    <span class="text-xl font-bold text-primary dark:text-blue-400">ArgoCD</span>
+                </a>
+                
+                <!-- Desktop Search -->
+                <div class="hidden md:block flex-1 max-w-md mx-8">
+                    <input type="text" id="searchInput" autocomplete="off" 
+                        class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 
+                               focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-400
+                               bg-gray-100 dark:bg-gray-800 transition-all duration-300"
+                        placeholder="Search for ArgoCD topics...">
                 </div>
-                <span class="ml-2 text-xl font-bold">ArgoCD Fun</span>
+                
+                <!-- Navigation Icons -->
+                <div class="flex items-center space-x-4">
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-regular fa-star text-xl text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-share-nodes text-xl text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-sun text-xl text-yellow-500 dark:hidden"></i>
+                        <i class="fa-solid fa-moon text-xl text-blue-300 hidden dark:block"></i>
+                    </button>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button id="mobileMenuBtn" class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-bars text-xl text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                </div>
             </div>
             
-            <!-- Search Box -->
-            <div class="flex-grow max-w-md mx-4">
-                <input 
-                    id="searchInput" 
-                    type="text" 
-                    placeholder="Search..." 
-                    autocomplete="off"
-                    class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-secondary transition-all"
-                >
+            <!-- Mobile Search (Always visible on mobile) -->
+            <div class="md:hidden pb-4">
+                <input type="text" id="searchInputMobile" autocomplete="off" 
+                    class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 
+                           focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-blue-400
+                           bg-gray-100 dark:bg-gray-800 transition-all duration-300"
+                    placeholder="Search...">
             </div>
-            
-            <!-- Navigation Icons -->
-            <div class="flex items-center space-x-4">
-                <!-- Theme Toggle -->
-                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    <i class="fa fa-moon-o dark:hidden text-xl"></i>
-                    <i class="fa fa-sun-o hidden dark:block text-xl"></i>
-                </button>
-                
-                <!-- Bookmark Button -->
-                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    <i class="fa fa-star-o text-xl"></i>
-                </button>
-                
-                <!-- Share Button -->
-                <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    <i class="fa fa-share-alt text-xl"></i>
-                </button>
+        </div>
+        
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobileMenu" class="hidden md:hidden bg-white dark:bg-gray-900 border-t dark:border-gray-800">
+            <div class="container mx-auto px-4 py-3 space-y-2">
+                <a href="#what-is" class="block py-2 hover:text-primary dark:hover:text-blue-400">What is ArgoCD?</a>
+                <a href="#how-it-works" class="block py-2 hover:text-primary dark:hover:text-blue-400">How It Works</a>
+                <a href="#demo" class="block py-2 hover:text-primary dark:hover:text-blue-400">Demo</a>
+                <a href="#quiz" class="block py-2 hover:text-primary dark:hover:text-blue-400">Fun Quiz</a>
+                <a href="#resources" class="block py-2 hover:text-primary dark:hover:text-blue-400">Learn More</a>
             </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="bg-gray-100 dark:bg-gray-800 py-2">
+        <div class="container mx-auto px-4">
+            <ol class="flex text-sm space-x-2">
+                <li><a href="/" class="hover:text-primary dark:hover:text-blue-400">Home</a></li>
+                <li><i class="fa-solid fa-chevron-right text-xs text-gray-500"></i></li>
+                <li><a href="/free" class="hover:text-primary dark:hover:text-blue-400">Resources</a></li>
+                <li><i class="fa-solid fa-chevron-right text-xs text-gray-500"></i></li>
+                <li class="text-gray-600 dark:text-gray-300">ArgoCD for Young Learners</li>
+            </ol>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 pt-24 pb-16">
-        <!-- Breadcrumb Navigation -->
-        <div class="text-sm mb-8 flex flex-wrap items-center text-gray-600 dark:text-gray-400">
-            <a href="/" class="hover:text-primary dark:hover:text-secondary transition-colors">Home</a>
-            <i class="fa fa-chevron-right mx-2 text-xs"></i>
-            <a href="/free" class="hover:text-primary dark:hover:text-secondary transition-colors">Free Resources</a>
-            <i class="fa fa-chevron-right mx-2 text-xs"></i>
-            <a href="/free/detail/" class="hover:text-primary dark:hover:text-secondary transition-colors">Resource List</a>
-            <i class="fa fa-chevron-right mx-2 text-xs"></i>
-            <span class="text-primary dark:text-secondary">ArgoCD for Young Learners</span>
+    <!-- Hero Section with Animation -->
+    <section class="relative bg-gradient-to-br from-primary/90 to-blue-700 text-white overflow-hidden">
+        <!-- Floating Code Particles Background -->
+        <div id="codeParticles" class="absolute inset-0 opacity-20"></div>
+        
+        <div class="container mx-auto px-4 py-20 md:py-32 relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-tight mb-6 text-shadow">
+                    <span id="typingText" class="inline-block"></span><span class="typing-cursor"></span>
+                </h1>
+                <p class="text-[clamp(1.1rem,2vw,1.5rem)] mb-8 text-blue-100 max-w-2xl mx-auto">
+                    Learn how computers keep track of their programs with ArgoCD - it's like a super organized assistant for code!
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#what-is" class="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        Get Started
+                    </a>
+                    <a href="#demo" class="bg-accent hover:bg-amber-500 px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        See It In Action
+                    </a>
+                </div>
+            </div>
         </div>
         
-        <!-- Header Section -->
-        <header class="text-center mb-16">
-            <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-4 text-primary dark:text-secondary text-shadow animate-bounce-slow">
-                What is ArgoCD?
-            </h1>
-            <p class="text-[clamp(1rem,2vw,1.25rem)] max-w-3xl mx-auto text-gray-700 dark:text-gray-300">
-                Let's learn about this cool tool that helps computer programs get where they need to go!
-            </p>
-        </header>
-        
+        <!-- Wave Separator -->
+        <div class="absolute bottom-0 left-0 right-0">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" class="w-full h-auto fill-gray-50 dark:fill-dark-background">
+                <path d="M0,64L80,69.3C160,75,320,85,480,80C640,75,800,53,960,48C1120,43,1280,53,1360,58.7L1440,64L1440,100L1360,100C1280,100,1120,100,960,100C800,100,640,100,480,100C320,100,160,100,80,100L0,100Z"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
         <!-- What is ArgoCD Section -->
-        <section class="mb-20">
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-all duration-300 transform hover:shadow-xl">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-6 text-center text-primary dark:text-secondary">
-                    It's Like a Delivery Truck!
-                </h2>
+        <section id="what-is" class="mb-20 scroll-mt-20">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
+                        <i class="fa-solid fa-question text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 dark:text-white">What is ArgoCD?</h2>
+                </div>
                 
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2">
-                        <img 
-                            src="https://picsum.photos/seed/truck/600/400" 
-                            alt="A colorful delivery truck carrying packages" 
-                            class="rounded-xl shadow-md w-full h-auto lazy-load"
-                            loading="lazy"
-                        >
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transform transition-all hover:shadow-xl">
+                    <p class="text-lg mb-6">Imagine you're building a really cool video game on your computer. You spend hours working on it, adding new levels and fixing bugs.</p>
+                    
+                    <p class="text-lg mb-6">But what if your friend wants to play your game too? You need to send them the latest version. And when you make changes, you want everyone to get those updates easily.</p>
+                    
+                    <div class="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-6 my-8 border-l-4 border-primary">
+                        <p class="text-lg font-semibold">ArgoCD is like a <span class="text-primary dark:text-blue-400 font-bold">super helpful assistant</span> that makes sure everyone gets the latest version of computer programs, just like how your favorite apps update on your phone!</p>
                     </div>
                     
-                    <div class="w-full md:w-1/2">
-                        <p class="mb-4 text-lg">
-                            Imagine you made a beautiful drawing and want to share it with your friends at school.
-                        </p>
-                        <p class="mb-4 text-lg">
-                            ArgoCD is like a special delivery truck that takes your computer programs 
-                            from where you made them to where other people can use them!
-                        </p>
-                        <p class="text-lg">
-                            It makes sure everyone gets the newest version of your program, just like 
-                            making sure all your friends get the latest drawing you made.
-                        </p>
+                    <div class="flex flex-col md:flex-row gap-6 items-center mt-10">
+                        <div class="flex-1 bg-gray-100 dark:bg-gray-700 p-5 rounded-xl">
+                            <h3 class="font-bold text-xl mb-3 text-primary dark:text-blue-400">It's Like...</h3>
+                            <p>Imagine a librarian who always makes sure everyone has the newest version of their favorite book, without anyone having to ask!</p>
+                        </div>
+                        <div class="flex-1 bg-gray-100 dark:bg-gray-700 p-5 rounded-xl">
+                            <h3 class="font-bold text-xl mb-3 text-primary dark:text-blue-400">Why It's Useful</h3>
+                            <p>It helps computers work together and stay updated, which means less mistakes and more time for creating awesome things!</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <!-- How It Works Section with Animation -->
-        <section class="mb-20">
-            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-10 text-center text-primary dark:text-secondary">
-                How Does It Work? Let's Play!
-            </h2>
-            
-            <!-- Step 1 -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 mb-10 transition-all duration-300 transform hover:shadow-xl">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2 order-2 md:order-1">
-                        <h3 class="text-2xl font-bold mb-4 text-accent">Step 1: Create Your Program</h3>
-                        <p class="mb-4 text-lg">
-                            First, you make something cool on your computer - like a game or a fun story!
-                        </p>
-                        <p class="text-lg">
-                            You save it in a special place called a "repository" - it's like a toy box for your computer creations!
-                        </p>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="mb-20 scroll-mt-20">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
+                        <i class="fa-solid fa-cogs text-white text-xl"></i>
                     </div>
-                    
-                    <div class="w-full md:w-1/2 order-1 md:order-2">
-                        <div class="relative">
-                            <img 
-                                src="https://picsum.photos/seed/coding/600/400" 
-                                alt="A child creating something on a computer" 
-                                class="rounded-xl shadow-md w-full h-auto lazy-load"
-                                loading="lazy"
-                            >
-                            <div class="absolute -bottom-4 -right-4 bg-accent text-white p-3 rounded-full shadow-lg animate-float">
-                                <i class="fa fa-code text-2xl"></i>
-                            </div>
-                        </div>
-                    </div>
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 dark:text-white">How Does It Work?</h2>
                 </div>
-            </div>
-            
-            <!-- Step 2 -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 mb-10 transition-all duration-300 transform hover:shadow-xl">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2">
-                        <div class="relative">
-                            <img 
-                                src="https://picsum.photos/seed/map/600/400" 
-                                alt="A map showing a path from one place to another" 
-                                class="rounded-xl shadow-md w-full h-auto lazy-load"
-                                loading="lazy"
-                            >
-                            <div class="absolute -top-4 -left-4 bg-primary dark:bg-secondary text-white p-3 rounded-full shadow-lg animate-spin-slow">
-                                <i class="fa fa-map-signs text-2xl"></i>
+                
+                <div class="relative">
+                    <!-- Step 1 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 mb-8 transform transition-all hover:shadow-xl">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="md:w-1/4 flex justify-center">
+                                <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">1</div>
+                            </div>
+                            <div class="md:w-3/4">
+                                <h3 class="text-xl font-bold mb-3">The "Desired State"</h3>
+                                <p class="mb-4">First, programmers write down exactly how they want their program to look and work. It's like drawing a map of what they want to build.</p>
+                                <div class="bg-gray-100 dark:bg-gray-700 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                    <span class="text-green-600 dark:text-green-400">// This is what we want our program to do</span><br>
+                                    <span class="text-blue-600 dark:text-blue-400">function</span> <span class="text-purple-600 dark:text-purple-400">myAwesomeApp</span>() {<br>
+                                    &nbsp;&nbsp;<span class="text-orange-600 dark:text-orange-400">showMessage</span>(<span class="text-red-600 dark:text-red-400">"Hello, World!"</span>);<br>
+                                    &nbsp;&nbsp;<span class="text-orange-600 dark:text-orange-400">addFeature</span>(<span class="text-red-600 dark:text-red-400">"cool animations"</span>);<br>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="w-full md:w-1/2">
-                        <h3 class="text-2xl font-bold mb-4 text-primary dark:text-secondary">Step 2: Tell ArgoCD Where to Go</h3>
-                        <p class="mb-4 text-lg">
-                            You tell ArgoCD where your creation is (in your toy box) and where you want to send it.
-                        </p>
-                        <p class="text-lg">
-                            It's like writing an address on a package before you mail it to your friend!
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Step 3 -->
-            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transition-all duration-300 transform hover:shadow-xl">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="w-full md:w-1/2 order-2 md:order-1">
-                        <h3 class="text-2xl font-bold mb-4 text-secondary dark:text-primary">Step 3: ArgoCD Delivers It!</h3>
-                        <p class="mb-4 text-lg">
-                            ArgoCD picks up your creation and takes it exactly where it needs to go.
-                        </p>
-                        <p class="text-lg">
-                            Even better - if you make changes to your creation later, ArgoCD will automatically 
-                            deliver the new version too! It's like having a magical delivery truck that always brings the newest toys!
-                        </p>
+                    <!-- Connecting Line (Desktop Only) -->
+                    <div class="hidden md:block absolute left-[16.666%] top-24 bottom-24 w-0.5 bg-primary/30 transform -translate-x-1/2"></div>
+                    
+                    <!-- Step 2 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 mb-8 transform transition-all hover:shadow-xl">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="md:w-1/4 flex justify-center">
+                                <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">2</div>
+                            </div>
+                            <div class="md:w-3/4">
+                                <h3 class="text-xl font-bold mb-3">ArgoCD Checks In</h3>
+                                <p class="mb-4">ArgoCD keeps an eye on the actual program to see if it matches the "desired state" that the programmers wrote down.</p>
+                                <div class="relative bg-gray-100 dark:bg-gray-700 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                    <div class="absolute top-2 right-2 text-xs px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300 rounded-full">
+                                        ArgoCD is checking...
+                                    </div>
+                                    <span class="text-blue-600 dark:text-blue-400">Current state:</span> App shows "Hi there"<br>
+                                    <span class="text-blue-600 dark:text-blue-400">Desired state:</span> App should show "Hello, World!"<br>
+                                    <span class="text-amber-600 dark:text-amber-400">Status: Needs update!</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="w-full md:w-1/2 order-1 md:order-2">
-                        <div class="relative">
-                            <img 
-                                src="https://picsum.photos/seed/delivery/600/400" 
-                                alt="A delivery truck dropping off a package with a happy child receiving it" 
-                                class="rounded-xl shadow-md w-full h-auto lazy-load"
-                                loading="lazy"
-                            >
-                            <div class="absolute -bottom-4 -right-4 bg-secondary dark:bg-primary text-white p-3 rounded-full shadow-lg animate-bounce-slow">
-                                <i class="fa fa-truck text-2xl"></i>
+                    <!-- Step 3 -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8 transform transition-all hover:shadow-xl">
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="md:w-1/4 flex justify-center">
+                                <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center text-white text-2xl font-bold">3</div>
+                            </div>
+                            <div class="md:w-3/4">
+                                <h3 class="text-xl font-bold mb-3">ArgoCD Fixes It</h3>
+                                <p class="mb-4">If something doesn't match, ArgoCD fixes it! It updates the program to match exactly what the programmers wanted.</p>
+                                <div class="relative bg-gray-100 dark:bg-gray-700 p-4 rounded-lg font-mono text-sm overflow-x-auto">
+                                    <div class="absolute top-2 right-2 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300 rounded-full">
+                                        ArgoCD is working...
+                                    </div>
+                                    <span class="text-green-600 dark:text-green-400">// Updating the app...</span><br>
+                                    <span class="text-green-600 dark:text-green-400">// Changed "Hi there" to "Hello, World!"</span><br>
+                                    <span class="text-green-600 dark:text-green-400">// Added cool animations</span><br>
+                                    <span class="text-green-600 dark:text-green-400">// All done! Everything matches now.</span>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <!-- Fun Facts Section -->
-        <section class="mb-20">
-            <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-10 text-center text-primary dark:text-secondary">
-                Fun Facts About ArgoCD!
-            </h2>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Fact 1 -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
-                    <div class="text-accent text-4xl mb-4 text-center">
-                        <i class="fa fa-bolt"></i>
+
+        <!-- Demo Section -->
+        <section id="demo" class="mb-20 scroll-mt-20">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
+                        <i class="fa-solid fa-play-circle text-white text-xl"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-center">Super Fast</h3>
-                    <p class="text-center">
-                        ArgoCD can deliver your programs super quickly, much faster than a snail can crawl!
-                    </p>
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 dark:text-white">See It In Action</h2>
                 </div>
                 
-                <!-- Fact 2 -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
-                    <div class="text-primary dark:text-secondary text-4xl mb-4 text-center">
-                        <i class="fa fa-eye"></i>
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8">
+                    <p class="text-lg mb-6">Let's try a simple demo! Click the buttons to see how ArgoCD would keep things in sync.</p>
+                    
+                    <div class="border-2 border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden mb-8">
+                        <!-- Fake Terminal -->
+                        <div class="bg-gray-900 text-green-400 font-mono text-sm p-4">
+                            <div class="flex items-center mb-2">
+                                <div class="flex space-x-2 mr-3">
+                                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                </div>
+                                <span class="text-gray-400">argocd-terminal</span>
+                            </div>
+                            
+                            <div id="terminalOutput">
+                                <div>Welcome to ArgoCD Demo!</div>
+                                <div>Current app status: <span id="appStatus" class="text-yellow-400">Initializing...</span></div>
+                                <div class="mt-2">Type 'help' to see commands</div>
+                            </div>
+                            
+                            <div class="mt-2">
+                                <span class="text-blue-400">user@computer</span>:<span class="text-purple-400">~</span>$ <span id="terminalInput">waiting for command...</span>
+                            </div>
+                        </div>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-center">Good Watcher</h3>
-                    <p class="text-center">
-                        It keeps watching for new changes, like a cat watching a mouse!
-                    </p>
-                </div>
-                
-                <!-- Fact 3 -->
-                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
-                    <div class="text-secondary dark:text-primary text-4xl mb-4 text-center">
-                        <i class="fa fa-smile-o"></i>
+                    
+                    <div class="flex flex-wrap gap-3 justify-center">
+                        <button id="cmdCheck" class="bg-primary hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-medium transition-colors">
+                            Check Status
+                        </button>
+                        <button id="cmdChange" class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2 rounded-lg font-medium transition-colors">
+                            Make a Change
+                        </button>
+                        <button id="cmdSync" class="bg-green-500 hover:bg-green-600 text-white px-5 py-2 rounded-lg font-medium transition-colors">
+                            Sync with ArgoCD
+                        </button>
+                        <button id="cmdReset" class="bg-gray-500 hover:bg-gray-600 text-white px-5 py-2 rounded-lg font-medium transition-colors">
+                            Reset Demo
+                        </button>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-center">Easy to Use</h3>
-                    <p class="text-center">
-                        Once set up, ArgoCD does all the hard work so you can focus on creating!
-                    </p>
                 </div>
             </div>
         </section>
-        
-        <!-- Let's Try It Section -->
-        <section class="mb-20">
-            <div class="bg-gradient-to-r from-primary/10 to-secondary/10 dark:from-primary/20 dark:to-secondary/20 rounded-2xl shadow-lg p-8 text-center">
-                <h2 class="text-[clamp(1.5rem,3vw,2.5rem)] font-bold mb-6 text-primary dark:text-secondary">
-                    Ready to Try ArgoCD?
-                </h2>
-                <p class="text-lg max-w-2xl mx-auto mb-8">
-                    Ask a grown-up to help you learn more about how to use ArgoCD to share your own creations with the world!
-                </p>
-                <button class="bg-primary hover:bg-primary/80 dark:bg-secondary dark:hover:bg-secondary/80 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all transform hover:scale-105">
-                    Learn More
-                </button>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="mb-20 scroll-mt-20">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
+                        <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 dark:text-white">Test Your Knowledge</h2>
+                </div>
+                
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 md:p-8">
+                    <p class="text-lg mb-8">Let's see what you've learned about ArgoCD! Choose the best answer for each question.</p>
+                    
+                    <div id="quizContainer">
+                        <!-- Question 1 -->
+                        <div class="quiz-question mb-8 p-5 border border-gray-200 dark:border-gray-700 rounded-xl">
+                            <h3 class="text-xl font-bold mb-4">1. What is ArgoCD mainly used for?</h3>
+                            <div class="space-y-3">
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q1" value="A" class="mr-3">
+                                        <span>Playing video games</span>
+                                    </label>
+                                </div>
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q1" value="B" class="mr-3">
+                                        <span>Making sure computer programs stay updated</span>
+                                    </label>
+                                </div>
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q1" value="C" class="mr-3">
+                                        <span>Cooking food</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="quiz-feedback mt-4 hidden"></div>
+                        </div>
+                        
+                        <!-- Question 2 -->
+                        <div class="quiz-question mb-8 p-5 border border-gray-200 dark:border-gray-700 rounded-xl">
+                            <h3 class="text-xl font-bold mb-4">2. What does ArgoCD check for?</h3>
+                            <div class="space-y-3">
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q2" value="A" class="mr-3">
+                                        <span>If your computer is turned on</span>
+                                    </label>
+                                </div>
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q2" value="B" class="mr-3">
+                                        <span>If the program matches what the programmers wanted</span>
+                                    </label>
+                                </div>
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q2" value="C" class="mr-3">
+                                        <span>If you've finished your homework</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="quiz-feedback mt-4 hidden"></div>
+                        </div>
+                        
+                        <!-- Question 3 -->
+                        <div class="quiz-question mb-8 p-5 border border-gray-200 dark:border-gray-700 rounded-xl">
+                            <h3 class="text-xl font-bold mb-4">3. What happens when ArgoCD finds a mismatch?</h3>
+                            <div class="space-y-3">
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q3" value="A" class="mr-3">
+                                        <span>It fixes the program to match what's desired</span>
+                                    </label>
+                                </div>
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q3" value="B" class="mr-3">
+                                        <span>It turns off your computer</span>
+                                    </label>
+                                </div>
+                                <div class="quiz-option">
+                                    <label class="flex items-center p-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+                                        <input type="radio" name="q3" value="C" class="mr-3">
+                                        <span>It sends an email to your teacher</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="quiz-feedback mt-4 hidden"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button id="checkAnswers" class="bg-primary hover:bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                            Check My Answers
+                        </button>
+                        <div id="quizResult" class="mt-6 hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Section (Collapsible Advanced Content) -->
+        <section id="resources" class="mb-20 scroll-mt-20">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center mr-4">
+                        <i class="fa-solid fa-book text-white text-xl"></i>
+                    </div>
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-gray-800 dark:text-white">Learn More</h2>
+                </div>
+                
+                <!-- Collapsible Container -->
+                <div class="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+                    <button id="resourcesToggle" class="w-full flex items-center justify-between bg-gray-100 dark:bg-gray-800 px-6 py-4 text-left font-bold text-lg">
+                        <span>Want to explore more about ArgoCD?</span>
+                        <i id="resourcesIcon" class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+                    </button>
+                    
+                    <div id="resourcesContent" class="hidden bg-white dark:bg-gray-800 p-6 md:p-8">
+                        <p class="text-lg mb-6">Here are some great resources if you want to learn even more about ArgoCD:</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <a href="https://argoproj.github.io/cd/" target="_blank" class="group flex flex-col h-full p-5 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-all">
+                                <div class="flex items-center mb-3">
+                                    <i class="fa-solid fa-file-text text-primary text-xl mr-3 group-hover:scale-110 transition-transform"></i>
+                                    <h3 class="font-bold text-lg">Official Documentation</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 flex-grow">Read the official ArgoCD documentation to learn more details.</p>
+                                <div class="mt-4 text-primary dark:text-blue-400 font-medium flex items-center">
+                                    <span>Visit Website</span>
+                                    <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </a>
+                            
+                            <a href="https://www.youtube.com/results?search_query=argocd+explained" target="_blank" class="group flex flex-col h-full p-5 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-all">
+                                <div class="flex items-center mb-3">
+                                    <i class="fa-solid fa-video text-primary text-xl mr-3 group-hover:scale-110 transition-transform"></i>
+                                    <h3 class="font-bold text-lg">Video Tutorials</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 flex-grow">Watch videos that explain ArgoCD with visual examples.</p>
+                                <div class="mt-4 text-primary dark:text-blue-400 font-medium flex items-center">
+                                    <span>Watch Videos</span>
+                                    <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </a>
+                            
+                            <a href="https://github.com/argoproj/argo-cd" target="_blank" class="group flex flex-col h-full p-5 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-all">
+                                <div class="flex items-center mb-3">
+                                    <i class="fa-brands fa-github text-primary text-xl mr-3 group-hover:scale-110 transition-transform"></i>
+                                    <h3 class="font-bold text-lg">Source Code</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 flex-grow">Check out the actual code that makes ArgoCD work.</p>
+                                <div class="mt-4 text-primary dark:text-blue-400 font-medium flex items-center">
+                                    <span>View Code</span>
+                                    <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </a>
+                            
+                            <a href="https://sitemap.xml" target="_blank" class="group flex flex-col h-full p-5 border border-gray-200 dark:border-gray-700 rounded-xl hover:shadow-lg transition-all">
+                                <div class="flex items-center mb-3">
+                                    <i class="fa-solid fa-sitemap text-primary text-xl mr-3 group-hover:scale-110 transition-transform"></i>
+                                    <h3 class="font-bold text-lg">Site Map</h3>
+                                </div>
+                                <p class="text-gray-600 dark:text-gray-300 flex-grow">Explore our site map to find more learning resources.</p>
+                                <div class="mt-4 text-primary dark:text-blue-400 font-medium flex items-center">
+                                    <span>Explore Map</span>
+                                    <i class="fa-solid fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white dark:bg-gray-900 shadow-inner py-10 transition-colors duration-300">
+    <footer class="bg-gray-900 text-white py-12">
         <div class="container mx-auto px-4">
-            <!-- Subscribe Section -->
-            <div class="max-w-2xl mx-auto mb-10 text-center">
-                <h3 class="text-xl font-bold mb-4 text-primary dark:text-secondary">Get Fun Tech Updates!</h3>
-                <p class="mb-4 text-gray-600 dark:text-gray-400">
-                    Subscribe to our newsletter for more cool tech learning stuff!
-                </p>
-                <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-                    <input 
-                        id="subscribeEmail" 
-                        type="email" 
-                        placeholder="Your email address" 
-                        class="flex-grow px-4 py-3 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-secondary transition-all"
-                    >
-                    <button id="subscribeBtn" class="bg-accent hover:bg-accent/80 text-white font-bold py-3 px-6 rounded-full shadow transition-all">
-                        Subscribe
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Quick Links -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10">
-                <div>
-                    <h4 class="font-bold mb-3 text-primary dark:text-secondary">Learn</h4>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-400">
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">What is CD?</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">How Computers Talk</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Make Your First App</a></li>
-                    </ul>
+            <div class="max-w-4xl mx-auto">
+                <!-- Subscribe Section -->
+                <div class="bg-gray-800 rounded-2xl p-6 md:p-8 mb-10">
+                    <h3 class="text-2xl font-bold mb-4 text-center">Stay Updated on Tech Learning</h3>
+                    <p class="text-gray-300 text-center mb-6 max-w-xl mx-auto">Get occasional updates about new technology learning resources for young minds.</p>
+                    
+                    <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                        <input type="email" id="subscribeEmail" placeholder="Your email address" 
+                            class="flex-grow px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:ring-2 focus:ring-primary text-white">
+                        <button type="button" id="subscribeBtn" 
+                            class="bg-primary hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors whitespace-nowrap">
+                            Subscribe
+                        </button>
+                    </form>
                 </div>
                 
-                <div>
-                    <h4 class="font-bold mb-3 text-primary dark:text-secondary">Resources</h4>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-400">
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Fun Videos</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Games</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Worksheets</a></li>
-                    </ul>
+                <!-- Bottom Footer -->
+                <div class="text-center text-gray-400 text-sm">
+                    <p>&copy; 2023 ArgoCD Learning for Young Minds</p>
+                    <p class="mt-2">Made with <i class="fa-solid fa-heart text-red-500"></i> for curious learners everywhere</p>
                 </div>
-                
-                <div>
-                    <h4 class="font-bold mb-3 text-primary dark:text-secondary">About</h4>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-400">
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Our Story</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Teachers</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Contact</a></li>
-                    </ul>
-                </div>
-                
-                <div>
-                    <h4 class="font-bold mb-3 text-primary dark:text-secondary">Legal</h4>
-                    <ul class="space-y-2 text-gray-600 dark:text-gray-400">
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Privacy</a></li>
-                        <li><a href="#" class="hover:text-primary dark:hover:text-secondary transition-colors">Terms</a></li>
-                        <li><a href="/sitemap" class="hover:text-primary dark:hover:text-secondary transition-colors">Sitemap</a></li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- Social Media -->
-            <div class="flex justify-center space-x-6 mb-8">
-                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-secondary text-2xl transition-colors">
-                    <i class="fa fa-facebook"></i>
-                </a>
-                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-secondary text-2xl transition-colors">
-                    <i class="fa fa-twitter"></i>
-                </a>
-                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-secondary text-2xl transition-colors">
-                    <i class="fa fa-youtube-play"></i>
-                </a>
-                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-secondary text-2xl transition-colors">
-                    <i class="fa fa-instagram"></i>
-                </a>
-            </div>
-            
-            <!-- Copyright -->
-            <div class="text-center text-gray-500 dark:text-gray-500 text-sm">
-                &copy; 2023 ArgoCD Fun for Young Learners. All rights reserved.
             </div>
         </div>
     </footer>
 
-    <!-- Back to Top Button -->
-    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary dark:bg-secondary text-white p-3 rounded-full shadow-lg opacity-0 invisible transition-all duration-300 hover:bg-primary/80 dark:hover:bg-secondary/80">
-        <i class="fa fa-arrow-up"></i>
-    </button>
-
- 
-    
-    <!-- Import main.js as a module -->
+    <!-- JavaScript -->
+    <script>
+        // Typing animation for hero text
+        document.addEventListener('DOMContentLoaded', function() {
+            const text = "ArgoCD Made Simple";
+            const typingElement = document.getElementById('typingText');
+            let index = 0;
+            
+            function typeText() {
+                if (index < text.length) {
+                    typingElement.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(typeText, 150);
+                }
+            }
+            
+            typeText();
+            
+            // Create floating code particles
+            createCodeParticles();
+            
+            // Initialize event listeners
+            initEventListeners();
+            
+            // Initialize demo terminal
+            initTerminal();
+        });
+        
+        // Create floating code particles animation
+        function createCodeParticles() {
+            const container = document.getElementById('codeParticles');
+            const particlesCount = 50;
+            const symbols = ['{', '}', '[', ']', '(', ')', ';', ':', '=', '+', '-', '*', '/', '1', '0', 'a', 'b', 'c', 'x', 'y', 'z'];
+            
+            for (let i = 0; i < particlesCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('code-particle');
+                
+                // Random properties
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const size = Math.random() * 12 + 8;
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const duration = Math.random() * 30 + 20;
+                const delay = Math.random() * 10;
+                const opacity = Math.random() * 0.7 + 0.3;
+                
+                // Apply styles
+                particle.textContent = symbol;
+                particle.style.fontSize = `${size}px`;
+                particle.style.left = `${left}%`;
+                particle.style.top = `${top}%`;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                particle.style.opacity = opacity;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // Initialize all event listeners
+        function initEventListeners() {
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const mobileMenu = document.getElementById('mobileMenu');
+            
+            mobileMenuBtn.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+            
+            // Theme toggle
+            const themeToggle = document.getElementById('themeToggle');
+            
+            themeToggle.addEventListener('click', function() {
+                document.documentElement.classList.toggle('dark');
+                
+                // Save preference to localStorage
+                if (document.documentElement.classList.contains('dark')) {
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+            
+            // Check for saved theme preference or respect OS preference
+            if (localStorage.getItem('theme') === 'dark' || 
+                (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Bookmark button
+            const bookmarkBtn = document.getElementById('bookmarkBtn');
+            let isBookmarked = false;
+            
+            bookmarkBtn.addEventListener('click', function() {
+                isBookmarked = !isBookmarked;
+                const icon = bookmarkBtn.querySelector('i');
+                
+                if (isBookmarked) {
+                    icon.classList.remove('fa-regular', 'fa-star');
+                    icon.classList.add('fa-solid', 'fa-star', 'text-yellow-400');
+                } else {
+                    icon.classList.remove('fa-solid', 'fa-star', 'text-yellow-400');
+                    icon.classList.add('fa-regular', 'fa-star');
+                }
+            });
+            
+            // Resources section toggle
+            const resourcesToggle = document.getElementById('resourcesToggle');
+            const resourcesContent = document.getElementById('resourcesContent');
+            const resourcesIcon = document.getElementById('resourcesIcon');
+            
+            resourcesToggle.addEventListener('click', function() {
+                resourcesContent.classList.toggle('hidden');
+                resourcesIcon.classList.toggle('rotate-180');
+            });
+            
+            // Quiz functionality
+            const checkAnswersBtn = document.getElementById('checkAnswers');
+            checkAnswersBtn.addEventListener('click', checkQuizAnswers);
+            
+            // Subscribe button
+            const subscribeBtn = document.getElementById('subscribeBtn');
+            subscribeBtn.addEventListener('click', function() {
+                const emailInput = document.getElementById('subscribeEmail');
+                if (emailInput.value) {
+                    // Just a visual feedback, no actual functionality
+                    const originalText = subscribeBtn.textContent;
+                    subscribeBtn.textContent = "Thanks!";
+                    subscribeBtn.classList.remove('bg-primary');
+                    subscribeBtn.classList.add('bg-green-600');
+                    
+                    setTimeout(function() {
+                        subscribeBtn.textContent = originalText;
+                        subscribeBtn.classList.remove('bg-green-600');
+                        subscribeBtn.classList.add('bg-primary');
+                        emailInput.value = '';
+                    }, 2000);
+                }
+            });
+            
+            // Search functionality (simple)
+            const searchInputs = [
+                document.getElementById('searchInput'),
+                document.getElementById('searchInputMobile')
+            ];
+            
+            searchInputs.forEach(input => {
+                if (input) {
+                    input.addEventListener('keyup', function(e) {
+                        if (e.key === 'Enter' && this.value) {
+                            const searchTerm = this.value.toLowerCase();
+                            const sections = document.querySelectorAll('section');
+                            
+                            // Highlight matching sections
+                            sections.forEach(section => {
+                                const text = section.textContent.toLowerCase();
+                                if (text.includes(searchTerm)) {
+                                    section.scrollIntoView({ behavior: 'smooth' });
+                                    section.classList.add('bg-yellow-50', 'dark:bg-yellow-900/20');
+                                    
+                                    setTimeout(() => {
+                                        section.classList.remove('bg-yellow-50', 'dark:bg-yellow-900/20');
+                                    }, 2000);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+            
+            // Share button (no actual sharing functionality)
+            const shareBtn = document.getElementById('shareBtn');
+            shareBtn.addEventListener('click', function() {
+                // Visual feedback only
+                const originalIcon = this.innerHTML;
+                this.innerHTML = '<i class="fa-solid fa-check text-xl text-green-500"></i>';
+                
+                setTimeout(() => {
+                    this.innerHTML = originalIcon;
+                }, 1500);
+            });
+        }
+        
+        // Initialize terminal demo
+        function initTerminal() {
+            const terminalOutput = document.getElementById('terminalOutput');
+            const terminalInput = document.getElementById('terminalInput');
+            const appStatus = document.getElementById('appStatus');
+            let appState = "In Sync";
+            let isModified = false;
+            
+            // Initial status
+            updateStatus();
+            
+            // Command buttons
+            document.getElementById('cmdCheck').addEventListener('click', function() {
+                addOutput('Checking application status...');
+                setTimeout(() => {
+                    updateStatus();
+                    addOutput('Status check complete');
+                }, 800);
+                updateInput('check-status');
+            });
+            
+            document.getElementById('cmdChange').addEventListener('click', function() {
+                if (!isModified) {
+                    addOutput('Making changes to the application...');
+                    setTimeout(() => {
+                        appState = "Out of Sync";
+                        isModified = true;
+                        updateStatus();
+                        addOutput('Changes made to application');
+                    }, 1000);
+                    updateInput('make-changes');
+                } else {
+                    addOutput('Application already has changes');
+                    updateInput('make-changes');
+                }
+            });
+            
+            document.getElementById('cmdSync').addEventListener('click', function() {
+                if (isModified) {
+                    addOutput('Syncing with ArgoCD...');
+                    setTimeout(() => {
+                        appState = "In Sync";
+                        isModified = false;
+                        updateStatus();
+                        addOutput('Sync complete! Application matches desired state');
+                    }, 1500);
+                    updateInput('argocd sync');
+                } else {
+                    addOutput('Application is already in sync');
+                    updateInput('argocd sync');
+                }
+            });
+            
+            document.getElementById('cmdReset').addEventListener('click', function() {
+                addOutput('Resetting demo...');
+                setTimeout(() => {
+                    appState = "In Sync";
+                    isModified = false;
+                    updateStatus();
+                    terminalOutput.innerHTML = `
+                        <div>Welcome to ArgoCD Demo!</div>
+                        <div>Current app status: <span id="appStatus" class="text-green-400">In Sync</span></div>
+                        <div class="mt-2">Type 'help' to see commands</div>
+                    `;
+                    updateInput('reset');
+                }, 1000);
+            });
+            
+            // Helper functions
+            function addOutput(text) {
+                const newLine = document.createElement('div');
+                newLine.textContent = text;
+                terminalOutput.appendChild(newLine);
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+            
+            function updateInput(command) {
+                terminalInput.textContent = command;
+                setTimeout(() => {
+                    terminalInput.textContent = '';
+                    setTimeout(() => {
+                        terminalInput.textContent = 'waiting for command...';
+                    }, 300);
+                }, 1000);
+            }
+            
+            function updateStatus() {
+                const statusElement = document.getElementById('appStatus');
+                if (appState === "In Sync") {
+                    statusElement.textContent = "In Sync";
+                    statusElement.className = "text-green-400";
+                } else {
+                    statusElement.textContent = "Out of Sync";
+                    statusElement.className = "text-red-400";
+                }
+            }
+        }
+        
+        // Quiz answer checking
+        function checkQuizAnswers() {
+            const answers = {
+                q1: "B",
+                q2: "B",
+                q3: "A"
+            };
+            
+            let score = 0;
+            const total = Object.keys(answers).length;
+            
+            // Check each question
+            Object.keys(answers).forEach(question => {
+                const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+                const feedbackElement = document.querySelector(`input[name="${question}"]`).closest('.quiz-question').querySelector('.quiz-feedback');
+                
+                if (selectedOption) {
+                    if (selectedOption.value === answers[question]) {
+                        // Correct answer
+                        feedbackElement.textContent = "Correct! Great job!";
+                        feedbackElement.className = "quiz-feedback mt-4 text-green-600 dark:text-green-400 font-medium";
+                        score++;
+                    } else {
+                        // Incorrect answer
+                        feedbackElement.textContent = `Not quite. The correct answer is ${answers[question]}.`;
+                        feedbackElement.className = "quiz-feedback mt-4 text-red-600 dark:text-red-400 font-medium";
+                    }
+                } else {
+                    // No answer selected
+                    feedbackElement.textContent = "Please select an answer!";
+                    feedbackElement.className = "quiz-feedback mt-4 text-amber-600 dark:text-amber-400 font-medium";
+                }
+                
+                feedbackElement.classList.remove('hidden');
+            });
+            
+            // Show results
+            const resultElement = document.getElementById('quizResult');
+            resultElement.className = `mt-6 p-4 rounded-lg ${score === total ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'}`;
+            
+            if (score === total) {
+                resultElement.innerHTML = `<h3 class="text-xl font-bold mb-2">Perfect Score!</h3>
+                                         <p>You got all ${score} out of ${total} questions right! You're an ArgoCD expert!</p>`;
+            } else {
+                resultElement.innerHTML = `<h3 class="text-xl font-bold mb-2">Great Try!</h3>
+                                         <p>You got ${score} out of ${total} questions right. Keep learning and you'll get them all next time!</p>`;
+            }
+            
+            resultElement.classList.remove('hidden');
+            
+            // Scroll to results
+            resultElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+    </script>
     <script type="module" src="/main.js"></script>
 </body>
 </html>
