@@ -240,28 +240,45 @@
         
         // Pagination variables
         let currentPage = 1;
-        const resultsPerPage = 3;
+        const resultsPerPage = 30;
         let allResults = [];
+        let frameworkData = [];
+        let frameworkSuggestions = [];
+        let isDataLoaded = false;
         
-        // Framework data - matching the provided JSON structure
-        const frameworkData = [
-            {"id":1,"file":"react","name":"React","category":"Frontend","tags":["Framework","JavaScript","UI"],"popularity":1},
-            {"id":2,"file":"vue","name":"Vue","category":"Frontend","tags":["Framework","JavaScript","UI"],"popularity":1},
-            {"id":3,"file":"svelte","name":"Svelte","category":"Frontend","tags":["Framework","JavaScript","UI"],"popularity":0.66},
-            {"id":4,"file":"nextjs","name":"Nextjs","category":"Frontend","tags":["Framework","JavaScript","Fullstack"],"popularity":1},
-            {"id":5,"file":"flutter","name":"Flutter","category":"Frontend","tags":["Framework","Mobile Development","UI"],"popularity":1}
-        ];
-        
-        // Create suggestions from framework data
-        const frameworkSuggestions = [
-            ...frameworkData.map(item => item.name.toLowerCase()),
-            ...frameworkData.map(item => item.category.toLowerCase()),
-            ...[].concat(...frameworkData.map(item => item.tags.map(tag => tag.toLowerCase())))
-        ].filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
+        // Load data from JSON file when the page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('/assets/data/data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                frameworkData = await response.json();
+                
+                // Create suggestions from loaded data
+                frameworkSuggestions = [
+                    ...frameworkData.map(item => item.name.toLowerCase()),
+                    ...frameworkData.map(item => item.category.toLowerCase()),
+                    ...[].concat(...frameworkData.map(item => item.tags.map(tag => tag.toLowerCase())))
+                ].filter((value, index, self) => self.indexOf(value) === index); // Remove duplicates
+                
+                isDataLoaded = true;
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                // Do not provide any fallback data, show an error message instead
+                isDataLoaded = false;
+            }
+        });
         
         // Handle search input for suggestions
         searchInput.addEventListener('input', (e) => {
             const value = e.target.value.toLowerCase().trim();
+            
+            if (!isDataLoaded) {
+                // Don't show suggestions until data is loaded
+                searchSuggestions.classList.add('hidden');
+                return;
+            }
             
             if (value.length > 0) {
                 // Filter suggestions based on input
@@ -328,20 +345,52 @@
                     </div>
                 `;
                 
-                // Filter data based on search query
-                allResults = frameworkData.filter(item => 
-                    item.name.toLowerCase().includes(query.toLowerCase()) || 
-                    item.category.toLowerCase().includes(query.toLowerCase()) ||
-                    item.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-                );
-                
-                // Display paginated results
-                displayPaginatedResults();
-                
-                // Update pagination
-                updatePagination();
+                // Check if data is loaded
+                if (!isDataLoaded) {
+                    // Try to wait for data to load
+                    const checkDataInterval = setInterval(() => {
+                        if (isDataLoaded) {
+                            clearInterval(checkDataInterval);
+                            performSearch(query);
+                        }
+                    }, 100);
+                    
+                    // Timeout after 3 seconds
+                    setTimeout(() => {
+                        clearInterval(checkDataInterval);
+                        resultsContainer.innerHTML = `
+                            <div class="flex justify-center items-center h-60">
+                                <div class="text-center">
+                                    <div class="inline-block bg-white dark:bg-gray-800 p-4 rounded-full shadow-md mb-4">
+                                        <i class="fa fa-exclamation-circle text-3xl text-red-500"></i>
+                                    </div>
+                                    <p class="font-comic text-lg text-gray-600 dark:text-gray-400">Failed to load data</p>
+                                    <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">Please try again later</p>
+                                </div>
+                            </div>
+                        `;
+                    }, 3000);
+                } else {
+                    performSearch(query);
+                }
             }
         });
+        
+        // Helper function to perform search
+        function performSearch(query) {
+            // Filter data based on search query
+            allResults = frameworkData.filter(item => 
+                item.name.toLowerCase().includes(query.toLowerCase()) || 
+                item.category.toLowerCase().includes(query.toLowerCase()) ||
+                item.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+            );
+            
+            // Display paginated results
+            displayPaginatedResults();
+            
+            // Update pagination
+            updatePagination();
+        }
         
         // Display paginated results
         function displayPaginatedResults() {
@@ -357,7 +406,7 @@
                                 <i class="fa fa-search text-3xl text-gray-400"></i>
                             </div>
                             <p class="font-comic text-lg text-gray-600 dark:text-gray-400">No results for "${searchInput.value}"</p>
-                            <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">Try searching for React, Vue, or JavaScript!</p>
+                            <p class="text-gray-500 dark:text-gray-500 text-sm mt-2">Try searching for something else!</p>
                         </div>
                     </div>
                 `;
@@ -478,6 +527,6 @@
     </script>
     
     <!-- External main.js -->
-    <script type="module" src="/main.js"></script>
+    <!-- <script type="module" src="/main.js"></script> -->
 </body>
 </html>
