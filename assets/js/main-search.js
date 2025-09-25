@@ -588,8 +588,10 @@ export async function initSearch() {
       }
     });
     if (searchDOM.viewAllResultsBtn) searchDOM.viewAllResultsBtn.addEventListener('click', () => {
-      if (searchDOM.searchInput && searchDOM.searchInput.value.trim()) {
-        performFullSearch(searchDOM.searchInput.value.toLowerCase().trim());
+      // 获取当前活动的搜索框或默认使用桌面搜索框
+      const currentInput = activeSearchInput || searchDOM.searchInput || searchDOM.searchInputMobile;
+      if (currentInput && currentInput.value.trim()) {
+        performFullSearch(currentInput.value.toLowerCase().trim());
       }
     });
     

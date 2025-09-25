@@ -9,6 +9,7 @@ import '/assets/js/theme-toggle.js';        // Global theme toggle functionality
 import '/assets/js/share.js';               // Global share functionality
 import '/assets/js/back-to-top.js';         // Back to top functionality
 import '/assets/js/reading-progress.js';    // Reading progress bar functionality
+import '/assets/js/auto-navigator.js';      // Auto navigation functionality
 
 // All feature modules have been loaded
 
