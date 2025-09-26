@@ -1,0 +1,1186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chart.js Demo - Dev Tools Visualization</title>
+  <meta name="description" content="Chart.js visualization of development tools data">
+  
+  <!-- External Resources -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4F46E5', // Indigo for trust and professionalism
+            secondary: '#10B981', // Green for action and positivity
+            accent: '#F59E0B', // Amber for attention
+            dark: {
+              bg: '#111827',
+              card: '#1F2937',
+              text: '#F3F4F6',
+              border: '#374151'
+            },
+            light: {
+              bg: '#F9FAFB',
+              card: '#FFFFFF',
+              text: '#111827',
+              border: '#E5E7EB'
+            }
+          },
+          fontFamily: {
+            bubblegum: ['"Bubblegum Sans"', '"Comic Sans MS"', 'cursive'],
+            opensans: ['"Open Sans"', 'sans-serif'],
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'wiggle': 'wiggle 1s ease-in-out infinite',
+            'fade-in': 'fadeIn 0.5s ease-in-out',
+            'slide-up': 'slideUp 0.5s ease-out',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            wiggle: {
+              '0%, 100%': { transform: 'rotate(-3deg)' },
+              '50%': { transform: 'rotate(3deg)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' },
+            },
+            slideUp: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' },
+            }
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- Custom Utilities -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .hero-gradient {
+        background: linear-gradient(135deg, #4F46E5 0%, #6366F1 100%);
+      }
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+      }
+      .btn-primary {
+        @apply bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg;
+      }
+      .btn-secondary {
+        @apply bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300;
+      }
+      .chart-card {
+        @apply bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border card-hover transition-all duration-500 ease-in-out;
+      }
+      .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+      }
+      .chart-loading {
+        @apply animate-pulse bg-light-border/50 dark:bg-dark-border/50 rounded-lg h-full w-full;
+      }
+    }
+  </style>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Open+Sans:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-opensans bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text min-h-screen transition-colors duration-300">
+  <!-- Navigation -->
+  <nav class="sticky top-0 z-50 bg-white/95 dark:bg-dark-card/95 backdrop-blur-md shadow-sm transition-all duration-300">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <a href="/" class="flex items-center space-x-2">
+        <i class="fas fa-chart-line text-primary text-2xl"></i>
+        <span class="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">DevTools Charts</span>
+      </a>
+      
+      <div class="flex items-center space-x-4">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="p-2 rounded-full hover:bg-light-border/30 dark:hover:bg-dark-border/30 transition-colors">
+          <i class="fas fa-moon dark:hidden text-xl"></i>
+          <i class="fas fa-sun hidden dark:block text-xl"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero-gradient text-white py-16 md:py-24">
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-6 animate-fade-in">Chart.js Visualization Demo</h1>
+      <p class="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto mb-8 animate-slide-up" style="animation-delay: 0.1s">
+        Interactive visualization of development tools and frameworks data using Chart.js
+      </p>
+      <div class="animate-slide-up" style="animation-delay: 0.2s">
+        <a href="#charts" class="btn-primary inline-flex items-center">
+          <span>Explore Charts</span>
+          <i class="fas fa-arrow-down ml-2"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto px-4 py-12" id="charts">
+    <!-- Dashboard Controls -->
+    <div class="mb-12 bg-light-card dark:bg-dark-card p-6 rounded-xl border border-light-border dark:border-dark-border shadow-sm">
+      <h2 class="text-2xl font-bold mb-6">Data Visualization Dashboard</h2>
+      <p class="text-gray-600 dark:text-gray-300 mb-6">
+        Explore the data from <code class="bg-gray-100 dark:bg-dark-border px-2 py-1 rounded">data.json</code> through various interactive charts.
+        This visualization includes 171 development tools, frameworks, and services categorized by their domains.
+      </p>
+      
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-primary/10 dark:bg-primary/20 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-primary">Total Tools</h3>
+          <p class="text-3xl font-bold" id="total-tools">171</p>
+        </div>
+        <div class="bg-secondary/10 dark:bg-secondary/20 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-secondary">Categories</h3>
+          <p class="text-3xl font-bold" id="total-categories">10+</p>
+        </div>
+        <div class="bg-accent/10 dark:bg-accent/20 p-4 rounded-lg">
+          <h3 class="text-lg font-semibold text-accent">Tags</h3>
+          <p class="text-3xl font-bold" id="total-tags">150+</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <!-- Bar Chart: Tools by Category -->
+      <div class="chart-card" id="chart-by-category">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Tools by Category</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Bar Chart</span>
+            <i class="fas fa-chart-bar text-primary"></i>
+          </div>
+        </div>
+        <div class="chart-loading" id="loading-category"></div>
+        <div class="chart-container hidden" id="container-category">
+          <canvas id="categoryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Pie Chart: Popularity Distribution -->
+      <div class="chart-card" id="chart-popularity">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Popularity Distribution</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Pie Chart</span>
+            <i class="fas fa-chart-pie text-secondary"></i>
+          </div>
+        </div>
+        <div class="chart-loading" id="loading-popularity"></div>
+        <div class="chart-container hidden" id="container-popularity">
+          <canvas id="popularityChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Line Chart: Top 10 Categories -->
+      <div class="chart-card" id="chart-top-categories">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Top 10 Categories</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Line Chart</span>
+            <i class="fas fa-chart-line text-accent"></i>
+          </div>
+        </div>
+        <div class="chart-loading" id="loading-top-categories"></div>
+        <div class="chart-container hidden" id="container-top-categories">
+          <canvas id="topCategoriesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Radar Chart: Category Coverage -->
+      <div class="chart-card" id="chart-category-coverage">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Category Coverage</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Radar Chart</span>
+            <i class="fas fa-chart-radar text-purple-500"></i>
+          </div>
+        </div>
+        <div class="chart-loading" id="loading-coverage"></div>
+        <div class="chart-container hidden" id="container-coverage">
+          <canvas id="coverageChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Polar Area Chart: Popularity by Category -->
+      <div class="chart-card" id="chart-polar-popularity">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Popularity by Category</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Polar Area</span>
+            <i class="fas fa-chart-polar-area text-blue-500"></i>
+          </div>
+        </div>
+        <div class="chart-loading" id="loading-polar"></div>
+        <div class="chart-container hidden" id="container-polar">
+          <canvas id="polarChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Doughnut Chart: Top 5 Most Popular Tools -->
+      <div class="chart-card" id="chart-top-tools">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Top 5 Most Popular Tools</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Doughnut Chart</span>
+            <i class="fas fa-chart-doughnut text-pink-500"></i>
+          </div>
+        </div>
+        <div class="chart-loading" id="loading-top-tools"></div>
+        <div class="chart-container hidden" id="container-top-tools">
+          <canvas id="topToolsChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive Chart Section -->
+    <div class="mt-16">
+      <div class="chart-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Interactive Category Comparison</h3>
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500 dark:text-gray-400">Bar Chart</span>
+            <i class="fas fa-chart-bar text-primary"></i>
+          </div>
+        </div>
+        
+        <div class="flex flex-col md:flex-row items-start md:items-center mb-6 gap-4">
+          <div class="flex flex-wrap gap-2" id="category-filters">
+            <!-- Category filters will be dynamically added here -->
+          </div>
+          <div class="ml-auto">
+            <select id="chart-type-select" class="bg-light-border dark:bg-dark-border text-light-text dark:text-dark-text px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary">
+              <option value="bar">Bar Chart</option>
+              <option value="line">Line Chart</option>
+              <option value="radar">Radar Chart</option>
+              <option value="polarArea">Polar Area</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="chart-loading" id="loading-interactive"></div>
+        <div class="chart-container hidden" id="container-interactive">
+          <canvas id="interactiveChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-gray-900 text-white py-12">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <div class="mb-6 md:mb-0">
+          <div class="flex items-center space-x-2">
+            <i class="fas fa-chart-line text-primary text-2xl"></i>
+            <span class="text-xl font-bold">DevTools Charts</span>
+          </div>
+          <p class="mt-2 text-gray-400">Chart.js visualization demo</p>
+        </div>
+        
+        <div class="flex space-x-6">
+          <a href="/" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fas fa-home text-xl"></i>
+          </a>
+          <a href="/show.html" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fas fa-th-large text-xl"></i>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-white transition-colors">
+            <i class="fas fa-github text-xl"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
+        <p>&copy; 2023 DevTools Charts. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // Theme Toggle
+    const themeToggle = document.getElementById('theme-toggle');
+    const htmlElement = document.documentElement;
+    
+    // Check for saved theme preference or use system preference
+    if (localStorage.getItem('theme') === 'dark' || 
+        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      htmlElement.classList.add('dark');
+    }
+    
+    themeToggle.addEventListener('click', () => {
+      htmlElement.classList.toggle('dark');
+      localStorage.setItem('theme', htmlElement.classList.contains('dark') ? 'dark' : 'light');
+    });
+    
+    // Function to get chart colors based on theme
+    function getChartColors() {
+      const isDark = htmlElement.classList.contains('dark');
+      return {
+        background: isDark ? '#1F2937' : '#FFFFFF',
+        text: isDark ? '#F3F4F6' : '#111827',
+        grid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+        colors: [
+          '#4F46E5', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', 
+          '#EC4899', '#06B6D4', '#84CC16', '#F97316', '#14B8A6'
+        ]
+      };
+    }
+    
+    // Function to show chart and hide loading
+    function showChart(loadingId, containerId) {
+      document.getElementById(loadingId).classList.add('hidden');
+      document.getElementById(containerId).classList.remove('hidden');
+    }
+    
+    // Fetch and process data
+    async function fetchData() {
+      try {
+        const response = await fetch('/assets/data/data.json');
+        const data = await response.json();
+        return data;
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        // Fallback data in case of error
+        return Array.from({length: 10}, (_, i) => ({
+          id: i + 1,
+          name: `Tool ${i + 1}`,
+          category: ['Frontend', 'Backend', 'Database', 'AI Tools', 'DevOps'][i % 5],
+          popularity: [0.33, 0.66, 1][i % 3]
+        }));
+      }
+    }
+    
+    // Main function to initialize charts
+    async function initCharts() {
+      const data = await fetchData();
+      
+      // Calculate statistics
+      calculateStats(data);
+      
+      // Initialize all charts
+      initCategoryChart(data);
+      initPopularityChart(data);
+      initTopCategoriesChart(data);
+      initCoverageChart(data);
+      initPolarChart(data);
+      initTopToolsChart(data);
+      initInteractiveChart(data);
+      
+      // Add event listener for theme changes to update charts
+      themeToggle.addEventListener('click', () => {
+        setTimeout(() => {
+          document.querySelectorAll('canvas').forEach(canvas => {
+            const chart = Chart.getChart(canvas);
+            if (chart) {
+              const colors = getChartColors();
+              chart.options.scales?.r?.grid.color = colors.grid;
+              chart.options.scales?.r?.ticks.color = colors.text;
+              chart.options.scales?.r?.pointLabels.color = colors.text;
+              chart.options.scales?.x?.grid.color = colors.grid;
+              chart.options.scales?.x?.ticks.color = colors.text;
+              chart.options.scales?.y?.grid.color = colors.grid;
+              chart.options.scales?.y?.ticks.color = colors.text;
+              chart.options.plugins.legend.labels.color = colors.text;
+              chart.options.plugins.title.color = colors.text;
+              chart.update();
+            }
+          });
+        }, 100);
+      });
+    }
+    
+    // Calculate and display statistics
+    function calculateStats(data) {
+      const categories = new Set(data.map(item => item.category));
+      const tags = new Set(data.flatMap(item => item.tags || []));
+      
+      document.getElementById('total-tools').textContent = data.length;
+      document.getElementById('total-categories').textContent = categories.size;
+      document.getElementById('total-tags').textContent = tags.size;
+    }
+    
+    // Initialize Category Bar Chart
+    function initCategoryChart(data) {
+      const categoryCounts = {};
+      data.forEach(item => {
+        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+      });
+      
+      const categories = Object.keys(categoryCounts);
+      const counts = Object.values(categoryCounts);
+      const colors = getChartColors();
+      
+      const ctx = document.getElementById('categoryChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: categories,
+          datasets: [{
+            label: 'Number of Tools',
+            data: counts,
+            backgroundColor: colors.colors.slice(0, categories.length),
+            borderColor: colors.colors.slice(0, categories.length).map(color => color + '80'),
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: colors.background,
+              titleColor: colors.text,
+              bodyColor: colors.text,
+              borderColor: colors.grid,
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              displayColors: false,
+              callbacks: {
+                label: function(context) {
+                  return `Tools: ${context.raw}`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Tools Distribution by Category',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: colors.text,
+              padding: {
+                bottom: 20
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false,
+                color: colors.grid
+              },
+              ticks: {
+                color: colors.text,
+                maxRotation: 45,
+                minRotation: 45
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: colors.grid
+              },
+              ticks: {
+                color: colors.text,
+                stepSize: 5
+              }
+            }
+          },
+          animation: {
+            duration: 2000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+      
+      showChart('loading-category', 'container-category');
+    }
+    
+    // Initialize Popularity Pie Chart
+    function initPopularityChart(data) {
+      const popularityCounts = {
+        'High (1.0)': 0,
+        'Medium (0.66)': 0,
+        'Low (0.33)': 0
+      };
+      
+      data.forEach(item => {
+        if (item.popularity === 1) {
+          popularityCounts['High (1.0)']++;
+        } else if (item.popularity === 0.66) {
+          popularityCounts['Medium (0.66)']++;
+        } else {
+          popularityCounts['Low (0.33)']++;
+        }
+      });
+      
+      const labels = Object.keys(popularityCounts);
+      const counts = Object.values(popularityCounts);
+      const colors = getChartColors();
+      
+      const ctx = document.getElementById('popularityChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: counts,
+            backgroundColor: [
+              colors.colors[1], // Green for High
+              colors.colors[2], // Amber for Medium
+              colors.colors[3]  // Red for Low
+            ],
+            borderColor: colors.background,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: colors.text,
+                padding: 20,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: colors.background,
+              titleColor: colors.text,
+              bodyColor: colors.text,
+              borderColor: colors.grid,
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  const total = counts.reduce((a, b) => a + b, 0);
+                  const percentage = Math.round((context.raw / total) * 100);
+                  return `${context.label}: ${context.raw} (${percentage}%)`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Tools by Popularity Score',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: colors.text,
+              padding: {
+                bottom: 20
+              }
+            }
+          },
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+      
+      showChart('loading-popularity', 'container-popularity');
+    }
+    
+    // Initialize Top Categories Line Chart
+    function initTopCategoriesChart(data) {
+      const categoryCounts = {};
+      data.forEach(item => {
+        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+      });
+      
+      // Sort categories by count and take top 10
+      const sortedCategories = Object.entries(categoryCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 10);
+      
+      const categories = sortedCategories.map(([category]) => category);
+      const counts = sortedCategories.map(([, count]) => count);
+      const colors = getChartColors();
+      
+      const ctx = document.getElementById('topCategoriesChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: categories,
+          datasets: [{
+            label: 'Number of Tools',
+            data: counts,
+            fill: true,
+            backgroundColor: `${colors.colors[0]}33`, // Primary color with opacity
+            borderColor: colors.colors[0],
+            tension: 0.4,
+            pointBackgroundColor: colors.colors[0],
+            pointBorderColor: colors.background,
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: colors.background,
+              titleColor: colors.text,
+              bodyColor: colors.text,
+              borderColor: colors.grid,
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  return `Tools: ${context.raw}`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Top 10 Categories by Tool Count',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: colors.text,
+              padding: {
+                bottom: 20
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false,
+                color: colors.grid
+              },
+              ticks: {
+                color: colors.text,
+                maxRotation: 45,
+                minRotation: 45
+              }
+            },
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: colors.grid
+              },
+              ticks: {
+                color: colors.text,
+                stepSize: 5
+              }
+            }
+          },
+          animation: {
+            duration: 2000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+      
+      showChart('loading-top-categories', 'container-top-categories');
+    }
+    
+    // Initialize Coverage Radar Chart
+    function initCoverageChart(data) {
+      const categoryPopularity = {};
+      const categoryCount = {};
+      
+      data.forEach(item => {
+        if (!categoryPopularity[item.category]) {
+          categoryPopularity[item.category] = 0;
+          categoryCount[item.category] = 0;
+        }
+        categoryPopularity[item.category] += item.popularity;
+        categoryCount[item.category]++;
+      });
+      
+      // Calculate average popularity per category
+      const categories = Object.keys(categoryPopularity);
+      const avgPopularity = categories.map(category => 
+        categoryPopularity[category] / categoryCount[category]
+      );
+      
+      // Take first 8 categories for better readability
+      const limitedCategories = categories.slice(0, 8);
+      const limitedPopularity = avgPopularity.slice(0, 8);
+      
+      const colors = getChartColors();
+      
+      const ctx = document.getElementById('coverageChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+          labels: limitedCategories,
+          datasets: [{
+            label: 'Average Popularity',
+            data: limitedPopularity,
+            backgroundColor: `${colors.colors[4]}33`, // Purple color with opacity
+            borderColor: colors.colors[4],
+            pointBackgroundColor: colors.colors[4],
+            pointBorderColor: colors.background,
+            pointBorderWidth: 2,
+            pointRadius: 5,
+            pointHoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              backgroundColor: colors.background,
+              titleColor: colors.text,
+              bodyColor: colors.text,
+              borderColor: colors.grid,
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  return `Popularity: ${context.raw.toFixed(2)}`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Category Coverage by Popularity',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: colors.text,
+              padding: {
+                bottom: 20
+              }
+            }
+          },
+          scales: {
+            r: {
+              angleLines: {
+                color: colors.grid
+              },
+              grid: {
+                color: colors.grid
+              },
+              pointLabels: {
+                color: colors.text,
+                font: {
+                  size: 11
+                },
+                padding: 15
+              },
+              ticks: {
+                backdropColor: 'transparent',
+                color: colors.text,
+                stepSize: 0.2,
+                min: 0,
+                max: 1
+              }
+            }
+          },
+          animation: {
+            duration: 2000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+      
+      showChart('loading-coverage', 'container-coverage');
+    }
+    
+    // Initialize Polar Area Chart
+    function initPolarChart(data) {
+      const categoryCounts = {};
+      data.forEach(item => {
+        categoryCounts[item.category] = (categoryCounts[item.category] || 0) + 1;
+      });
+      
+      // Sort and take top 6 categories for better readability
+      const sortedCategories = Object.entries(categoryCounts)
+        .sort(([,a], [,b]) => b - a)
+        .slice(0, 6);
+      
+      const categories = sortedCategories.map(([category]) => category);
+      const counts = sortedCategories.map(([, count]) => count);
+      const colors = getChartColors();
+      
+      const ctx = document.getElementById('polarChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'polarArea',
+        data: {
+          labels: categories,
+          datasets: [{
+            data: counts,
+            backgroundColor: colors.colors.slice(0, categories.length).map(color => color + '80'),
+            borderColor: colors.colors.slice(0, categories.length),
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: colors.text,
+                padding: 20,
+                font: {
+                  size: 11
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: colors.background,
+              titleColor: colors.text,
+              bodyColor: colors.text,
+              borderColor: colors.grid,
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  return `Tools: ${context.raw}`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Popularity by Category (Top 6)',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: colors.text,
+              padding: {
+                bottom: 20
+              }
+            }
+          },
+          scales: {
+            r: {
+              angleLines: {
+                color: colors.grid
+              },
+              grid: {
+                color: colors.grid
+              },
+              pointLabels: {
+                color: colors.text,
+                font: {
+                  size: 10
+                }
+              },
+              ticks: {
+                backdropColor: 'transparent',
+                color: colors.text,
+                stepSize: 5
+              }
+            }
+          },
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+      
+      showChart('loading-polar', 'container-polar');
+    }
+    
+    // Initialize Top Tools Doughnut Chart
+    function initTopToolsChart(data) {
+      // Filter tools with maximum popularity
+      const topTools = data
+        .filter(item => item.popularity === 1)
+        .sort((a, b) => b.name.localeCompare(a.name))
+        .slice(0, 5);
+      
+      const labels = topTools.map(item => item.name);
+      const colors = getChartColors();
+      
+      const ctx = document.getElementById('topToolsChart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: Array(labels.length).fill(1), // Equal parts for visualization
+            backgroundColor: colors.colors.slice(0, labels.length),
+            borderColor: colors.background,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                color: colors.text,
+                padding: 20,
+                font: {
+                  size: 12
+                }
+              }
+            },
+            tooltip: {
+              backgroundColor: colors.background,
+              titleColor: colors.text,
+              bodyColor: colors.text,
+              borderColor: colors.grid,
+              borderWidth: 1,
+              padding: 12,
+              cornerRadius: 8,
+              callbacks: {
+                label: function(context) {
+                  const tool = topTools[context.dataIndex];
+                  return `${tool.category} • ${tool.tags?.join(', ') || 'No tags'}`;
+                }
+              }
+            },
+            title: {
+              display: true,
+              text: 'Top 5 Most Popular Tools (Popularity = 1.0)',
+              font: {
+                size: 16,
+                weight: 'bold'
+              },
+              color: colors.text,
+              padding: {
+                bottom: 20
+              }
+            }
+          },
+          cutout: '70%',
+          animation: {
+            animateScale: true,
+            animateRotate: true,
+            duration: 2000,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
+      
+      showChart('loading-top-tools', 'container-top-tools');
+    }
+    
+    // Initialize Interactive Chart
+    function initInteractiveChart(data) {
+      const allCategories = [...new Set(data.map(item => item.category))];
+      const categoryFilters = document.getElementById('category-filters');
+      let selectedCategories = [];
+      let currentChart = null;
+      
+      // Create category filter buttons
+      allCategories.forEach(category => {
+        const button = document.createElement('button');
+        button.className = 'px-4 py-2 rounded-full bg-light-border dark:bg-dark-border text-sm hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors';
+        button.textContent = category;
+        button.dataset.category = category;
+        
+        button.addEventListener('click', () => {
+          button.classList.toggle('bg-primary/20');
+          button.classList.toggle('text-primary');
+          
+          if (button.classList.contains('bg-primary/20')) {
+            selectedCategories.push(category);
+          } else {
+            selectedCategories = selectedCategories.filter(c => c !== category);
+          }
+          
+          updateInteractiveChart();
+        });
+        
+        categoryFilters.appendChild(button);
+      });
+      
+      // Update interactive chart based on selected categories
+      function updateInteractiveChart() {
+        if (selectedCategories.length === 0) {
+          return;
+        }
+        
+        // Calculate high/medium/low popularity counts for each selected category
+        const popularityData = {};
+        selectedCategories.forEach(category => {
+          const categoryTools = data.filter(item => item.category === category);
+          popularityData[category] = {
+            high: categoryTools.filter(item => item.popularity === 1).length,
+            medium: categoryTools.filter(item => item.popularity === 0.66).length,
+            low: categoryTools.filter(item => item.popularity === 0.33).length
+          };
+        });
+        
+        const chartType = document.getElementById('chart-type-select').value;
+        const ctx = document.getElementById('interactiveChart').getContext('2d');
+        const colors = getChartColors();
+        
+        // Destroy existing chart if any
+        if (currentChart) {
+          currentChart.destroy();
+        }
+        
+        // Create new chart with validation
+        const validChartTypes = ['bar', 'line', 'radar', 'polarArea'];
+        const selectedType = validChartTypes.includes(chartType) ? chartType : 'bar';
+        
+        currentChart = new Chart(ctx, {
+          type: selectedType,
+          data: {
+            labels: selectedCategories,
+            datasets: [
+              {
+                label: 'High (1.0)',
+                data: selectedCategories.map(cat => popularityData[cat].high),
+                backgroundColor: `${colors.colors[1]}80`,
+                borderColor: colors.colors[1],
+                borderWidth: 2
+              },
+              {
+                label: 'Medium (0.66)',
+                data: selectedCategories.map(cat => popularityData[cat].medium),
+                backgroundColor: `${colors.colors[2]}80`,
+                borderColor: colors.colors[2],
+                borderWidth: 2
+              },
+              {
+                label: 'Low (0.33)',
+                data: selectedCategories.map(cat => popularityData[cat].low),
+                backgroundColor: `${colors.colors[3]}80`,
+                borderColor: colors.colors[3],
+                borderWidth: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'top',
+                labels: {
+                  color: colors.text,
+                  padding: 20
+                }
+              },
+              tooltip: {
+                backgroundColor: colors.background,
+                titleColor: colors.text,
+                bodyColor: colors.text,
+                borderColor: colors.grid,
+                borderWidth: 1,
+                padding: 12,
+                cornerRadius: 8
+              },
+              title: {
+                display: true,
+                text: `Popularity Distribution by Selected Categories (${selectedCategories.length})`,
+                font: {
+                  size: 16,
+                  weight: 'bold'
+                },
+                color: colors.text,
+                padding: {
+                  bottom: 20
+                }
+              }
+            },
+            scales: chartType !== 'radar' && chartType !== 'polarArea' ? {
+              x: {
+                grid: {
+                  display: chartType !== 'bar',
+                  color: colors.grid
+                },
+                ticks: {
+                  color: colors.text,
+                  maxRotation: 45,
+                  minRotation: 45
+                }
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  color: colors.grid
+                },
+                ticks: {
+                  color: colors.text,
+                  stepSize: 1
+                }
+              }
+            } : {
+              r: {
+                angleLines: {
+                  color: colors.grid
+                },
+                grid: {
+                  color: colors.grid
+                },
+                pointLabels: {
+                  color: colors.text
+                },
+                ticks: {
+                  backdropColor: 'transparent',
+                  color: colors.text,
+                  stepSize: 2
+                }
+              }
+            },
+            animation: {
+              duration: 1000,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+        
+        showChart('loading-interactive', 'container-interactive');
+      }
+      
+      // Change chart type event
+      document.getElementById('chart-type-select').addEventListener('change', () => {
+        if (selectedCategories.length > 0) {
+          updateInteractiveChart();
+        }
+      });
+    }
+    
+    // Initialize charts when DOM is loaded
+    document.addEventListener('DOMContentLoaded', initCharts);
+  </script>
+</body>
+</html>

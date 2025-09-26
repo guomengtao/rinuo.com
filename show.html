@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DevTools Showcase - Visual Explorer</title>
+  <meta name="description" content="Interactive visual exploration of development tools, frameworks, and resources">
+  <meta name="keywords" content="developer tools, frameworks, languages, visualization, interactive">
+  
+  <!-- External Resources -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
+  
+  <!-- Tailwind Configuration -->
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            primary: '#4F46E5', // Indigo for trust and professionalism
+            secondary: '#10B981', // Green for action and positivity
+            accent: '#F59E0B', // Amber for attention
+            dark: {
+              bg: '#111827',
+              card: '#1F2937',
+              text: '#F3F4F6',
+              border: '#374151'
+            },
+            light: {
+              bg: '#F9FAFB',
+              card: '#FFFFFF',
+              text: '#111827',
+              border: '#E5E7EB'
+            }
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'float': 'float 3s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'fade-in-up': 'fadeInUp 0.5s ease-out',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            fadeInUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            }
+          }
+        },
+      }
+    }
+  </script>
+  
+  <!-- Custom Utilities -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .card-hover {
+        @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+      }
+      .tag-pill {
+        @apply px-2 py-1 text-xs font-medium rounded-full transition-all;
+      }
+      .grid-masonry {
+        grid-template-rows: masonry;
+      }
+      .gradient-bg {
+        background: linear-gradient(135deg, #4F46E5 0%, #818CF8 100%);
+      }
+      .skeleton-loading {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: skeleton-loading 1.5s infinite;
+      }
+      @keyframes skeleton-loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+      }
+    }
+  </style>
+  
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-inter bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text min-h-screen transition-colors duration-300">
+  <!-- Header -->
+  <header class="gradient-bg text-white py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10">
+      <div class="absolute top-0 left-0 w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICAgIDxwYXRoIGQ9Ik0zNiAxOGMzLjMxNCAwIDYtMi42ODYgNi02cy0yLjY4Ni02LTYtNi02IDIuNjg2LTYgNiAyLjY4NiA2IDYgNnptMCAzMGMzLjMxNCAwIDYtMi42ODYgNi02cy0yLjY4Ni02LTYtNi02IDIuNjg2LTYgNiAyLjY4NiA2IDYgNnptLTE4LTE4YzMuMzE0IDAgNi0yLjY4NiA2LTZzLTIuNjg2LTYtNi02LTYgMi42ODYtNiA2IDIuNjg2IDYgNiA2eiIgZmlsbD0icmdiYSgyNTUsMjU1LDI1NSwwLjEpIi8+Cjwvc3ZnPg==')] opacity-30"></div>
+    </div>
+    
+    <div class="container mx-auto max-w-5xl relative z-10">
+      <h1 class="text-[clamp(2rem,5vw,3.5rem)] font-bold mb-4 tracking-tight">DevTools <span class="text-secondary">Showcase</span></h1>
+      <p class="text-lg sm:text-xl text-white/90 max-w-2xl mb-8">Explore and discover 170+ development tools, frameworks, languages, and services in an interactive visual format.</p>
+      
+      <!-- Search and Filter -->
+      <div class="bg-white/10 backdrop-blur-md rounded-xl p-4 shadow-lg">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="relative flex-grow">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-white/60"></i>
+            <input type="text" id="search-input" placeholder="Search tools, frameworks, or languages..." 
+                  class="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary placeholder-white/60 text-white">
+          </div>
+          <div class="flex gap-3">
+            <select id="category-filter" 
+                  class="bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-secondary appearance-none pr-10 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBmaWxsPSIjZmZmIiBkPSJNNS45OTkgOC41ODRsNS4zLTUuMy0xLjQxNS0xLjQxNS0zLjg4NSAzLjg4NC0zLjg4NC0zLjg4NC0xLjQxNSAxLjQxNCAzLjg4NCAzLjg4NCAzLjg4NC0zLjg4NCAxLjQxNSAxLjQxNXoiLz48L3N2Zz4=')] bg-right bg-no-repeat bg-[length:12px_12px] bg-[padding:12px]">
+              <option value="all">All Categories</option>
+              <!-- Categories will be populated dynamically -->
+            </select>
+            <button id="theme-toggle" 
+                  class="bg-white/10 border border-white/20 rounded-lg p-3 text-white hover:bg-white/20 transition-colors">
+              <i class="fas fa-moon"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+      <div class="bg-white dark:bg-dark-card rounded-xl p-6 shadow-sm border border-light-border dark:border-dark-border transition-all hover:shadow-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+            <i class="fas fa-tools text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Total Tools</p>
+            <p class="text-2xl font-bold" id="total-tools">171</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-dark-card rounded-xl p-6 shadow-sm border border-light-border dark:border-dark-border transition-all hover:shadow-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
+            <i class="fas fa-layer-group text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Categories</p>
+            <p class="text-2xl font-bold" id="total-categories">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-dark-card rounded-xl p-6 shadow-sm border border-light-border dark:border-dark-border transition-all hover:shadow-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent">
+            <i class="fas fa-tags text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Unique Tags</p>
+            <p class="text-2xl font-bold" id="total-tags">0</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-dark-card rounded-xl p-6 shadow-sm border border-light-border dark:border-dark-border transition-all hover:shadow-md">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400">
+            <i class="fas fa-star text-xl"></i>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Popular Tools</p>
+            <p class="text-2xl font-bold" id="popular-tools">0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div class="flex items-center gap-3">
+        <h2 class="text-2xl font-bold">Tools & Resources</h2>
+        <span class="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium" id="results-count">171 items</span>
+      </div>
+      <div class="flex items-center gap-3">
+        <label for="sort" class="text-sm text-gray-500 dark:text-gray-400">Sort by:</label>
+        <select id="sort" class="bg-white dark:bg-dark-card border border-light-border dark:border-dark-border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary">
+          <option value="name-asc">Name A-Z</option>
+          <option value="name-desc">Name Z-A</option>
+          <option value="popularity-desc">Popularity</option>
+          <option value="category">Category</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Category Pills -->
+    <div class="flex flex-wrap gap-2 mb-8" id="category-pills">
+      <!-- Category pills will be populated dynamically -->
+    </div>
+
+    <!-- Tool Cards Grid -->
+    <div id="tools-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <!-- Tool cards will be populated dynamically -->
+      <!-- Skeleton loaders -->
+      <div class="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover">
+        <div class="h-24 w-full skeleton-loading"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-6 w-2/3 skeleton-loading rounded"></div>
+          <div class="h-4 w-1/2 skeleton-loading rounded"></div>
+          <div class="flex flex-wrap gap-2 pt-2">
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+          </div>
+        </div>
+      </div>
+      <!-- More skeleton loaders -->
+      <div class="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover">
+        <div class="h-24 w-full skeleton-loading"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-6 w-2/3 skeleton-loading rounded"></div>
+          <div class="h-4 w-1/2 skeleton-loading rounded"></div>
+          <div class="flex flex-wrap gap-2 pt-2">
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover">
+        <div class="h-24 w-full skeleton-loading"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-6 w-2/3 skeleton-loading rounded"></div>
+          <div class="h-4 w-1/2 skeleton-loading rounded"></div>
+          <div class="flex flex-wrap gap-2 pt-2">
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover">
+        <div class="h-24 w-full skeleton-loading"></div>
+        <div class="p-6 space-y-3">
+          <div class="h-6 w-2/3 skeleton-loading rounded"></div>
+          <div class="h-4 w-1/2 skeleton-loading rounded"></div>
+          <div class="flex flex-wrap gap-2 pt-2">
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+            <div class="h-6 w-16 skeleton-loading rounded-full"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State (Hidden by default) -->
+    <div id="empty-state" class="hidden py-20 text-center">
+      <div class="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+        <i class="fas fa-search text-4xl text-gray-400"></i>
+      </div>
+      <h3 class="text-2xl font-bold mb-2">No matching tools found</h3>
+      <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Try adjusting your search or filter criteria to find what you're looking for.</p>
+      <button id="reset-filters" class="mt-6 bg-primary text-white px-6 py-3 rounded-lg font-medium hover:bg-primary/90 transition-colors">
+        Reset Filters
+      </button>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-light-card dark:bg-dark-card border-t border-light-border dark:border-dark-border py-8 px-4 mt-16">
+    <div class="container mx-auto max-w-6xl text-center">
+      <p class="text-sm text-gray-500 dark:text-gray-400">
+        DevTools Showcase - Interactive visual exploration of development tools and resources
+      </p>
+      <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+        <i class="fas fa-code"></i> Built with ❤️ for developers everywhere
+      </p>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // DOM Elements
+    const toolsGrid = document.getElementById('tools-grid');
+    const emptyState = document.getElementById('empty-state');
+    const searchInput = document.getElementById('search-input');
+    const categoryFilter = document.getElementById('category-filter');
+    const categoryPills = document.getElementById('category-pills');
+    const sortSelect = document.getElementById('sort');
+    const themeToggle = document.getElementById('theme-toggle');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+    
+    // Stats elements
+    const totalToolsEl = document.getElementById('total-tools');
+    const totalCategoriesEl = document.getElementById('total-categories');
+    const totalTagsEl = document.getElementById('total-tags');
+    const popularToolsEl = document.getElementById('popular-tools');
+    const resultsCountEl = document.getElementById('results-count');
+    
+    // Data storage
+    let toolsData = [];
+    let filteredData = [];
+    let categories = [];
+    let tags = new Set();
+    
+    // Initialize app
+    async function init() {
+      try {
+        // Load data from JSON file
+        const response = await fetch('assets/data/data.json');
+        toolsData = await response.json();
+        
+        // Process data
+        processData();
+        
+        // Initial render
+        renderTools();
+        
+        // Populate filters
+        populateFilters();
+        
+        // Update stats
+        updateStats();
+        
+        // Set up event listeners
+        setupEventListeners();
+        
+        // Check for saved theme preference
+        checkThemePreference();
+      } catch (error) {
+        console.error('Error loading data:', error);
+        toolsGrid.innerHTML = `
+          <div class="col-span-full text-center py-16">
+            <div class="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i class="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
+            </div>
+            <h3 class="text-xl font-bold mb-2">Failed to load data</h3>
+            <p class="text-gray-500 dark:text-gray-400">Please try refreshing the page.</p>
+          </div>
+        `;
+      }
+    }
+    
+    // Process data to extract categories and tags
+    function processData() {
+      // Extract unique categories and tags
+      categories = [...new Set(toolsData.map(tool => tool.category))].sort();
+      toolsData.forEach(tool => {
+        tool.tags.forEach(tag => tags.add(tag));
+      });
+      
+      // Copy data for filtering
+      filteredData = [...toolsData];
+    }
+    
+    // Populate filter options
+    function populateFilters() {
+      // Category dropdown
+      categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        categoryFilter.appendChild(option);
+      });
+      
+      // Category pills
+      categoryPills.innerHTML = `
+        <button class="tag-pill bg-primary text-white" data-category="all">All</button>
+        ${categories.map(category => `
+          <button class="tag-pill bg-light-border dark:bg-dark-border hover:bg-primary hover:text-white" data-category="${category}">${category}</button>
+        `).join('')}
+      `;
+    }
+    
+    // Render tools
+    function renderTools() {
+      // Show/hide empty state
+      if (filteredData.length === 0) {
+        toolsGrid.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        resultsCountEl.textContent = '0 items';
+        return;
+      }
+      
+      // Show tools grid
+      toolsGrid.classList.remove('hidden');
+      emptyState.classList.add('hidden');
+      resultsCountEl.textContent = `${filteredData.length} items`;
+      
+      // Clear existing content
+      toolsGrid.innerHTML = '';
+      
+      // Create and append tool cards
+      filteredData.forEach(tool => {
+        const card = createToolCard(tool);
+        toolsGrid.appendChild(card);
+      });
+    }
+    
+    // Create a tool card
+    function createToolCard(tool) {
+      const card = document.createElement('div');
+      card.className = 'bg-white dark:bg-dark-card rounded-xl overflow-hidden shadow-sm border border-light-border dark:border-dark-border card-hover animate-fade-in-up';
+      
+      // Generate a color based on category
+      const categoryColor = getCategoryColor(tool.category);
+      
+      // Get an appropriate icon based on tags or category
+      const icon = getToolIcon(tool);
+      
+      card.innerHTML = `
+        <div class="h-24 w-full" style="background-color: ${categoryColor}20;">
+          <div class="h-full flex items-center justify-center">
+            <div class="w-16 h-16 rounded-full flex items-center justify-center" style="background-color: ${categoryColor}">
+              <i class="fas ${icon} text-white text-2xl"></i>
+            </div>
+          </div>
+        </div>
+        <div class="p-6 space-y-3">
+          <h3 class="text-xl font-bold">${tool.name}</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400">${tool.category}</p>
+          <div class="flex flex-wrap gap-2 pt-2">
+            ${tool.tags.map(tag => `
+              <span class="tag-pill bg-light-border dark:bg-dark-border">${tag}</span>
+            `).join('')}
+          </div>
+          ${tool.popularity === 1 ? `
+            <div class="flex items-center gap-1 mt-2 text-accent">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+          ` : tool.popularity === 0.66 ? `
+            <div class="flex items-center gap-1 mt-2 text-accent">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="far fa-star"></i>
+            </div>
+          ` : `
+            <div class="flex items-center gap-1 mt-2 text-accent">
+              <i class="fas fa-star"></i>
+              <i class="far fa-star"></i>
+              <i class="far fa-star"></i>
+            </div>
+          `}
+        </div>
+      `;
+      
+      return card;
+    }
+    
+    // Get color for a category
+    function getCategoryColor(category) {
+      const colorMap = {
+        'Frontend': '#4F46E5',
+        'Backend': '#10B981',
+        'Database': '#F59E0B',
+        'DevOps': '#EC4899',
+        'Development Tools': '#8B5CF6',
+        'API Tools': '#3B82F6',
+        'Design': '#6366F1',
+        'Collaboration': '#14B8A6',
+        'Learning': '#F97316',
+        'AI Tools': '#84CC16',
+        'Languages': '#EF4444'
+      };
+      
+      return colorMap[category] || '#6B7280'; // Default gray
+    }
+    
+    // Get appropriate icon for a tool
+    function getToolIcon(tool) {
+      // Check for specific tools first
+      if (tool.name.toLowerCase().includes('react')) return 'fa-react';
+      if (tool.name.toLowerCase().includes('vue')) return 'fa-vuejs';
+      if (tool.name.toLowerCase().includes('angular')) return 'fa-angular';
+      if (tool.name.toLowerCase().includes('node')) return 'fa-node-js';
+      if (tool.name.toLowerCase().includes('python')) return 'fa-python';
+      if (tool.name.toLowerCase().includes('git')) return 'fa-git-alt';
+      if (tool.name.toLowerCase().includes('docker')) return 'fa-docker';
+      if (tool.name.toLowerCase().includes('figma')) return 'fa-paint-brush';
+      
+      // Check by tags
+      if (tool.tags.some(tag => tag.toLowerCase().includes('framework'))) return 'fa-layer-group';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('language'))) return 'fa-code';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('database'))) return 'fa-database';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('testing'))) return 'fa-vial';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('api'))) return 'fa-plug';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('monitor'))) return 'fa-chart-line';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('visualization'))) return 'fa-chart-pie';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('cloud'))) return 'fa-cloud';
+      if (tool.tags.some(tag => tag.toLowerCase().includes('ai')) || tool.tags.some(tag => tag.toLowerCase().includes('machine'))) return 'fa-robot';
+      
+      // Check by category
+      switch(tool.category) {
+        case 'Frontend': return 'fa-desktop';
+        case 'Backend': return 'fa-server';
+        case 'Database': return 'fa-database';
+        case 'DevOps': return 'fa-cogs';
+        case 'Development Tools': return 'fa-tools';
+        case 'API Tools': return 'fa-plug';
+        case 'Design': return 'fa-paint-brush';
+        case 'Collaboration': return 'fa-users';
+        case 'Learning': return 'fa-graduation-cap';
+        case 'AI Tools': return 'fa-robot';
+        case 'Languages': return 'fa-code';
+        default: return 'fa-wrench';
+      }
+    }
+    
+    // Filter tools based on search and category
+    function filterTools() {
+      const searchTerm = searchInput.value.toLowerCase();
+      const selectedCategory = categoryFilter.value;
+      
+      filteredData = toolsData.filter(tool => {
+        // Search filter
+        const matchesSearch = 
+          tool.name.toLowerCase().includes(searchTerm) ||
+          tool.category.toLowerCase().includes(searchTerm) ||
+          tool.tags.some(tag => tag.toLowerCase().includes(searchTerm));
+        
+        // Category filter
+        const matchesCategory = selectedCategory === 'all' || tool.category === selectedCategory;
+        
+        return matchesSearch && matchesCategory;
+      });
+      
+      // Sort the filtered results
+      sortTools();
+      
+      // Re-render
+      renderTools();
+    }
+    
+    // Sort tools based on selected option
+    function sortTools() {
+      const sortOption = sortSelect.value;
+      
+      switch(sortOption) {
+        case 'name-asc':
+          filteredData.sort((a, b) => a.name.localeCompare(b.name));
+          break;
+        case 'name-desc':
+          filteredData.sort((a, b) => b.name.localeCompare(a.name));
+          break;
+        case 'popularity-desc':
+          filteredData.sort((a, b) => b.popularity - a.popularity);
+          break;
+        case 'category':
+          filteredData.sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
+          break;
+      }
+    }
+    
+    // Update stats
+    function updateStats() {
+      totalToolsEl.textContent = toolsData.length;
+      totalCategoriesEl.textContent = categories.length;
+      totalTagsEl.textContent = tags.size;
+      popularToolsEl.textContent = toolsData.filter(tool => tool.popularity === 1).length;
+    }
+    
+    // Toggle theme
+    function toggleTheme() {
+      const isDarkMode = document.documentElement.classList.toggle('dark');
+      localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+      updateThemeIcon();
+    }
+    
+    // Update theme toggle icon
+    function updateThemeIcon() {
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      themeToggle.innerHTML = isDarkMode ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+    }
+    
+    // Check for saved theme preference
+    function checkThemePreference() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+      }
+      
+      updateThemeIcon();
+    }
+    
+    // Reset all filters
+    function resetFilters() {
+      searchInput.value = '';
+      categoryFilter.value = 'all';
+      sortSelect.value = 'name-asc';
+      
+      // Reset category pills
+      const pills = categoryPills.querySelectorAll('button');
+      pills.forEach(pill => {
+        if (pill.dataset.category === 'all') {
+          pill.className = 'tag-pill bg-primary text-white';
+        } else {
+          pill.className = 'tag-pill bg-light-border dark:bg-dark-border hover:bg-primary hover:text-white';
+        }
+      });
+      
+      // Reset filter and render
+      filteredData = [...toolsData];
+      sortTools();
+      renderTools();
+    }
+    
+    // Set up event listeners
+    function setupEventListeners() {
+      // Search input
+      searchInput.addEventListener('input', filterTools);
+      
+      // Category filter dropdown
+      categoryFilter.addEventListener('change', filterTools);
+      
+      // Category pills
+      categoryPills.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+          const category = e.target.dataset.category;
+          categoryFilter.value = category;
+          
+          // Update active pill
+          const pills = categoryPills.querySelectorAll('button');
+          pills.forEach(pill => {
+            if (pill.dataset.category === category) {
+              pill.className = 'tag-pill bg-primary text-white';
+            } else {
+              pill.className = 'tag-pill bg-light-border dark:bg-dark-border hover:bg-primary hover:text-white';
+            }
+          });
+          
+          filterTools();
+        }
+      });
+      
+      // Sort select
+      sortSelect.addEventListener('change', () => {
+        sortTools();
+        renderTools();
+      });
+      
+      // Theme toggle
+      themeToggle.addEventListener('click', toggleTheme);
+      
+      // Reset filters button
+      resetFiltersBtn.addEventListener('click', resetFilters);
+      
+      // Listen for system theme changes
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        const savedTheme = localStorage.getItem('theme');
+        if (!savedTheme) {
+          if (e.matches) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          updateThemeIcon();
+        }
+      });
+    }
+    
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

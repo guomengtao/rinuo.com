@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Development Tools Data Visualization</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --accent: #ec4899;
+            --dark: #1e1b4b;
+            --light: #f8fafc;
+            --gray: #64748b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: var(--gradient);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z" fill="white" fill-opacity="0.1" fill-rule="evenodd"/></svg>');
+            opacity: 0.2;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-content h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+        }
+
+        .header-content p {
+            font-size: 1.25rem;
+            max-width: 768px;
+            margin: 0 auto;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: var(--gradient);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .stat-card .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card p {
+            color: var(--gray);
+            font-size: 0.95rem;
+        }
+
+        .charts-section {
+            margin: 3rem 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .section-title h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title h2::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 400px;
+            margin-top: 1rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-title i {
+            margin-right: 0.75rem;
+            color: var(--primary);
+        }
+
+        .chart-filters {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--gray);
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+
+        .filter-btn:hover {
+            background: var(--light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .category-item {
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .category-item:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
+        }
+
+        .category-item.active {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .category-item i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .category-item h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .category-item p {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .top-tools {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tools-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .tool-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            background: var(--light);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .tool-item:hover {
+            transform: translateX(5px);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .tool-rank {
+            width: 30px;
+            height: 30px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .tool-info {
+            flex: 1;
+        }
+
+        .tool-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .tool-info .category {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .tool-popularity {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .popularity-indicator {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-left: 1rem;
+            flex-shrink: 0;
+        }
+
+        .high {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .medium {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        .low {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .footer-content p {
+            opacity: 0.8;
+            font-size: 0.95rem;
+        }
+
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+
+        .loading.fade {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .header-content h1 {
+                font-size: 2rem;
+            }
+
+            .header-content p {
+                font-size: 1rem;
+            }
+
+            .chart-wrapper {
+                height: 300px;
+            }
+
+            .charts-section {
+                margin: 2rem 0;
+            }
+
+            .chart-container {
+                padding: 1.5rem;
+            }
+
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .chart-filters {
+                flex-wrap: wrap;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section-title h2 {
+                font-size: 1.75rem;
+            }
+
+            .tool-rank {
+                width: 25px;
+                height: 25px;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <h1>Development Tools Visualization</h1>
+            <p>Explore the popularity and distribution of various development tools across categories</p>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon"><i class="fa fa-cubes"></i></div>
+                <h3 id="total-tools">0</h3>
+                <p>Total Tools</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fa fa-th-large"></i></div>
+                <h3 id="total-categories">0</h3>
+                <p>Categories</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fa fa-tags"></i></div>
+                <h3 id="total-tags">0</h3>
+                <p>Unique Tags</p>
+            </div>
+            <div class="stat-card">
+                <div class="icon"><i class="fa fa-star"></i></div>
+                <h3 id="top-rated">0</h3>
+                <p>Top Rated Tools</p>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="section-title">
+                <h2>Tools by Category</h2>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fa fa-pie-chart"></i> Distribution</div>
+                    <div class="chart-filters">
+                        <button class="filter-btn active" data-type="count">Count</button>
+                        <button class="filter-btn" data-type="popularity">Popularity</button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="section-title">
+                <h2>Top Tools by Popularity</h2>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fa fa-bar-chart"></i> Most Popular</div>
+                    <div class="chart-filters">
+                        <button class="filter-btn active" data-limit="10">Top 10</button>
+                        <button class="filter-btn" data-limit="20">Top 20</button>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="popularityChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="section-title">
+                <h2>Popularity Distribution</h2>
+            </div>
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title"><i class="fa fa-line-chart"></i> Rating Breakdown</div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="charts-section">
+            <div class="section-title">
+                <h2>Tools by Category</h2>
+            </div>
+            <div class="categories-grid" id="categories-grid">
+                <!-- Categories will be added dynamically -->
+            </div>
+        </div>
+
+        <div class="top-tools">
+            <div class="section-title">
+                <h2>Top 15 Tools</h2>
+            </div>
+            <div class="tools-list" id="tools-list">
+                <!-- Top tools will be added dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <p>&copy; 2023 Development Tools Visualization | Created with Chart.js</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Hide loading screen after 1 second
+            setTimeout(function() {
+                document.getElementById('loading').classList.add('fade');
+            }, 1000);
+
+            // Fetch data from JSON file
+            fetch('assets/data/data.json')
+                .then(response => response.json())
+                .then(data => {
+                    // Process and visualize data
+                    processData(data);
+                })
+                .catch(error => {
+                    console.error('Error loading data:', error);
+                    alert('Failed to load data. Please try again later.');
+                });
+
+            function processData(tools) {
+                // Update statistics
+                document.getElementById('total-tools').textContent = tools.length;
+                
+                // Get unique categories
+                const categories = [...new Set(tools.map(tool => tool.category))];
+                document.getElementById('total-categories').textContent = categories.length;
+                
+                // Get unique tags
+                const allTags = tools.flatMap(tool => tool.tags);
+                const uniqueTags = [...new Set(allTags)];
+                document.getElementById('total-tags').textContent = uniqueTags.length;
+                
+                // Count top rated tools (popularity = 1)
+                const topRated = tools.filter(tool => tool.popularity === 1).length;
+                document.getElementById('top-rated').textContent = topRated;
+
+                // Create category chart
+                createCategoryChart(tools);
+                
+                // Create popularity chart
+                createPopularityChart(tools);
+                
+                // Create distribution chart
+                createDistributionChart(tools);
+                
+                // Create categories grid
+                createCategoriesGrid(tools);
+                
+                // Create top tools list
+                createTopToolsList(tools);
+            }
+
+            function createCategoryChart(tools) {
+                const ctx = document.getElementById('categoryChart').getContext('2d');
+                
+                // Group tools by category and calculate count
+                const categoryCounts = {};
+                const categoryPopularity = {};
+                
+                tools.forEach(tool => {
+                    if (!categoryCounts[tool.category]) {
+                        categoryCounts[tool.category] = 0;
+                        categoryPopularity[tool.category] = 0;
+                    }
+                    categoryCounts[tool.category]++;
+                    categoryPopularity[tool.category] += tool.popularity;
+                });
+                
+                // Prepare data for chart
+                const categoryNames = Object.keys(categoryCounts);
+                const countData = Object.values(categoryCounts);
+                const popularityData = Object.values(categoryPopularity);
+                
+                // Generate colors
+                const colors = generateColors(categoryNames.length);
+                
+                // Create chart
+                let categoryChart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: categoryNames,
+                        datasets: [{
+                            data: countData,
+                            backgroundColor: colors,
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            hoverOffset: 15
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'right',
+                                labels: {
+                                    padding: 20,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const label = context.label || '';
+                                        const value = context.raw || 0;
+                                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percentage = Math.round((value / total) * 100);
+                                        return `${label}: ${value} (${percentage}%)`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                formatter: function(value, context) {
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = Math.round((value / total) * 100);
+                                    return `${percentage}%`;
+                                },
+                                color: '#fff',
+                                font: {
+                                    weight: 'bold',
+                                    size: 12
+                                }
+                            }
+                        },
+                        cutout: '60%',
+                        animation: {
+                            animateScale: true,
+                            animateRotate: true
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+                
+                // Add filter functionality
+                const filterButtons = document.querySelectorAll('.chart-filters button');
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const type = this.getAttribute('data-type');
+                        if (type === 'count') {
+                            categoryChart.data.datasets[0].data = countData;
+                        } else {
+                            categoryChart.data.datasets[0].data = popularityData;
+                        }
+                        categoryChart.update();
+                    });
+                });
+            }
+
+            function createPopularityChart(tools) {
+                const ctx = document.getElementById('popularityChart').getContext('2d');
+                
+                // Sort tools by popularity (descending) and then by name (ascending)
+                const sortedTools = [...tools].sort((a, b) => {
+                    if (b.popularity !== a.popularity) {
+                        return b.popularity - a.popularity;
+                    }
+                    return a.name.localeCompare(b.name);
+                });
+                
+                // Get top 10 tools initially
+                const topTools = sortedTools.slice(0, 10);
+                const toolNames = topTools.map(tool => tool.name);
+                const popularityData = topTools.map(tool => tool.popularity);
+                
+                // Generate gradient colors for bars
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+                gradient.addColorStop(0, 'rgba(99, 102, 241, 1)');
+                gradient.addColorStop(1, 'rgba(139, 92, 246, 1)');
+                
+                // Create chart
+                let popularityChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: toolNames,
+                        datasets: [{
+                            label: 'Popularity',
+                            data: popularityData,
+                            backgroundColor: gradient,
+                            borderColor: '#6366f1',
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            barThickness: 30
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 1.1,
+                                ticks: {
+                                    stepSize: 0.2
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    autoSkip: false,
+                                    maxRotation: 45,
+                                    minRotation: 45,
+                                    font: {
+                                        size: 11
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        const popularity = context.raw;
+                                        let rating = 'Low';
+                                        if (popularity === 1) rating = 'High';
+                                        else if (popularity === 0.66) rating = 'Medium';
+                                        return `Popularity: ${popularity} (${rating})`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+                
+                // Add limit filter functionality
+                const filterButtons = document.querySelectorAll('[data-limit]');
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        const limit = parseInt(this.getAttribute('data-limit'));
+                        const limitedTools = sortedTools.slice(0, limit);
+                        const limitedNames = limitedTools.map(tool => tool.name);
+                        const limitedData = limitedTools.map(tool => tool.popularity);
+                        
+                        popularityChart.data.labels = limitedNames;
+                        popularityChart.data.datasets[0].data = limitedData;
+                        popularityChart.update();
+                    });
+                });
+            }
+
+            function createDistributionChart(tools) {
+                const ctx = document.getElementById('distributionChart').getContext('2d');
+                
+                // Count tools by popularity level
+                const popularityCounts = {
+                    1: 0,
+                    0.66: 0,
+                    0.33: 0
+                };
+                
+                tools.forEach(tool => {
+                    if (popularityCounts.hasOwnProperty(tool.popularity)) {
+                        popularityCounts[tool.popularity]++;
+                    }
+                });
+                
+                // Prepare data for chart
+                const labels = ['High (1.0)', 'Medium (0.66)', 'Low (0.33)'];
+                const data = [popularityCounts[1], popularityCounts[0.66], popularityCounts[0.33]];
+                
+                // Create chart
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Number of Tools',
+                            data: data,
+                            backgroundColor: [
+                                'rgba(16, 185, 129, 0.8)',
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(239, 68, 68, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(16, 185, 129)',
+                                'rgb(245, 158, 11)',
+                                'rgb(239, 68, 68)'
+                            ],
+                            borderWidth: 1,
+                            borderRadius: 8,
+                            barThickness: 60
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return `Tools: ${context.raw}`;
+                                    }
+                                }
+                            },
+                            datalabels: {
+                                anchor: 'end',
+                                align: 'top',
+                                formatter: function(value) {
+                                    return value;
+                                },
+                                font: {
+                                    weight: 'bold'
+                                }
+                            }
+                        }
+                    },
+                    plugins: [ChartDataLabels]
+                });
+            }
+
+            function createCategoriesGrid(tools) {
+                const grid = document.getElementById('categories-grid');
+                
+                // Group tools by category and calculate average popularity
+                const categoryGroups = {};
+                
+                tools.forEach(tool => {
+                    if (!categoryGroups[tool.category]) {
+                        categoryGroups[tool.category] = {
+                            count: 0,
+                            totalPopularity: 0
+                        };
+                    }
+                    categoryGroups[tool.category].count++;
+                    categoryGroups[tool.category].totalPopularity += tool.popularity;
+                });
+                
+                // Create category items
+                Object.entries(categoryGroups).forEach(([category, data]) => {
+                    const avgPopularity = (data.totalPopularity / data.count).toFixed(2);
+                    
+                    const categoryItem = document.createElement('div');
+                    categoryItem.className = 'category-item';
+                    categoryItem.innerHTML = `
+                        <i class="fa fa-folder"></i>
+                        <h4>${category}</h4>
+                        <p>${data.count} tools</p>
+                        <p>Avg. popularity: ${avgPopularity}</p>
+                    `;
+                    
+                    grid.appendChild(categoryItem);
+                });
+            }
+
+            function createTopToolsList(tools) {
+                const list = document.getElementById('tools-list');
+                
+                // Sort tools by popularity (descending) and then by name (ascending)
+                const sortedTools = [...tools].sort((a, b) => {
+                    if (b.popularity !== a.popularity) {
+                        return b.popularity - a.popularity;
+                    }
+                    return a.name.localeCompare(b.name);
+                }).slice(0, 15);
+                
+                // Create tool items
+                sortedTools.forEach((tool, index) => {
+                    let popularityClass = 'low';
+                    if (tool.popularity === 1) popularityClass = 'high';
+                    else if (tool.popularity === 0.66) popularityClass = 'medium';
+                    
+                    const toolItem = document.createElement('div');
+                    toolItem.className = 'tool-item';
+                    toolItem.innerHTML = `
+                        <div class="tool-rank">${index + 1}</div>
+                        <div class="tool-info">
+                            <h4>${tool.name}</h4>
+                            <p class="category">${tool.category}</p>
+                        </div>
+                        <div class="popularity-indicator ${popularityClass}">
+                            ${tool.popularity}
+                        </div>
+                    `;
+                    
+                    list.appendChild(toolItem);
+                });
+            }
+
+            // Helper function to generate colors
+            function generateColors(count) {
+                const colors = [];
+                const baseColors = [
+                    'rgba(99, 102, 241, 0.8)',
+                    'rgba(139, 92, 246, 0.8)',
+                    'rgba(236, 72, 153, 0.8)',
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(249, 115, 22, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(5, 150, 105, 0.8)',
+                    'rgba(59, 130, 246, 0.8)',
+                    'rgba(37, 99, 235, 0.8)',
+                    'rgba(107, 114, 128, 0.8)',
+                    'rgba(156, 163, 175, 0.8)'
+                ];
+                
+                for (let i = 0; i < count; i++) {
+                    colors.push(baseColors[i % baseColors.length]);
+                }
+                
+                return colors;
+            }
+        });
+    </script>
+</body>
+</html>
