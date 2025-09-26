@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What is Hacker News? - Learn About Tech Communities</title>
+    <meta name="description" content="Discover Hacker News - a fun place where people share cool tech stuff, learn new things, and talk about interesting ideas!">
+    <meta name="keywords" content="Hacker News, tech, learning, community, kids, technology, news">
+    <meta name="author" content="Kids Tech Explorers">
+    <link rel="canonical" href="https://example.com/hackernews.html">
+    <link rel="sitemap" type="application/xml" href="/sitemap">
+    
+    <!-- Font Awesome 7.0.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts - Child-friendly fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B35',
+                        secondary: '#2E4057',
+                        accent: '#4ECDC4',
+                        light: '#F7FFF7',
+                        dark: '#1A1A2E'
+                    },
+                    fontFamily: {
+                        nunito: ['Nunito', 'sans-serif'],
+                        comic: ['"Comic Neue"', 'cursive']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+            .code-typing {
+                overflow: hidden;
+                border-right: 0.15em solid #FF6B35;
+                white-space: nowrap;
+                margin: 0 auto;
+                animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(78, 205, 196, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(78, 205, 196, 0.1) 1px, transparent 1px);
+            }
+        }
+        
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #FF6B35 }
+        }
+        
+        /* Syntax highlighting for code examples */
+        .code-block {
+            position: relative;
+            border-radius: 0.5rem;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .code-block:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .terminal-line {
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 0.5s forwards;
+        }
+        
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-nunito bg-light text-secondary dark:bg-dark dark:text-light transition-colors duration-300">
+    <!-- Header with Navigation -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-dark/90 shadow-md backdrop-blur-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
+                        <i class="fa fa-newspaper text-white text-xl"></i>
+                    </div>
+                    <span class="font-comic font-bold text-xl">Hacker News</span>
+                </a>
+                
+                <!-- Desktop Search -->
+                <div class="hidden md:block flex-grow max-w-md mx-8">
+                    <div class="relative">
+                        <input type="text" id="searchInput" autocomplete="off" 
+                               placeholder="Search stories..." 
+                               class="w-full py-2 px-4 pr-10 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all">
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-4">
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Bookmark this page">
+                        <i class="fa fa-star-o text-xl"></i>
+                    </button>
+                    <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Share this page">
+                        <i class="fa fa-share-alt text-xl"></i>
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors" aria-label="Toggle dark mode">
+                        <i class="fa fa-moon-o text-xl dark:hidden"></i>
+                        <i class="fa fa-sun-o text-xl hidden dark:block"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Search Bar -->
+            <div class="md:hidden pb-4">
+                <div class="relative">
+                    <input type="text" id="searchInputMobile" autocomplete="off" 
+                           placeholder="Search stories..." 
+                           class="w-full py-2 px-4 pr-10 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary transition-all">
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Breadcrumb Navigation -->
+    <div class="container mx-auto px-4 py-3 text-sm text-gray-500 dark:text-gray-400">
+        <nav aria-label="Breadcrumb">
+            <ol class="flex space-x-2">
+                <li><a href="/" class="hover:text-primary transition-colors">Home</a></li>
+                <li><i class="fa fa-chevron-right text-xs"></i></li>
+                <li><a href="/free" class="hover:text-primary transition-colors">Free Resources</a></li>
+                <li><i class="fa fa-chevron-right text-xs"></i></li>
+                <li class="text-primary">What is Hacker News?</li>
+            </ol>
+        </nav>
+    </div>
+    
+    <!-- Hero Section with Animation -->
+    <section class="relative bg-gradient-to-br from-secondary to-dark text-white overflow-hidden bg-grid py-20 md:py-32">
+        <div class="absolute inset-0 overflow-hidden">
+            <!-- Floating code symbols animation -->
+            <div class="absolute top-1/4 left-1/4 text-accent/30 text-4xl animate-float" style="animation-delay: 0s">{"}</div>
+            <div class="absolute top-1/3 right-1/4 text-primary/30 text-5xl animate-float" style="animation-delay: 0.5s">[ ]</div>
+            <div class="absolute bottom-1/4 left-1/3 text-accent/30 text-3xl animate-float" style="animation-delay: 1s">//</div>
+            <div class="absolute bottom-1/3 right-1/3 text-primary/30 text-4xl animate-float" style="animation-delay: 1.5s">()</div>
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 text-accent/30 text-6xl animate-float" style="animation-delay: 2s">&lt;/&gt;</div>
+        </div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-3xl mx-auto text-center">
+                <h1 class="font-comic font-extrabold text-[clamp(2.5rem,6vw,4rem)] leading-tight mb-6 text-shadow">
+                    What is <span class="text-primary">Hacker News</span>?
+                </h1>
+                <p class="text-xl md:text-2xl mb-8 text-gray-200">
+                    A super cool place where people share awesome tech stuff!
+                </p>
+                <div class="bg-black/50 backdrop-blur-sm p-6 rounded-xl border border-gray-700 text-left">
+                    <div class="flex items-center mb-2">
+                        <div class="flex space-x-1 mr-3">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-gray-400 text-sm">explorer@hackernews ~</span>
+                    </div>
+                    <div id="terminal" class="text-green-400 font-mono text-sm md:text-base">
+                        <div class="terminal-line" style="animation-delay: 0.2s">> What can I find on Hacker News?</div>
+                        <div class="terminal-line" style="animation-delay: 0.7s">Interesting articles, cool projects, and fun discussions!</div>
+                        <div class="terminal-line" style="animation-delay: 1.2s">> Who uses it?</div>
+                        <div class="terminal-line" style="animation-delay: 1.7s">People who love technology, coding, and learning new things!</div>
+                        <div class="terminal-line code-typing" style="animation-delay: 2.2s">> Want to join the fun? Let's learn more!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- What is Hacker News Section -->
+    <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-comic font-bold text-[clamp(1.8rem,4vw,2.5rem)] text-center mb-12 text-secondary dark:text-light">
+                    So, What Exactly <span class="text-primary">Is</span> Hacker News?
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8 items-center mb-16">
+                    <div>
+                        <p class="text-lg mb-4">
+                            Hacker News is like a giant bulletin board on the internet where people post all sorts of interesting things about technology!
+                        </p>
+                        <p class="text-lg mb-4">
+                            Imagine a place where you can find stories about new inventions, cool apps, amazing games, and even learn how to make your own!
+                        </p>
+                        <p class="text-lg">
+                            People share links to articles, videos, and projects they think are awesome, and then everyone can talk about them in the comments.
+                        </p>
+                    </div>
+                    <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-xl shadow-lg transform transition-transform hover:scale-105">
+                        <div class="flex items-center mb-4">
+                            <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white mr-3">
+                                <i class="fa fa-lightbulb"></i>
+                            </div>
+                            <h3 class="font-bold text-xl">Fun Facts</h3>
+                        </div>
+                        <ul class="space-y-2">
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-accent mt-1 mr-2"></i>
+                                <span>Started in 2007 by the same people who made Reddit!</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-accent mt-1 mr-2"></i>
+                                <span>Millions of people visit every month</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fa fa-check-circle text-accent mt-1 mr-2"></i>
+                                <span>Simple design so you focus on the stories</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- How It Works with Code Example -->
+                <div class="mb-16">
+                    <h3 class="font-comic font-bold text-2xl mb-6 text-center">How Does It <span class="text-primary">Work</span>?</h3>
+                    
+                    <div class="bg-gray-100 dark:bg-gray-800 p-6 rounded-xl mb-8">
+                        <ol class="space-y-4">
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center mr-4 font-bold">1</div>
+                                <div>
+                                    <p class="font-bold">People share links</p>
+                                    <p>Someone finds a cool article or project and shares it on Hacker News</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center mr-4 font-bold">2</div>
+                                <div>
+                                    <p class="font-bold">Voting happens</p>
+                                    <p>Others can click the up arrow if they like the story - this moves it higher on the page!</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center mr-4 font-bold">3</div>
+                                <div>
+                                    <p class="font-bold">Discussions start</p>
+                                    <p>People can leave comments to talk about the story, ask questions, or share their ideas</p>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+                    
+                    <!-- Interactive Example -->
+                    <div class="text-center mb-6">
+                        <h4 class="font-bold text-xl mb-4">Try It Yourself!</h4>
+                        <p>Click the up arrow to vote for this story:</p>
+                    </div>
+                    
+                    <div class="code-block bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="flex items-start">
+                            <div class="mr-4 text-center">
+                                <button id="upvoteBtn" class="text-gray-400 hover:text-primary transition-colors">
+                                    <i class="fa fa-chevron-up text-xl"></i>
+                                </button>
+                                <div id="voteCount" class="text-gray-500 dark:text-gray-400 mt-1">3</div>
+                            </div>
+                            <div>
+                                <h5 class="font-bold">How Kids Can Learn Coding Through Games</h5>
+                                <p class="text-sm text-gray-600 dark:text-gray-300">An article about fun ways to learn programming</p>
+                                <div class="flex items-center mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                    <span>2 hours ago</span>
+                                    <span class="mx-2">•</span>
+                                    <span>12 comments</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- What Can You Find? -->
+                <div>
+                    <h3 class="font-comic font-bold text-2xl mb-8 text-center">What Can You <span class="text-primary">Find</span> There?</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:-translate-y-2 duration-300 border border-gray-100 dark:border-gray-700">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-4">
+                                <i class="fa fa-laptop text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg mb-2">Cool Tech Stuff</h4>
+                            <p>Learn about new computers, robots, apps, and other amazing technology inventions!</p>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:-translate-y-2 duration-300 border border-gray-100 dark:border-gray-700">
+                            <div class="w-12 h-12 rounded-full bg-accent/10 flex items-center justify-center text-accent mb-4">
+                                <i class="fa fa-code text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg mb-2">Coding Projects</h4>
+                            <p>Find fun coding projects you can try, from simple games to creative animations!</p>
+                        </div>
+                        
+                        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 transition-transform hover:-translate-y-2 duration-300 border border-gray-100 dark:border-gray-700">
+                            <div class="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary dark:text-gray-300 mb-4">
+                                <i class="fa fa-comments text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-lg mb-2">Interesting Talks</h4>
+                            <p>Read conversations where people share ideas and help each other solve problems!</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Interactive Quiz Section -->
+    <section class="py-16 bg-gray-50 dark:bg-gray-800">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="font-comic font-bold text-[clamp(1.8rem,4vw,2.5rem)] text-center mb-12 text-secondary dark:text-light">
+                    Test Your <span class="text-primary">Knowledge</span>!
+                </h2>
+                
+                <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-8">
+                    <form id="quizForm" class="space-y-6">
+                        <!-- Question 1 -->
+                        <div class="quiz-question">
+                            <h3 class="font-bold text-lg mb-3">1. What is Hacker News mainly about?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="a" class="mt-1 mr-3">
+                                    <span>Cooking recipes and food ideas</span>
+                                </label>
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="b" class="mt-1 mr-3">
+                                    <span>Technology, coding, and interesting ideas</span>
+                                </label>
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="c" class="mt-1 mr-3">
+                                    <span>Sports news and game scores</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 2 -->
+                        <div class="quiz-question">
+                            <h3 class="font-bold text-lg mb-3">2. How do stories become popular on Hacker News?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="a" class="mt-1 mr-3">
+                                    <span>By being the oldest stories</span>
+                                </label>
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="b" class="mt-1 mr-3">
+                                    <span>By having the most words</span>
+                                </label>
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="c" class="mt-1 mr-3">
+                                    <span>By getting the most upvotes from people</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 3 -->
+                        <div class="quiz-question">
+                            <h3 class="font-bold text-lg mb-3">3. What can you do after finding a story you like?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="a" class="mt-1 mr-3">
+                                    <span>Vote for it and leave a comment</span>
+                                </label>
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="b" class="mt-1 mr-3">
+                                    <span>Change the story to say whatever you want</span>
+                                </label>
+                                <label class="flex items-start p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="c" class="mt-1 mr-3">
+                                    <span>Nothing - you can only read them</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-colors">
+                            Check My Answers!
+                        </button>
+                        
+                        <div id="quizResult" class="hidden p-4 rounded-lg text-center"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Advanced Resources Section -->
+    <section class="py-16 bg-white dark:bg-gray-900">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="font-comic font-bold text-[clamp(1.8rem,4vw,2.5rem)] text-center mb-12 text-secondary dark:text-light">
+                    Want to <span class="text-primary">Explore More</span>?
+                </h2>
+                
+                <p class="text-center text-lg mb-10">
+                    If you're really interested in Hacker News, here are some official resources to learn even more!
+                </p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <a href="https://news.ycombinator.com/newsfaq.html" target="_blank" rel="noopener noreferrer" 
+                       class="group bg-gray-50 dark:bg-gray-800 rounded-xl p-6 flex items-start transition-all hover:shadow-lg">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4 flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <i class="fa fa-question-circle text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Hacker News FAQ</h3>
+                            <p class="text-gray-600 dark:text-gray-300">Frequently asked questions and answers about how everything works</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://news.ycombinator.com/newsguidelines.html" target="_blank" rel="noopener noreferrer" 
+                       class="group bg-gray-50 dark:bg-gray-800 rounded-xl p-6 flex items-start transition-all hover:shadow-lg">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4 flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <i class="fa fa-book text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Community Guidelines</h3>
+                            <p class="text-gray-600 dark:text-gray-300">Learn about the rules for posting and commenting</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://github.com/HackerNews/API" target="_blank" rel="noopener noreferrer" 
+                       class="group bg-gray-50 dark:bg-gray-800 rounded-xl p-6 flex items-start transition-all hover:shadow-lg">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4 flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <i class="fa fa-code text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Hacker News API</h3>
+                            <p class="text-gray-600 dark:text-gray-300">For coders who want to build things using Hacker News data</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://news.ycombinator.com/item?id=30100000" target="_blank" rel="noopener noreferrer" 
+                       class="group bg-gray-50 dark:bg-gray-800 rounded-xl p-6 flex items-start transition-all hover:shadow-lg">
+                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary mr-4 flex-shrink-0 group-hover:bg-primary group-hover:text-white transition-colors">
+                            <i class="fa fa-history text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-2">Hacker News History</h3>
+                            <p class="text-gray-600 dark:text-gray-300">Learn about how Hacker News started and grew over time</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Call to Action -->
+    <section class="py-16 bg-gradient-to-r from-primary to-accent text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="font-comic font-bold text-[clamp(1.8rem,4vw,2.5rem)] mb-6">
+                Ready to Explore Hacker News?
+            </h2>
+            <p class="text-xl mb-8 max-w-2xl mx-auto">
+                Go check it out and discover amazing tech stories that people are talking about!
+            </p>
+            <a href="https://news.ycombinator.com/" target="_blank" rel="noopener noreferrer"
+               class="inline-block bg-white text-primary hover:bg-gray-100 font-bold py-3 px-8 rounded-full text-lg transition-colors shadow-lg">
+                Visit Hacker News
+            </a>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="bg-secondary dark:bg-gray-950 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                    <div class="flex items-center mb-6 md:mb-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary flex items-center justify-center mr-2">
+                            <i class="fa fa-newspaper text-white text-xl"></i>
+                        </div>
+                        <span class="font-comic font-bold text-xl">Hacker News</span>
+                    </div>
+                    
+                    <div class="flex space-x-6">
+                        <a href="https://news.ycombinator.com/" target="_blank" rel="noopener noreferrer" aria-label="Hacker News homepage">
+                            <i class="fa fa-home text-xl hover:text-primary transition-colors"></i>
+                        </a>
+                        <a href="https://news.ycombinator.com/newsfaq.html" target="_blank" rel="noopener noreferrer" aria-label="FAQ">
+                            <i class="fa fa-question-circle text-xl hover:text-primary transition-colors"></i>
+                        </a>
+                        <a href="/sitemap" aria-label="Sitemap">
+                            <i class="fa fa-sitemap text-xl hover:text-primary transition-colors"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <hr class="border-gray-700 mb-8">
+                
+                <div class="mb-8">
+                    <h3 class="font-bold text-lg mb-4 text-center">Stay Updated with Tech News</h3>
+                    <div class="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
+                        <input type="email" id="subscribeEmail" placeholder="Your email address" 
+                               class="flex-grow px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary text-gray-800">
+                        <button id="subscribeBtn" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-colors whitespace-nowrap">
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center text-gray-400 text-sm">
+                    <p>© 2023 Learn Tech Together. All rights reserved.</p>
+                    <p class="mt-1">Hacker News is a product of Y Combinator.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script type="module" src="/main.js"></script>
+    <script>
+        // Upvote functionality
+        const upvoteBtn = document.getElementById('upvoteBtn');
+        const voteCount = document.getElementById('voteCount');
+        let votes = 3;
+        
+        upvoteBtn.addEventListener('click', () => {
+            votes++;
+            voteCount.textContent = votes;
+            upvoteBtn.classList.add('text-primary');
+            upvoteBtn.classList.remove('text-gray-400');
+            
+            // Add a little animation
+            voteCount.classList.add('animate-pulse-slow');
+            setTimeout(() => {
+                voteCount.classList.remove('animate-pulse-slow');
+            }, 1000);
+        });
+        
+        // Quiz functionality
+        const quizForm = document.getElementById('quizForm');
+        const quizResult = document.getElementById('quizResult');
+        
+        quizForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            let score = 0;
+            const totalQuestions = 3;
+            
+            // Check answers
+            if (document.querySelector('input[name="q1"][value="b"]').checked) score++;
+            if (document.querySelector('input[name="q2"][value="c"]').checked) score++;
+            if (document.querySelector('input[name="q3"][value="a"]').checked) score++;
+            
+            // Show result
+            quizResult.classList.remove('hidden');
+            
+            if (score === totalQuestions) {
+                quizResult.innerHTML = `<h3 class="font-bold text-xl text-green-500 mb-2">Perfect Score!</h3>
+                                      <p>Wow, you know so much about Hacker News! 🎉</p>`;
+                quizResult.classList.add('bg-green-50', 'dark:bg-green-900/20', 'border', 'border-green-200', 'dark:border-green-800');
+            } else if (score >= 2) {
+                quizResult.innerHTML = `<h3 class="font-bold text-xl text-yellow-500 mb-2">Great Job!</h3>
+                                      <p>You got ${score} out of ${totalQuestions} correct. Keep learning! 😊</p>`;
+                quizResult.classList.add('bg-yellow-50', 'dark:bg-yellow-900/20', 'border', 'border-yellow-200', 'dark:border-yellow-800');
+            } else {
+                quizResult.innerHTML = `<h3 class="font-bold text-xl text-red-500 mb-2">Keep Trying!</h3>
+                                      <p>You got ${score} out of ${totalQuestions} correct. Read through the page again and try once more! 💪</p>`;
+                quizResult.classList.add('bg-red-50', 'dark:bg-red-900/20', 'border', 'border-red-200', 'dark:border-red-800');
+            }
+            
+            // Scroll to result
+            quizResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+        
+        // Animate code particles on scroll
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.terminal-line');
+            
+            elements.forEach(element => {
+                const position = element.getBoundingClientRect();
+                
+                // If element is in viewport
+                if (position.top < window.innerHeight && position.bottom >= 0) {
+                    element.style.opacity = "1";
+                    element.style.transform = "translateY(0)";
+                }
+            });
+        };
+        
+        // Initial check on load
+        window.addEventListener('load', animateOnScroll);
+        
+        // Check on scroll
+        window.addEventListener('scroll', animateOnScroll);
+    </script>
+</body>
+</html>
