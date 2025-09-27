@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn About Cypress - Modern Frontend Testing</title>
+    <meta name="description" content="Learn about Cypress, a next-generation front-end testing tool built for the modern web, making it easier to write, run, and debug tests.">
+    <meta name="keywords" content="Cypress, frontend testing, end-to-end testing, JavaScript testing, automated testing">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#172A45',
+                        secondary: '#0984E3',
+                        accent: '#FFEAA7',
+                        dark: {
+                            primary: '#FFFFFF',
+                            secondary: '#B0B0B0',
+                            background: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        comic: ['Comic Sans MS', 'Comic Sans', 'cursive'],
+                        poppins: ['Poppins', 'sans-serif']
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 8s linear infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            }
+            .feature-icon {
+                transition: all 0.3s ease;
+            }
+            .feature-icon:hover {
+                transform: scale(1.1);
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-comic bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Header with Navigation -->
+    <header class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-50 transition-colors duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">C</span>
+                </div>
+                <span class="font-bold text-xl text-primary dark:text-dark-primary">Cypress</span>
+            </a>
+
+            <!-- Desktop Search -->
+            <div class="hidden md:block flex-grow max-w-md mx-8">
+                <input type="text" id="searchInput" autocomplete="off" 
+                       class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-4">
+                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa-regular fa-star text-xl text-gray-600 dark:text-gray-300"></i>
+                </button>
+                <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa-solid fa-share-nodes text-xl text-gray-600 dark:text-gray-300"></i>
+                </button>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa-solid fa-sun text-xl text-gray-600 dark:text-gray-300 dark:hidden"></i>
+                    <i class="fa-solid fa-moon text-xl text-gray-600 dark:text-gray-300 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden px-4 pb-3">
+            <input type="text" id="searchInputMobile" autocomplete="off" 
+                   class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all">
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="fixed top-20 left-0 right-0 bg-gray-100 dark:bg-gray-800 z-40 transition-colors duration-300">
+        <div class="container mx-auto px-4 py-2 text-sm">
+            <a href="/" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Home</a>
+            <span class="mx-2">→</span>
+            <a href="/free" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Free Resources</a>
+            <span class="mx-2">→</span>
+            <span class="text-primary dark:text-dark-primary">Learn Cypress</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-16">
+        <!-- Hero Section with Animation -->
+        <section class="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 py-16 md:py-24 relative overflow-hidden transition-colors duration-300">
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h1 class="text-[clamp(2rem,5vw,4rem)] font-bold mb-6 text-shadow text-primary dark:text-dark-primary">
+                        Modern Frontend Testing with Cypress
+                    </h1>
+                    <p class="text-[clamp(1.2rem,3vw,1.5rem)] mb-8 text-gray-700 dark:text-gray-300">
+                        A powerful end-to-end testing framework built for the modern web
+                    </p>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 mb-8 inline-block">
+                        <div class="text-left text-gray-800 dark:text-gray-200 code-typing">
+                            // Example Cypress test
+                            describe('My First Test', () => {
+                              it('Visits the app root url', () => {
+                                cy.visit('/');
+                                cy.contains('h1', 'Welcome');
+                              });
+                            });
+                        </div>
+                    </div>
+                    <a href="#what-is-cypress" class="inline-block bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+
+            <!-- Cypress Testing Animation -->
+            <div class="absolute right-[-10%] bottom-[-10%] w-1/2 h-3/4 max-w-2xl pointer-events-none hidden lg:block">
+                <div class="bg-white dark:bg-gray-900 rounded-lg border border-gray-300 dark:border-gray-700 overflow-hidden shadow-2xl transform -rotate-3">
+                    <div class="bg-gray-100 dark:bg-gray-800 p-3 flex items-center">
+                        <div class="flex space-x-2 mr-4">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                        </div>
+                        <span class="text-gray-300 text-sm dark:text-gray-400">Cypress Test Runner</span>
+                    </div>
+                    <div class="p-6 h-64 overflow-hidden">
+                        <img src="https://picsum.photos/seed/cypress1/600/300" alt="Cypress test runner" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/20 flex items-center justify-center">
+                            <div class="bg-white dark:bg-gray-800 text-primary dark:text-dark-primary px-6 py-3 rounded-full shadow-lg">
+                                <i class="fa-check-circle mr-2"></i> Tests Passing
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What is Cypress Section -->
+        <section id="what-is-cypress" class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-8 text-center text-primary dark:text-dark-primary">What is Cypress?</h2>
+                    
+                    <div class="bg-blue-50 dark:bg-gray-800 rounded-2xl p-8 mb-12 shadow-md transition-colors duration-300">
+                        <p class="text-lg mb-4">Cypress is an open-source JavaScript-based testing framework specifically designed for modern web applications. Unlike traditional testing tools, Cypress runs in the same run-loop as your application, allowing for faster, more reliable tests with better debugging capabilities.</p>
+                        <p class="text-lg mb-4">Cypress is built for the modern web and supports all modern JavaScript frameworks including React, Vue, Angular, Svelte, and more. It's designed to make testing web applications as easy and intuitive as possible.</p>
+                        <p class="text-lg">Cypress is not limited to just end-to-end testing. It can also handle unit tests and integration tests, making it a comprehensive solution for your testing needs.</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-blue-50 dark:bg-gray-800 rounded-xl p-6 shadow-md card-hover transition-colors duration-300">
+                            <div class="text-secondary dark:text-dark-secondary text-4xl mb-4 feature-icon">
+                                <i class="fa-bolt"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-3">Fast & Reliable</h3>
+                            <p>Runs directly in the browser for faster, more reliable tests.</p>
+                        </div>
+                        
+                        <div class="bg-indigo-50 dark:bg-gray-800 rounded-xl p-6 shadow-md card-hover transition-colors duration-300">
+                            <div class="text-secondary dark:text-dark-secondary text-4xl mb-4 feature-icon">
+                                <i class="fa-wrench"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-3">Powerful Debugging</h3>
+                            <p>Built-in time travel and detailed error messages for easy debugging.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How to Use Cypress Section -->
+        <section class="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">How to Use Cypress</h2>
+                
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden mb-10 transition-colors duration-300">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-4 text-primary dark:text-dark-primary">Getting Started with Cypress</h3>
+                            <p class="mb-4">Here's how to start using Cypress for your web application testing:</p>
+                            
+                            <div class="space-y-6">
+                                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                                    <h4 class="font-bold mb-2">1. Installation</h4>
+                                    <p>Install Cypress as a dev dependency in your project using npm or yarn.</p>
+                                    <img src="https://picsum.photos/seed/cypress2/600/200" alt="Cypress installation" class="w-full h-32 object-cover rounded mt-3">
+                                </div>
+                                
+                                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                                    <h4 class="font-bold mb-2">2. Write Your First Test</h4>
+                                    <p>Create a test file and write your first test case using Cypress commands.</p>
+                                    <img src="https://picsum.photos/seed/cypress3/600/200" alt="Cypress test writing" class="w-full h-32 object-cover rounded mt-3">
+                                </div>
+                                
+                                <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg">
+                                    <h4 class="font-bold mb-2">3. Run Tests</h4>
+                                    <p>Run your tests using the Cypress Test Runner or in headless mode.</p>
+                                    <img src="https://picsum.photos/seed/cypress4/600/200" alt="Cypress test running" class="w-full h-32 object-cover rounded mt-3">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-md mb-10 transition-colors duration-300">
+                        <h3 class="text-xl font-bold mb-4 text-primary dark:text-dark-primary">Cypress Example Test</h3>
+                        <p class="mb-4">Here's a simple example of a Cypress test:</p>
+                        
+                        <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto">
+                            <pre class="text-sm font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+<span class="text-green-500">// A basic Cypress test for a login page</span>
+<span class="text-blue-500">describe</span>('Login functionality', () => {
+  <span class="text-green-500">// Run before each test in this suite</span>
+  beforeEach(() => {
+    <span class="text-green-500">// Navigate to the login page</span>
+    cy.visit('/login');
+  });
+
+  <span class="text-green-500">// Test case for successful login</span>
+  <span class="text-blue-500">it</span>('should allow a valid user to login', () => {
+    <span class="text-green-500">// Enter credentials</span>
+    cy.get('input[name="username"]').type('testuser');
+    cy.get('input[name="password"]').type('password123{enter}');
+    
+    <span class="text-green-500">// Verify successful login</span>
+    cy.url().should('include', '/dashboard');
+    cy.contains('Welcome, Test User');
+  });
+
+  <span class="text-green-500">// Test case for invalid login</span>
+  <span class="text-blue-500">it</span>('should show error for invalid credentials', () => {
+    <span class="text-green-500">// Enter invalid credentials</span>
+    cy.get('input[name="username"]').type('invaliduser');
+    cy.get('input[name="password"]').type('wrongpassword{enter}');
+    
+    <span class="text-green-500">// Verify error message</span>
+    cy.contains('Invalid username or password');
+  });
+});
+                        </pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example Section -->
+        <section class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">Cool Things You Can Do</h2>
+                
+                <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md card-hover transition-colors duration-300">
+                        <img src="https://picsum.photos/seed/cypressuse1/600/400" alt="End-to-end testing with Cypress" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">End-to-End Testing</h3>
+                            <p>Test your entire application flow from the user's perspective.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md card-hover transition-colors duration-300">
+                        <img src="https://picsum.photos/seed/cypressuse2/600/400" alt="Component testing with Cypress" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Component Testing</h3>
+                            <p>Test individual components in isolation for better unit testing.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md card-hover transition-colors duration-300">
+                        <img src="https://picsum.photos/seed/cypressuse3/600/400" alt="API testing with Cypress" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">API Testing</h3>
+                            <p>Test your backend APIs directly from your Cypress tests.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Quiz Section -->
+        <section class="py-16 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">Test Your Cypress Knowledge!</h2>
+                
+                <div class="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 transition-colors duration-300">
+                    <form id="quizForm" class="space-y-6">
+                        <div class="quiz-question">
+                            <p class="text-lg font-bold mb-3">1. What type of testing is Cypress primarily designed for?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q1" value="A" class="mr-3"> Performance testing
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q1" value="B" class="mr-3"> End-to-end testing
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q1" value="C" class="mr-3"> Security testing
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="quiz-question">
+                            <p class="text-lg font-bold mb-3">2. Which language is used to write Cypress tests?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q2" value="A" class="mr-3"> Java
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q2" value="B" class="mr-3"> Python
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q2" value="C" class="mr-3"> JavaScript
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="quiz-question">
+                            <p class="text-lg font-bold mb-3">3. What makes Cypress different from traditional Selenium?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q3" value="A" class="mr-3"> It runs in the same event loop as the application
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q3" value="B" class="mr-3"> It requires a server to run tests
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q3" value="C" class="mr-3"> It only works with React applications
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-lg transition-all transform hover:-translate-y-1">
+                            Check My Answers
+                        </button>
+                    </form>
+                    
+                    <div id="quizResult" class="mt-8 hidden">
+                        <div class="p-6 rounded-lg border-2"></div>
+                        <button id="resetQuiz" class="mt-4 text-primary dark:text-dark-primary hover:underline">
+                            Try Again?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Section -->
+        <section class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">Want to Learn More?</h2>
+                
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                    <a href="https://docs.cypress.io/" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-book"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Cypress Documentation</h3>
+                            <p>Official documentation and guides for Cypress testing.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://github.com/cypress-io/cypress" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-github"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">GitHub Repository</h3>
+                            <p>View the source code and contribute to the Cypress project.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://www.cypress.io/community" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-users"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Community Resources</h3>
+                            <p>Join the Cypress community and connect with other users.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://www.cypress.io/resources" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-youtube"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Video Tutorials</h3>
+                            <p>Watch video tutorials and learn Cypress best practices.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 dark:bg-gray-800 py-12 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                    <div class="flex items-center mb-6 md:mb-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center mr-2">
+                            <span class="text-white font-bold text-xl">C</span>
+                        </div>
+                        <span class="font-bold text-xl text-primary dark:text-dark-primary">Cypress</span>
+                    </div>
+                    
+                    <div class="flex space-x-6">
+                        <a href="https://twitter.com/cypress_io" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="https://github.com/cypress-io/cypress" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa-github text-2xl"></i>
+                        </a>
+                        <a href="https://www.linkedin.com/company/cypress-io" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa-linkedin text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold mb-4 text-center">Stay Updated</h3>
+                        <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                            <input type="email" id="subscribeEmail" placeholder="Your email" 
+                                   class="flex-grow px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary">
+                            <button type="button" id="subscribeBtn" 
+                                    class="bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                                Subscribe
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+                        <p>&copy; 2023 Learn Cypress. All rights reserved.</p>
+                        <p class="mt-2"><a href="/sitemap" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Sitemap</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script type="module">
+        // Quiz functionality
+        function setupQuiz() {
+            const quizForm = document.getElementById('quizForm');
+            const quizResult = document.getElementById('quizResult');
+            const resetQuiz = document.getElementById('resetQuiz');
+            
+            // Correct answers
+            const correctAnswers = {
+                q1: 'B',
+                q2: 'C',
+                q3: 'A'
+            };
+            
+            quizForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                let score = 0;
+                const totalQuestions = Object.keys(correctAnswers).length;
+                
+                // Check each answer
+                Object.keys(correctAnswers).forEach(question => {
+                    const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+                    if (selectedOption && selectedOption.value === correctAnswers[question]) {
+                        score++;
+                    }
+                });
+                
+                // Display result
+                const resultElement = quizResult.querySelector('div');
+                
+                if (score === totalQuestions) {
+                    resultElement.className = 'p-6 rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-900/20';
+                    resultElement.innerHTML = `
+                        <h3 class="text-xl font-bold text-green-600 dark:text-green-400 mb-2">Perfect Score!</h3>
+                        <p>You got ${score} out of ${totalQuestions} correct. You're a Cypress expert!</p>
+                    `;
+                } else if (score > 0) {
+                    resultElement.className = 'p-6 rounded-lg border-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+                    resultElement.innerHTML = `
+                        <h3 class="text-xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">Good Try!</h3>
+                        <p>You got ${score} out of ${totalQuestions} correct. Keep learning about Cypress!</p>
+                    `;
+                } else {
+                    resultElement.className = 'p-6 rounded-lg border-2 border-red-500 bg-red-50 dark:bg-red-900/20';
+                    resultElement.innerHTML = `
+                        <h3 class="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Try Again!</h3>
+                        <p>You got ${score} out of ${totalQuestions} correct. Read through the page again and try once more.</p>
+                    `;
+                }
+                
+                quizResult.classList.remove('hidden');
+                quizForm.classList.add('hidden');
+            });
+            
+            resetQuiz.addEventListener('click', () => {
+                quizForm.reset();
+                quizResult.classList.add('hidden');
+                quizForm.classList.remove('hidden');
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        function setupSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Code typing animation
+        function setupCodeTyping() {
+            const codeElement = document.querySelector('.code-typing');
+            if (!codeElement) return;
+            
+            codeElement.style.overflow = 'hidden';
+            codeElement.style.borderRight = '0.15em solid #172A45';
+            codeElement.style.whiteSpace = 'nowrap';
+            codeElement.style.margin = '0 auto';
+            codeElement.style.animation = 'typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite';
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            setupQuiz();
+            setupSmoothScroll();
+            setupCodeTyping();
+        });
+    </script>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

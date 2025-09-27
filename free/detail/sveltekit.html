@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn About SvelteKit - The Web Framework</title>
+    <meta name="description" content="Learn about SvelteKit, the framework for building web applications with Svelte. Featuring server-side rendering, routing, and more.">
+    <meta name="keywords" content="SvelteKit, Svelte, web framework, server-side rendering, no virtual DOM">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF3E00',
+                        secondary: '#4A4A4A',
+                        accent: '#D02A00',
+                        dark: {
+                            primary: '#FFFFFF',
+                            secondary: '#B0B0B0',
+                            background: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        comic: ['Comic Sans MS', 'Comic Sans', 'cursive'],
+                        poppins: ['Poppins', 'sans-serif']
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'float': 'float 6s ease-in-out infinite',
+                        'spin-slow': 'spin 8s linear infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .code-typing {
+                overflow: hidden;
+                border-right: 0.15em solid #FF3E00;
+                white-space: nowrap;
+                margin: 0 auto;
+                animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+            }
+            .particle {
+                position: absolute;
+                border-radius: 50%;
+                pointer-events: none;
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            }
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: #FF3E00 }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-comic bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Header with Navigation -->
+    <header class="fixed top-0 left-0 right-0 bg-white dark:bg-gray-900 shadow-md z-50 transition-colors duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- Logo -->
+            <a href="/" class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center">
+                    <span class="text-white font-bold text-xl">S</span>
+                </div>
+                <span class="font-bold text-xl text-primary dark:text-dark-primary">SvelteKit</span>
+            </a>
+
+            <!-- Desktop Search -->
+            <div class="hidden md:block flex-grow max-w-md mx-8">
+                <input type="text" id="searchInput" autocomplete="off" 
+                       class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all">
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center space-x-4">
+                <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa-regular fa-star text-xl text-gray-600 dark:text-gray-300"></i>
+                </button>
+                <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa-solid fa-share-nodes text-xl text-gray-600 dark:text-gray-300"></i>
+                </button>
+                <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+                    <i class="fa-solid fa-sun text-xl text-gray-600 dark:text-gray-300 dark:hidden"></i>
+                    <i class="fa-solid fa-moon text-xl text-gray-600 dark:text-gray-300 hidden dark:block"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Search Bar -->
+        <div class="md:hidden px-4 pb-3">
+            <input type="text" id="searchInputMobile" autocomplete="off" 
+                   class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all">
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <nav class="fixed top-20 left-0 right-0 bg-gray-100 dark:bg-gray-800 z-40 transition-colors duration-300">
+        <div class="container mx-auto px-4 py-2 text-sm">
+            <a href="/" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Home</a>
+            <span class="mx-2">→</span>
+            <a href="/free" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Free Resources</a>
+            <span class="mx-2">→</span>
+            <span class="text-primary dark:text-dark-primary">Learn SvelteKit</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-16">
+        <!-- Hero Section with Animation -->
+        <section class="bg-gradient-to-r from-orange-50 to-red-50 dark:from-gray-800 dark:to-gray-900 py-16 md:py-24 relative overflow-hidden transition-colors duration-300">
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-3xl mx-auto text-center">
+                    <h1 class="text-[clamp(2rem,5vw,4rem)] font-bold mb-6 text-shadow text-primary dark:text-dark-primary">
+                        Build with SvelteKit!
+                    </h1>
+                    <p class="text-[clamp(1.2rem,3vw,1.5rem)] mb-8 text-gray-700 dark:text-gray-300">
+                        The fastest way to build web applications with Svelte
+                    </p>
+                    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 mb-8 inline-block">
+                        <div class="code-typing text-left text-gray-800 dark:text-gray-200">
+                            > npm create svelte@latest my-sveltekit-app
+                        </div>
+                    </div>
+                    <a href="#what-is-sveltekit" class="inline-block bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+
+            <!-- Floating Code Elements Animation -->
+            <div id="codeParticles" class="absolute inset-0 overflow-hidden pointer-events-none">
+                <!-- Particles will be added via JavaScript -->
+            </div>
+        </section>
+
+        <!-- What is SvelteKit Section -->
+        <section id="what-is-sveltekit" class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-8 text-center text-primary dark:text-dark-primary">What is SvelteKit?</h2>
+                    
+                    <div class="bg-orange-50 dark:bg-gray-800 rounded-2xl p-8 mb-12 shadow-md transition-colors duration-300">
+                        <p class="text-lg mb-4">SvelteKit is a framework for building web applications of all sizes, with a beautiful development experience and flexible filesystem-based routing.</p>
+                        <p class="text-lg mb-4">Unlike traditional frameworks that do most of their work in the browser, SvelteKit shifts that work to the build step, resulting in highly optimized JavaScript that loads faster and runs better.</p>
+                        <p class="text-lg">It combines the power of Svelte (a compiler that produces highly efficient vanilla JavaScript) with server-side rendering, routing, and all the features you need for modern web apps.</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-orange-50 dark:bg-gray-800 rounded-xl p-6 shadow-md card-hover transition-colors duration-300">
+                            <div class="text-secondary dark:text-dark-secondary text-4xl mb-4">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-3">No Virtual DOM</h3>
+                            <p>Svelte compiles your components to highly efficient vanilla JavaScript without the overhead of a virtual DOM.</p>
+                        </div>
+                        
+                        <div class="bg-red-50 dark:bg-gray-800 rounded-xl p-6 shadow-md card-hover transition-colors duration-300">
+                            <div class="text-secondary dark:text-dark-secondary text-4xl mb-4">
+                                <i class="fa-solid fa-server"></i>
+                            </div>
+                            <h3 class="text-xl font-bold mb-3">Server-Side Rendering</h3>
+                            <p>Optimize your app for performance and SEO with built-in server-side rendering capabilities.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How to Use SvelteKit Section -->
+        <section class="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">How to Use SvelteKit</h2>
+                
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg overflow-hidden mb-10 transition-colors duration-300">
+                        <div class="bg-gray-800 text-white p-4 flex items-center">
+                            <div class="flex space-x-2 mr-4">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+                            <span>Terminal</span>
+                        </div>
+                        <div class="p-6 font-mono text-sm md:text-base bg-gray-900 text-green-400">
+                            <p class="mb-2"># Create a new SvelteKit project</p>
+                            <p class="mb-4 text-blue-400">npm create svelte@latest my-sveltekit-app</p>
+                            
+                            <p class="mb-2"># Navigate to your project</p>
+                            <p class="mb-4 text-blue-400">cd my-sveltekit-app</p>
+                            
+                            <p class="mb-2"># Install dependencies</p>
+                            <p class="mb-4 text-blue-400">npm install</p>
+                            
+                            <p class="mb-2"># Run the development server</p>
+                            <p class="mb-4 text-blue-400">npm run dev</p>
+                            
+                            <p class="mb-2"># Build for production</p>
+                            <p class="text-blue-400">npm run build</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 rounded-xl p-6 shadow-md mb-10 transition-colors duration-300">
+                        <h3 class="text-xl font-bold mb-4 text-primary dark:text-dark-primary">See it in Action!</h3>
+                        <p class="mb-4">When you build with SvelteKit, you'll notice:</p>
+                        
+                        <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden mb-4">
+                            <div class="bg-gray-100 dark:bg-gray-800 p-3 flex justify-between items-center">
+                                <span>SvelteKit Application</span>
+                                <span class="text-green-600 dark:text-green-400">✓ Optimized Build</span>
+                            </div>
+                            <div class="p-4 bg-gray-50 dark:bg-gray-900">
+                                <p class="mb-2">File-based routing system</p>
+                                <p class="mb-2">Automatic code splitting</p>
+                                <p class="mb-2">Server-side rendering and static site generation</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-4">
+                                    SvelteKit provides a complete solution for building web applications with optimized performance and developer experience.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example Section -->
+        <section class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">Cool Things You Can Build</h2>
+                
+                <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md card-hover transition-colors duration-300">
+                        <img src="https://picsum.photos/seed/svelteblog/600/400" alt="A blog built with SvelteKit" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Fast Web Apps</h3>
+                            <p>Create highly responsive applications with minimal JavaScript overhead.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md card-hover transition-colors duration-300">
+                        <img src="https://picsum.photos/seed/sveltegame/600/400" alt="A game built with SvelteKit" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Interactive Experiences</h3>
+                            <p>Build games, creative tools, and other interactive web experiences.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden shadow-md card-hover transition-colors duration-300">
+                        <img src="https://picsum.photos/seed/sveltesite/600/400" alt="A static site built with SvelteKit" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold mb-2">Static Sites</h3>
+                            <p>Generate fast, optimized static websites with server-side rendering.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Quiz Section -->
+        <section class="py-16 bg-gradient-to-r from-red-50 to-orange-50 dark:from-gray-800 dark:to-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">Test Your SvelteKit Knowledge!</h2>
+                
+                <div class="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-8 transition-colors duration-300">
+                    <form id="quizForm" class="space-y-6">
+                        <div class="quiz-question">
+                            <p class="text-lg font-bold mb-3">1. What makes Svelte different from other frameworks?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q1" value="A" class="mr-3"> It uses a virtual DOM
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q1" value="B" class="mr-3"> It compiles components to vanilla JavaScript
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q1" value="C" class="mr-3"> It only works on mobile devices
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="quiz-question">
+                            <p class="text-lg font-bold mb-3">2. What kind of routing system does SvelteKit use?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q2" value="A" class="mr-3"> File-based routing
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q2" value="B" class="mr-3"> Database-based routing
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q2" value="C" class="mr-3"> Manual routing configuration
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="quiz-question">
+                            <p class="text-lg font-bold mb-3">3. What is the main command to create a new SvelteKit project?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q3" value="A" class="mr-3"> npm create svelte
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q3" value="B" class="mr-3"> npm install sveltekit
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer transition-colors">
+                                    <input type="radio" name="q3" value="C" class="mr-3"> svelte create app
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-3 px-6 rounded-lg shadow hover:shadow-lg transition-all transform hover:-translate-y-1">
+                            Check My Answers
+                        </button>
+                    </form>
+                    
+                    <div id="quizResult" class="mt-8 hidden">
+                        <div class="p-6 rounded-lg border-2"></div>
+                        <button id="resetQuiz" class="mt-4 text-primary dark:text-dark-primary hover:underline">
+                            Try Again?
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Section -->
+        <section class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">Want to Learn More?</h2>
+                
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                    <a href="https://kit.svelte.dev/docs/introduction" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-solid fa-book"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">SvelteKit Documentation</h3>
+                            <p>Read the official docs to learn how to build with SvelteKit.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://learn.svelte.dev/tutorial/welcome-to-svelte" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Svelte Tutorial</h3>
+                            <p>Interactive tutorial to learn the basics of Svelte and SvelteKit.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://github.com/sveltejs/kit" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-brands fa-github"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">SvelteKit on GitHub</h3>
+                            <p>View the source code and contribute to the SvelteKit project.</p>
+                        </div>
+                    </a>
+                    
+                    <a href="https://svelte.dev/" target="_blank" rel="noopener noreferrer" class="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 shadow-md flex items-start space-x-4 card-hover transition-colors duration-300">
+                        <div class="text-primary dark:text-dark-primary text-3xl mt-1">
+                            <i class="fa-brands fa-svelte"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Svelte Website</h3>
+                            <p>Learn more about Svelte, the compiler that powers SvelteKit.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 dark:bg-gray-800 py-12 transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                    <div class="flex items-center mb-6 md:mb-0">
+                        <div class="w-10 h-10 rounded-lg bg-primary dark:bg-dark-primary flex items-center justify-center mr-2">
+                            <span class="text-white font-bold text-xl">S</span>
+                        </div>
+                        <span class="font-bold text-xl text-primary dark:text-dark-primary">SvelteKit</span>
+                    </div>
+                    
+                    <div class="flex space-x-6">
+                        <a href="https://twitter.com/sveltejs" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa-brands fa-twitter text-2xl"></i>
+                        </a>
+                        <a href="https://github.com/sveltejs/kit" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa-brands fa-github text-2xl"></i>
+                        </a>
+                        <a href="https://discord.com/invite/svelte" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-dark-primary transition-colors">
+                            <i class="fa-brands fa-discord text-2xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold mb-4 text-center">Stay Updated</h3>
+                        <form class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                            <input type="email" id="subscribeEmail" placeholder="Your email" 
+                                   class="flex-grow px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary">
+                            <button type="button" id="subscribeBtn" 
+                                    class="bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-2 px-6 rounded-lg transition-colors">
+                                Subscribe
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="text-center text-sm text-gray-600 dark:text-gray-400">
+                        <p>&copy; 2023 Learn SvelteKit. All rights reserved.</p>
+                        <p class="mt-2"><a href="/sitemap" class="hover:text-primary dark:hover:text-dark-primary transition-colors">Sitemap</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script type="module">
+        // Create floating code particles animation
+        function createCodeParticles() {
+            const container = document.getElementById('codeParticles');
+            const symbols = ['<', '>', '/', '{', '}', '(', ')', ';', ':', '=', '+', '*', 'svelte', 'kit', 'script', 'style', 'transition', 'reactive'];
+            const particleCount = 30;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const size = Math.random() * 20 + 10;
+                const color = `rgba(255, 62, 0, ${Math.random() * 0.5 + 0.2})`;
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const delay = Math.random() * 5;
+                const duration = Math.random() * 20 + 10;
+                
+                // Apply styles
+                particle.textContent = symbol;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.color = color;
+                particle.style.left = `${left}%`;
+                particle.style.top = `${top}%`;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                particle.style.fontSize = `${size}px`;
+                
+                container.appendChild(particle);
+            }
+        }
+
+        // Quiz functionality
+        function setupQuiz() {
+            const quizForm = document.getElementById('quizForm');
+            const quizResult = document.getElementById('quizResult');
+            const resetQuiz = document.getElementById('resetQuiz');
+            
+            // Correct answers
+            const correctAnswers = {
+                q1: 'B',
+                q2: 'A',
+                q3: 'A'
+            };
+            
+            quizForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                
+                let score = 0;
+                const totalQuestions = Object.keys(correctAnswers).length;
+                
+                // Check each answer
+                Object.keys(correctAnswers).forEach(question => {
+                    const selectedOption = document.querySelector(`input[name="${question}"]:checked`);
+                    if (selectedOption && selectedOption.value === correctAnswers[question]) {
+                        score++;
+                    }
+                });
+                
+                // Display result
+                const resultElement = quizResult.querySelector('div');
+                
+                if (score === totalQuestions) {
+                    resultElement.className = 'p-6 rounded-lg border-2 border-green-500 bg-green-50 dark:bg-green-900/20';
+                    resultElement.innerHTML = `
+                        <h3 class="text-xl font-bold text-green-600 dark:text-green-400 mb-2">Perfect Score!</h3>
+                        <p>You got ${score} out of ${totalQuestions} correct. Amazing job!</p>
+                    `;
+                } else if (score > 0) {
+                    resultElement.className = 'p-6 rounded-lg border-2 border-yellow-500 bg-yellow-50 dark:bg-yellow-900/20';
+                    resultElement.innerHTML = `
+                        <h3 class="text-xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">Good Try!</h3>
+                        <p>You got ${score} out of ${totalQuestions} correct. Keep learning!</p>
+                    `;
+                } else {
+                    resultElement.className = 'p-6 rounded-lg border-2 border-red-500 bg-red-50 dark:bg-red-900/20';
+                    resultElement.innerHTML = `
+                        <h3 class="text-xl font-bold text-red-600 dark:text-red-400 mb-2">Try Again!</h3>
+                        <p>You got ${score} out of ${totalQuestions} correct. Read through the page again and try once more.</p>
+                    `;
+                }
+                
+                quizResult.classList.remove('hidden');
+                quizForm.classList.add('hidden');
+            });
+            
+            resetQuiz.addEventListener('click', () => {
+                quizForm.reset();
+                quizResult.classList.add('hidden');
+                quizForm.classList.remove('hidden');
+            });
+        }
+
+        // Smooth scrolling for anchor links
+        function setupSmoothScroll() {
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        }
+
+        // Initialize everything when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            createCodeParticles();
+            setupQuiz();
+            setupSmoothScroll();
+        });
+    </script>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
