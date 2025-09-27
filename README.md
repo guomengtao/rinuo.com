@@ -9,3 +9,5 @@ A pure static site deployed on GitHub Pages, featuring externally generated AI c
 
 ## License
 This project is licensed under the MIT License. See the LICENSE file for details.
+
+

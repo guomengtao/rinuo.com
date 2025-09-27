@@ -13,6 +13,8 @@
   <!-- External Resources -->
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- 添加Chart.js库用于绘制图表 -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
   <!-- Tailwind Configuration -->
   <script>
@@ -218,6 +220,70 @@
       </div>
     </section>
     
+    <!-- 访问统计部分 - 新增内容 -->
+    <section id="visit-stats-section" class="py-12 mt-16 bg-light-card/50 dark:bg-dark-card/50 rounded-xl p-6 border border-light-border dark:border-dark-border">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h2 class="text-2xl font-bold mb-2">
+            <i class="fa fa-bar-chart text-primary mr-2"></i> Visit Statistics
+          </h2>
+          <p class="text-gray-600 dark:text-gray-400">Overview of your browsing activity</p>
+        </div>
+        
+        <!-- 总访问次数统计 - 新增内容 -->
+        <div class="mt-4 md:mt-0 flex items-center space-x-2 bg-white dark:bg-dark-card px-4 py-2 rounded-lg shadow-sm border border-light-border dark:border-dark-border">
+          <i class="fa fa-eye text-primary"></i>
+          <span class="text-sm text-gray-500 dark:text-gray-400">Total Visits:</span>
+          <span id="total-visits-count" class="font-bold text-lg text-primary">0</span>
+        </div>
+      </div>
+      
+      <!-- 时间范围切换 - 新增内容 -->
+      <div class="flex items-center mb-6 justify-center">
+        <button id="daily-view-btn" class="view-btn px-4 py-2 mr-2 rounded-md bg-primary text-white">
+          <i class="fa fa-calendar-o mr-1"></i> Daily View
+        </button>
+        <button id="hourly-view-btn" class="view-btn px-4 py-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800">
+          <i class="fa fa-clock-o mr-1"></i> Hourly View
+        </button>
+      </div>
+      
+      <!-- 图表容器 - 新增内容 -->
+      <div class="bg-white dark:bg-dark-card p-4 rounded-xl shadow-sm border border-light-border dark:border-dark-border mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-semibold" id="chart-title">Daily Visits Overview</h3>
+          <div id="chart-stats" class="text-sm text-gray-500 dark:text-gray-400">
+            Avg: <span id="avg-visits">0</span> visits/day
+          </div>
+        </div>
+        <div class="w-full h-80">
+          <canvas id="visitChart"></canvas>
+        </div>
+      </div>
+      
+      <!-- 数据摘要卡片 - 新增内容 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white dark:bg-dark-card p-4 rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Most Visited Page</div>
+          <div id="most-visited-page" class="font-semibold text-primary">No data</div>
+          <div id="most-visited-count" class="text-xs text-gray-400 dark:text-gray-500">0 visits</div>
+        </div>
+        <div class="bg-white dark:bg-dark-card p-4 rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Pages Visited</div>
+          <div id="total-pages-count" class="font-semibold text-primary">0</div>
+        </div>
+        <div class="bg-white dark:bg-dark-card p-4 rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Most Active Day</div>
+          <div id="most-active-day" class="font-semibold text-primary">No data</div>
+          <div id="most-active-count" class="text-xs text-gray-400 dark:text-gray-500">0 visits</div>
+        </div>
+        <div class="bg-white dark:bg-dark-card p-4 rounded-xl shadow-sm border border-light-border dark:border-dark-border">
+          <div class="text-sm text-gray-500 dark:text-gray-400 mb-1">Average Visits Per Day</div>
+          <div id="avg-daily-visits" class="font-semibold text-primary">0</div>
+        </div>
+      </div>
+    </section>
+    
     <!-- Recent Visits Section -->
     <section id="recent-visits-section" class="py-12 mt-16">
       <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
@@ -312,7 +378,7 @@
     </div>
   </footer>
 
-   
+  
   <!-- Main Script -->
   <script type="module" src="./main.js"></script>
   
@@ -372,6 +438,7 @@
       if (confirm('Are you sure you want to clear all bookmarks? This action cannot be undone.')) {
         localStorage.removeItem(BOOKMARK_KEY);
         renderBookmarks();
+        updateVisitStats(); // 清除书签后更新统计
       }
     }
     
@@ -379,6 +446,7 @@
       if (confirm('Are you sure you want to clear all visit history? This action cannot be undone.')) {
         localStorage.removeItem(VISIT_HISTORY_KEY);
         renderVisits();
+        updateVisitStats(); // 清除访问记录后更新统计
       }
     }
     
@@ -539,6 +607,7 @@
       const updatedVisits = visits.filter(visit => visit.url !== visitUrl);
       localStorage.setItem(VISIT_HISTORY_KEY, JSON.stringify(updatedVisits));
       renderVisits();
+      updateVisitStats(); // 删除访问记录后更新统计
     }
     
     // 创建访问记录卡片
@@ -848,6 +917,266 @@
       }
     }
     
+    // 计算访问统计数据 - 新增内容
+    function calculateVisitStats() {
+      const visits = readVisits();
+      
+      // 计算总访问次数
+      let totalVisits = 0;
+      let totalUniquePages = 0;
+      const pageCounts = {};
+      const dailyStats = {};
+      const hourlyStats = {};
+      
+      if (visits.length > 0) {
+        // 计算总访问次数和页面统计
+        totalUniquePages = visits.length;
+        
+        visits.forEach(visit => {
+          const count = visit.count || 1;
+          totalVisits += count;
+          
+          // 统计每个页面的访问次数
+          if (pageCounts[visit.title]) {
+            pageCounts[visit.title] += count;
+          } else {
+            pageCounts[visit.title] = count;
+          }
+          
+          // 统计每天的访问次数
+          const date = new Date(visit.timestamp);
+          const dateKey = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+          });
+          if (dailyStats[dateKey]) {
+            dailyStats[dateKey].visits += count;
+            dailyStats[dateKey].pages.add(visit.url);
+          } else {
+            dailyStats[dateKey] = {
+              visits: count,
+              pages: new Set([visit.url])
+            };
+          }
+          
+          // 统计每小时的访问次数
+          const hourKey = `${dateKey} ${date.getHours()}:00`;
+          if (hourlyStats[hourKey]) {
+            hourlyStats[hourKey].visits += count;
+            hourlyStats[hourKey].pages.add(visit.url);
+          } else {
+            hourlyStats[hourKey] = {
+              visits: count,
+              pages: new Set([visit.url])
+            };
+          }
+        });
+      }
+      
+      // 找出访问次数最多的页面
+      let mostVisitedPage = 'No data';
+      let mostVisitedCount = 0;
+      for (const [page, count] of Object.entries(pageCounts)) {
+        if (count > mostVisitedCount) {
+          mostVisitedPage = page;
+          mostVisitedCount = count;
+        }
+      }
+      
+      // 找出最活跃的一天
+      let mostActiveDay = 'No data';
+      let mostActiveCount = 0;
+      for (const [day, stats] of Object.entries(dailyStats)) {
+        if (stats.visits > mostActiveCount) {
+          mostActiveDay = day;
+          mostActiveCount = stats.visits;
+        }
+      }
+      
+      // 计算平均每天访问次数
+      const avgDailyVisits = Object.keys(dailyStats).length > 0 
+        ? Math.round(totalVisits / Object.keys(dailyStats).length)
+        : 0;
+      
+      // 格式化图表数据
+      const dailyLabels = Object.keys(dailyStats).sort((a, b) => {
+        return new Date(a) - new Date(b);
+      });
+      const dailyVisitData = dailyLabels.map(label => dailyStats[label].visits);
+      const dailyPageData = dailyLabels.map(label => dailyStats[label].pages.size);
+      
+      const hourlyLabels = Object.keys(hourlyStats).sort((a, b) => {
+        return new Date(a) - new Date(b);
+      });
+      const hourlyVisitData = hourlyLabels.map(label => hourlyStats[label].visits);
+      const hourlyPageData = hourlyLabels.map(label => hourlyStats[label].pages.size);
+      
+      return {
+        totalVisits,
+        totalUniquePages,
+        mostVisitedPage,
+        mostVisitedCount,
+        mostActiveDay,
+        mostActiveCount,
+        avgDailyVisits,
+        daily: {
+          labels: dailyLabels,
+          visitData: dailyVisitData,
+          pageData: dailyPageData
+        },
+        hourly: {
+          labels: hourlyLabels,
+          visitData: hourlyVisitData,
+          pageData: hourlyPageData
+        }
+      };
+    }
+    
+    // 更新访问统计显示 - 新增内容
+    function updateVisitStats() {
+      const stats = calculateVisitStats();
+      
+      // 更新统计数字显示
+      document.getElementById('total-visits-count').textContent = stats.totalVisits;
+      document.getElementById('total-pages-count').textContent = stats.totalUniquePages;
+      document.getElementById('most-visited-page').textContent = stats.mostVisitedPage;
+      document.getElementById('most-visited-count').textContent = `${stats.mostVisitedCount} visits`;
+      document.getElementById('most-active-day').textContent = stats.mostActiveDay;
+      document.getElementById('most-active-count').textContent = `${stats.mostActiveCount} visits`;
+      document.getElementById('avg-daily-visits').textContent = stats.avgDailyVisits;
+      document.getElementById('avg-visits').textContent = stats.avgDailyVisits;
+      
+      // 初始化或更新图表
+      renderVisitChart('daily');
+    }
+    
+    // 渲染访问统计图表 - 新增内容
+    let visitChart = null;
+    function renderVisitChart(viewMode) {
+      const ctx = document.getElementById('visitChart').getContext('2d');
+      const stats = calculateVisitStats();
+      
+      // 确定图表数据
+      let labels, visitData, pageData, chartTitle;
+      if (viewMode === 'daily') {
+        labels = stats.daily.labels;
+        visitData = stats.daily.visitData;
+        pageData = stats.daily.pageData;
+        chartTitle = 'Daily Visits Overview';
+      } else {
+        labels = stats.hourly.labels;
+        visitData = stats.hourly.visitData;
+        pageData = stats.hourly.pageData;
+        chartTitle = 'Hourly Visits Overview';
+      }
+      
+      // 更新图表标题
+      document.getElementById('chart-title').textContent = chartTitle;
+      
+      // 检查是否为暗色模式
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const textColor = isDarkMode ? '#F3F4F6' : '#111827';
+      const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+      
+      // 销毁现有图表（如果存在）
+      if (visitChart) {
+        visitChart.destroy();
+      }
+      
+      // 创建新图表
+      visitChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Total Visits',
+              data: visitData,
+              backgroundColor: '#4F46E5',
+              borderColor: '#4F46E5',
+              borderWidth: 1
+            },
+            {
+              label: 'Unique Pages',
+              data: pageData,
+              backgroundColor: '#10B981',
+              borderColor: '#10B981',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                color: textColor
+              },
+              grid: {
+                color: gridColor
+              }
+            },
+            x: {
+              ticks: {
+                color: textColor,
+                autoSkip: true,
+                maxRotation: 45,
+                minRotation: 45
+              },
+              grid: {
+                color: gridColor
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: textColor
+              }
+            },
+            // 添加平均线插件
+            annotation: {
+              annotations: {
+                averageLine: {
+                  type: 'line',
+                  yMin: stats.avgDailyVisits,
+                  yMax: stats.avgDailyVisits,
+                  borderColor: '#F59E0B',
+                  borderWidth: 2,
+                  borderDash: [5, 5],
+                  label: {
+                    content: `Average: ${stats.avgDailyVisits}`,
+                    enabled: true,
+                    position: 'end'
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // 初始化图表视图切换 - 新增内容
+    function initChartViewSwitching() {
+      const dailyViewBtn = document.getElementById('daily-view-btn');
+      const hourlyViewBtn = document.getElementById('hourly-view-btn');
+      
+      dailyViewBtn.addEventListener('click', () => {
+        dailyViewBtn.className = 'view-btn px-4 py-2 mr-2 rounded-md bg-primary text-white';
+        hourlyViewBtn.className = 'view-btn px-4 py-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800';
+        renderVisitChart('daily');
+      });
+      
+      hourlyViewBtn.addEventListener('click', () => {
+        hourlyViewBtn.className = 'view-btn px-4 py-2 rounded-md bg-primary text-white';
+        dailyViewBtn.className = 'view-btn px-4 py-2 mr-2 rounded-md text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800';
+        renderVisitChart('hourly');
+      });
+    }
+    
     // 初始化页面
     function initHistoryPage() {
       if (!storageAvailable()) {
@@ -884,9 +1213,26 @@
       renderBookmarks();
       renderVisits();
       
+      // 初始化访问统计
+      updateVisitStats();
+      
+      // 初始化图表视图切换
+      initChartViewSwitching();
+      
       // 添加清除按钮事件监听
       document.getElementById('clear-bookmarks-btn').addEventListener('click', clearBookmarks);
       document.getElementById('clear-visits-btn').addEventListener('click', clearVisits);
+      
+      // 监听暗色模式变化，更新图表样式
+      document.addEventListener('DOMContentLoaded', () => {
+        const themeToggle = document.getElementById('theme-toggle');
+        themeToggle.addEventListener('click', () => {
+          // 延迟更新图表，确保暗色模式类已更新
+          setTimeout(() => {
+            renderVisitChart(document.getElementById('daily-view-btn').classList.contains('bg-primary') ? 'daily' : 'hourly');
+          }, 100);
+        });
+      });
     }
     
     // 页面加载完成后初始化
