@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphQL: The Cool Data Explorer</title>
+    <meta name="description" content="Learn about GraphQL in a fun and easy way! Discover how apps get their data with interactive examples.">
+    <meta name="keywords" content="GraphQL, learn, kids, programming, data, API, fun">
+    <meta name="author" content="GraphQL Education">
+    <link rel="canonical" href="https://example.com/graphql">
+    <link rel="sitemap" href="/sitemap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#E1306C',
+                        secondary: '#4776E6',
+                        accent: '#8A2BE2',
+                        light: '#F8F9FA',
+                        dark: '#212529',
+                    },
+                    fontFamily: {
+                        comic: ['Comic Sans MS', 'Comic Neue', 'cursive'],
+                        poppins: ['Poppins', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'wiggle-slow': 'wiggle 4s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+            }
+            .bg-grid {
+                background-size: 40px 40px;
+                background-image: 
+                    linear-gradient(to right, rgba(71, 118, 230, 0.05) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(71, 118, 230, 0.05) 1px, transparent 1px);
+            }
+            .code-typed {
+                border-right: 3px solid #E1306C;
+                animation: blink 1s step-end infinite;
+            }
+            @keyframes blink {
+                from, to { border-color: transparent }
+                50% { border-color: #E1306C }
+            }
+            .particle {
+                position: absolute;
+                border-radius: 50%;
+                pointer-events: none;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="font-comic bg-light text-dark transition-colors duration-300 dark:bg-dark dark:text-light">
+    <!-- Navigation -->
+    <header class="sticky top-0 z-50 bg-white/90 dark:bg-dark/90 shadow-md backdrop-blur-sm">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                        <span class="text-white font-bold text-xl">GQL</span>
+                    </div>
+                    <span class="font-bold text-xl">GraphQL</span>
+                </a>
+                
+                <!-- Desktop Search -->
+                <div class="hidden md:block flex-1 max-w-md mx-8">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            autocomplete="off" 
+                            placeholder="Search GraphQL stuff..." 
+                            class="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        >
+                        <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex items-center space-x-4">
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-star-o text-xl"></i>
+                    </button>
+                    <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-share-alt text-xl"></i>
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa fa-moon-o text-xl dark:hidden"></i>
+                        <i class="fa fa-sun-o text-xl hidden dark:block"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Search Bar -->
+            <div class="md:hidden py-3">
+                <div class="relative">
+                    <input 
+                        type="text" 
+                        id="searchInputMobile" 
+                        autocomplete="off" 
+                        placeholder="Search..." 
+                        class="w-full py-2 px-4 pr-10 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    >
+                    <button class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumbs -->
+    <div class="bg-gray-100 dark:bg-gray-800/50 py-2">
+        <div class="container mx-auto px-4">
+            <nav class="text-sm">
+                <a href="/" class="hover:text-primary transition-colors">Home</a>
+                <span class="mx-2">→</span>
+                <a href="/free" class="hover:text-primary transition-colors">Free Resources</a>
+                <span class="mx-2">→</span>
+                <span class="text-gray-500 dark:text-gray-400">GraphQL Fun Guide</span>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Hero Section with Animation -->
+    <section class="relative overflow-hidden bg-gradient-to-br from-secondary/10 to-accent/10 dark:from-secondary/20 dark:to-accent/20 py-20 md:py-32 bg-grid">
+        <!-- Floating Code Particles -->
+        <div id="codeParticles" class="absolute inset-0 overflow-hidden pointer-events-none"></div>
+        
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-[clamp(2.5rem,8vw,5rem)] font-bold leading-tight mb-6 text-gradient bg-gradient-to-r from-primary to-accent">
+                    What's GraphQL?
+                </h1>
+                <p class="text-[clamp(1.1rem,3vw,1.5rem)] mb-10 text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+                    It's like a super-smart messenger that helps apps get exactly the info they need!
+                </p>
+                
+                <!-- Code Typing Animation -->
+                <div class="bg-dark/90 dark:bg-light/10 rounded-xl p-6 shadow-xl mb-10 text-left font-mono text-white dark:text-green-400 max-w-2xl mx-auto">
+                    <div id="typingAnimation" class="text-lg md:text-xl"></div>
+                </div>
+                
+                <a href="#learn-more" class="inline-block animate-bounce-slow">
+                    <i class="fa fa-chevron-down text-2xl text-primary"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main id="learn-more" class="py-16">
+        <div class="container mx-auto px-4">
+            <!-- What is GraphQL Section -->
+            <section class="mb-20">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-8 text-center">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-primary">What Can GraphQL Do?</span>
+                    </h2>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-10 transform transition-transform hover:-translate-y-1">
+                        <div class="flex items-start mb-4">
+                            <div class="w-12 h-12 rounded-full bg-primary/20 dark:bg-primary/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fa fa-bolt text-2xl text-primary"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-2">Get Exactly What You Need</h3>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    Imagine you're asking for a pizza. With old technologies, you might get a pizza with everything - even stuff you don't like! But GraphQL brings you exactly what you ordered, no more, no less.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 mb-10 transform transition-transform hover:-translate-y-1">
+                        <div class="flex items-start mb-4">
+                            <div class="w-12 h-12 rounded-full bg-secondary/20 dark:bg-secondary/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fa fa-comments text-2xl text-secondary"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-2">One Stop Shopping</h3>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    Instead of going to multiple stores to get your ingredients, GraphQL lets you get everything from one place with a single question.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 transform transition-transform hover:-translate-y-1">
+                        <div class="flex items-start mb-4">
+                            <div class="w-12 h-12 rounded-full bg-accent/20 dark:bg-accent/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                <i class="fa fa-magic text-2xl text-accent"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold mb-2">Super Fast Updates</h3>
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    Apps using GraphQL can update instantly when new information is available, like magic! No more waiting for pages to reload.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- How It Works with Example -->
+            <section class="mb-20">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-8 text-center">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-accent to-secondary">How Does It Work?</span>
+                    </h2>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden">
+                        <div class="p-6 md:p-8">
+                            <p class="text-lg mb-6 text-center">
+                                It's like asking a very specific question and getting a perfect answer!
+                            </p>
+                            
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <!-- Query Example -->
+                                <div>
+                                    <h3 class="text-xl font-bold mb-4 text-primary">Your Question (Query)</h3>
+                                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                        <pre>{
+  game(name: "Minecraft") {
+    title
+    players
+    rating
+  }
+}</pre>
+                                    </div>
+                                    <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                                        "Hey, can you tell me the title, number of players, and rating for Minecraft?"
+                                    </p>
+                                </div>
+                                
+                                <!-- Response Example -->
+                                <div>
+                                    <h3 class="text-xl font-bold mb-4 text-secondary">The Answer (Response)</h3>
+                                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                        <pre>{
+  "data": {
+    "game": {
+      "title": "Minecraft",
+      "players": "Unlimited",
+      "rating": "5 stars"
+    }
+  }
+}</pre>
+                                    </div>
+                                    <p class="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                                        "Sure! Here's exactly what you asked for:"
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Interactive Demo -->
+            <section class="mb-20">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-8 text-center">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Try It Yourself!</span>
+                    </h2>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8">
+                        <p class="mb-6 text-center">
+                            Pick a video game and see what information GraphQL can get for you!
+                        </p>
+                        
+                        <div class="mb-6">
+                            <label class="block text-lg mb-2 font-bold">Choose a game:</label>
+                            <div class="flex flex-wrap gap-3">
+                                <button class="game-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors" data-game="roblox">Roblox</button>
+                                <button class="game-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors" data-game="fortnite">Fortnite</button>
+                                <button class="game-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors" data-game="minecraft">Minecraft</button>
+                                <button class="game-btn px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-primary hover:text-white dark:hover:bg-primary transition-colors" data-game="amongus">Among Us</button>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-lg mb-2 font-bold">What do you want to know?</label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label class="flex items-center p-3 rounded-lg bg-gray-200 dark:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" class="info-checkbox mr-2" value="title" checked> Title
+                                </label>
+                                <label class="flex items-center p-3 rounded-lg bg-gray-200 dark:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" class="info-checkbox mr-2" value="creator" checked> Creator
+                                </label>
+                                <label class="flex items-center p-3 rounded-lg bg-gray-200 dark:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" class="info-checkbox mr-2" value="year"> Year Made
+                                </label>
+                                <label class="flex items-center p-3 rounded-lg bg-gray-200 dark:bg-gray-700 cursor-pointer">
+                                    <input type="checkbox" class="info-checkbox mr-2" value="players"> Players
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button id="runQuery" class="w-full py-3 px-6 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold text-lg transition-colors mb-6">
+                            Get Information!
+                        </button>
+                        
+                        <div id="queryResult" class="bg-gray-100 dark:bg-gray-900 rounded-lg p-4 font-mono text-sm overflow-x-auto hidden">
+                            <!-- Results will appear here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Interactive Quiz -->
+            <section class="mb-20">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-8 text-center">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-secondary to-accent">GraphQL Quiz Time!</span>
+                    </h2>
+                    
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 md:p-8">
+                        <div id="quiz-container">
+                            <!-- Quiz questions will be inserted here -->
+                        </div>
+                        
+                        <div id="quiz-results" class="mt-8 p-6 rounded-lg hidden">
+                            <h3 class="text-xl font-bold mb-4 text-center" id="results-heading"></h3>
+                            <p class="text-center" id="results-message"></p>
+                        </div>
+                        
+                        <button id="checkAnswers" class="w-full py-3 px-6 bg-secondary hover:bg-secondary/90 text-white rounded-lg font-bold text-lg transition-colors mt-6 hidden">
+                            Check My Answers!
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Advanced Resources -->
+            <section class="mb-16">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold mb-8 text-center">
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-accent to-primary">Want to Learn More?</span>
+                    </h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <a href="https://graphql.org/learn/" target="_blank" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transform transition-all hover:-translate-y-1 hover:shadow-xl">
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full bg-primary/20 dark:bg-primary/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fa fa-book text-2xl text-primary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">Official Tutorials</h3>
+                                    <p class="text-gray-700 dark:text-gray-300">
+                                        Step-by-step guides from the people who made GraphQL.
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="https://graphql.org/blog/" target="_blank" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transform transition-all hover:-translate-y-1 hover:shadow-xl">
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full bg-secondary/20 dark:bg-secondary/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fa fa-newspaper text-2xl text-secondary"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">GraphQL Blog</h3>
+                                    <p class="text-gray-700 dark:text-gray-300">
+                                        News and stories about how people use GraphQL.
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="https://www.youtube.com/results?search_query=graphql+for+beginners" target="_blank" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transform transition-all hover:-translate-y-1 hover:shadow-xl">
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full bg-accent/20 dark:bg-accent/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fa fa-video text-2xl text-accent"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">Video Lessons</h3>
+                                    <p class="text-gray-700 dark:text-gray-300">
+                                        Watch videos that show how GraphQL works.
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        
+                        <a href="https://github.com/graphql/graphql-js" target="_blank" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 transform transition-all hover:-translate-y-1 hover:shadow-xl">
+                            <div class="flex items-start">
+                                <div class="w-12 h-12 rounded-full bg-green-500/20 dark:bg-green-500/30 flex items-center justify-center mr-4 flex-shrink-0">
+                                    <i class="fa fa-code text-2xl text-green-500"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold mb-2">See the Code</h3>
+                                    <p class="text-gray-700 dark:text-gray-300">
+                                        Look at the actual code that makes GraphQL work.
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 dark:bg-gray-800 py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="flex items-center justify-center space-x-2 mb-4">
+                        <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                            <span class="text-white font-bold text-xl">GQL</span>
+                        </div>
+                        <span class="font-bold text-2xl">GraphQL</span>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">
+                        Learning about data has never been this fun! Explore, create, and discover how apps get their information.
+                    </p>
+                </div>
+                
+                <div class="mb-10">
+                    <h3 class="text-xl font-bold mb-4 text-center">Stay Updated</h3>
+                    <div class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+                        <input 
+                            type="email" 
+                            id="subscribeEmail" 
+                            placeholder="Your email address" 
+                            class="flex-1 py-3 px-4 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                        >
+                        <button id="subscribeBtn" class="py-3 px-6 bg-primary hover:bg-primary/90 text-white rounded-lg font-bold transition-colors whitespace-nowrap">
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="border-t border-gray-300 dark:border-gray-700 pt-6 text-center text-gray-600 dark:text-gray-400 text-sm">
+                    <p>© 2023 GraphQL Fun Guide. All rights reserved.</p>
+                    <p class="mt-2">
+                        <a href="/sitemap" class="hover:text-primary transition-colors">Sitemap</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="module" src="/main.js"></script>
+    <script>
+        // Typing animation for hero section
+        document.addEventListener('DOMContentLoaded', () => {
+            const typingElement = document.getElementById('typingAnimation');
+            const textToType = `# Let's ask for a game's info!
+query {
+  game(name: "Minecraft") {
+    title
+    players
+    rating
+  }
+}`;
+            let i = 0;
+            
+            function typeWriter() {
+                if (i < textToType.length) {
+                    typingElement.innerHTML += textToType.charAt(i);
+                    i++;
+                    setTimeout(typeWriter, 50);
+                } else {
+                    typingElement.classList.add('code-typed');
+                }
+            }
+            
+            typeWriter();
+            
+            // Create floating code particles
+            createParticles();
+            
+            // Initialize interactive demo
+            initDemo();
+            
+            // Initialize quiz
+            initQuiz();
+        });
+        
+        // Create floating code particles animation
+        function createParticles() {
+            const container = document.getElementById('codeParticles');
+            const particlesCount = 30;
+            const symbols = ['{', '}', '[', ']', '(', ')', ':', ',', '!', '$', '#', '&', '|', 'a', 'b', 'c', 'x', 'y', 'z'];
+            
+            for (let i = 0; i < particlesCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random properties
+                const size = Math.random() * 15 + 5;
+                const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+                const color = i % 3 === 0 ? '#E1306C' : i % 3 === 1 ? '#4776E6' : '#8A2BE2';
+                const left = Math.random() * 100;
+                const top = Math.random() * 100;
+                const duration = Math.random() * 20 + 10;
+                const delay = Math.random() * 5;
+                
+                // Apply styles
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.backgroundColor = color;
+                particle.style.opacity = Math.random() * 0.5 + 0.1;
+                particle.style.left = `${left}%`;
+                particle.style.top = `${top}%`;
+                particle.style.animation = `float ${duration}s ease-in-out ${delay}s infinite`;
+                particle.innerHTML = symbol;
+                particle.style.color = 'white';
+                particle.style.display = 'flex';
+                particle.style.alignItems = 'center';
+                particle.style.justifyContent = 'center';
+                particle.style.fontSize = `${size * 0.7}px`;
+                
+                container.appendChild(particle);
+            }
+        }
+        
+        // Interactive demo functionality
+        function initDemo() {
+            const gameButtons = document.querySelectorAll('.game-btn');
+            const infoCheckboxes = document.querySelectorAll('.info-checkbox');
+            const runButton = document.getElementById('runQuery');
+            const resultDiv = document.getElementById('queryResult');
+            
+            let selectedGame = 'roblox';
+            
+            // Game data
+            const gameData = {
+                roblox: {
+                    title: "Roblox",
+                    creator: "Roblox Corporation",
+                    year: 2006,
+                    players: "Millions worldwide"
+                },
+                fortnite: {
+                    title: "Fortnite",
+                    creator: "Epic Games",
+                    year: 2017,
+                    players: "Up to 100 per game"
+                },
+                minecraft: {
+                    title: "Minecraft",
+                    creator: "Mojang Studios",
+                    year: 2011,
+                    players: "Up to 8 players"
+                },
+                amongus: {
+                    title: "Among Us",
+                    creator: "Innersloth",
+                    year: 2018,
+                    players: "4-15 players"
+                }
+            };
+            
+            // Handle game selection
+            gameButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    gameButtons.forEach(btn => {
+                        btn.classList.remove('bg-primary', 'text-white');
+                        btn.classList.add('bg-gray-200', 'dark:bg-gray-700');
+                    });
+                    
+                    // Add active class to clicked button
+                    button.classList.remove('bg-gray-200', 'dark:bg-gray-700');
+                    button.classList.add('bg-primary', 'text-white');
+                    
+                    selectedGame = button.dataset.game;
+                });
+            });
+            
+            // Run query button
+            runButton.addEventListener('click', () => {
+                // Get selected fields
+                const selectedFields = Array.from(infoCheckboxes)
+                    .filter(checkbox => checkbox.checked)
+                    .map(checkbox => checkbox.value);
+                
+                // Get game info
+                const gameInfo = gameData[selectedGame];
+                
+                // Build response
+                let response = { data: { game: {} } };
+                selectedFields.forEach(field => {
+                    response.data.game[field] = gameInfo[field];
+                });
+                
+                // Show result
+                resultDiv.textContent = JSON.stringify(response, null, 2);
+                resultDiv.classList.remove('hidden');
+                
+                // Add animation
+                resultDiv.classList.add('animate-pulse');
+                setTimeout(() => {
+                    resultDiv.classList.remove('animate-pulse');
+                }, 1000);
+            });
+        }
+        
+        // Quiz functionality
+        function initQuiz() {
+            const quizContainer = document.getElementById('quiz-container');
+            const checkButton = document.getElementById('checkAnswers');
+            const resultsContainer = document.getElementById('quiz-results');
+            const resultsHeading = document.getElementById('results-heading');
+            const resultsMessage = document.getElementById('results-message');
+            
+            // Quiz questions
+            const questions = [
+                {
+                    question: "What does GraphQL help apps do?",
+                    options: [
+                        "Draw pictures on the screen",
+                        "Get the exact information they need",
+                        "Make sounds and music",
+                        "Charge the device battery"
+                    ],
+                    correct: 1
+                },
+                {
+                    question: "Compared to old technologies, GraphQL is like...",
+                    options: [
+                        "Ordering exactly what you want from a menu",
+                        "Getting a surprise gift with random items",
+                        "Waiting in a long line at the store",
+                        "Reading a book with missing pages"
+                    ],
+                    correct: 0
+                },
+                {
+                    question: "How many places do apps need to check with GraphQL to get data?",
+                    options: [
+                        "Five different places",
+                        "One place",
+                        "It depends on the time of day",
+                        "As many as possible"
+                    ],
+                    correct: 1
+                }
+            ];
+            
+            // Build quiz
+            questions.forEach((question, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'mb-8 p-4 border-b border-gray-200 dark:border-gray-700';
+                questionDiv.dataset.index = index;
+                
+                questionDiv.innerHTML = `
+                    <h3 class="text-xl font-bold mb-4">${index + 1}. ${question.question}</h3>
+                    <div class="space-y-2">
+                        ${question.options.map((option, optIndex) => `
+                            <label class="flex items-center p-3 rounded-lg bg-gray-100 dark:bg-gray-700 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                <input type="radio" name="question-${index}" value="${optIndex}" class="mr-3">
+                                ${option}
+                            </label>
+                        `).join('')}
+                    </div>
+                `;
+                
+                quizContainer.appendChild(questionDiv);
+            });
+            
+            // Show check button
+            checkButton.classList.remove('hidden');
+            
+            // Check answers
+            checkButton.addEventListener('click', () => {
+                let score = 0;
+                let total = questions.length;
+                
+                questions.forEach((question, index) => {
+                    const selectedOption = document.querySelector(`input[name="question-${index}"]:checked`);
+                    const questionDiv = document.querySelector(`[data-index="${index}"]`);
+                    
+                    if (selectedOption) {
+                        const selectedValue = parseInt(selectedOption.value);
+                        const label = selectedOption.closest('label');
+                        
+                        if (selectedValue === question.correct) {
+                            score++;
+                            label.classList.add('bg-green-100', 'dark:bg-green-900/30', 'border', 'border-green-500');
+                        } else {
+                            label.classList.add('bg-red-100', 'dark:bg-red-900/30', 'border', 'border-red-500');
+                            
+                            // Highlight correct answer
+                            const correctLabel = questionDiv.querySelector(`input[value="${question.correct}"]`).closest('label');
+                            correctLabel.classList.add('bg-green-100', 'dark:bg-green-900/30', 'border', 'border-green-500');
+                        }
+                    }
+                });
+                
+                // Show results
+                resultsHeading.textContent = `You got ${score} out of ${total} correct!`;
+                
+                if (score === total) {
+                    resultsMessage.textContent = "Wow, perfect score! You're a GraphQL expert!";
+                    resultsContainer.classList.add('bg-green-100', 'dark:bg-green-900/30');
+                } else if (score > 0) {
+                    resultsMessage.textContent = "Great job! You're learning a lot about GraphQL.";
+                    resultsContainer.classList.add('bg-yellow-100', 'dark:bg-yellow-900/30');
+                } else {
+                    resultsMessage.textContent = "No problem! Try again to learn more about GraphQL.";
+                    resultsContainer.classList.add('bg-red-100', 'dark:bg-red-900/30');
+                }
+                
+                resultsContainer.classList.remove('hidden');
+                checkButton.disabled = true;
+                checkButton.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+        }
+    </script>
+</body>
+</html>
