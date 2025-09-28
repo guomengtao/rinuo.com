@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Playwright for Young Learners</title>
+    <meta name="description" content="Learn about Playwright in a fun way! A tool for testing and automating web browsers, explained simply for young programmers.">
+    <meta name="keywords" content="Playwright, coding, programming, web automation, learn to code, kids coding">
+    <meta name="author" content="Playwright Education">
+    <link rel="sitemap" href="/sitemap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5',
+                        secondary: '#10B981',
+                        accent: '#F59E0B',
+                        dark: {
+                            primary: '#818CF8',
+                            secondary: '#34D399',
+                            accent: '#FBBF24',
+                            background: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        comic: ['Comic Sans MS', 'Comic Neue', 'cursive'],
+                        display: ['Bubblegum Sans', 'Comic Sans MS', 'cursive']
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'typing': 'typing 3.5s steps(40, end)',
+                        'blink-caret': 'blink-caret .75s step-end infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        typing: {
+                            'from': { width: '0' },
+                            'to': { width: '100%' }
+                        },
+                        'blink-caret': {
+                            'from, to': { borderColor: 'transparent' },
+                            '50%': { borderColor: '#4F46E5' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .code-particle {
+                position: absolute;
+                border-radius: 50%;
+                background-color: theme('colors.primary');
+                opacity: 0.7;
+            }
+            .terminal-cursor {
+                display: inline-block;
+                width: 0.5rem;
+                height: 1rem;
+                background-color: theme('colors.secondary');
+                animation: blink 1s step-end infinite;
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(45deg, theme('colors.primary'), theme('colors.secondary'));
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+        }
+
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Syntax highlighting styles */
+        .code-block {
+            position: relative;
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            font-family: monospace;
+        }
+        .keyword { color: #7928CA; font-weight: bold; }
+        .string { color: #008000; }
+        .comment { color: #808080; }
+        .function { color: #0000FF; }
+        .variable { color: #FF4500; }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Bubblegum+Sans&family=Comic+Neue:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-dark-background dark:text-gray-100 transition-colors duration-300">
+    <!-- Header with Navigation -->
+    <header class="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-md transition-colors duration-300">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <!-- Logo -->
+                <a href="/" class="flex items-center space-x-2">
+                    <div class="w-10 h-10 bg-primary dark:bg-dark-primary rounded-lg flex items-center justify-center">
+                        <i class="fa-solid fa-code text-white text-xl"></i>
+                    </div>
+                    <span class="font-display text-xl font-bold text-primary dark:text-dark-primary">Playwright</span>
+                </a>
+                
+                <!-- Desktop Search -->
+                <div class="hidden md:block flex-1 max-w-md mx-8">
+                    <input type="text" id="searchInput" autocomplete="off" 
+                        class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                        placeholder="Search Playwright topics...">
+                </div>
+                
+                <!-- Function Icons -->
+                <div class="flex items-center space-x-4">
+                    <button id="bookmarkBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-regular fa-star text-xl text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <button id="shareBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-share-alt text-xl text-gray-600 dark:text-gray-300"></i>
+                    </button>
+                    <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                        <i class="fa-solid fa-sun text-xl text-gray-600 dark:text-gray-300 dark:hidden"></i>
+                        <i class="fa-solid fa-moon text-xl text-gray-600 dark:text-gray-300 hidden dark:block"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Search Bar -->
+            <div class="md:hidden pb-4">
+                <input type="text" id="searchInputMobile" autocomplete="off"
+                    class="w-full px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary dark:focus:ring-dark-primary transition-all"
+                    placeholder="Search...">
+            </div>
+        </div>
+        
+        <!-- Breadcrumb Navigation -->
+        <div class="bg-gray-100 dark:bg-gray-800 px-4 py-2 text-sm">
+            <div class="container mx-auto">
+                <a href="/" class="text-primary dark:text-dark-primary hover:underline">Home</a>
+                <span class="mx-2">›</span>
+                <a href="/free" class="text-primary dark:text-dark-primary hover:underline">Free Resources</a>
+                <span class="mx-2">›</span>
+                <span class="text-gray-600 dark:text-gray-400">Playwright Guide</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section with Animation -->
+        <section class="relative bg-gradient-to-br from-indigo-50 to-green-50 dark:from-gray-900 dark:to-gray-800 py-20 overflow-hidden">
+            <div id="codeParticles" class="absolute inset-0 w-full h-full pointer-events-none"></div>
+            
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="font-display text-[clamp(2.5rem,5vw,4rem)] font-bold mb-6 text-shadow leading-tight">
+                        Meet <span class="text-gradient">Playwright</span>!
+                    </h1>
+                    
+                    <div class="relative h-12 mb-8 max-w-2xl mx-auto">
+                        <div id="typingAnimation" class="font-mono text-xl md:text-2xl text-left whitespace-nowrap overflow-hidden border-r-4 border-primary dark:border-dark-primary animate-typing"></div>
+                    </div>
+                    
+                    <p class="font-comic text-xl md:text-2xl mb-10 text-gray-700 dark:text-gray-300">
+                        Your new buddy for exploring and testing websites with code!
+                    </p>
+                    
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="#what-is" class="bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                            Let's Get Started
+                        </a>
+                        <a href="#examples" class="bg-white hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 text-primary dark:text-dark-primary font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 border border-primary/20 dark:border-dark-primary/30">
+                            See Cool Examples
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Floating code elements -->
+            <div class="hidden md:block absolute top-20 right-10 w-20 h-20 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg animate-float" style="animation-delay: 0s;">
+                <code class="text-xs font-mono text-primary dark:text-dark-primary">{ ... }</code>
+            </div>
+            <div class="hidden md:block absolute bottom-20 left-10 w-16 h-16 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg animate-float" style="animation-delay: 1s;">
+                <code class="text-xs font-mono text-secondary dark:text-dark-secondary">&lt;/&gt;</code>
+            </div>
+            <div class="hidden md:block absolute top-1/2 left-1/4 w-18 h-18 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg animate-float" style="animation-delay: 0.5s;">
+                <code class="text-xs font-mono text-accent dark:text-dark-accent">()</code>
+            </div>
+        </section>
+
+        <!-- What is Playwright Section -->
+        <section id="what-is" class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <div class="max-w-3xl mx-auto">
+                    <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-8 text-center text-primary dark:text-dark-primary">What is Playwright?</h2>
+                    
+                    <div class="font-comic text-lg space-y-6">
+                        <p>Playwright is like a robot friend that can use websites just like humans do!</p>
+                        
+                        <p>It can:</p>
+                        <ul class="list-disc pl-8 space-y-2">
+                            <li>Click buttons and links on web pages</li>
+                            <li>Type text into forms and search boxes</li>
+                            <li>Take pictures of web pages</li>
+                            <li>Check if websites are working correctly</li>
+                            <li>Do all these things automatically, without anyone clicking!</li>
+                        </ul>
+                        
+                        <p>Programmers use Playwright to make sure websites work properly, even when lots of people are using them at the same time.</p>
+                    </div>
+                    
+                    <div class="mt-12 bg-indigo-50 dark:bg-indigo-900/30 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                        <div class="flex items-start">
+                            <div class="bg-primary/10 dark:bg-dark-primary/20 p-3 rounded-full mr-4">
+                                <i class="fa-solid fa-lightbulb text-primary dark:text-dark-primary text-2xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-display text-xl font-bold mb-2 text-primary dark:text-dark-primary">Fun Fact!</h3>
+                                <p class="font-comic">Playwright was created by Microsoft, but anyone can use it for free. It works with all the popular web browsers like Chrome, Firefox, and Safari!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section with Terminal Animation -->
+        <section class="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-12 text-center text-primary dark:text-dark-primary">How Does It Work?</h2>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-gray-900 rounded-xl overflow-hidden shadow-2xl mb-10">
+                        <div class="bg-gray-800 px-4 py-2 flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <div class="text-gray-400 text-sm ml-2">Terminal</div>
+                        </div>
+                        <div class="p-4 font-mono text-green-400 text-sm md:text-base" id="terminalOutput">
+                            <div class="mb-2"><span>$</span> npm install playwright</div>
+                            <div class="mb-2 text-gray-500">// Installing Playwright...</div>
+                            <div class="mb-4 text-gray-500">// Success! Playwright is ready to use</div>
+                            
+                            <div class="mb-2"><span>$</span> npx playwright codegen</div>
+                            <div class="mb-2 text-gray-500">// Recording your actions...</div>
+                            <div class="mb-4 text-gray-500">// Code generated successfully!</div>
+                            
+                            <div class="mb-2"><span>$</span> node my_first_test.js</div>
+                            <div class="mb-2 text-gray-500">// Running your test...</div>
+                            <div class="mb-2"><span class="text-green-500">✓</span> Test passed!</div>
+                            <div><span class="terminal-cursor"></span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="font-comic text-lg text-center">
+                        <p>It's that easy! With just a few commands, you can make Playwright do amazing things!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section id="examples" class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4 text-center text-primary dark:text-dark-primary">Cool Things You Can Do</h2>
+                <p class="font-comic text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-12">Check out these examples of what Playwright can do. Try to understand them - you'll be writing your own soon!</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <!-- Example 1 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden card-hover">
+                        <div class="p-6">
+                            <h3 class="font-display text-xl font-bold mb-4 text-primary dark:text-dark-primary">Take a Screenshot</h3>
+                            <p class="font-comic mb-4">Playwright can take pictures of any website automatically!</p>
+                            
+                            <div class="code-block bg-gray-900 text-gray-300 p-4 text-sm rounded-lg mb-4">
+                                <pre><span class="keyword">const</span> { chromium } = <span class="function">require</span>(<span class="string">'playwright'</span>);
+
+(<span class="keyword">async</span> () => {
+  <span class="comment">// Launch a browser</span>
+  <span class="keyword">const</span> browser = <span class="keyword">await</span> chromium.<span class="function">launch</span>();
+  <span class="keyword">const</span> page = <span class="keyword">await</span> browser.<span class="function">newPage</span>();
+  
+  <span class="comment">// Go to a website</span>
+  <span class="keyword">await</span> page.<span class="function">goto</span>(<span class="string">'https://example.com'</span>);
+  
+  <span class="comment">// Take a screenshot</span>
+  <span class="keyword">await</span> page.<span class="function">screenshot</span>({ <span class="variable">path</span>: <span class="string">'example.png'</span> });
+  
+  <span class="comment">// Close the browser</span>
+  <span class="keyword">await</span> browser.<span class="function">close</span>();
+})();
+</pre>
+                            </div>
+                            
+                            <button id="runExample1" class="bg-secondary hover:bg-secondary/90 dark:bg-dark-secondary dark:hover:bg-dark-secondary/90 text-white font-bold py-2 px-4 rounded-lg transition-all">
+                                <i class="fa-solid fa-play mr-2"></i> Run Example
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Example 2 -->
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden card-hover">
+                        <div class="p-6">
+                            <h3 class="font-display text-xl font-bold mb-4 text-primary dark:text-dark-primary">Fill Out Forms</h3>
+                            <p class="font-comic mb-4">Playwright can automatically fill out and submit forms for you!</p>
+                            
+                            <div class="code-block bg-gray-900 text-gray-300 p-4 text-sm rounded-lg mb-4">
+                                <pre><span class="keyword">const</span> { firefox } = <span class="function">require</span>(<span class="string">'playwright'</span>);
+
+(<span class="keyword">async</span> () => {
+  <span class="keyword">const</span> browser = <span class="keyword">await</span> firefox.<span class="function">launch</span>();
+  <span class="keyword">const</span> page = <span class="keyword">await</span> browser.<span class="function">newPage</span>();
+  
+  <span class="comment">// Go to a form page</span>
+  <span class="keyword">await</span> page.<span class="function">goto</span>(<span class="string">'https://example.com/form'</span>);
+  
+  <span class="comment">// Fill out the form</span>
+  <span class="keyword">await</span> page.<span class="function">fill</span>(<span class="string">'#name'</span>, <span class="string">'My Name'</span>);
+  <span class="keyword">await</span> page.<span class="function">fill</span>(<span class="string">'#email'</span>, <span class="string">'me@example.com'</span>);
+  
+  <span class="comment">// Click the submit button</span>
+  <span class="keyword">await</span> page.<span class="function">click</span>(<span class="string">'button[type="submit"]'</span>);
+  
+  <span class="keyword">await</span> browser.<span class="function">close</span>();
+})();
+</pre>
+                            </div>
+                            
+                            <button id="runExample2" class="bg-secondary hover:bg-secondary/90 dark:bg-dark-secondary dark:hover:bg-dark-secondary/90 text-white font-bold py-2 px-4 rounded-lg transition-all">
+                                <i class="fa-solid fa-play mr-2"></i> Run Example
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Example Result Display -->
+                <div id="exampleResult" class="hidden max-w-5xl mx-auto mt-10 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-xl p-6">
+                    <h3 class="font-display text-xl font-bold mb-4 text-green-700 dark:text-green-400 flex items-center">
+                        <i class="fa-solid fa-check-circle mr-2"></i> Example Result
+                    </h3>
+                    <div id="resultContent" class="font-comic">
+                        <!-- Result will be inserted here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Quiz Section -->
+        <section class="py-16 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4 text-center text-primary dark:text-dark-primary">Test Your Knowledge</h2>
+                <p class="font-comic text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-12">Take this quick quiz to see how much you've learned about Playwright!</p>
+                
+                <div class="max-w-2xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 md:p-8">
+                    <form id="quizForm" class="space-y-6">
+                        <!-- Question 1 -->
+                        <div class="space-y-3">
+                            <h3 class="font-display text-lg font-bold text-gray-800 dark:text-gray-200">1. What can Playwright do?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="A" class="mr-3">
+                                    <span class="font-comic">Take pictures of websites</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="B" class="mr-3">
+                                    <span class="font-comic">Automatically fill out forms</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="C" class="mr-3">
+                                    <span class="font-comic">Test if websites are working correctly</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q1" value="D" class="mr-3">
+                                    <span class="font-comic">All of the above</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 2 -->
+                        <div class="space-y-3">
+                            <h3 class="font-display text-lg font-bold text-gray-800 dark:text-gray-200">2. Which company created Playwright?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="A" class="mr-3">
+                                    <span class="font-comic">Google</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="B" class="mr-3">
+                                    <span class="font-comic">Microsoft</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="C" class="mr-3">
+                                    <span class="font-comic">Apple</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q2" value="D" class="mr-3">
+                                    <span class="font-comic">Facebook</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Question 3 -->
+                        <div class="space-y-3">
+                            <h3 class="font-display text-lg font-bold text-gray-800 dark:text-gray-200">3. Is Playwright free to use?</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="A" class="mr-3">
+                                    <span class="font-comic">Yes, completely free</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="B" class="mr-3">
+                                    <span class="font-comic">No, you have to pay to use it</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="C" class="mr-3">
+                                    <span class="font-comic">Only free for students</span>
+                                </label>
+                                <label class="flex items-center p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                                    <input type="radio" name="q3" value="D" class="mr-3">
+                                    <span class="font-comic">Free for 30 days, then you pay</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-primary hover:bg-primary/90 dark:bg-dark-primary dark:hover:bg-dark-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-all transform hover:-translate-y-1">
+                            Check My Answers
+                        </button>
+                    </form>
+                    
+                    <!-- Quiz Results -->
+                    <div id="quizResults" class="hidden mt-8 p-6 rounded-lg">
+                        <h3 class="font-display text-xl font-bold mb-4 text-center" id="resultsTitle"></h3>
+                        <div class="space-y-4" id="detailedResults"></div>
+                        <button id="resetQuiz" class="w-full mt-6 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded-lg transition-all">
+                            Try Again
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Resources Section -->
+        <section class="py-16 bg-white dark:bg-gray-900 transition-colors duration-300">
+            <div class="container mx-auto px-4">
+                <h2 class="font-display text-[clamp(1.8rem,3vw,2.5rem)] font-bold mb-4 text-center text-primary dark:text-dark-primary">Learn More</h2>
+                <p class="font-comic text-center text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-12">Check out these official resources to become a Playwright expert!</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    <!-- Resource 1 -->
+                    <a href="https://playwright.dev/docs/intro" target="_blank" rel="noopener noreferrer" class="block bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden card-hover h-full">
+                        <div class="h-40 bg-primary/10 dark:bg-dark-primary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-book text-primary dark:text-dark-primary text-5xl"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display text-xl font-bold mb-2 text-primary dark:text-dark-primary">Official Documentation</h3>
+                            <p class="font-comic text-gray-600 dark:text-gray-400">Read the official guide to learn everything about Playwright.</p>
+                        </div>
+                    </a>
+                    
+                    <!-- Resource 2 -->
+                    <a href="https://playwright.dev/docs/tutorials" target="_blank" rel="noopener noreferrer" class="block bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden card-hover h-full">
+                        <div class="h-40 bg-secondary/10 dark:bg-dark-secondary/20 flex items-center justify-center">
+                            <i class="fa-solid fa-graduation-cap text-secondary dark:text-dark-secondary text-5xl"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display text-xl font-bold mb-2 text-secondary dark:text-dark-secondary">Tutorials</h3>
+                            <p class="font-comic text-gray-600 dark:text-gray-400">Step-by-step tutorials to help you get started with examples.</p>
+                        </div>
+                    </a>
+                    
+                    <!-- Resource 3 -->
+                    <a href="https://github.com/microsoft/playwright" target="_blank" rel="noopener noreferrer" class="block bg-gray-50 dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden card-hover h-full">
+                        <div class="h-40 bg-accent/10 dark:bg-dark-accent/20 flex items-center justify-center">
+                            <i class="fa-brands fa-github text-accent dark:text-dark-accent text-5xl"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="font-display text-xl font-bold mb-2 text-accent dark:text-dark-accent">GitHub Repository</h3>
+                            <p class="font-comic text-gray-600 dark:text-gray-400">See the source code and join the developer community.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-5xl mx-auto">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8">
+                    <div class="flex items-center space-x-2 mb-6 md:mb-0">
+                        <div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-code text-white text-xl"></i>
+                        </div>
+                        <span class="font-display text-xl font-bold">Playwright</span>
+                    </div>
+                    
+                    <div class="flex space-x-6">
+                        <a href="https://twitter.com/playwrightdev" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa-brands fa-twitter text-xl"></i>
+                        </a>
+                        <a href="https://github.com/microsoft/playwright" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa-brands fa-github text-xl"></i>
+                        </a>
+                        <a href="https://www.youtube.com/results?search_query=playwright" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">
+                            <i class="fa-brands fa-youtube text-xl"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <hr class="border-gray-800 mb-8">
+                
+                <div class="text-center mb-8">
+                    <h3 class="font-display text-lg font-bold mb-4">Stay Updated</h3>
+                    <div class="flex flex-col sm:flex-row max-w-md mx-auto gap-3">
+                        <input type="email" id="subscribeEmail" placeholder="Your email address" 
+                            class="flex-1 px-4 py-3 rounded-lg bg-gray-800 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-primary text-white">
+                        <button id="subscribeBtn" class="bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg transition-all whitespace-nowrap">
+                            Subscribe
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="text-center text-gray-500 text-sm">
+                    <p>© 2023 Playwright Education. All rights reserved.</p>
+                    <p class="mt-2">Playwright is a project by Microsoft.</p>
+                    <p class="mt-4"><a href="/sitemap" class="hover:text-primary transition-colors">Sitemap</a></p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Module Import -->
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
