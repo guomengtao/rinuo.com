@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Explorers - Fun Learning for Young Developers</title>
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="A fun, interactive website for young code explorers to learn programming concepts through games, puzzles, and creative challenges.">
+    <meta name="keywords" content="coding for kids, learn programming, kids coding, code games, programming puzzles, young developers">
+    <meta name="author" content="Code Explorers">
+    <meta property="og:title" content="Code Explorers - Fun Learning for Young Developers">
+    <meta property="og:description" content="A fun, interactive website for young code explorers to learn programming concepts through games, puzzles, and creative challenges.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://rinuo.com">
+    <link rel="canonical" href="https://rinuo.com">
+    
+    <!-- External Resources -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" rel="stylesheet">
+    
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        accent: '#FFD166',
+                        dark: {
+                            bg: '#1E1E2F',
+                            card: '#2D2D44',
+                            text: '#F5F5F7',
+                            border: '#4A4A6A'
+                        },
+                        light: {
+                            bg: '#F8F9FA',
+                            card: '#FFFFFF',
+                            text: '#212529',
+                            border: '#E9ECEF'
+                        }
+                    },
+                    fontFamily: {
+                        'comic-sans': ['"Comic Sans MS"', '"Bubblegum Sans"', 'cursive'],
+                        'fredoka': ['"Fredoka One"', '"Comic Sans MS"', 'cursive'],
+                        'poppins': ['Poppins', 'sans-serif'],
+                    },
+                    animation: {
+                        'float': 'float 3s ease-in-out infinite',
+                        'bounce-slow': 'bounce 3s infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'typing': 'typing 3.5s steps(40, end)',
+                        'blink-caret': 'blink-caret .75s step-end infinite'
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        wiggle: {
+                            '0%, 100%': { transform: 'rotate(-3deg)' },
+                            '50%': { transform: 'rotate(3deg)' },
+                        },
+                        typing: {
+                            'from': { width: '0' },
+                            'to': { width: '100%' }
+                        },
+                        blinkCaret: {
+                            'from, to': { borderColor: 'transparent' },
+                            '50%': { borderColor: '#FF6B6B' }
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+    
+    <!-- Custom Utilities -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .card-hover {
+                @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+            }
+            .btn-primary {
+                @apply bg-primary text-white px-6 py-3 rounded-full font-medium hover:bg-primary/90 transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95;
+            }
+            .btn-secondary {
+                @apply bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300;
+            }
+            .feature-card {
+                @apply bg-light-card dark:bg-dark-card p-5 rounded-xl border border-light-border dark:border-dark-border card-hover shadow-md;
+            }
+            .game-card {
+                @apply bg-gradient-to-br p-6 rounded-xl shadow-md text-white relative overflow-hidden card-hover transform transition-all duration-300;
+            }
+            .typing-container {
+                @apply relative inline-block;
+            }
+            .typing-text {
+                @apply overflow-hidden whitespace-nowrap border-r-4 border-primary animate-typing;
+            }
+            .particles {
+                @apply absolute inset-0 pointer-events-none;
+            }
+        }
+    </style>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="font-poppins bg-light-bg text-light-text dark:bg-dark-bg dark:text-dark-text min-h-screen transition-colors duration-300 overflow-x-hidden">
+    <!-- Navigation -->
+    <header class="sticky top-0 z-50 bg-white dark:bg-dark-card shadow-md transition-all duration-300">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/" class="flex items-center gap-2">
+                    <div class="bg-gradient-to-r from-primary to-secondary p-2 rounded-full">
+                        <i class="fa-solid fa-robot text-white text-2xl animate-pulse"></i>
+                    </div>
+                    <span class="text-xl font-fredoka font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">CodeExplorers</span>
+                </a>
+                
+                <!-- Desktop Search and Theme Toggle -->
+                <div class="hidden md:flex items-center gap-4">
+                    <!-- Search Bar -->
+                    <div class="relative">
+                        <input 
+                            id="searchInput"
+                            type="text" 
+                            placeholder="Search for coding fun..." 
+                            class="w-64 pl-10 pr-4 py-2 rounded-full border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                            autocomplete="off"
+                        >
+                        <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    
+                    <!-- Theme Toggle -->
+                    <button 
+                        id="themeToggle" 
+                        class="p-3 text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary rounded-full bg-light-card dark:bg-dark-bg transition-all duration-300"
+                        aria-label="Toggle theme"
+                    >
+                        <i class="fa-solid fa-sun-and-moon text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="md:hidden p-2 text-gray-600 dark:text-gray-300" aria-label="Open menu">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+            
+            <!-- Mobile Search Bar -->
+            <div class="mt-4 md:hidden">
+                <div class="relative">
+                    <input 
+                        id="searchInputMobile"
+                        type="text" 
+                        placeholder="Search for coding fun..." 
+                        class="w-full pl-10 pr-4 py-2 rounded-full border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                        autocomplete="off"
+                    >
+                    <i class="fa-solid fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Breadcrumb Navigation -->
+    <div class="container mx-auto px-4 py-3">
+        <nav class="text-sm" aria-label="Breadcrumb">
+            <ol class="flex items-center space-x-2">
+                <li><a href="/" class="text-primary hover:text-primary/80 transition-colors">Home</a></li>
+                <li><span class="text-gray-500 dark:text-gray-400">/</span></li>
+                <li><a href="/free" class="text-primary hover:text-primary/80 transition-colors">Free Resources</a></li>
+                <li><span class="text-gray-500 dark:text-gray-400">/</span></li>
+                <li class="text-gray-600 dark:text-gray-300" aria-current="page">Code Adventures</li>
+            </ol>
+        </nav>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-primary/30 dark:to-secondary/30">
+        <!-- Animated Background Elements -->
+        <div class="particles">
+            <!-- Floating Code Symbols -->
+            <div class="absolute top-20 left-10 text-primary/30 text-4xl animate-float" style="animation-delay: 0s;">{'code': 'fun'}</div>
+            <div class="absolute bottom-20 right-10 text-secondary/30 text-4xl animate-float" style="animation-delay: 0.5s;">for kid in coding:</div>
+            <div class="absolute top-40 right-20 text-accent/30 text-3xl animate-float" style="animation-delay: 1s;">if (happy) { play(); }</div>
+            <div class="absolute bottom-40 left-20 text-primary/30 text-3xl animate-float" style="animation-delay: 1.5s;">print('I love coding!')</div>
+        </div>
+        
+        <!-- Hero Content -->
+        <div class="container mx-auto px-4 py-16 relative z-10">
+            <div class="max-w-4xl mx-auto text-center">
+                <!-- Floating Logo Animation -->
+                <div class="w-32 h-32 mx-auto mb-8 bg-white dark:bg-dark-card rounded-full shadow-xl flex items-center justify-center animate-bounce-slow">
+                    <div class="bg-gradient-to-r from-primary to-secondary p-4 rounded-full">
+                        <i class="fa-solid fa-robot text-white text-5xl"></i>
+                    </div>
+                </div>
+                
+                <!-- Typing Animation Title -->
+                <div class="typing-container mb-6">
+                    <h1 class="typing-text text-4xl md:text-6xl font-fredoka font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"></h1>
+                </div>
+                
+                <!-- Description -->
+                <p class="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Join the adventure and learn how to code while having fun with games, puzzles, and creative challenges!
+                </p>
+                
+                <!-- Call to Action -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="bookmarkBtn" class="flex items-center justify-center gap-2 bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300 shadow-md">
+                        <i class="fa-regular fa-star"></i>
+                        <span>Save for Later</span>
+                    </button>
+                    <button id="shareBtn" class="flex items-center justify-center gap-2 bg-white dark:bg-dark-card text-primary border border-primary px-6 py-3 rounded-full font-medium hover:bg-primary/5 transition-all duration-300 shadow-md">
+                        <i class="fa-solid fa-share-nodes"></i>
+                        <span>Share</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Decorative Elements -->
+        <div class="absolute -bottom-16 left-0 right-0 h-32 bg-light-bg dark:bg-dark-bg transform -skew-y-3 z-20"></div>
+    </section>
+
+    <!-- Featured Activities -->
+    <section class="py-20 relative z-30">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-fredoka font-bold mb-4">Awesome Coding Adventures</h2>
+                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Explore these super cool activities that make learning to code feel like playing games!
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Activity Card 1 -->
+                <div class="game-card bg-gradient-to-br from-pink-500 to-purple-600">
+                    <div class="absolute top-0 right-0 w-20 h-20 -mt-5 -mr-5 bg-white/20 rounded-full backdrop-blur-sm"></div>
+                    <div class="relative z-10">
+                        <i class="fa-solid fa-puzzle-piece text-4xl mb-4 animate-float"></i>
+                        <h3 class="text-2xl font-fredoka font-bold mb-2">Blockly Builder</h3>
+                        <p class="mb-4 text-white/90">Drag and drop blocks to create your own animations and games without typing!</p>
+                        <button class="play-btn bg-white text-pink-600 px-5 py-2 rounded-full font-medium hover:bg-white/90 transition-all transform hover:scale-105 active:scale-95">
+                            Play Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Activity Card 2 -->
+                <div class="game-card bg-gradient-to-br from-blue-500 to-cyan-600">
+                    <div class="absolute top-0 right-0 w-20 h-20 -mt-5 -mr-5 bg-white/20 rounded-full backdrop-blur-sm"></div>
+                    <div class="relative z-10">
+                        <i class="fa-solid fa-gamepad text-4xl mb-4 animate-float"></i>
+                        <h3 class="text-2xl font-fredoka font-bold mb-2">Code Quest</h3>
+                        <p class="mb-4 text-white/90">Embark on an epic journey where you solve coding puzzles to save the kingdom!</p>
+                        <button class="play-btn bg-white text-blue-600 px-5 py-2 rounded-full font-medium hover:bg-white/90 transition-all transform hover:scale-105 active:scale-95">
+                            Play Now
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Activity Card 3 -->
+                <div class="game-card bg-gradient-to-br from-green-500 to-teal-600">
+                    <div class="absolute top-0 right-0 w-20 h-20 -mt-5 -mr-5 bg-white/20 rounded-full backdrop-blur-sm"></div>
+                    <div class="relative z-10">
+                        <i class="fa-solid fa-paint-brush text-4xl mb-4 animate-float"></i>
+                        <h3 class="text-2xl font-fredoka font-bold mb-2">Creative Coder</h3>
+                        <p class="mb-4 text-white/90">Unleash your creativity by designing colorful digital art with simple code!</p>
+                        <button class="play-btn bg-white text-green-600 px-5 py-2 rounded-full font-medium hover:bg-white/90 transition-all transform hover:scale-105 active:scale-95">
+                            Play Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Quiz Section -->
+    <section class="py-20 bg-gradient-to-br from-light-bg/80 to-secondary/10 dark:from-dark-bg/80 dark:to-secondary/5">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl md:text-4xl font-fredoka font-bold mb-4">Test Your Coding Knowledge</h2>
+                    <p class="text-gray-600 dark:text-gray-300">
+                        Think you know some code? Try to answer these fun questions!
+                    </p>
+                </div>
+                
+                <!-- Quiz Container -->
+                <div class="bg-light-card dark:bg-dark-card rounded-2xl shadow-lg p-6 md:p-8">
+                    <!-- Quiz Question -->
+                    <div id="quiz-question" class="mb-8">
+                        <h3 class="text-xl md:text-2xl font-fredoka font-bold mb-4">Which symbol makes a variable in JavaScript?</h3>
+                        <div class="space-y-3">
+                            <button class="quiz-option w-full text-left p-4 rounded-xl border border-light-border dark:border-dark-border hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"></span>
+                                <span>let</span>
+                            </button>
+                            <button class="quiz-option w-full text-left p-4 rounded-xl border border-light-border dark:border-dark-border hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"></span>
+                                <span>variable</span>
+                            </button>
+                            <button class="quiz-option w-full text-left p-4 rounded-xl border border-light-border dark:border-dark-border hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"></span>
+                                <span>make</span>
+                            </button>
+                            <button class="quiz-option w-full text-left p-4 rounded-xl border border-light-border dark:border-dark-border hover:border-primary/50 hover:bg-primary/5 transition-all flex items-center gap-3">
+                                <span class="w-6 h-6 rounded-full border border-gray-300 dark:border-gray-600 flex-shrink-0"></span>
+                                <span>create</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Quiz Result (Initially Hidden) -->
+                    <div id="quiz-result" class="hidden p-4 rounded-xl mb-6">
+                        <p id="result-text" class="text-lg font-medium"></p>
+                    </div>
+                    
+                    <!-- Next Question Button -->
+                    <div class="text-center">
+                        <button id="next-question" class="btn-primary hidden">Next Question</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Resources -->
+    <section class="py-20">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-fredoka font-bold mb-4">Cool Resources for Learning</h2>
+                <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                    Check out these awesome websites and tools that can help you become a coding master!
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Resource Card 1 -->
+                <div class="feature-card">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-code text-blue-500 dark:text-blue-300 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Code.org</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        A super fun website with games and tutorials that teach you the basics of coding!
+                    </p>
+                    <a href="https://code.org" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 font-medium flex items-center gap-2">
+                        <span>Visit Website</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+                
+                <!-- Resource Card 2 -->
+                <div class="feature-card">
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-robot text-green-500 dark:text-green-300 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Scratch</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Create your own interactive stories, games, and animations with block-based coding.
+                    </p>
+                    <a href="https://scratch.mit.edu" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 font-medium flex items-center gap-2">
+                        <span>Visit Website</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+                
+                <!-- Resource Card 3 -->
+                <div class="feature-card">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center mb-4">
+                        <i class="fa-solid fa-book text-purple-500 dark:text-purple-300 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Khan Academy</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-4">
+                        Free video lessons that make learning to code easy and fun for everyone!
+                    </p>
+                    <a href="https://khanacademy.org" target="_blank" rel="noopener noreferrer" class="text-primary hover:text-primary/80 font-medium flex items-center gap-2">
+                        <span>Visit Website</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter Section -->
+    <section class="py-20 bg-gradient-to-br from-primary/20 to-secondary/20 dark:from-primary/30 dark:to-secondary/30">
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto text-center">
+                <div class="mb-6 inline-flex items-center justify-center w-20 h-20 rounded-full bg-primary/20 text-primary">
+                    <i class="fa-envelope text-3xl"></i>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-fredoka font-bold mb-4">Join Our Coding Club!</h2>
+                <p class="text-gray-600 dark:text-gray-300 mb-8">
+                    Get cool coding tips, fun challenges, and new activities delivered straight to your inbox!
+                </p>
+                <form class="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+                    <input 
+                        id="subscribeEmail"
+                        type="email" 
+                        placeholder="Enter your email address" 
+                        class="flex-grow px-4 py-3 rounded-full border border-light-border dark:border-dark-border bg-light-card dark:bg-dark-card focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+                    >
+                    <button 
+                        id="subscribeBtn"
+                        type="submit" 
+                        class="btn-primary whitespace-nowrap"
+                    >
+                        Join Now
+                    </button>
+                </form>
+                <p class="text-xs text-gray-500 dark:text-gray-400 mt-4">
+                    We respect your privacy. Unsubscribe at any time.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 dark:bg-gray-900 py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-8 md:mb-0 text-center md:text-left">
+                    <a href="/" class="flex items-center justify-center md:justify-start space-x-2 mb-2">
+                        <div class="bg-gradient-to-r from-primary to-secondary p-2 rounded-full">
+                            <i class="fa-solid fa-robot text-white"></i>
+                        </div>
+                        <span class="font-fredoka font-bold text-lg">CodeExplorers</span>
+                    </a>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 max-w-xs">
+                        Making coding fun for young explorers everywhere!
+                    </p>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-x-8 gap-y-3">
+                    <a href="https://code.org" target="_blank" rel="noopener noreferrer" class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Learn More</a>
+                    <a href="/sitemap" class="text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors">Sitemap</a>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 dark:border-gray-800 mt-8 pt-8 text-center text-sm text-gray-600 dark:text-gray-400">
+                &copy; 2023 CodeExplorers. All rights reserved.
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Typing Animation for Hero Title
+        document.addEventListener('DOMContentLoaded', function() {
+            const typingText = document.querySelector('.typing-text');
+            const text = "Welcome to Code Explorers!";
+            let index = 0;
+            
+            function type() {
+                if (index < text.length) {
+                    typingText.textContent += text.charAt(index);
+                    index++;
+                    setTimeout(type, 100);
+                }
+            }
+            
+            // Start typing animation
+            type();
+            
+            // Quiz Functionality
+            const quizOptions = document.querySelectorAll('.quiz-option');
+            const quizResult = document.getElementById('quiz-result');
+            const resultText = document.getElementById('result-text');
+            const nextQuestionBtn = document.getElementById('next-question');
+            
+            quizOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Clear previous selections
+                    quizOptions.forEach(opt => {
+                        opt.classList.remove('border-green-500', 'border-red-500', 'bg-green-50', 'dark:bg-green-900/30', 'bg-red-50', 'dark:bg-red-900/30');
+                        opt.querySelector('span:first-child').innerHTML = '';
+                    });
+                    
+                    // Check if answer is correct (first option is correct)
+                    const isCorrect = this === quizOptions[0];
+                    
+                    // Show result
+                    quizResult.classList.remove('hidden');
+                    if (isCorrect) {
+                        this.classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/30');
+                        this.querySelector('span:first-child').innerHTML = '<i class="fa-solid fa-check text-green-500"></i>';
+                        resultText.textContent = 'Awesome job! You got it right! "let" is used to create variables in JavaScript.';
+                        resultText.classList.add('text-green-500');
+                    } else {
+                        this.classList.add('border-red-500', 'bg-red-50', 'dark:bg-red-900/30');
+                        this.querySelector('span:first-child').innerHTML = '<i class="fa-solid fa-times text-red-500"></i>';
+                        quizOptions[0].classList.add('border-green-500', 'bg-green-50', 'dark:bg-green-900/30');
+                        quizOptions[0].querySelector('span:first-child').innerHTML = '<i class="fa-solid fa-check text-green-500"></i>';
+                        resultText.textContent = 'Almost! The correct answer is "let". Try the next question!';
+                        resultText.classList.add('text-red-500');
+                    }
+                    
+                    // Show next question button
+                    nextQuestionBtn.classList.remove('hidden');
+                });
+            });
+            
+            nextQuestionBtn.addEventListener('click', function() {
+                // Reset quiz for next question
+                quizResult.classList.add('hidden');
+                resultText.textContent = '';
+                resultText.classList.remove('text-green-500', 'text-red-500');
+                this.classList.add('hidden');
+                
+                quizOptions.forEach(opt => {
+                    opt.classList.remove('border-green-500', 'border-red-500', 'bg-green-50', 'dark:bg-green-900/30', 'bg-red-50', 'dark:bg-red-900/30');
+                    opt.querySelector('span:first-child').innerHTML = '';
+                });
+                
+                // Here you would load a new question
+                // For simplicity, we'll just show a message
+                document.querySelector('#quiz-question h3').textContent = "Which one of these is a programming language?";
+                const newOptions = ["JavaScript", "English", "Math", "Science"];
+                quizOptions.forEach((opt, index) => {
+                    opt.querySelector('span:last-child').textContent = newOptions[index];
+                });
+            });
+            
+            // Play buttons functionality
+            const playButtons = document.querySelectorAll('.play-btn');
+            playButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // In a real implementation, this would navigate to the actual game
+                    // For now, we'll just show a message
+                    alert('Game loading...');
+                });
+            });
+        });
+    </script>
+    
+    <!-- Import Main JS Module -->
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

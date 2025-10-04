@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fun Categories</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- 配置Tailwind自定义颜色和字体 -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 友好的紫色作为主色调
+                        secondary: '#EC4899', // 活泼的粉色作为辅助色
+                        accent: '#06B6D4', // 明亮的青色作为强调色
+                        light: '#F8FAFC', // 浅色背景
+                        dark: '#1E293B',  // 深色背景
+                    },
+                    fontFamily: {
+                        fun: ['"Comic Sans MS"', '"Bubblegum Sans"', 'cursive'],
+                    },
+                    animation: {
+                        'bounce-slow': 'bounce 3s infinite',
+                        'wiggle': 'wiggle 1s ease-in-out infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-5px) scale(1.02);
+            }
+            .search-focus {
+                transition: all 0.3s ease;
+            }
+            .search-focus:focus-within {
+                box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+            }
+        }
+    </style>
+</head>
+
+<body class="font-fun bg-gradient-to-br from-light to-blue-50 dark:from-dark dark:to-slate-800 min-h-screen transition-colors duration-300">
+    <!-- 导航栏 -->
+    <header class="sticky top-0 z-50 bg-white/80 dark:bg-dark/80 backdrop-blur-md shadow-sm transition-all duration-300">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <!-- 网站Logo -->
+            <div class="flex items-center space-x-2">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary flex items-center justify-center animate-float">
+                    <i class="fa fa-star text-white text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">Fun Finds</h1>
+            </div>
+            
+            <!-- 搜索框 -->
+            <div class="relative max-w-md w-full mx-4 search-focus">
+                <input type="text" id="search-input" 
+                    class="w-full py-2 pl-10 pr-4 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                    placeholder="Search for something fun...">
+                <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+            </div>
+            
+            <!-- 主题切换按钮 -->
+            <button id="theme-toggle" class="p-2 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fa fa-sun-o dark:hidden text-xl"></i>
+                <i class="fa fa-moon-o hidden dark:block text-xl"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- 页面标题 -->
+        <div class="text-center mb-10">
+            <h2 class="text-[clamp(2rem,5vw,3.5rem)] font-bold text-gray-800 dark:text-white text-shadow mb-3">Explore Categories</h2>
+            <p class="text-gray-600 dark:text-gray-300 text-lg max-w-2xl mx-auto">Find all kinds of fun things to explore! Click on any card to learn more.</p>
+        </div>
+        
+        <!-- 分类过滤器 -->
+        <div class="mb-10 overflow-x-auto pb-2">
+            <div class="flex space-x-2 min-w-max justify-center">
+                <button class="category-btn active px-5 py-2 rounded-full bg-primary text-white shadow-md hover:bg-primary/90 transition-all" data-category="all">
+                    All
+                </button>
+                <!-- 分类按钮会通过JS动态生成 -->
+            </div>
+        </div>
+        
+        <!-- 搜索结果提示 -->
+        <div id="search-results" class="mb-6 text-center text-gray-600 dark:text-gray-300 hidden">
+            <p>Showing results for: <span id="search-term" class="font-bold text-primary"></span></p>
+        </div>
+        
+        <!-- 资源网格 -->
+        <div id="resources-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- 资源卡片会通过JS动态生成 -->
+            <div class="col-span-full flex justify-center items-center py-16">
+                <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-primary border-solid"></div>
+            </div>
+        </div>
+        
+        <!-- 无结果提示 -->
+        <div id="no-results" class="hidden text-center py-16">
+            <div class="w-24 h-24 mx-auto mb-4 text-gray-300 dark:text-gray-600">
+                <i class="fa fa-search fa-5x"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-700 dark:text-gray-300 mb-2">No results found</h3>
+            <p class="text-gray-500 dark:text-gray-400">Try searching for something else!</p>
+        </div>
+    </main>
+
+    <footer class="bg-white dark:bg-gray-900 shadow-inner mt-16 py-8 transition-colors duration-300">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600 dark:text-gray-400">© 2023 Fun Finds. All rights reserved.</p>
+            <div class="flex justify-center space-x-4 mt-4">
+                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+                    <i class="fa fa-facebook"></i>
+                </a>
+                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+                    <i class="fa fa-twitter"></i>
+                </a>
+                <a href="#" class="text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-primary transition-colors">
+                    <i class="fa fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 全局变量存储资源数据
+        let resources = [];
+        let filteredResources = [];
+        let currentCategory = 'all';
+        let currentSearch = '';
+        
+        // DOM元素
+        const resourcesGrid = document.getElementById('resources-grid');
+        const searchInput = document.getElementById('search-input');
+        const searchResults = document.getElementById('search-results');
+        const searchTerm = document.getElementById('search-term');
+        const noResults = document.getElementById('no-results');
+        const themeToggle = document.getElementById('theme-toggle');
+        
+        // 初始化页面
+        document.addEventListener('DOMContentLoaded', () => {
+            // 检查用户的主题偏好
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // 加载资源数据
+            loadResources();
+            
+            // 添加事件监听器
+            searchInput.addEventListener('input', handleSearch);
+            themeToggle.addEventListener('click', toggleTheme);
+            
+            // 检查URL参数中的搜索关键词
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get('q');
+            const category = params.get('category');
+            
+            if (query) {
+                searchInput.value = query;
+                currentSearch = query;
+            }
+            
+            if (category) {
+                currentCategory = category;
+            }
+        });
+        
+        // 从JSON文件加载资源数据
+        async function loadResources() {
+            try {
+                const response = await fetch('/assets/data/data.json');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                resources = await response.json();
+                filteredResources = [...resources];
+                
+                // 生成分类按钮
+                generateCategoryButtons();
+                
+                // 应用过滤
+                applyFilters();
+                
+            } catch (error) {
+                console.error('Error loading resources:', error);
+                resourcesGrid.innerHTML = `
+                    <div class="col-span-full text-center py-16">
+                        <p class="text-red-500 text-xl">Oops! Couldn't load the fun stuff.</p>
+                        <button onclick="loadResources()" class="mt-4 px-4 py-2 bg-primary text-white rounded-full hover:bg-primary/90 transition-colors">
+                            Try Again
+                        </button>
+                    </div>
+                `;
+            }
+        }
+        
+        // 生成分类按钮
+        function generateCategoryButtons() {
+            const categoryContainer = document.querySelector('.flex.space-x-2.min-w-max');
+            const categories = ['all', ...new Set(resources.map(item => item.category))];
+            
+            // 清除现有按钮（保留"all"按钮）
+            const buttons = categoryContainer.querySelectorAll('.category-btn:not([data-category="all"])');
+            buttons.forEach(btn => btn.remove());
+            
+            // 添加分类按钮
+            categories.forEach(category => {
+                if (category === 'all') return; // 已存在
+                
+                const button = document.createElement('button');
+                button.className = `category-btn px-5 py-2 rounded-full bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 shadow-md hover:shadow-lg transition-all ${currentCategory === category ? 'active bg-primary text-white' : ''}`;
+                button.dataset.category = category;
+                button.textContent = category;
+                button.addEventListener('click', () => {
+                    // 更新活跃状态
+                    document.querySelectorAll('.category-btn').forEach(btn => {
+                        btn.classList.remove('active', 'bg-primary', 'text-white');
+                        btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200');
+                    });
+                    
+                    button.classList.add('active', 'bg-primary', 'text-white');
+                    button.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200');
+                    
+                    currentCategory = category;
+                    applyFilters();
+                });
+                
+                categoryContainer.appendChild(button);
+            });
+            
+            // 如果有初始分类参数，激活相应按钮
+            if (currentCategory !== 'all') {
+                const categoryBtn = document.querySelector(`.category-btn[data-category="${currentCategory}"]`);
+                if (categoryBtn) {
+                    document.querySelectorAll('.category-btn').forEach(btn => {
+                        btn.classList.remove('active', 'bg-primary', 'text-white');
+                        btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200');
+                    });
+                    categoryBtn.classList.add('active', 'bg-primary', 'text-white');
+                    categoryBtn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-gray-200');
+                }
+            }
+        }
+        
+        // 处理搜索
+        function handleSearch(e) {
+            currentSearch = e.target.value.trim().toLowerCase();
+            applyFilters();
+        }
+        
+        // 应用过滤条件
+        function applyFilters() {
+            let results = [...resources];
+            
+            // 应用分类过滤
+            if (currentCategory !== 'all') {
+                results = results.filter(item => item.category.toLowerCase() === currentCategory.toLowerCase());
+            }
+            
+            // 应用搜索过滤
+            if (currentSearch) {
+                const searchLower = currentSearch.toLowerCase();
+                results = results.filter(item => 
+                    item.name.toLowerCase().includes(searchLower) || 
+                    item.category.toLowerCase().includes(searchLower) ||
+                    item.tags.some(tag => tag.toLowerCase().includes(searchLower))
+                );
+                
+                // 显示搜索结果提示
+                searchResults.classList.remove('hidden');
+                searchTerm.textContent = currentSearch;
+            } else {
+                // 隐藏搜索结果提示
+                searchResults.classList.add('hidden');
+            }
+            
+            filteredResources = results;
+            renderResources();
+        }
+        
+        // 渲染资源卡片
+        function renderResources() {
+            if (filteredResources.length === 0) {
+                resourcesGrid.innerHTML = '';
+                noResults.classList.remove('hidden');
+                return;
+            }
+            
+            noResults.classList.add('hidden');
+            
+            // 创建彩虹色数组用于卡片背景
+            const cardColors = [
+                'from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30',
+                'from-pink-100 to-red-100 dark:from-pink-900/30 dark:to-red-900/30',
+                'from-green-100 to-teal-100 dark:from-green-900/30 dark:to-teal-900/30',
+                'from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30',
+                'from-indigo-100 to-blue-100 dark:from-indigo-900/30 dark:to-blue-900/30',
+            ];
+            
+            resourcesGrid.innerHTML = filteredResources.map((resource, index) => {
+                // 循环使用彩虹色
+                const colorIndex = index % cardColors.length;
+                const cardColor = cardColors[colorIndex];
+                
+                // 根据流行度决定星星数量
+                const popularity = resource.popularity;
+                let stars = '';
+                if (popularity >= 1) {
+                    stars = '<i class="fa fa-star text-yellow-400"></i><i class="fa fa-star text-yellow-400"></i><i class="fa fa-star text-yellow-400"></i>';
+                } else if (popularity >= 0.66) {
+                    stars = '<i class="fa fa-star text-yellow-400"></i><i class="fa fa-star text-yellow-400"></i><i class="fa fa-star-o text-yellow-400"></i>';
+                } else {
+                    stars = '<i class="fa fa-star text-yellow-400"></i><i class="fa fa-star-o text-yellow-400"></i><i class="fa fa-star-o text-yellow-400"></i>';
+                }
+                
+                return `
+                <a href="/free/detail/${resource.file}" class="block">
+                    <div class="bg-gradient-to-br ${cardColor} rounded-2xl shadow-lg overflow-hidden card-hover h-full">
+                        <div class="p-6">
+                            <div class="flex justify-between items-start mb-4">
+                                <span class="px-3 py-1 bg-white/70 dark:bg-black/20 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200">
+                                    ${resource.category}
+                                </span>
+                                <div class="flex">
+                                    ${stars}
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white mb-2">${resource.name}</h3>
+                            
+                            <div class="flex flex-wrap gap-2 mt-4">
+                                ${resource.tags.map(tag => `
+                                    <span class="px-2 py-1 bg-white/50 dark:bg-black/10 rounded-full text-xs text-gray-600 dark:text-gray-300">
+                                        ${tag}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white/40 dark:bg-black/10 px-6 py-3 flex justify-between items-center">
+                            <span class="text-sm text-gray-700 dark:text-gray-300">Click to explore</span>
+                            <i class="fa fa-arrow-right text-primary"></i>
+                        </div>
+                    </div>
+                </a>
+                `;
+            }).join('');
+        }
+        
+        // 切换主题
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+    </script>
+</body>
+</html>

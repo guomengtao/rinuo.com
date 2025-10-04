@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Stock Annual Highs</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; }
+  input { padding: 6px; font-size: 16px; width: 120px; margin-right: 10px; }
+  .top50 { margin-top: 10px; }
+  .top50 span { cursor: pointer; padding: 4px 6px; margin: 2px; background: #f0f0f0; border-radius: 4px; display: inline-block; }
+  .top50 span:hover { background: #d0e0ff; }
+  .container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: right; }
+  th { background-color: #f5f5f5; text-align: center; }
+  td:first-child, th:first-child { text-align: center; }
+  #stockTable {
+    width: 50%;
+  }
+  #chartContainer {
+    width: 50%;
+    margin-top: 0;
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h2>
+  <input type="text" id="symbolInput" value="BABA" placeholder="Enter symbol">
+  <span>Stock - First, Annual Highs, Latest</span>
+  <button id="generateChartBtn" style="margin-left:10px; padding:6px 12px; font-size:16px;">Generate Chart</button>
+</h2>
+
+<div class="top50" id="top50List">
+  <!-- 前50股票代码将列在这里 -->
+</div>
+
+<div class="container">
+  <table id="stockTable">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Date</th>
+        <th>Open</th>
+        <th>Close</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div id="chartContainer">
+    <canvas id="stockChart"></canvas>
+  </div>
+</div>
+
+<script>
+const API_KEY = "6912d73cad514194ae47176def53408d";
+const input = document.getElementById("symbolInput");
+const tbody = document.querySelector("#stockTable tbody");
+const top50List = document.getElementById("top50List");
+const generateChartBtn = document.getElementById("generateChartBtn");
+const ctx = document.getElementById("stockChart").getContext("2d");
+let stockChart = null;
+
+// 示例前50美股代码
+const top50 = [
+  "AAPL","MSFT","GOOG","AMZN","TSLA","NVDA","META","BRK.B","UNH","JNJ",
+  "V","PG","XOM","JPM","MA","HD","LLY","PFE","KO","CVX",
+  "MRK","PEP","DIS","ADBE","CSCO","ABT","NFLX","CRM","ACN","AVGO",
+  "COST","TMO","INTC","QCOM","TXN","NKE","LIN","ORCL","NEE","HON",
+  "MCD","PM","BMY","UPS","IBM","AMD","LOW","BA","SBUX","AMGN"
+];
+
+// 渲染前50股票为可点击列表
+top50.forEach(symbol => {
+  const span = document.createElement("span");
+  span.textContent = symbol;
+  span.addEventListener("click", () => {
+    input.value = symbol;
+    loadData(symbol);
+  });
+  top50List.appendChild(span);
+});
+
+let currentData = []; // 保存当前表格数据用于生成图表
+
+async function loadData(symbol) {
+  tbody.innerHTML = ""; // 清空表格
+  currentData = [];
+  if(stockChart){
+    stockChart.destroy();
+    stockChart = null;
+  }
+  try {
+    const res = await fetch(`https://api.twelvedata.com/time_series?symbol=${symbol}&interval=1day&outputsize=5000&apikey=${API_KEY}`);
+    const data = await res.json();
+    if (!data.values) {
+      tbody.innerHTML = `<tr><td colspan="4">No data found for ${symbol}</td></tr>`;
+      return;
+    }
+
+    const values = data.values.reverse();
+    const firstDay = values[0];
+    const lastDay = values[values.length - 1];
+
+    // 计算每年最高和最低价格
+    const yearHighMap = {};
+    const yearLowMap = {};
+    values.forEach(v => {
+      const year = v.datetime.split("-")[0];
+      const close = parseFloat(v.close);
+      // 最高
+      if (!yearHighMap[year] || close > parseFloat(yearHighMap[year].close)) {
+        yearHighMap[year] = v;
+      }
+      // 最低
+      if (!yearLowMap[year] || close < parseFloat(yearLowMap[year].close)) {
+        yearLowMap[year] = v;
+      }
+    });
+
+    // 构建每年数据：首日、每年最高、每年最低、最新日
+    // 但首日和最新日只出现一次，其它为每年最高和最低
+    const years = Object.keys(yearHighMap).sort();
+    const finalData = [];
+    // 首日
+    finalData.push({
+      ...firstDay,
+      annualHigh: parseFloat(yearHighMap[firstDay.datetime.split("-")[0]].close),
+      annualLow: parseFloat(yearLowMap[firstDay.datetime.split("-")[0]].close),
+      type: "first"
+    });
+    // 每年最高和最低（排除首日和最新日）
+    years.forEach(year => {
+      const high = yearHighMap[year];
+      const low = yearLowMap[year];
+      // 跳过首日和最新日
+      if (high.datetime !== firstDay.datetime && high.datetime !== lastDay.datetime) {
+        finalData.push({
+          ...high,
+          annualHigh: parseFloat(high.close),
+          annualLow: parseFloat(yearLowMap[year].close),
+          type: "high"
+        });
+      }
+      if (low.datetime !== firstDay.datetime && low.datetime !== lastDay.datetime && low.datetime !== high.datetime) {
+        finalData.push({
+          ...low,
+          annualHigh: parseFloat(yearHighMap[year].close),
+          annualLow: parseFloat(low.close),
+          type: "low"
+        });
+      }
+    });
+    // 最新日
+    finalData.push({
+      ...lastDay,
+      annualHigh: parseFloat(yearHighMap[lastDay.datetime.split("-")[0]].close),
+      annualLow: parseFloat(yearLowMap[lastDay.datetime.split("-")[0]].close),
+      type: "last"
+    });
+    // 按日期排序
+    finalData.sort((a, b) => a.datetime.localeCompare(b.datetime));
+
+    finalData.forEach((v, idx) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${idx + 1}</td>
+        <td>${v.datetime}</td>
+        <td>${parseFloat(v.open).toFixed(2)}</td>
+        <td>${parseFloat(v.close).toFixed(2)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    currentData = finalData;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="4">Error loading data</td></tr>`;
+  }
+}
+
+function generateChart() {
+  if (!currentData || currentData.length === 0) {
+    alert("No data available to generate chart.");
+    return;
+  }
+  const labels = currentData.map(item => item.datetime);
+  const closePrices = currentData.map(item => parseFloat(item.close));
+  const lowPrices = currentData.map(item => parseFloat(item.annualLow));
+  if(stockChart){
+    stockChart.destroy();
+  }
+  stockChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Close Price',
+        data: closePrices,
+        borderColor: 'rgba(75, 192, 192, 1)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        fill: true,
+        tension: 0.1,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      },
+      {
+        label: 'Annual Low Price',
+        data: lowPrices,
+        borderColor: 'rgba(255, 0, 0, 1)',
+        backgroundColor: 'rgba(255, 0, 0, 0.1)',
+        fill: true,
+        tension: 0.1,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+        },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+        }
+      },
+      scales: {
+        x: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Date'
+          },
+          ticks: {
+            maxRotation: 90,
+            minRotation: 45,
+            maxTicksLimit: 20
+          }
+        },
+        y: {
+          display: true,
+          title: {
+            display: true,
+            text: 'Price (USD)'
+          },
+          beginAtZero: false
+        }
+      },
+      interaction: {
+        mode: 'nearest',
+        axis: 'x',
+        intersect: false
+      }
+    }
+  });
+}
+
+// 初始加载BABA
+loadData(input.value);
+
+// 输入框事件
+input.addEventListener("change", () => {
+  const symbol = input.value.trim();
+  if (symbol) loadData(symbol);
+});
+
+// 生成图表按钮事件
+generateChartBtn.addEventListener("click", generateChart);
+</script>
+</body>
+</html> 
